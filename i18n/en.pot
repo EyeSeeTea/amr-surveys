@@ -5,23 +5,20 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-09-18T13:40:05.079Z\n"
-"PO-Revision-Date: 2023-09-18T13:40:05.079Z\n"
+"POT-Creation-Date: 2023-10-04T17:54:29.387Z\n"
+"PO-Revision-Date: 2023-10-04T17:54:29.387Z\n"
 
-msgid "Add"
+msgid "WHO privacy policy"
 msgstr ""
 
-msgid "List"
+msgid "HOME"
 msgstr ""
 
-msgid "Back"
+msgid "Log Out"
 msgstr ""
 
-msgid "Help"
+msgid "Profile"
 msgstr ""
 
-msgid "Hello {{name}}"
-msgstr ""
-
-msgid "Detail page"
+msgid "Settings"
 msgstr ""
