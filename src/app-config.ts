@@ -3,11 +3,11 @@ import { FeedbackOptions } from "@eyeseetea/feedback-component";
 export const appConfig: AppConfig = {
     appKey: "dhis2-app-skeleton",
     appearance: {
-        showShareButton: true,
+        showShareButton: false,
     },
     feedback: {
         repositories: {
-            clickUp: {
+            clickUp: { 
                 // https://app.clickup.com/${workspace}/v/b/N-${listId}-M
                 // Web development -> Common resources -> app-skeleton
                 listId: "42597084",

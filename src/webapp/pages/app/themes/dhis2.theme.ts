@@ -26,7 +26,7 @@ const colors = {
     info: "#EAF4FF",
 };
 
-const palette = {
+export const palette = {
     common: {
         white: colors.white,
         black: colors.black,

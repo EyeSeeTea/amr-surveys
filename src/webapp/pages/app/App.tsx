@@ -1,4 +1,3 @@
-import { HeaderBar } from "@dhis2/ui";
 import { SnackbarProvider } from "@eyeseetea/d2-ui-components";
 import { Feedback } from "@eyeseetea/feedback-component";
 import { MuiThemeProvider } from "@material-ui/core/styles";
@@ -43,8 +42,6 @@ function App(props: AppProps) {
         <MuiThemeProvider theme={muiTheme}>
             <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                 <SnackbarProvider>
-                    <HeaderBar appName="Skeleton App" />
-
                     {appConfig.feedback && appContext && (
                         <Feedback
                             options={appConfig.feedback}

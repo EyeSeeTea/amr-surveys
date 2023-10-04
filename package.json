@@ -1,13 +1,13 @@
 {
-    "name": "dhis2-app-skeleton",
-    "description": "DHIS2 Skeleton App",
+    "name": "amr-surveys",
+    "description": "AMR Surveys App",
     "version": "0.0.1",
     "license": "GPL-3.0",
     "author": "EyeSeeTea team",
     "homepage": ".",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/eyeseetea/dhis2-app-skeleton.git"
+        "url": "git+https://github.com/EyeSeeTea/amr-surveys.git"
     },
     "dependencies": {
         "@dhis2/app-runtime": "2.8.0",
