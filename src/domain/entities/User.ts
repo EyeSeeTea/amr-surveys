@@ -1,5 +1,26 @@
 import { Struct } from "./generic/Struct";
-import { NamedRef } from "./Ref";
+import { Id, NamedRef } from "./Ref";
+
+export interface OrgUnitAccess {
+    orgUnitId: Id;
+    orgUnitName: string;
+    orgUnitShortName: string;
+    orgUnitCode: string;
+    orgUnitPath: string;
+    readAccess: boolean;
+    captureAccess: boolean;
+}
+export interface UserGroup {
+    id: Id;
+    name: string;
+}
+export interface ModuleAccess {
+    moduleId: Id;
+    moduleName: string;
+    readAccess: boolean;
+    captureAccess: boolean;
+    usergroups: UserGroup[];
+}
 
 export interface UserAttrs {
     id: string;
@@ -7,6 +28,7 @@ export interface UserAttrs {
     username: string;
     userRoles: UserRole[];
     userGroups: NamedRef[];
+    userOrgUnitsAccess: OrgUnitAccess[];
 }
 
 export interface UserRole extends NamedRef {

@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import App from "../App";
 import { getTestContext } from "../../../../utils/tests";
 import { Provider } from "@dhis2/app-runtime";

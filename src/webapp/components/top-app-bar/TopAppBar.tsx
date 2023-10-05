@@ -19,6 +19,7 @@ import PersonOutlineIcon from "@material-ui/icons/PersonOutline";
 import i18n from "@eyeseetea/feedback-component/locales";
 import SettingsIcon from "@material-ui/icons/Settings";
 import styled from "styled-components";
+import { OrgUnitSelector } from "../orgunit-selector/OrgUnitSelector";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -28,10 +29,10 @@ const useStyles = makeStyles(theme => ({
         marginRight: theme.spacing(2),
     },
     toolbar: {
-        background: "white",
+        background: "#FFFFFF!important",
         minHeight: 70,
         alignItems: "center",
-        paddingTop: theme.spacing(1),
+        paddingTop: theme.spacing(2),
         paddingBottom: theme.spacing(2),
     },
     title: {
@@ -93,7 +94,8 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
                         <IconButton aria-label="search" color="primary">
                             <LocationIcon />
                         </IconButton>
-                        {/* <OrgUnitSelector /> */}
+
+                        <OrgUnitSelector />
                     </SelectContainer>
                     <SelectContainer>
                         <AvatarContainer id="demo-positioned-button" onClick={handleClick}>
