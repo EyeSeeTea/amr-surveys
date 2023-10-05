@@ -4,6 +4,7 @@ import { MenuItem } from "material-ui";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppContext } from "../../contexts/app-context";
+import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
 import SearchInput from "./SearchInput";
 
 interface OrgUnitProps {
@@ -14,10 +15,10 @@ export const OrgUnitSelector: React.FC<OrgUnitProps> = React.memo(() => {
     const {
         currentUser: { userOrgUnitsAccess },
     } = useAppContext();
+
+    const { currentOrgUnitAccess, changeCurrentOrgUnitAccess } = useCurrentOrgUnitContext();
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [orgUnitName, setOrgUnitName] = React.useState<string>(
-        userOrgUnitsAccess[0]?.orgUnitName ?? ""
-    );
+    const [orgUnitName, setOrgUnitName] = React.useState<string>(currentOrgUnitAccess.orgUnitName);
     const [isOpen, setIsOpen] = useState(false);
     const [filteredOrgUnits, setFilteredOrgUnits] = useState(userOrgUnitsAccess);
 
@@ -35,8 +36,8 @@ export const OrgUnitSelector: React.FC<OrgUnitProps> = React.memo(() => {
 
     const changeOrgUnit = (e: React.ChangeEvent<{ name?: string | undefined; value: unknown }>) => {
         if (e.target?.value) setOrgUnitName(e.target?.value as string);
-        // const orgUnitId = (e.currentTarget as HTMLInputElement).getAttribute("data-key");
-        // if (orgUnitId) changeCurrentOrgUnitAccess(orgUnitId);
+        const orgUnitId = (e.currentTarget as HTMLInputElement).getAttribute("data-key");
+        if (orgUnitId) changeCurrentOrgUnitAccess(orgUnitId);
     };
 
     const handleClose = () => {

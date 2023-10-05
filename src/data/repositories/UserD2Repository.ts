@@ -33,6 +33,7 @@ export class UserD2Repository implements UserRepository {
         const countryOrgUnits: OrgUnit[] = [];
         const dataViewCountryOrgUnits: OrgUnit[] = [];
 
+        //TO DO : Fetch country level from datastore.
         const countryLevel = 2;
 
         filteredOrgUnits.forEach(orgUnit => {

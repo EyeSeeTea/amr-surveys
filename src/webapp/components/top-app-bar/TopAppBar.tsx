@@ -88,15 +88,16 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
                     >
                         <MenuIcon />
                     </IconButton>
+
                     <Box className={classes.title} />
 
                     <SelectContainer>
                         <IconButton aria-label="search" color="primary">
                             <LocationIcon />
                         </IconButton>
-
                         <OrgUnitSelector />
                     </SelectContainer>
+
                     <SelectContainer>
                         <AvatarContainer id="demo-positioned-button" onClick={handleClick}>
                             <Avatar style={{ backgroundColor: "#0099DE" }}>
