@@ -19,7 +19,6 @@ export const CurrentOrgUnitContextProvider: React.FC<PropsWithChildren> = ({ chi
             );
             if (currentOrgUnitAccess) {
                 setCurrentOrgUnitAccess(currentOrgUnitAccess);
-                
             }
         },
         [currentUser.userOrgUnitsAccess]
