@@ -34,23 +34,25 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
     const [isLoading, setIsLoading] = useState(false);
 
     const savePassword = () => {
-        // if (password !== confirmPassword) {
-        //     snackbar.error(i18n.t("The password and confirm password fields don't match"));
-        // } else {
-        //     setIsLoading(true);
-        //     compositionRoot.user.savePassword(password).run(
-        //         () => {
-        //             snackbar.success(i18n.t("User password changed successfully."));
-        //             setPassword("");
-        //             setConfirmPassword("");
-        //             setIsLoading(false);
-        //         },
-        //         error => {
-        //             snackbar.error(i18n.t(error));
-        //             setIsLoading(false);
-        //         }
-        //     );
-        // }
+        if (password !== confirmPassword) {
+            snackbar.error(i18n.t("The password and confirm password fields don't match"));
+        } else {
+            setIsLoading(true);
+
+            compositionRoot.users.savePassword.execute(password).run(
+                () => {
+                    snackbar.success(i18n.t("User password changed successfully."));
+                    setPassword("");
+                    setConfirmPassword("");
+                    setIsLoading(false);
+                },
+                error => {
+                    snackbar.error(i18n.t(error.message));
+                    console.debug(error.message);
+                    setIsLoading(false);
+                }
+            );
+        }
     };
 
     return (
@@ -66,7 +68,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                             <td>{i18n.t("Username")}</td>
                             <td>{userInformation.username}</td>
                         </tr>
-                        {/* <tr>
+                        <tr>
                             <td>{i18n.t("Email")}</td>
                             <td>{userInformation.email}</td>
                         </tr>
@@ -101,7 +103,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                         <tr>
                             <td>{i18n.t("Languages")}</td>
                             <td>{userInformation.languages}</td>
-                        </tr> */}
+                        </tr>
                     </tbody>
                 </InfoTable>
                 <StyledButton

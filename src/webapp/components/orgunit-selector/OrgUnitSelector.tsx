@@ -1,99 +1,99 @@
-import i18n from "@eyeseetea/feedback-component/locales";
-import { Select } from "@material-ui/core";
-import { MenuItem } from "material-ui";
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { useAppContext } from "../../contexts/app-context";
-import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
-import SearchInput from "./SearchInput";
+import { MenuItem, Select } from "@material-ui/core";
+import React, { useState } from "react";
 
+import SearchInput from "./SearchInput";
+import styled from "styled-components";
+
+import { useAppContext } from "../../contexts/app-context";
+import { OrgUnitAccess } from "../../../domain/entities/User";
+import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
+import i18n from "@eyeseetea/feedback-component/locales";
 interface OrgUnitProps {
     fullWidth?: boolean;
 }
 
 export const OrgUnitSelector: React.FC<OrgUnitProps> = React.memo(() => {
-    const {
-        currentUser: { userOrgUnitsAccess },
-    } = useAppContext();
-
     const { currentOrgUnitAccess, changeCurrentOrgUnitAccess } = useCurrentOrgUnitContext();
-    const [searchTerm, setSearchTerm] = useState<string>("");
-    const [orgUnitName, setOrgUnitName] = React.useState<string>(currentOrgUnitAccess.orgUnitName);
+    const { currentUser } = useAppContext();
     const [isOpen, setIsOpen] = useState(false);
-    const [filteredOrgUnits, setFilteredOrgUnits] = useState(userOrgUnitsAccess);
-
-    useEffect(() => {
-        if (searchTerm) {
-            setFilteredOrgUnits(
-                userOrgUnitsAccess.filter(orgUnit =>
-                    orgUnit.orgUnitShortName.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-            );
-        } else {
-            setFilteredOrgUnits(userOrgUnitsAccess);
-        }
-    }, [searchTerm, userOrgUnitsAccess]);
+    const [filteredOrgUnits, setFilteredOrgUnits] = useState(currentUser.userOrgUnitsAccess);
 
     const changeOrgUnit = (e: React.ChangeEvent<{ name?: string | undefined; value: unknown }>) => {
-        if (e.target?.value) setOrgUnitName(e.target?.value as string);
-        const orgUnitId = (e.currentTarget as HTMLInputElement).getAttribute("data-key");
-        if (orgUnitId) changeCurrentOrgUnitAccess(orgUnitId);
+        if (e.target?.value) {
+            const updatedOrgUnitShortName = e.target.value as string;
+            const updatedOrgUnit = currentUser.userOrgUnitsAccess.filter(
+                ou => ou.orgUnitShortName === updatedOrgUnitShortName
+            );
+
+            if (updatedOrgUnit && updatedOrgUnit[0]) {
+                const orgUnitId = updatedOrgUnit[0].orgUnitId;
+                changeCurrentOrgUnitAccess(orgUnitId);
+            }
+        }
     };
 
     const handleClose = () => {
         setIsOpen(false);
-        setSearchTerm("");
-        setFilteredOrgUnits(userOrgUnitsAccess);
+        setFilteredOrgUnits(currentUser.userOrgUnitsAccess);
     };
 
     const handleOpen = () => {
         setIsOpen(true);
     };
 
+    const updateSearchTerms = (searchStr: string) => {
+        if (searchStr) {
+            const filteredOUsBySearch = currentUser.userOrgUnitsAccess.filter(orgUnit =>
+                orgUnit.orgUnitShortName.toLowerCase().includes(searchStr.toLowerCase())
+            );
+            setFilteredOrgUnits(filteredOUsBySearch);
+        } else {
+            setFilteredOrgUnits(currentUser.userOrgUnitsAccess);
+        }
+    };
+
+    const renderMenuItem = (orgUnit: OrgUnitAccess) => {
+        return (
+            <StyledMenuItem key={orgUnit.orgUnitShortName} value={orgUnit.orgUnitShortName}>
+                {i18n.t(orgUnit.orgUnitShortName)}
+            </StyledMenuItem>
+        );
+    };
+
     return (
-        <StyledSelect
-            value={orgUnitName}
-            onChange={changeOrgUnit}
-            disableUnderline
-            MenuProps={{
-                autoFocus: false,
-                MenuListProps: { disablePadding: true },
-                disableScrollLock: true,
-            }}
-            open={isOpen}
-            onOpen={handleOpen}
-            onClose={handleClose}
-        >
-            <SearchInputContainer>
-                <StyledSearchInput
-                    value={searchTerm}
-                    onChange={term => setSearchTerm(term)}
-                    autoFocus
-                />
-            </SearchInputContainer>
-            <br />
-            {filteredOrgUnits.length > 0 ? (
-                filteredOrgUnits.map((orgUnit, i) => (
-                    <StyledMenuItem
-                        key={i}
-                        data-key={orgUnit.orgUnitId}
-                        value={orgUnit.orgUnitName}
-                        index={i}
-                    >
-                        {i18n.t(orgUnit.orgUnitShortName)}
-                    </StyledMenuItem>
-                ))
-            ) : (
-                <StyledMenuItem index={0} disabled>
-                    {i18n.t("No Organisation Units found")}
-                </StyledMenuItem>
-            )}
-        </StyledSelect>
+        currentUser.userOrgUnitsAccess && (
+            <>
+                <StyledSelect
+                    value={currentOrgUnitAccess.orgUnitShortName}
+                    onChange={changeOrgUnit}
+                    disableUnderline
+                    MenuProps={{
+                        autoFocus: false,
+                        MenuListProps: { disablePadding: true },
+                        disableScrollLock: true,
+                    }}
+                    open={isOpen}
+                    onOpen={handleOpen}
+                    onClose={handleClose}
+                >
+                    <SearchInputContainer>
+                        <StyledSearchInput onTermChange={updateSearchTerms} />
+                    </SearchInputContainer>
+
+                    {filteredOrgUnits.length > 0 ? (
+                        filteredOrgUnits.map(renderMenuItem)
+                    ) : (
+                        <StyledMenuItem disabled>
+                            {i18n.t("No Organisation Units found")}
+                        </StyledMenuItem>
+                    )}
+                </StyledSelect>
+            </>
+        )
     );
 });
 
 const SearchInputContainer = styled.div`
-    position: fixed;
     z-index: 200;
     width: 322px;
     height: 70px;
@@ -105,13 +105,12 @@ const StyledSearchInput = styled(SearchInput)`
     border: 1px solid #cfe9f7;
     border-radius: 20px;
     width: 250px;
-    position: fixed;
+
     margin: 10px 10px 0px 10px;
     z-index: 10;
 `;
 
-const StyledMenuItem = styled(MenuItem)<{ index: number }>`
-    margin-top: ${props => (props.index === 0 ? "60px" : "initial")};
+const StyledMenuItem = styled(MenuItem)`
     width: 300px;
 `;
 

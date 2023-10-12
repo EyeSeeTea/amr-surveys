@@ -29,6 +29,16 @@ export interface UserAttrs {
     userRoles: UserRole[];
     userGroups: NamedRef[];
     userOrgUnitsAccess: OrgUnitAccess[];
+    email: string;
+    phoneNumber: string;
+    introduction: string;
+    birthday: string;
+    nationality: string;
+    employer: string;
+    jobTitle: string;
+    education: string;
+    interests: string;
+    languages: string;
 }
 
 export interface UserRole extends NamedRef {

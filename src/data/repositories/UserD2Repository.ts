@@ -20,6 +20,29 @@ export class UserD2Repository implements UserRepository {
         });
     }
 
+    public savePassword(password: string): FutureData<string> {
+        return apiToFuture(
+            this.api.currentUser.get({
+                fields: {
+                    $all: true,
+                    userCredentials: {
+                        $owner: true,
+                    },
+                },
+            })
+        ).flatMap(currentUser => {
+            currentUser.userCredentials.password = password;
+
+            return apiToFuture(this.api.metadata.post({ users: [currentUser] })).flatMap(res => {
+                if (res.status === "OK") return Future.success(res.status);
+                else {
+                    const error = new Error(res.status);
+                    return Future.error(error);
+                }
+            });
+        });
+    }
+
     private buildUser(d2User: D2User): FutureData<User> {
         const { organisationUnits, dataViewOrganisationUnits } = d2User;
 
@@ -80,6 +103,16 @@ export class UserD2Repository implements UserRepository {
                             name: d2User.displayName,
                             userGroups: d2User.userGroups,
                             ...d2User.userCredentials,
+                            email: d2User.email,
+                            phoneNumber: d2User.phoneNumber,
+                            introduction: d2User.introduction,
+                            birthday: d2User.birthday,
+                            nationality: d2User.nationality,
+                            employer: d2User.employer,
+                            jobTitle: d2User.jobTitle,
+                            education: d2User.education,
+                            interests: d2User.interests,
+                            languages: d2User.languages,
                             userOrgUnitsAccess: this.mapUserOrgUnitsAccess(
                                 uniqueOrgUnits,
                                 uniqueDataViewOrgUnits
@@ -205,6 +238,16 @@ const userFields = {
         username: true,
         userRoles: { id: true, name: true, authorities: true },
     },
+    email: true,
+    phoneNumber: true,
+    introduction: true,
+    birthday: true,
+    nationality: true,
+    employer: true,
+    jobTitle: true,
+    education: true,
+    interests: true,
+    languages: true,
     organisationUnits: {
         id: true,
         name: true,

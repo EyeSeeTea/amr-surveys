@@ -8,4 +8,8 @@ export class UserTestRepository implements UserRepository {
     public getCurrent(): FutureData<User> {
         return Future.success(createAdminUser());
     }
+
+    public savePassword(password: string): FutureData<string> {
+        return Future.success("");
+    }
 }

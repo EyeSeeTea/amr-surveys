@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-10-05T15:41:49.037Z\n"
-"PO-Revision-Date: 2023-10-05T15:41:49.037Z\n"
+"POT-Creation-Date: 2023-10-05T17:10:25.655Z\n"
+"PO-Revision-Date: 2023-10-05T17:10:25.655Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -27,4 +27,82 @@ msgid "Profile"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid "The password and confirm password fields don't match"
+msgstr ""
+
+msgid "User password changed successfully."
+msgstr ""
+
+msgid "Full name"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Phone number"
+msgstr ""
+
+msgid "Birthday"
+msgstr ""
+
+msgid "Nationality"
+msgstr ""
+
+msgid "Job title"
+msgstr ""
+
+msgid "Employer"
+msgstr ""
+
+msgid "Education"
+msgstr ""
+
+msgid "Interests"
+msgstr ""
+
+msgid "Languages"
+msgstr ""
+
+msgid "Change Password"
+msgstr ""
+
+msgid "Change password"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Error fetching Database locales"
+msgstr ""
+
+msgid "Error fetching UI locales"
+msgstr ""
+
+msgid "Interface language updated successfully"
+msgstr ""
+
+msgid "Error updating interface language."
+msgstr ""
+
+msgid "Database language updated successfully"
+msgstr ""
+
+msgid "Error updating database language."
+msgstr ""
+
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
+msgstr ""
+
+msgid "Enable message email notifications"
+msgstr ""
+
+msgid "Enable message SMS notifications"
 msgstr ""
