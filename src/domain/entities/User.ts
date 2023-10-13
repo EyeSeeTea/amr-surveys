@@ -21,7 +21,12 @@ export interface ModuleAccess {
     captureAccess: boolean;
     usergroups: UserGroup[];
 }
-
+export interface UserSettings {
+    keyUiLocale: string;
+    keyDbLocale: string;
+    keyMessageEmailNotification: boolean;
+    keyMessageSmsNotification: boolean;
+}
 export interface UserAttrs {
     id: string;
     name: string;
@@ -39,6 +44,7 @@ export interface UserAttrs {
     education: string;
     interests: string;
     languages: string;
+    settings: UserSettings;
 }
 
 export interface UserRole extends NamedRef {

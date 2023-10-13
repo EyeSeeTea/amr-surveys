@@ -29,6 +29,12 @@ export function createUserWithGroups(userGroups: NamedRef[] = []): User {
         education: "",
         interests: "",
         languages: "",
+        settings: {
+            keyUiLocale: "en",
+            keyDbLocale: "en",
+            keyMessageEmailNotification: true,
+            keyMessageSmsNotification: true,
+        },
     });
 }
 function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
@@ -49,5 +55,11 @@ function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
         education: "",
         interests: "",
         languages: "",
+        settings: {
+            keyUiLocale: "en",
+            keyDbLocale: "en",
+            keyMessageEmailNotification: true,
+            keyMessageSmsNotification: true,
+        },
     });
 }

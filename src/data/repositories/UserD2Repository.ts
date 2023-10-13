@@ -117,6 +117,14 @@ export class UserD2Repository implements UserRepository {
                                 uniqueOrgUnits,
                                 uniqueDataViewOrgUnits
                             ),
+                            settings: {
+                                keyUiLocale: d2User.settings.keyUiLocale,
+                                keyDbLocale: d2User.settings.keyDbLocale,
+                                keyMessageEmailNotification:
+                                    d2User.settings.keyMessageEmailNotification,
+                                keyMessageSmsNotification:
+                                    d2User.settings.keyMessageSmsNotification,
+                            },
                         });
 
                         return Future.success(user);
@@ -228,6 +236,23 @@ export class UserD2Repository implements UserRepository {
             return Future.success(orgUnits);
         });
     }
+
+    saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {
+        return apiToFuture(
+            this.api.post<{ status: "OK" | "SUCCESS" | "WARNING" | "ERROR" }>(
+                `/userSettings/${isUiLocale ? "keyUiLocale" : "keyDbLocale"}`,
+                { value: locale },
+                {}
+            )
+        ).flatMap(res => {
+            if (res.status === "OK") {
+                return Future.success(undefined);
+            } else {
+                const error = new Error(res.status);
+                return Future.error(error);
+            }
+        });
+    }
 }
 
 const userFields = {
@@ -272,6 +297,12 @@ const userFields = {
             id: true,
             code: true,
         },
+    },
+    settings: {
+        keyUiLocale: true,
+        keyDbLocale: true,
+        keyMessageEmailNotification: true,
+        keyMessageSmsNotification: true,
     },
 } as const;
 
