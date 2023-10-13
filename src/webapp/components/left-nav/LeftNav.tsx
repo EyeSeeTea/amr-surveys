@@ -2,7 +2,6 @@ import { useConfig } from "@dhis2/app-runtime";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Box, Button, Typography } from "@material-ui/core";
 import { CircularProgress, List } from "material-ui";
-import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import { palette } from "../../pages/app/themes/dhis2.theme";
@@ -10,72 +9,19 @@ import { CustomCard } from "../custom-card/CustomCard";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import LeftNavMenu from "./LeftNavMenu";
 import LeftNavMenuGroup from "./LeftNavMenuGroup";
-
-export interface MenuGroup {
-    kind: "MenuGroup";
-    level: number;
-    title: string;
-    moduleColor: string;
-    icon?: string;
-    children?: Menu[];
-}
-
-export interface MenuLeaf {
-    kind: "MenuLeaf";
-    level: number;
-    title: string;
-    path: string;
-    icon?: any;
-}
-
-export type Menu = MenuGroup | MenuLeaf;
+import { useMenu } from "../../hooks/useMenu";
 
 export const LeftNav: React.FC = () => {
     const { baseUrl } = useConfig();
-    const [storedMenuData, setStoredMenuData] = useState<Menu[] | null>();
+    const menu = useMenu();
 
     const logout = () => {
+        //TO D0 : Actually logout, this is just redirecting the page.
         window.location = [
             baseUrl.replace(/\/$/, ""),
             "/dhis-web-commons-security/logout.action".replace(/^\//, ""),
         ].join("/") as unknown as Location;
     };
-
-    useEffect(() => {
-        const menuData: Menu[] = [
-            {
-                kind: "MenuGroup",
-                level: 0,
-                title: "Module1",
-                moduleColor: "red",
-                icon: "folder",
-                children: [
-                    {
-                        kind: "MenuLeaf",
-                        level: 0,
-                        title: "Surveys",
-                        path: `/surveys`,
-                    },
-                ],
-            },
-            {
-                kind: "MenuGroup",
-                level: 0,
-                title: "Module2",
-                moduleColor: "pink",
-                icon: "folder",
-                children: [
-                    {
-                        kind: "MenuLeaf",
-                        level: 0,
-                        title: "Surveys",
-                        path: `/surveys`,
-                    },
-                ],
-            },
-        ];
-        setStoredMenuData(menuData);
-    }, [setStoredMenuData]);
 
     return (
         <LeftNavContainer>
@@ -93,9 +39,9 @@ export const LeftNav: React.FC = () => {
                         <Typography>{i18n.t("HOME")}</Typography>
                     </Button>
                 </HomeButtonWrapper>
-                {storedMenuData && (
+                {menu && (
                     <List>
-                        {storedMenuData.map(menu =>
+                        {menu.map(menu =>
                             menu.kind === "MenuGroup" ? (
                                 <LeftNavMenuGroup
                                     menu={menu}

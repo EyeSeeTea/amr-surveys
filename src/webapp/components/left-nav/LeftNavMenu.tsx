@@ -2,8 +2,8 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, colors, ListItem, makeStyles, Theme, Typography } from "@material-ui/core";
 
 import { NavLink } from "react-router-dom";
+import { MenuLeaf } from "../../hooks/useMenu";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { MenuLeaf } from "./LeftNav";
 
 interface LeftNavMenuProps {
     className?: string;
@@ -12,10 +12,10 @@ interface LeftNavMenuProps {
 }
 
 const LeftNavMenu: React.FC<LeftNavMenuProps> = ({ menu }) => {
-    const classes = useStyles(menu?.level);
+    const classes = useStyles(0);
 
     return (
-        <ListItem disableGutters style={{ paddingLeft: menu?.level * 8 }}>
+        <ListItem disableGutters >
             <Button
                 className={classes.button}
                 component={NavLink}
