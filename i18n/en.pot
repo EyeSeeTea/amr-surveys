@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-10-05T17:10:25.655Z\n"
-"PO-Revision-Date: 2023-10-05T17:10:25.655Z\n"
+"POT-Creation-Date: 2023-10-16T05:31:23.485Z\n"
+"PO-Revision-Date: 2023-10-16T05:31:23.485Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -21,6 +21,27 @@ msgid "No Organisation Units found"
 msgstr ""
 
 msgid "Search"
+msgstr ""
+
+msgid "Create New Survey"
+msgstr ""
+
+msgid "Survey List"
+msgstr ""
+
+msgid "Start Date"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Survey Type"
+msgstr ""
+
+msgid "Assigned Org Unit"
+msgstr ""
+
+msgid "Action"
 msgstr ""
 
 msgid "Profile"

@@ -22,7 +22,10 @@ interface SurveyListProps {
 }
 
 export const SurveyList: React.FC<SurveyListProps> = ({ type }) => {
-    const { surveys, setSurveys } = {
+    const {
+        surveys,
+        // setSurveys
+    } = {
         surveys: {
             kind: "loaded",
             data: [
@@ -35,7 +38,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ type }) => {
                 },
             ],
         },
-        setSurveys: () => {},
+        // setSurveys: () => {},
     };
 
     return (

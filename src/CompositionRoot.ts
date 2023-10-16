@@ -15,6 +15,7 @@ import { GetAllModulesUseCase } from "./domain/usecases/GetAllModulesUseCase";
 import { ModuleRepository } from "./domain/repositories/ModuleRepository";
 import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
+import { ModulesTestRepository } from "./data/repositories/testRepositories/ModuleTestRepository";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -57,6 +58,7 @@ export function getTestCompositionRoot() {
     const repositories: Repositories = {
         usersRepository: new UserTestRepository(),
         localeRepository: new LocalesTestRepository(),
+        moduleRepository: new ModulesTestRepository(),
     };
 
     return getCompositionRoot(repositories);

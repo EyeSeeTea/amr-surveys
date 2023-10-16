@@ -4,12 +4,12 @@ export type SURVEY_TYPE = "NationalSurvey" | "HospitalSurvey" | "SupranationalSu
 export interface SurveyProgram extends NamedRef {
     type: SURVEY_TYPE;
 }
-type UserGroups = NamedRef;
+type UserGroups = { captureAccess: NamedRef[]; readAccess: NamedRef[] };
 
 export interface AMRSurveyModule {
     id: string;
     name: string;
     color: string;
     surveyPrograms: SurveyProgram[];
-    usergroups: UserGroups[];
+    userGroups: UserGroups;
 }

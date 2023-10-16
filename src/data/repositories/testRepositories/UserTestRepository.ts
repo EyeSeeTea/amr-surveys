@@ -6,13 +6,19 @@ import { FutureData } from "../../api-futures";
 
 export class UserTestRepository implements UserRepository {
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {
-        throw new Error("Method not implemented.");
+        if (locale) return Future.success(undefined);
+        else
+            return Future.error({
+                name: "ERR",
+                message: `Error occurred on saving new locale settings: isUiLocale: ${isUiLocale}, locale: ${locale}`,
+            });
     }
     public getCurrent(): FutureData<User> {
         return Future.success(createAdminUser());
     }
 
     public savePassword(password: string): FutureData<string> {
-        return Future.success("");
+        if (password) return Future.success("");
+        else return Future.error({ name: "ERR", message: "Error occurred on saving new password" });
     }
 }

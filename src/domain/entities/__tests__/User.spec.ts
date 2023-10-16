@@ -34,4 +34,12 @@ describe("User", () => {
 
         expect(user.belongToUserGroup(nonExistedUserGroupId)).toBe(false);
     });
+
+    // it("should save a new password successfully", () => {
+    //     const newPassword = "district2";
+
+    //     const user = createUserWithGroups();
+
+    //     expect(user.belongToUserGroup(nonExistedUserGroupId)).toBe(false);
+    // });
 });
