@@ -11,7 +11,7 @@ import { SaveKeyUiLocaleUseCase } from "./domain/usecases/SaveKeyUiLocaleUseCase
 import { SavePasswordUseCase } from "./domain/usecases/SavePasswordUseCase";
 import { D2Api } from "./types/d2-api";
 import { LocalesTestRepository } from "./data/repositories/testRepositories/LocalesTestRepository";
-import { GetAllModulesUseCase } from "./domain/usecases/GetAllModulesUseCase";
+import { GetAllAccesibleModulesUseCase } from "./domain/usecases/GetAllAccesibleModulesUseCase";
 import { ModuleRepository } from "./domain/repositories/ModuleRepository";
 import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
@@ -32,7 +32,7 @@ function getCompositionRoot(repositories: Repositories) {
             getDatabaseLocales: new GetDatabaseLocalesUseCase(repositories.localeRepository),
         },
         modules: {
-            getAll: new GetAllModulesUseCase(repositories.moduleRepository),
+            getAllAccessible: new GetAllAccesibleModulesUseCase(repositories.moduleRepository),
         },
         users: {
             getCurrent: new GetCurrentUserUseCase(repositories.usersRepository),
@@ -48,7 +48,7 @@ export function getWebappCompositionRoot(api: D2Api) {
     const repositories: Repositories = {
         usersRepository: new UserD2Repository(api),
         localeRepository: new LocalesD2Repository(api),
-        moduleRepository: new ModuleD2Repository(dataStoreClient),
+        moduleRepository: new ModuleD2Repository(dataStoreClient, api),
     };
 
     return getCompositionRoot(repositories);

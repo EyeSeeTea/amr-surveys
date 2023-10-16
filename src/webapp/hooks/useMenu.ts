@@ -3,6 +3,7 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import { useEffect, useState } from "react";
 import { AMRSurveyModule, SurveyProgram } from "../../domain/entities/AMRSurveyModule";
 import { useAppContext } from "../contexts/app-context";
+import { useCurrentOrgUnitContext } from "../contexts/current-org-unit-context/current-orgUnit-context";
 
 export interface MenuGroup {
     kind: "MenuGroup";
@@ -22,9 +23,14 @@ export interface MenuLeaf {
 export type Menu = MenuGroup | MenuLeaf;
 
 export function useMenu() {
-    const { compositionRoot } = useAppContext();
+    const {
+        compositionRoot,
+        currentUser: { userGroups },
+    } = useAppContext();
     const [menu, setMenu] = useState<Menu[]>();
+    const [loading, setLoading] = useState(false);
     const snackbar = useSnackbar();
+    const { currentOrgUnitAccess } = useCurrentOrgUnitContext();
 
     const mapModuleToMenu = (modules: AMRSurveyModule[]): Menu[] => {
         return modules.map(m => {
@@ -48,16 +54,26 @@ export function useMenu() {
     };
 
     useEffect(() => {
-        compositionRoot.modules.getAll.execute().run(
-            modules => {
-                const parsedMenu = mapModuleToMenu(modules);
-                setMenu(parsedMenu);
-            },
-            err => {
-                snackbar.error(i18n.t(err.message));
-            }
-        );
-    }, [compositionRoot.modules.getAll, snackbar]);
+        setLoading(true);
+        compositionRoot.modules.getAllAccessible
+            .execute(userGroups, currentOrgUnitAccess.orgUnitId)
+            .run(
+                modules => {
+                    const parsedMenu = mapModuleToMenu(modules);
+                    setMenu(parsedMenu);
+                    setLoading(false);
+                },
+                err => {
+                    snackbar.error(i18n.t(err.message));
+                    setLoading(false);
+                }
+            );
+    }, [
+        compositionRoot.modules.getAllAccessible,
+        userGroups,
+        currentOrgUnitAccess.orgUnitId,
+        snackbar,
+    ]);
 
-    return menu;
+    return { menu, loading };
 }

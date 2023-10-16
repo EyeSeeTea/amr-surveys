@@ -1,6 +1,6 @@
 import { useConfig } from "@dhis2/app-runtime";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { Box, Button, Typography } from "@material-ui/core";
+import { Backdrop, Box, Button, Typography } from "@material-ui/core";
 import { CircularProgress, List } from "material-ui";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
@@ -13,7 +13,7 @@ import { useMenu } from "../../hooks/useMenu";
 
 export const LeftNav: React.FC = () => {
     const { baseUrl } = useConfig();
-    const menu = useMenu();
+    const { menu, loading } = useMenu();
 
     const logout = () => {
         //TO D0 : Actually logout, this is just redirecting the page.
@@ -55,9 +55,9 @@ export const LeftNav: React.FC = () => {
                     </List>
                 )}
 
-                {/* <Backdrop open={isLoading} style={{ color: "#fff", zIndex: 1 }}>
-                    <StyledCircularProgress color="inherit" size={30} />
-                </Backdrop> */}
+                <Backdrop open={loading} style={{ zIndex: 1 }}>
+                    <StyledCircularProgress color="white" size={30} />
+                </Backdrop>
 
                 <div style={{ flexGrow: 1 }} />
             </CustomCard>
@@ -122,6 +122,7 @@ const StarGradient = styled.div`
 export const StyledCircularProgress = styled(CircularProgress)`
     margin: 30px auto;
     size: 20;
+    color: white;
 `;
 
 const ButtonContainer = styled.div`

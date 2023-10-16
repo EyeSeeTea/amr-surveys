@@ -5,6 +5,10 @@ import { ModuleRepository } from "../../../domain/repositories/ModuleRepository"
 import { FutureData } from "../../api-futures";
 
 export class ModulesTestRepository implements ModuleRepository {
+    getProgramsEnrolledInOrgUnit(orgUnitId: string): FutureData<string[]> {
+        console.debug(`Fetching programs enrolled for org unit : ${orgUnitId}`);
+        return Future.success([]);
+    }
     getAll(): FutureData<AMRSurveyModule[]> {
         return Future.success(createModuleList());
     }
