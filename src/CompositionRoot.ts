@@ -13,7 +13,7 @@ import { D2Api } from "./types/d2-api";
 import { LocalesTestRepository } from "./data/repositories/testRepositories/LocalesTestRepository";
 import { GetAllModulesUseCase } from "./domain/usecases/GetAllModulesUseCase";
 import { ModuleRepository } from "./domain/repositories/ModuleRepository";
-import { ModuleD2Repository } from "./data/repositories/Moduled2Repository";
+import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;

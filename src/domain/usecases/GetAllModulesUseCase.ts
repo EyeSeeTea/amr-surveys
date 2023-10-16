@@ -1,6 +1,5 @@
-
 import { FutureData } from "../../data/api-futures";
-import { AMRSurveyModule } from "../entities/AmrSurveyModule";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 
 export class GetAllModulesUseCase {

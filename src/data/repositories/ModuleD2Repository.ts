@@ -1,4 +1,4 @@
-import { AMRSurveyModule } from "../../domain/entities/AmrSurveyModule";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { ModuleRepository } from "../../domain/repositories/ModuleRepository";
 import { FutureData } from "../api-futures";
 import { DataStoreClient } from "../DataStoreClient";

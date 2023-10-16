@@ -15,7 +15,7 @@ const LeftNavMenu: React.FC<LeftNavMenuProps> = ({ menu }) => {
     const classes = useStyles(0);
 
     return (
-        <ListItem disableGutters >
+        <ListItem disableGutters>
             <Button
                 className={classes.button}
                 component={NavLink}

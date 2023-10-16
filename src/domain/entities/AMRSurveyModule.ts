@@ -1,6 +1,9 @@
 import { NamedRef } from "./Ref";
 
-type SurveyProgram = NamedRef;
+export type SURVEY_TYPE = "NationalSurvey" | "HospitalSurvey" | "SupranationalSurvey";
+export interface SurveyProgram extends NamedRef {
+    type: SURVEY_TYPE;
+}
 type UserGroups = NamedRef;
 
 export interface AMRSurveyModule {
