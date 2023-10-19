@@ -17,11 +17,7 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 // import { ContentLoader } from "../content-loader/ContentLoader";
 import { CustomCard } from "../custom-card/CustomCard";
 
-interface SurveyListProps {
-    type: "NationalSurvey" | "HospitalSurvey" | "SupranationalSurvey";
-}
-
-export const SurveyList: React.FC<SurveyListProps> = ({ type }) => {
+export const SurveyList: React.FC = () => {
     const {
         surveys,
         // setSurveys
@@ -34,7 +30,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ type }) => {
                     startDate: new Date(),
                     orgUnit: { id: "IND", name: "INDIA" },
                     status: "active",
-                    surveyType: type,
+                    surveyType: "TYPE",
                 },
             ],
         },

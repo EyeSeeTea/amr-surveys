@@ -1,7 +1,7 @@
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useEffect, useState } from "react";
-import { AMRSurveyModule, SurveyProgram } from "../../domain/entities/AMRSurveyModule";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentOrgUnitContext } from "../contexts/current-org-unit-context/current-orgUnit-context";
 
@@ -34,15 +34,13 @@ export function useMenu() {
 
     const mapModuleToMenu = (modules: AMRSurveyModule[]): Menu[] => {
         return modules.map(m => {
-            const childMenus: MenuLeaf[] = m.surveyPrograms.map((cm: SurveyProgram) => {
-                if (cm.type === "HospitalSurvey") {
-                    return { kind: "MenuLeaf", title: cm.name, path: "hospital-survey" };
-                } else if (cm.type === "NationalSurvey") {
-                    return { kind: "MenuLeaf", title: cm.name, path: "national-survey" };
-                } else {
-                    return { kind: "MenuLeaf", title: cm.name, path: "supranational-survey" };
-                }
-            });
+            const childMenus: MenuLeaf[] = [
+                {
+                    kind: "MenuLeaf",
+                    title: "Surveys",
+                    path: "surveys",
+                },
+            ];
 
             return {
                 kind: "MenuGroup",

@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-import { SurveyList } from "../../components/survey/SurveyList";
+import { SurveyList } from "../../components/survey-list/SurveyList";
 
-export const SupranationalSurvey: React.FC = React.memo(() => {
+export const SurveyListPage: React.FC = React.memo(() => {
     return (
         <ContentWrapper>
-            <SurveyList type="SupranationalSurvey" />
+            <SurveyList />
         </ContentWrapper>
     );
 });

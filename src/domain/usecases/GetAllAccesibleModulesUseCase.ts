@@ -24,21 +24,20 @@ export class GetAllAccesibleModulesUseCase {
                         //Access logic - A module is accessible to a user only if
                         if (
                             //1. user belongs to read access user group for given module.
-                            currentUserGroups.some(
+                            (currentUserGroups.some(
                                 cug =>
                                     module.userGroups.readAccess.filter(ug => ug.id === cug.id)
                                         .length > 0
                             ) &&
-                            //2. the org unit has enrolled to program corresponding to given module.
-                            accesibleSurveysInModule.length > 0
+                                //2. the org unit has enrolled to program corresponding to given module.
+                                accesibleSurveysInModule.length > 0) ||
+                            //3.  No usergroups specified in datastore
+                            (currentUserGroups.length === 0 && accesibleSurveysInModule.length > 0)
                         ) {
                             module.surveyPrograms = accesibleSurveysInModule;
                             return module;
                         }
                     });
-
-                    console.debug(accessibleModules);
-                    console.debug(_(accessibleModules).compact().value());
 
                     return Future.success(_(accessibleModules).compact().value());
                 });
