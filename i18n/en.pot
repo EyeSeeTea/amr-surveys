@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-10-16T05:31:23.485Z\n"
-"PO-Revision-Date: 2023-10-16T05:31:23.485Z\n"
+"POT-Creation-Date: 2023-10-19T18:06:15.587Z\n"
+"PO-Revision-Date: 2023-10-19T18:06:15.587Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -15,6 +15,18 @@ msgid "HOME"
 msgstr ""
 
 msgid "Log Out"
+msgstr ""
+
+msgid "Importing data and applying validation rules"
+msgstr ""
+
+msgid "This might take several minutes, do not refresh the page or press back."
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "OK"
 msgstr ""
 
 msgid "No Organisation Units found"
@@ -42,6 +54,12 @@ msgid "Assigned Org Unit"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
 msgstr ""
 
 msgid "Profile"
@@ -93,9 +111,6 @@ msgid "Change Password"
 msgstr ""
 
 msgid "Change password"
-msgstr ""
-
-msgid "Cancel"
 msgstr ""
 
 msgid "Error fetching Database locales"

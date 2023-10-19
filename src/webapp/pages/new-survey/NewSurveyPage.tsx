@@ -1,7 +1,7 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
-import { NewSurveyForm } from "../../components/new-survey/NewSurveyForm";
+import { SurveyForm } from "../../components/survey/SurveyForm";
 
 export const NewSurveyPage: React.FC = () => {
     const history = useHistory();
@@ -12,7 +12,7 @@ export const NewSurveyPage: React.FC = () => {
 
     return (
         <ContentWrapper>
-            <NewSurveyForm hideForm={hideForm} />
+            <SurveyForm hideForm={hideForm} formType="PPSSurveyForm" />
         </ContentWrapper>
     );
 };

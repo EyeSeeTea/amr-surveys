@@ -25,15 +25,20 @@ import {
 
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import styled from "styled-components";
-import { useNewSurveyForm } from "./hook/useNewSurveyForm";
+import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
 import { Question } from "../../../domain/entities/Questionnaire";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
+import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
+import { useAppContext } from "../../contexts/app-context";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 
-export interface NewSurveyFormProps {
+export interface SurveyFormProps {
     hideForm: () => void;
     eventId?: Id;
+    formType: SURVEY_FORM_TYPES;
 }
 
 const CancelButton = withStyles(() => ({
@@ -47,11 +52,17 @@ const CancelButton = withStyles(() => ({
     },
 }))(Button);
 
-export const NewSurveyForm: React.FC<NewSurveyFormProps> = props => {
+export const SurveyForm: React.FC<SurveyFormProps> = props => {
+    const { compositionRoot } = useAppContext();
+    const { currentOrgUnitAccess } = useCurrentOrgUnitContext();
     const classes = useStyles();
     const formClasses = useFormStyles();
+    const snackbar = useSnackbar();
 
-    const { questionnaire, setQuestionnaire, loading } = useNewSurveyForm(props.eventId);
+    const { questionnaire, setQuestionnaire, loading, setLoading } = useSurveyForm(
+        props.formType,
+        props.eventId
+    );
 
     // const saveQuestionnaire = () => {
     //     console.debug("Save event to DHIS");
@@ -101,48 +112,26 @@ export const NewSurveyForm: React.FC<NewSurveyFormProps> = props => {
 
     const publishQuestionnaire = () => {
         console.debug("Publish Questionnaire");
-        // setLoading(true);
-        // if (
-        //     questionnaire &&
-        //     readAccessGroup.kind === "loaded" &&
-        //     confidentialAccessGroup.kind === "loaded"
-        // ) {
-        //     const readAccessGroups = readAccessGroup.data.map(aag => {
-        //         return aag.id;
-        //     });
-        //     const confidentialAccessGroups = confidentialAccessGroup.data.map(cag => {
-        //         return cag.id;
-        //     });
-        //     compositionRoot.signals
-        //         .importData(
-        //             props.signalId,
-        //             props.signalEventId,
-        //             questionnaire,
-        //             {
-        //                 id: currentOrgUnitAccess.orgUnitId,
-        //                 name: currentOrgUnitAccess.orgUnitName,
-        //                 path: currentOrgUnitAccess.orgUnitPath,
-        //             },
-        //             { id: currentModuleAccess.moduleId, name: currentModuleAccess.moduleName },
-        //             "Publish",
-        //             readAccessGroups,
-        //             confidentialAccessGroups
-        //         )
-        //         .run(
-        //             () => {
-        //                 snackbar.info("Submission Success!");
-        //                 setLoading(false);
-        //                 if (props.hideForm) props.hideForm();
-        //             },
-        //             () => {
-        //                 snackbar.error(
-        //                     "Submission Failed! You do not have the necessary permissions, please contact your administrator"
-        //                 );
-        //                 setLoading(false);
-        //                 if (props.hideForm) props.hideForm();
-        //             }
-        //         );
-        // }
+        setLoading(true);
+        //TO DO : User permission check for saving a Survey Form
+        if (questionnaire) {
+            compositionRoot.surveys.saveFormData
+                .execute(props.formType, questionnaire, currentOrgUnitAccess.orgUnitId)
+                .run(
+                    () => {
+                        snackbar.info("Submission Success!");
+                        setLoading(false);
+                        if (props.hideForm) props.hideForm();
+                    },
+                    () => {
+                        snackbar.error(
+                            "Submission Failed! You do not have the necessary permissions, please contact your administrator"
+                        );
+                        setLoading(false);
+                        if (props.hideForm) props.hideForm();
+                    }
+                );
+        }
     };
 
     const updateQuestion = (question: Question) => {
@@ -225,7 +214,7 @@ export const NewSurveyForm: React.FC<NewSurveyFormProps> = props => {
                 </CancelButton>
 
                 <Button variant="contained" color="primary" onClick={publishQuestionnaire}>
-                    {i18n.t("OK")}
+                    {i18n.t("Save")}
                 </Button>
             </PageFooter>
         </div>

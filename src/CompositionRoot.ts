@@ -15,11 +15,12 @@ import { ModuleRepository } from "./domain/repositories/ModuleRepository";
 import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
 import { ModulesTestRepository } from "./data/repositories/testRepositories/ModuleTestRepository";
-import { GetSurveyFormUseCase } from "./domain/usecases/GetSurveyFormUseCase";
-import { SurveyFormRepository } from "./domain/repositories/SurveyFormRepository";
+import { GetSurveyUseCase } from "./domain/usecases/GetSurveyUseCase";
+import { SurveyRepository } from "./domain/repositories/SurveyRepository";
 import { UserD2Repository } from "./data/repositories/UserD2Repository";
-import { SurveyFormD2Repository } from "./data/repositories/SurveyFormD2Repository";
-import { SurveyFormTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
+import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
+import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
+import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -27,7 +28,7 @@ type Repositories = {
     usersRepository: UserRepository;
     localeRepository: LocalesRepository;
     moduleRepository: ModuleRepository;
-    surveyFormRepository: SurveyFormRepository;
+    surveyFormRepository: SurveyRepository;
 };
 
 function getCompositionRoot(repositories: Repositories) {
@@ -46,7 +47,8 @@ function getCompositionRoot(repositories: Repositories) {
             saveKeyDbLocale: new SaveKeyDbLocaleUseCase(repositories.usersRepository),
         },
         surveys: {
-            getForm: new GetSurveyFormUseCase(repositories.surveyFormRepository),
+            getForm: new GetSurveyUseCase(repositories.surveyFormRepository),
+            saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
         },
     };
 }
@@ -57,7 +59,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         usersRepository: new UserD2Repository(api),
         localeRepository: new LocalesD2Repository(api),
         moduleRepository: new ModuleD2Repository(dataStoreClient, api),
-        surveyFormRepository: new SurveyFormD2Repository(api),
+        surveyFormRepository: new SurveyD2Repository(api),
     };
 
     return getCompositionRoot(repositories);
@@ -68,7 +70,7 @@ export function getTestCompositionRoot() {
         usersRepository: new UserTestRepository(),
         localeRepository: new LocalesTestRepository(),
         moduleRepository: new ModulesTestRepository(),
-        surveyFormRepository: new SurveyFormTestRepository(),
+        surveyFormRepository: new SurveyTestRepository(),
     };
 
     return getCompositionRoot(repositories);

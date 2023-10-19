@@ -22,7 +22,11 @@ const DatePickerWidget: React.FC<DatePickerWidgetProps> = props => {
         [onValueChange]
     );
     return (
-        <DatePicker value={stateValue} disabled={props.disabled} onChange={(_e, newValue) => notifyChange(newValue)} />
+        <DatePicker
+            value={stateValue}
+            disabled={props.disabled}
+            onChange={(_e, newValue) => notifyChange(newValue)}
+        />
     );
 };
 

@@ -1,7 +1,9 @@
-import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
-import { Survey } from "../entities/Survey";
+import { ImportStrategy, TrackerEventsPostRequest } from "../entities/EventProgram";
+import { Questionnaire } from "../entities/Questionnaire";
+import { Id } from "../entities/Ref";
 
 export interface SurveyRepository {
-    getAll(programId: Id, orgUnitId: Id): FutureData<Survey[]>;
+    getForm(programId: Id): FutureData<Questionnaire>;
+    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void>;
 }

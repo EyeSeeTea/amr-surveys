@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../../contexts/app-context";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire";
+import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 
-export function useNewSurveyForm(eventId: string | undefined) {
+export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot } = useAppContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
@@ -13,7 +14,7 @@ export function useNewSurveyForm(eventId: string | undefined) {
         setLoading(true);
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
-            return compositionRoot.surveys.getForm.execute().run(
+            return compositionRoot.surveys.getForm.execute(formType).run(
                 questionnaireForm => {
                     setQuestionnaire(questionnaireForm);
                     setLoading(false);
@@ -39,7 +40,7 @@ export function useNewSurveyForm(eventId: string | undefined) {
         //         }
         //     );
         // }
-    }, [compositionRoot, snackbar, eventId]);
+    }, [compositionRoot, snackbar, eventId, formType]);
 
     return { questionnaire, setQuestionnaire, loading, setLoading };
 }

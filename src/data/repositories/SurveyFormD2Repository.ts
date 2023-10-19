@@ -10,16 +10,18 @@ import {
     TextQuestion,
 } from "../../domain/entities/Questionnaire";
 import { Id } from "../../domain/entities/Ref";
-import { SurveyFormRepository } from "../../domain/repositories/SurveyFormRepository";
+import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import {
     EventProgramDataElement,
     EventProgramMetadata,
+    ImportStrategy,
     Option,
+    TrackerEventsPostRequest,
 } from "../../domain/entities/EventProgram";
 
-export class SurveyFormD2Repository implements SurveyFormRepository {
+export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
     getForm(programId: Id): FutureData<Questionnaire> {
@@ -181,5 +183,22 @@ export class SurveyFormD2Repository implements SurveyFormRepository {
             .value();
 
         return questions;
+    }
+
+    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void> {
+        return apiToFuture(this.api.tracker.postAsync({ importStrategy: action }, events)).flatMap(
+            response => {
+                return apiToFuture(
+                    // eslint-disable-next-line testing-library/await-async-utils
+                    this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+                ).flatMap(result => {
+                    if (result) {
+                        return Future.success(undefined);
+                    } else {
+                        return Future.error(new Error("An error occured while saving the survey"));
+                    }
+                });
+            }
+        );
     }
 }
