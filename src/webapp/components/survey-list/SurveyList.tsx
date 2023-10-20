@@ -12,17 +12,28 @@ import {
     Backdrop,
     CircularProgress,
 } from "@material-ui/core";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 
 import styled from "styled-components";
+import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
+import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
+
 import { CustomCard } from "../custom-card/CustomCard";
 import { StyledLoaderContainer } from "../survey/SurveyForm";
 
 export const SurveyList: React.FC = () => {
     const surveyType = "PPSSurveyForm"; //TO DO: Get from Props.
     const { surveys, loading } = useSurveys(surveyType);
+    const history = useHistory();
+
+    const editSurvey = (surveyId: Id) => {
+        history.push({
+            pathname: `/survey/${surveyId}`,
+            state: { surveyId: surveyId },
+        });
+    };
 
     return (
         <ContentWrapper>
@@ -86,13 +97,22 @@ export const SurveyList: React.FC = () => {
                                         {surveys.map(survey => (
                                             <TableRow key={survey.id}>
                                                 <TableCell>
-                                                    {survey.startDate?.toUTCString() || ""}
+                                                    {survey.startDate?.toDateString() || ""}
                                                 </TableCell>
                                                 <TableCell>{survey.status}</TableCell>
                                                 <TableCell>{survey.surveyType}</TableCell>
                                                 <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                                 <TableCell style={{ opacity: 0.5 }}>
-                                                    <Button>Edit</Button>
+                                                    <ActionMenuButton
+                                                        options={["Edit", "Assign Country"]}
+                                                        optionClickHandler={[
+                                                            {
+                                                                option: "Edit",
+                                                                handler: () =>
+                                                                    editSurvey(survey.id),
+                                                            },
+                                                        ]}
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))}

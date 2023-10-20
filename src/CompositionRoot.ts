@@ -22,6 +22,7 @@ import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
 import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
 import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
+import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -49,6 +50,7 @@ function getCompositionRoot(repositories: Repositories) {
         },
         surveys: {
             getForm: new GetSurveyUseCase(repositories.surveyFormRepository),
+            getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
         },

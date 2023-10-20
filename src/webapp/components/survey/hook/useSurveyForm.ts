@@ -24,22 +24,19 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     setLoading(false);
                 }
             );
+        } else {
+            //If Event Id has been specified, pre-populate event data in Questionnaire form
+            return compositionRoot.surveys.getPopulatedForm.execute(eventId, formType).run(
+                questionnaireWithData => {
+                    setQuestionnaire(questionnaireWithData);
+                    setLoading(false);
+                },
+                err => {
+                    snackbar.error(err.message);
+                    setLoading(false);
+                }
+            );
         }
-        //TO DO :  Populated form
-        // else {
-        //     //If Event Id has been specified, pre-populate event data in Questionnaire form
-        //     return compositionRoot.surveys.getSignal(eventId).run(
-        //         questionnaireWithData => {
-        //             console.debug(questionnaireWithData);
-        //             setQuestionnaire(questionnaireWithData);
-        //             setLoading(false);
-        //         },
-        //         err => {
-        //             snackbar.error(err);
-        //             setLoading(false);
-        //         }
-        //     );
-        // }
     }, [compositionRoot, snackbar, eventId, formType]);
 
     return { questionnaire, setQuestionnaire, loading, setLoading };

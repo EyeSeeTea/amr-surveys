@@ -48,7 +48,6 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                 },
                 error => {
                     snackbar.error(i18n.t(error.message));
-                    console.debug(error.message);
                     setIsLoading(false);
                 }
             );

@@ -62,6 +62,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
         case "date":
             return (
                 <DatePickerWidget
+                    name={question.id}
                     value={question.value}
                     onChange={value => onChange(update(question, value))}
                     disabled={disabled}

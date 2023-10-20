@@ -1,3 +1,4 @@
+import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { ImportStrategy, TrackerEventsPostRequest } from "../../../domain/entities/EventProgram";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire";
@@ -36,5 +37,8 @@ export class SurveyTestRepository implements SurveyRepository {
     getSurveys(programId: string, orgUnitId: string): FutureData<Survey[]> {
         console.debug(programId, orgUnitId);
         throw new Error("Method not implemented.");
+    }
+    getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
+        throw new Error("Method not implemented." + eventId);
     }
 }

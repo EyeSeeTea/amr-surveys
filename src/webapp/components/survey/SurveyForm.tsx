@@ -37,7 +37,7 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 
 export interface SurveyFormProps {
     hideForm: () => void;
-    eventId?: Id;
+    surveyId?: Id;
     formType: SURVEY_FORM_TYPES;
 }
 
@@ -61,16 +61,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const { questionnaire, setQuestionnaire, loading, setLoading } = useSurveyForm(
         props.formType,
-        props.eventId
+        props.surveyId
     );
 
     const saveSurvey = () => {
-        console.debug("Publish Questionnaire");
         setLoading(true);
         //TO DO : User permission check for saving a Survey Form
         if (questionnaire) {
             compositionRoot.surveys.saveFormData
-                .execute(props.formType, questionnaire, currentOrgUnitAccess.orgUnitId)
+                .execute(
+                    props.formType,
+                    questionnaire,
+                    currentOrgUnitAccess.orgUnitId,
+                    props.surveyId
+                )
                 .run(
                     () => {
                         snackbar.info("Submission Success!");

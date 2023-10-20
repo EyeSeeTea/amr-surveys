@@ -30,7 +30,7 @@ const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
-    getForm(programId: Id): FutureData<Questionnaire> {
+    getForm(programId: Id, event: D2TrackerEvent | undefined): FutureData<Questionnaire> {
         return apiToFuture(
             this.api.request<EventProgramMetadata>({
                 method: "get",
@@ -47,7 +47,8 @@ export class SurveyD2Repository implements SurveyRepository {
                           const questions: Question[] = this.mapProgramDataElementToQuestions(
                               section.dataElements,
                               resp.dataElements,
-                              resp.options
+                              resp.options,
+                              event
                           );
 
                           return {
@@ -65,7 +66,8 @@ export class SurveyD2Repository implements SurveyRepository {
                               questions: this.mapProgramDataElementToQuestions(
                                   programDataElements,
                                   resp.dataElements,
-                                  resp.options
+                                  resp.options,
+                                  event
                               ),
                               isVisible: true,
                           },
@@ -256,6 +258,16 @@ export class SurveyD2Repository implements SurveyRepository {
             });
 
             return Future.success(surveys);
+        });
+    }
+
+    getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
+        return apiToFuture(
+            this.api.tracker.events.getById(eventId, {
+                fields: { $all: true },
+            })
+        ).flatMap(resp => {
+            return Future.success(resp);
         });
     }
 }
