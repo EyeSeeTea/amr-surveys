@@ -64,53 +64,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.eventId
     );
 
-    // const saveQuestionnaire = () => {
-    //     console.debug("Save event to DHIS");
-    //     // setLoading(true);
-    //     // if (
-    //     //     questionnaire &&
-    //     //     readAccessGroup.kind === "loaded" &&
-    //     //     confidentialAccessGroup.kind === "loaded"
-    //     // ) {
-    //     //     const readAccessGroups: string[] = readAccessGroup.data.map(aag => {
-    //     //         return aag.id;
-    //     //     });
-    //     //     const confidentialAccessGroups: string[] = confidentialAccessGroup.data.map(cag => {
-    //     //         return cag.id;
-    //     //     });
-    //     //     compositionRoot.signals
-    //     //         .importData(
-    //     //             props.signalId,
-    //     //             props.signalEventId,
-    //     //             questionnaire,
-    //     //             {
-    //     //                 id: currentOrgUnitAccess.orgUnitId,
-    //     //                 name: currentOrgUnitAccess.orgUnitName,
-    //     //                 path: currentOrgUnitAccess.orgUnitPath,
-    //     //             },
-    //     //             { id: currentModuleAccess.moduleId, name: currentModuleAccess.moduleName },
-    //     //             "Save",
-    //     //             readAccessGroups,
-    //     //             confidentialAccessGroups
-    //     //         )
-    //     //         .run(
-    //     //             () => {
-    //     //                 snackbar.info("Submission Success!");
-    //     //                 setLoading(false);
-    //     //                 if (props.hideForm) props.hideForm();
-    //     //             },
-    //     //             () => {
-    //     //                 snackbar.error(
-    //     //                     "Submission Failed! You do not have the necessary permissions, please contact your administrator"
-    //     //                 );
-    //     //                 setLoading(false);
-    //     //                 if (props.hideForm) props.hideForm();
-    //     //             }
-    //     //         );
-    //     // }
-    // };
-
-    const publishQuestionnaire = () => {
+    const saveSurvey = () => {
         console.debug("Publish Questionnaire");
         setLoading(true);
         //TO DO : User permission check for saving a Survey Form
@@ -159,10 +113,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             <Backdrop open={loading} style={{ color: "#fff", zIndex: 1 }}>
                 <StyledLoaderContainer>
                     <CircularProgress color="inherit" size={50} />
-                    {/* <Typography variant="h6">{i18n.t("Importing data and applying validation rules")}</Typography>
-                    <Typography variant="h5">
-                        {i18n.t("This might take several minutes, do not refresh the page or press back.")}
-                    </Typography> */}
                 </StyledLoaderContainer>
             </Backdrop>
 
@@ -213,7 +163,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     {i18n.t("Cancel")}
                 </CancelButton>
 
-                <Button variant="contained" color="primary" onClick={publishQuestionnaire}>
+                <Button variant="contained" color="primary" onClick={saveSurvey}>
                     {i18n.t("Save")}
                 </Button>
             </PageFooter>

@@ -3,9 +3,10 @@ import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { FutureData } from "../../data/api-futures";
 import { Future } from "../entities/generic/Future";
 import { Questionnaire } from "../entities/Questionnaire";
-import { PPS_SURVEY_FORM_ID, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";
+import { PPS_SURVEY_FORM_ID } from "../../data/repositories/SurveyFormD2Repository";
 
 export class SaveFormDataUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}

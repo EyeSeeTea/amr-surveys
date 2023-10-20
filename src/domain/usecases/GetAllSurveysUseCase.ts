@@ -1,15 +1,14 @@
+import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../data/repositories/SurveyFormD2Repository";
 import { Future } from "../entities/generic/Future";
-import { Questionnaire } from "../entities/Questionnaire";
-import { SURVEY_FORM_TYPES } from "../entities/Survey";
-
+import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 
-export class GetSurveyUseCase {
+export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
-    public execute(surveyType: SURVEY_FORM_TYPES): FutureData<Questionnaire> {
+    public execute(surveyType: SURVEY_FORM_TYPES, orgUnitId: Id): FutureData<Survey[]> {
         let programId = "";
         switch (surveyType) {
             case "PPSSurveyForm":
@@ -19,6 +18,6 @@ export class GetSurveyUseCase {
                 return Future.error(new Error("Unknown survey type"));
         }
 
-        return this.surveyReporsitory.getForm(programId);
+        return this.surveyReporsitory.getSurveys(programId, orgUnitId);
     }
 }

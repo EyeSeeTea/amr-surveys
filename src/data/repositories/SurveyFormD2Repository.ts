@@ -20,6 +20,12 @@ import {
     Option,
     TrackerEventsPostRequest,
 } from "../../domain/entities/EventProgram";
+import { Survey } from "../../domain/entities/Survey";
+
+export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
+const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
+const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
+const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -200,5 +206,56 @@ export class SurveyD2Repository implements SurveyRepository {
                 });
             }
         );
+    }
+
+    getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]> {
+        return apiToFuture(
+            this.api.tracker.events.get({
+                fields: { $all: true },
+                program: programId,
+                orgUnit: orgUnitId,
+            })
+        ).flatMap(events => {
+            const surveys: Survey[] = events.instances.map(event => {
+                const startDateString = event.dataValues.find(
+                    dv => dv.dataElement === START_DATE_DATAELEMENT_ID
+                )?.value;
+
+                const surveyType = event.dataValues.find(
+                    dv => dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID
+                )?.value;
+
+                const surveyCompleted = event.dataValues.find(
+                    dv => dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID
+                )?.value;
+
+                if (startDateString && surveyType) {
+                    const startDate = new Date(startDateString);
+                    const status =
+                        surveyCompleted === "false"
+                            ? startDate > new Date()
+                                ? "FUTURE"
+                                : "ACTIVE"
+                            : "COMPLETED";
+
+                    return {
+                        id: event.event,
+                        startDate: startDate,
+                        status: status,
+                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                        surveyType: surveyType,
+                    };
+                } else {
+                    return {
+                        id: event.event,
+                        status: surveyCompleted === "false" ? "ACTIVE" : "COMPLETED",
+                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                        surveyType: "",
+                    };
+                }
+            });
+
+            return Future.success(surveys);
+        });
     }
 }

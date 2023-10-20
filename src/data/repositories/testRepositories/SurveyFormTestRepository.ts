@@ -1,14 +1,11 @@
 import { ImportStrategy, TrackerEventsPostRequest } from "../../../domain/entities/EventProgram";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire";
+import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
 
 export class SurveyTestRepository implements SurveyRepository {
-    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void> {
-        console.debug(events, action);
-        throw new Error("Method not implemented.");
-    }
     getForm(programId: string): FutureData<Questionnaire> {
         const questionnaire: Questionnaire = {
             id: programId,
@@ -29,5 +26,15 @@ export class SurveyTestRepository implements SurveyRepository {
             rules: [],
         };
         return Future.success(questionnaire);
+    }
+
+    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void> {
+        console.debug(events, action);
+        throw new Error("Method not implemented.");
+    }
+
+    getSurveys(programId: string, orgUnitId: string): FutureData<Survey[]> {
+        console.debug(programId, orgUnitId);
+        throw new Error("Method not implemented.");
     }
 }

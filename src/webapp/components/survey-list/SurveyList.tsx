@@ -9,44 +9,36 @@ import {
     Table,
     TableBody,
     TableRow,
+    Backdrop,
+    CircularProgress,
 } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 
 import styled from "styled-components";
+import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-// import { ContentLoader } from "../content-loader/ContentLoader";
 import { CustomCard } from "../custom-card/CustomCard";
+import { StyledLoaderContainer } from "../survey/SurveyForm";
 
 export const SurveyList: React.FC = () => {
-    const {
-        surveys,
-        // setSurveys
-    } = {
-        surveys: {
-            kind: "loaded",
-            data: [
-                {
-                    id: "1",
-                    startDate: new Date(),
-                    orgUnit: { id: "IND", name: "INDIA" },
-                    status: "active",
-                    surveyType: "TYPE",
-                },
-            ],
-        },
-        // setSurveys: () => {},
-    };
+    const surveyType = "PPSSurveyForm"; //TO DO: Get from Props.
+    const { surveys, loading } = useSurveys(surveyType);
 
     return (
-        // <ContentLoader content={surveys}>
         <ContentWrapper>
+            <Backdrop open={loading} style={{ color: "#fff", zIndex: 1 }}>
+                <StyledLoaderContainer>
+                    <CircularProgress color="inherit" size={50} />
+                </StyledLoaderContainer>
+            </Backdrop>
+
             <CustomCard padding="20px 30px 20px">
                 <ButtonWrapper>
                     <Button
                         variant="contained"
                         color="primary"
                         component={NavLink}
-                        to={`/new-survey`}
+                        to={`/new-survey`} //TO DO : pass survey type as param
                         exact={true}
                     >
                         {i18n.t("Create New Survey")}
@@ -54,7 +46,7 @@ export const SurveyList: React.FC = () => {
                 </ButtonWrapper>
 
                 <Typography variant="h3">{i18n.t("Survey List")}</Typography>
-                {surveys.kind === "loaded" && (
+                {surveys && (
                     <TableContentWrapper>
                         <TableContainer component={Paper}>
                             <Table>
@@ -89,16 +81,16 @@ export const SurveyList: React.FC = () => {
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
-                                {surveys && surveys.data.length ? (
+                                {surveys && surveys.length ? (
                                     <StyledTableBody>
-                                        {surveys.data.map(survey => (
+                                        {surveys.map(survey => (
                                             <TableRow key={survey.id}>
                                                 <TableCell>
-                                                    {survey.startDate.toUTCString() || ""}
+                                                    {survey.startDate?.toUTCString() || ""}
                                                 </TableCell>
                                                 <TableCell>{survey.status}</TableCell>
                                                 <TableCell>{survey.surveyType}</TableCell>
-                                                <TableCell>{survey.orgUnit.name}</TableCell>
+                                                <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                                 <TableCell style={{ opacity: 0.5 }}>
                                                     <Button>Edit</Button>
                                                 </TableCell>
@@ -118,7 +110,6 @@ export const SurveyList: React.FC = () => {
                 )}
             </CustomCard>
         </ContentWrapper>
-        // </ContentLoader>
     );
 };
 
