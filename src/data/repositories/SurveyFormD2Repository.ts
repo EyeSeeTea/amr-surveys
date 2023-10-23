@@ -4,6 +4,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import {
     BooleanQuestion,
     DateQuestion,
+    NumberQuestion,
     Question,
     Questionnaire,
     SelectQuestion,
@@ -23,9 +24,11 @@ import {
 import { Survey } from "../../domain/entities/Survey";
 
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
+export const PPS_COUNTRY_QUESTIONNAIRE_ID = "a4aYe2Eoaul";
 const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
+export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -122,6 +125,19 @@ export class SurveyD2Repository implements SurveyRepository {
                             };
 
                             return boolQ;
+                        }
+
+                        case "INTEGER": {
+                            const intQ: NumberQuestion = {
+                                id: dataElement.id,
+                                code: dataElement.code, //code
+                                text: dataElement.formName, //formName
+                                type: "number",
+                                numberType: "INTEGER",
+                                value: dataValue ? dataValue.value : "",
+                            };
+
+                            return intQ;
                         }
 
                         case "TEXT": {

@@ -30,8 +30,14 @@ export const SurveyList: React.FC = () => {
 
     const editSurvey = (surveyId: Id) => {
         history.push({
-            pathname: `/survey/${surveyId}`,
-            state: { surveyId: surveyId },
+            pathname: `/survey/${surveyType}/${surveyId}`,
+        });
+    };
+
+    const assignCountry = (surveyId: Id) => {
+        history.push({
+            pathname: `/new-survey/PPSCountryQuestionnaire`,
+            state: { parentSurveyId: surveyId },
         });
     };
 
@@ -49,7 +55,7 @@ export const SurveyList: React.FC = () => {
                         variant="contained"
                         color="primary"
                         component={NavLink}
-                        to={`/new-survey`} //TO DO : pass survey type as param
+                        to={`/new-survey/${surveyType}`}
                         exact={true}
                     >
                         {i18n.t("Create New Survey")}
@@ -110,6 +116,11 @@ export const SurveyList: React.FC = () => {
                                                                 option: "Edit",
                                                                 handler: () =>
                                                                     editSurvey(survey.id),
+                                                            },
+                                                            {
+                                                                option: "Assign Country",
+                                                                handler: () =>
+                                                                    assignCountry(survey.id),
                                                             },
                                                         ]}
                                                     />

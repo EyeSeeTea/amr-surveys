@@ -17,8 +17,8 @@ export function Router() {
                     <Route path="/user-profile" render={() => <UserProfilePage />} />
                     <Route path="/user-settings" render={() => <UserSettingsPage />} />
                     <Route path="/surveys" render={() => <SurveyListPage />} />
-                    <Route path="/new-survey" render={() => <NewSurveyPage />} />
-                    <Route path="/survey/:id" render={() => <SurveyPage />} />
+                    <Route path="/new-survey/:type" render={() => <NewSurveyPage />} />
+                    <Route path="/survey/:type/:id" render={() => <SurveyPage />} />
 
                     {/* Default route */}
                     <Route render={() => <LandingPage />} />

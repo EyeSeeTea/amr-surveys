@@ -39,6 +39,7 @@ export interface SurveyFormProps {
     hideForm: () => void;
     surveyId?: Id;
     formType: SURVEY_FORM_TYPES;
+    parentSurveyId?: Id;
 }
 
 const CancelButton = withStyles(() => ({
@@ -61,7 +62,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const { questionnaire, setQuestionnaire, loading, setLoading } = useSurveyForm(
         props.formType,
-        props.surveyId
+        props.surveyId,
+        props.parentSurveyId
     );
 
     const saveSurvey = () => {
@@ -149,7 +151,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                     <QuestionWidget
                                                         onChange={updateQuestion}
                                                         question={question}
-                                                        disabled={false}
+                                                        disabled={
+                                                            question.id === "JHw6Hs0T2Lb"
+                                                                ? true
+                                                                : false
+                                                        }
                                                     />
                                                 </div>
                                             </div>
