@@ -7,10 +7,12 @@ export const CurrentOrgUnitContextProvider: React.FC<PropsWithChildren> = ({ chi
     const { currentUser } = useAppContext();
 
     //Set default org unit to the first org unit in list
-    const defaultOrgUnit: OrgUnitAccess = currentUser.userOrgUnitsAccess[0]
-        ? currentUser.userOrgUnitsAccess[0]
-        : defaultOrgUnitContextState.currentOrgUnitAccess;
-    const [currentOrgUnitAccess, setCurrentOrgUnitAccess] = useState<OrgUnitAccess>(defaultOrgUnit);
+    // const defaultOrgUnit: OrgUnitAccess = currentUser.userOrgUnitsAccess[0]
+    //     ? currentUser.userOrgUnitsAccess[0]
+    //     : defaultOrgUnitContextState.currentOrgUnitAccess;
+    const [currentOrgUnitAccess, setCurrentOrgUnitAccess] = useState<OrgUnitAccess>(
+        defaultOrgUnitContextState.currentOrgUnitAccess
+    );
 
     const changeCurrentOrgUnitAccess = useCallback(
         (updatedOrgUnit: string) => {
@@ -24,11 +26,17 @@ export const CurrentOrgUnitContextProvider: React.FC<PropsWithChildren> = ({ chi
         [currentUser.userOrgUnitsAccess]
     );
 
+    //Reset to default, i.e: Global
+    const resetOrgUnit = useCallback(() => {
+        setCurrentOrgUnitAccess(defaultOrgUnitContextState.currentOrgUnitAccess);
+    }, []);
+
     return (
         <CurrentOrgUnitContext.Provider
             value={{
                 currentOrgUnitAccess,
                 changeCurrentOrgUnitAccess,
+                resetOrgUnit,
             }}
         >
             {children}

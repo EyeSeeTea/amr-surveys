@@ -6,7 +6,10 @@ import { Questionnaire } from "../entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";
-import { PPS_SURVEY_FORM_ID } from "../../data/repositories/SurveyFormD2Repository";
+import {
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    PPS_SURVEY_FORM_ID,
+} from "../../data/repositories/SurveyFormD2Repository";
 
 export class SaveFormDataUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
@@ -21,6 +24,9 @@ export class SaveFormDataUseCase {
         switch (surveyType) {
             case "PPSSurveyForm":
                 programId = PPS_SURVEY_FORM_ID;
+                break;
+            case "PPSCountryQuestionnaire":
+                programId = PPS_COUNTRY_QUESTIONNAIRE_ID;
                 break;
             default:
                 return Future.error(new Error("Unknown survey type"));

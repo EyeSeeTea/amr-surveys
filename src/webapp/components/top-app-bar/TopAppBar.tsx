@@ -12,14 +12,12 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import { useAppContext } from "../../contexts/app-context";
 import MenuIcon from "@material-ui/icons/Menu";
-import LocationIcon from "@material-ui/icons/LocationOn";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import PersonOutlineIcon from "@material-ui/icons/PersonOutline";
 import i18n from "@eyeseetea/feedback-component/locales";
 import SettingsIcon from "@material-ui/icons/Settings";
 import styled from "styled-components";
-import { OrgUnitSelector } from "../orgunit-selector/OrgUnitSelector";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -91,12 +89,12 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
 
                     <Box className={classes.title} />
 
-                    <SelectContainer>
+                    {/* <SelectContainer>
                         <IconButton aria-label="search" color="primary">
                             <LocationIcon />
                         </IconButton>
                         <OrgUnitSelector />
-                    </SelectContainer>
+                    </SelectContainer> */}
 
                     <SelectContainer>
                         <AvatarContainer id="demo-positioned-button" onClick={handleClick}>

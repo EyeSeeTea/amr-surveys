@@ -4,19 +4,21 @@ import { OrgUnitAccess } from "../../../domain/entities/User";
 export interface CurrentOrgUnitContextState {
     currentOrgUnitAccess: OrgUnitAccess;
     changeCurrentOrgUnitAccess: (orgUnit: string) => void;
+    resetOrgUnit: () => void;
 }
 
 export const defaultOrgUnitContextState = {
     currentOrgUnitAccess: {
-        orgUnitId: "",
-        orgUnitName: "",
-        orgUnitShortName: "",
-        orgUnitCode: "",
-        orgUnitPath: "",
-        readAccess: false,
-        captureAccess: false,
+        orgUnitId: "H8RixfF8ugH",
+        orgUnitName: "Global",
+        orgUnitShortName: "Global",
+        orgUnitCode: "WHO-HQ",
+        orgUnitPath: "/H8RixfF8ugH",
+        readAccess: true,
+        captureAccess: true,
     },
     changeCurrentOrgUnitAccess: () => {},
+    resetOrgUnit: () => {},
 };
 
 export const CurrentOrgUnitContext = createContext<CurrentOrgUnitContextState>(
