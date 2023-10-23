@@ -38,7 +38,7 @@ export function useMenu() {
                 {
                     kind: "MenuLeaf",
                     title: "Surveys",
-                    path: "/surveys",
+                    path: `/surveys/PPSSurveyForm`,
                 },
             ];
 

@@ -28,7 +28,7 @@ export const NewSurveyPage: React.FC = () => {
     }, [setParentSurveyId, location.state?.parentSurveyId, resetOrgUnit]);
 
     const hideForm = () => {
-        history.push(`/surveys`);
+        history.push(`/surveys/${type}`);
     };
 
     //Do not load any children forms until parent Id is set

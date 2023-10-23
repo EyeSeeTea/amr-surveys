@@ -19,13 +19,16 @@ import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
-
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { StyledLoaderContainer } from "../survey/SurveyForm";
 
-export const SurveyList: React.FC = () => {
-    const surveyType = "PPSSurveyForm"; //TO DO: Get from Props.
-    const { surveys, loading } = useSurveys(surveyType);
+interface SurveyListProps {
+    parentSurveyId?: Id;
+    surveyType: SURVEY_FORM_TYPES;
+}
+export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurveyId }) => {
+    const { surveys, loading } = useSurveys(surveyType, parentSurveyId);
     const history = useHistory();
 
     const editSurvey = (surveyId: Id) => {
@@ -40,6 +43,13 @@ export const SurveyList: React.FC = () => {
             state: { parentSurveyId: surveyId },
         });
     };
+
+    // const listCountries = (surveyId: Id) => {
+    //     history.push({
+    //         pathname: `/surveys/PPSCountryQuestionnaire`,
+    //         state: { parentSurveyId: surveyId },
+    //     });
+    // };
 
     return (
         <ContentWrapper>
@@ -110,7 +120,11 @@ export const SurveyList: React.FC = () => {
                                                 <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                                 <TableCell style={{ opacity: 0.5 }}>
                                                     <ActionMenuButton
-                                                        options={["Edit", "Assign Country"]}
+                                                        options={[
+                                                            "Edit",
+                                                            "Assign Country",
+                                                            "List Countries",
+                                                        ]}
                                                         optionClickHandler={[
                                                             {
                                                                 option: "Edit",
@@ -121,6 +135,12 @@ export const SurveyList: React.FC = () => {
                                                                 option: "Assign Country",
                                                                 handler: () =>
                                                                     assignCountry(survey.id),
+                                                            },
+                                                            {
+                                                                option: "List Countries",
+                                                                handler: () => {
+                                                                    alert("Coming soon!");
+                                                                },
                                                             },
                                                         ]}
                                                     />

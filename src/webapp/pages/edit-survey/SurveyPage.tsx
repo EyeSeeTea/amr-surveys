@@ -10,7 +10,7 @@ export const SurveyPage: React.FC = () => {
     const history = useHistory();
 
     const hideForm = () => {
-        history.push(`/surveys`);
+        history.push(`/surveys/${type}`);
     };
 
     return (

@@ -16,7 +16,7 @@ export function Router() {
                 <Switch>
                     <Route path="/user-profile" render={() => <UserProfilePage />} />
                     <Route path="/user-settings" render={() => <UserSettingsPage />} />
-                    <Route path="/surveys" render={() => <SurveyListPage />} />
+                    <Route path="/surveys/:type" render={() => <SurveyListPage />} />
                     <Route path="/new-survey/:type" render={() => <NewSurveyPage />} />
                     <Route path="/survey/:type/:id" render={() => <SurveyPage />} />
 
