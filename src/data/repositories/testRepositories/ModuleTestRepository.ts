@@ -7,7 +7,7 @@ import { FutureData } from "../../api-futures";
 export class ModulesTestRepository implements ModuleRepository {
     getProgramsEnrolledInOrgUnit(orgUnitId: string): FutureData<string[]> {
         console.debug(`Fetching programs enrolled for org unit : ${orgUnitId}`);
-        return Future.success([]);
+        return Future.success(["SiUPBRxBvSS", "iwwz8Xssua2"]);
     }
     getAll(): FutureData<AMRSurveyModule[]> {
         return Future.success(createModuleList());
