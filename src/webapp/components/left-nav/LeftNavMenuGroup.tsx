@@ -16,17 +16,7 @@ interface LeftNavMenuProps {
 
 const LeftNavMenuGroup: React.FC<LeftNavMenuProps> = ({ menu, groupName, className }) => {
     const classes = useStyles(0);
-
-    // const isCurrent = (name: string) => {
-    //     return currentModuleAccess.moduleName === name;
-    // };
     const [expanded, setExpanded] = React.useState(true);
-
-    // useEffect(() => {
-    //     if (currentModuleAccess.moduleName === menu.title) {
-    //         setExpanded(true);
-    //     }
-    // }, [menu.title, currentModuleAccess.moduleName]);
 
     const toggleExpanded = () => {
         setExpanded(!expanded);
@@ -44,7 +34,6 @@ const LeftNavMenuGroup: React.FC<LeftNavMenuProps> = ({ menu, groupName, classNa
                     <div className={classes.icon}>
                         <FolderIcon htmlColor={menu.moduleColor} />
                     </div>
-                    {/* {`${moduleName} | ${currentNavItem.groupName} | ${groupName}`} */}
                     <span className={classes.title}>{i18n.t(menu.title)}</span>
                     <div className={classes.expand}>
                         {expanded ? <ExpandLess /> : <ExpandMore />}
@@ -56,23 +45,9 @@ const LeftNavMenuGroup: React.FC<LeftNavMenuProps> = ({ menu, groupName, classNa
                 <Collapse in={expanded} timeout="auto" unmountOnExit key={menu.title}>
                     <List component="div" disablePadding data-group-name={groupName}>
                         {menu.children &&
-                            menu.children.map(
-                                (child: MenuLeaf) => (
-                                    // child.kind === "MenuGroup" ? (
-                                    //     <LeftNavMenuGroup
-                                    //         menu={child}
-                                    //         key={child.title}
-                                    //         groupName={groupName}
-                                    //     />
-                                    // ) : (
-                                    <LeftNavMenu
-                                        menu={child}
-                                        key={child.title}
-                                        groupName={groupName}
-                                    />
-                                )
-                                // )
-                            )}
+                            menu.children.map((child: MenuLeaf) => (
+                                <LeftNavMenu menu={child} key={child.title} groupName={groupName} />
+                            ))}
                     </List>
                 </Collapse>
             </ModuleWrap>

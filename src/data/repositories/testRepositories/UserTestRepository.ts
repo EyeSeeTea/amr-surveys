@@ -18,7 +18,7 @@ export class UserTestRepository implements UserRepository {
     }
 
     public savePassword(password: string): FutureData<string> {
-        if (password) return Future.success("");
+        if (password) return Future.success("Success");
         else return Future.error({ name: "ERR", message: "Error occurred on saving new password" });
     }
 }

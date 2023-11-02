@@ -27,13 +27,7 @@ export const LeftNav: React.FC = () => {
         <LeftNavContainer>
             <CustomCard minheight="600px" padding="0 0 80px 0" maxwidth="250px">
                 <HomeButtonWrapper>
-                    <Button
-                        className="home-button"
-                        component={NavLink}
-                        to="/"
-                        exact={true}
-                        // onClick={updateModuleAndPeriodContext}
-                    >
+                    <Button className="home-button" component={NavLink} to="/" exact={true}>
                         <StarGradient className="star-icon" />
                         <Box width={15} />
                         <Typography>{i18n.t("HOME")}</Typography>
