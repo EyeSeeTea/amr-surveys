@@ -16,13 +16,7 @@ const LeftNavMenu: React.FC<LeftNavMenuProps> = ({ menu }) => {
 
     return (
         <ListItem disableGutters>
-            <Button
-                className={classes.button}
-                component={NavLink}
-                to={menu.path}
-                exact={true}
-                // onClick={() => updateModuleAndPeriodContext(groupName || "")}
-            >
+            <Button className={classes.button} component={NavLink} to={menu.path} exact={true}>
                 <div className={classes.icon}>{menu.icon}</div>
                 <Typography variant="body1" style={{ color: palette.text.primary }}>
                     {i18n.t(menu.title)}

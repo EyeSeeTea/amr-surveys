@@ -87,47 +87,51 @@ export class UserD2Repository implements UserRepository {
             childrenOrgUnits => {
                 return this.getAllCountryOrgUnits(filteredDataViewOrgUnits, countryLevel).flatMap(
                     childrenDataViewOrgUnits => {
-                        const uniqueOrgUnits = _([...countryOrgUnits, ...childrenOrgUnits])
-                            .uniq()
-                            .value();
+                        return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
+                            userSettings => {
+                                const uniqueOrgUnits = _([...countryOrgUnits, ...childrenOrgUnits])
+                                    .uniq()
+                                    .value();
 
-                        const uniqueDataViewOrgUnits = _([
-                            ...dataViewCountryOrgUnits,
-                            ...childrenDataViewOrgUnits,
-                        ])
-                            .uniq()
-                            .value();
+                                const uniqueDataViewOrgUnits = _([
+                                    ...dataViewCountryOrgUnits,
+                                    ...childrenDataViewOrgUnits,
+                                ])
+                                    .uniq()
+                                    .value();
 
-                        const user = new User({
-                            id: d2User.id,
-                            name: d2User.displayName,
-                            userGroups: d2User.userGroups,
-                            ...d2User.userCredentials,
-                            email: d2User.email,
-                            phoneNumber: d2User.phoneNumber,
-                            introduction: d2User.introduction,
-                            birthday: d2User.birthday,
-                            nationality: d2User.nationality,
-                            employer: d2User.employer,
-                            jobTitle: d2User.jobTitle,
-                            education: d2User.education,
-                            interests: d2User.interests,
-                            languages: d2User.languages,
-                            userOrgUnitsAccess: this.mapUserOrgUnitsAccess(
-                                uniqueOrgUnits,
-                                uniqueDataViewOrgUnits
-                            ),
-                            settings: {
-                                keyUiLocale: d2User.settings.keyUiLocale,
-                                keyDbLocale: d2User.settings.keyDbLocale,
-                                keyMessageEmailNotification:
-                                    d2User.settings.keyMessageEmailNotification,
-                                keyMessageSmsNotification:
-                                    d2User.settings.keyMessageSmsNotification,
-                            },
-                        });
+                                const user = new User({
+                                    id: d2User.id,
+                                    name: d2User.displayName,
+                                    userGroups: d2User.userGroups,
+                                    ...d2User.userCredentials,
+                                    email: d2User.email,
+                                    phoneNumber: d2User.phoneNumber,
+                                    introduction: d2User.introduction,
+                                    birthday: d2User.birthday,
+                                    nationality: d2User.nationality,
+                                    employer: d2User.employer,
+                                    jobTitle: d2User.jobTitle,
+                                    education: d2User.education,
+                                    interests: d2User.interests,
+                                    languages: d2User.languages,
+                                    userOrgUnitsAccess: this.mapUserOrgUnitsAccess(
+                                        uniqueOrgUnits,
+                                        uniqueDataViewOrgUnits
+                                    ),
+                                    settings: {
+                                        keyUiLocale: userSettings.keyUiLocale,
+                                        keyDbLocale: userSettings.keyDbLocale,
+                                        keyMessageEmailNotification:
+                                            userSettings.keyMessageEmailNotification,
+                                        keyMessageSmsNotification:
+                                            userSettings.keyMessageSmsNotification,
+                                    },
+                                });
 
-                        return Future.success(user);
+                                return Future.success(user);
+                            }
+                        );
                     }
                 );
             }
@@ -298,12 +302,12 @@ const userFields = {
             code: true,
         },
     },
-    settings: {
-        keyUiLocale: true,
-        keyDbLocale: true,
-        keyMessageEmailNotification: true,
-        keyMessageSmsNotification: true,
-    },
 } as const;
 
 type D2User = MetadataPick<{ users: { fields: typeof userFields } }>["users"][number];
+type D2UserSettings = {
+    keyUiLocale: string;
+    keyDbLocale: string;
+    keyMessageEmailNotification: boolean;
+    keyMessageSmsNotification: boolean;
+};
