@@ -1,12 +1,9 @@
 import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
-import {
-    PPS_COUNTRY_QUESTIONNAIRE_ID,
-    PPS_SURVEY_FORM_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
-import { Future } from "../entities/generic/Future";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
+import { getProgramId } from "../utils/PPSProgramsHelper";
+import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 
 export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
@@ -16,18 +13,10 @@ export class GetAllSurveysUseCase {
         orgUnitId: Id,
         parentSurveyId: Id | undefined
     ): FutureData<Survey[]> {
-        let programId = "";
-        switch (surveyType) {
-            case "PPSSurveyForm":
-                programId = PPS_SURVEY_FORM_ID;
-                break;
-            case "PPSCountryQuestionnaire":
-                programId = PPS_COUNTRY_QUESTIONNAIRE_ID;
-                break;
-            default:
-                return Future.error(new Error("Unknown survey type"));
-        }
+        const programId = getProgramId(surveyType);
 
+        //All PPS Survey Forms are Global.
+        if (surveyType === "PPSSurveyForm" && orgUnitId === "") orgUnitId = GLOBAL_OU_ID;
         console.debug(parentSurveyId);
         return this.surveyReporsitory.getSurveys(programId, orgUnitId);
     }

@@ -6,11 +6,9 @@ import { Questionnaire } from "../entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";
-import {
-    PPS_COUNTRY_QUESTIONNAIRE_ID,
-    PPS_SURVEY_FORM_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+import { getProgramId } from "../utils/PPSProgramsHelper";
 
+export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
@@ -20,17 +18,10 @@ export class SaveFormDataUseCase {
         orgUnitId: Id,
         eventId: string | undefined = undefined
     ): FutureData<void> {
-        let programId = "";
-        switch (surveyType) {
-            case "PPSSurveyForm":
-                programId = PPS_SURVEY_FORM_ID;
-                break;
-            case "PPSCountryQuestionnaire":
-                programId = PPS_COUNTRY_QUESTIONNAIRE_ID;
-                break;
-            default:
-                return Future.error(new Error("Unknown survey type"));
-        }
+        const programId = getProgramId(surveyType);
+
+        //All PPS Survey Forms are Global.
+        if (surveyType === "PPSSurveyForm" && orgUnitId === "") orgUnitId = GLOBAL_OU_ID;
 
         return this.mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, eventId).flatMap(
             event => {

@@ -23,8 +23,13 @@ import {
 } from "../../domain/entities/EventProgram";
 import { Survey } from "../../domain/entities/Survey";
 
+//PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
 export const PPS_COUNTRY_QUESTIONNAIRE_ID = "a4aYe2Eoaul";
+export const PPS_HOSPITAL_FORM_ID = "mesnCzaLc7u";
+export const PPS_PATIENT_REGISTER_ID = "GWcT6PN9NmI";
+export const PPS_WARD_REGISTER_ID = "aIyAtgpYYrS";
+
 const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";

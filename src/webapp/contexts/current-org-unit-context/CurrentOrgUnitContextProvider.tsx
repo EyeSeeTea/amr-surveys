@@ -22,7 +22,7 @@ export const CurrentOrgUnitContextProvider: React.FC<PropsWithChildren> = ({ chi
         [currentUser.userOrgUnitsAccess]
     );
 
-    //Reset to default, i.e: Global
+    //Reset to default
     const resetOrgUnit = useCallback(() => {
         setCurrentOrgUnitAccess(defaultOrgUnitContextState.currentOrgUnitAccess);
     }, []);

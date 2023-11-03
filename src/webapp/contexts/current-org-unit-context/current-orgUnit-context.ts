@@ -9,13 +9,13 @@ export interface CurrentOrgUnitContextState {
 
 export const defaultOrgUnitContextState = {
     currentOrgUnitAccess: {
-        orgUnitId: "H8RixfF8ugH",
-        orgUnitName: "Global",
-        orgUnitShortName: "Global",
-        orgUnitCode: "WHO-HQ",
-        orgUnitPath: "/H8RixfF8ugH",
-        readAccess: true,
-        captureAccess: true,
+        orgUnitId: "",
+        orgUnitName: "",
+        orgUnitShortName: "",
+        orgUnitCode: "",
+        orgUnitPath: "",
+        readAccess: false,
+        captureAccess: false,
     },
     changeCurrentOrgUnitAccess: () => {},
     resetOrgUnit: () => {},

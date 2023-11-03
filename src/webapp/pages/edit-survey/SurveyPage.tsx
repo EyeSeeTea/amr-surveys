@@ -2,7 +2,6 @@ import React from "react";
 import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
-import { OrgUnitSelector } from "../../components/orgunit-selector/OrgUnitSelector";
 import { SurveyForm } from "../../components/survey/SurveyForm";
 
 export const SurveyPage: React.FC = () => {
@@ -15,7 +14,6 @@ export const SurveyPage: React.FC = () => {
 
     return (
         <ContentWrapper>
-            {type === "PPSCountryQuestionnaire" && <OrgUnitSelector />}
             <SurveyForm hideForm={hideForm} formType={type} surveyId={id} />
         </ContentWrapper>
     );
