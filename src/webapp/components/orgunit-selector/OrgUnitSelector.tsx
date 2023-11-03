@@ -1,5 +1,5 @@
 import { MenuItem, Select } from "@material-ui/core";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import SearchInput from "./SearchInput";
 import styled from "styled-components";
@@ -59,13 +59,6 @@ export const OrgUnitSelector: React.FC<OrgUnitProps> = React.memo(() => {
             </StyledMenuItem>
         );
     };
-
-    useEffect(() => {
-        return () => {
-            //Clean up, set org unit ti default i.e Global
-            // resetOrgUnit();
-        };
-    });
 
     return (
         currentUser.userOrgUnitsAccess && (

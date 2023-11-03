@@ -44,13 +44,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurvey
         });
     };
 
-    // const listCountries = (surveyId: Id) => {
-    //     history.push({
-    //         pathname: `/surveys/PPSCountryQuestionnaire`,
-    //         state: { parentSurveyId: surveyId },
-    //     });
-    // };
-
     return (
         <ContentWrapper>
             <Backdrop open={loading} style={{ color: "#fff", zIndex: 1 }}>

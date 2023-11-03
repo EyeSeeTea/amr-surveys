@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { OrgUnitSelector } from "../../components/orgunit-selector/OrgUnitSelector";
 import { SurveyForm } from "../../components/survey/SurveyForm";
-// import LocationIcon from "@material-ui/icons/LocationOn";
 import { Typography } from "@material-ui/core";
 import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
 

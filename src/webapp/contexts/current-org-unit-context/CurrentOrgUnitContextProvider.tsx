@@ -6,10 +6,6 @@ import { CurrentOrgUnitContext, defaultOrgUnitContextState } from "./current-org
 export const CurrentOrgUnitContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const { currentUser } = useAppContext();
 
-    //Set default org unit to the first org unit in list
-    // const defaultOrgUnit: OrgUnitAccess = currentUser.userOrgUnitsAccess[0]
-    //     ? currentUser.userOrgUnitsAccess[0]
-    //     : defaultOrgUnitContextState.currentOrgUnitAccess;
     const [currentOrgUnitAccess, setCurrentOrgUnitAccess] = useState<OrgUnitAccess>(
         defaultOrgUnitContextState.currentOrgUnitAccess
     );
