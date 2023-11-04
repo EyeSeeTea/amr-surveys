@@ -9,10 +9,10 @@ import {
     orange500,
     white,
 } from "material-ui/styles/colors";
-import { fade } from "material-ui/utils/colorManipulator";
 import Spacing from "material-ui/styles/spacing";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import { MuiTheme } from "material-ui/styles";
+import { alpha } from "@material-ui/core";
 
 const theme = {
     spacing: Spacing,
@@ -28,7 +28,7 @@ const theme = {
         alternateTextColor: white,
         canvasColor: white,
         borderColor: grey400,
-        disabledColor: fade(darkBlack, 0.3),
+        disabledColor: alpha(darkBlack, 0.3),
     },
 };
 

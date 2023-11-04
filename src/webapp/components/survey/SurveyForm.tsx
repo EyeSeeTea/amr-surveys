@@ -152,7 +152,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                         onChange={updateQuestion}
                                                         question={question}
                                                         disabled={
-                                                            question.id === "JHw6Hs0T2Lb"
+                                                            question.id === "JHw6Hs0T2Lb" //TO DO : Set in domain based
                                                                 ? true
                                                                 : false
                                                         }

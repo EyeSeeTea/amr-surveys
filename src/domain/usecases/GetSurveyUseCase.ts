@@ -17,7 +17,6 @@ export class GetSurveyUseCase {
         const programId = getProgramId(surveyType);
         if (parentSurveyId) {
             return this.surveyReporsitory.getForm(programId, undefined).flatMap(q => {
-                console.debug(q.sections);
                 const surveyIdSection = q.sections.find(
                     s => s.questions.find(q => q.id === SURVEY_ID_DATAELEMENT_ID) !== undefined
                 );

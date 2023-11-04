@@ -22,6 +22,7 @@ import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { StyledLoaderContainer } from "../survey/SurveyForm";
+import { useEffect, useState } from "react";
 
 interface SurveyListProps {
     parentSurveyId?: Id;
@@ -29,17 +30,34 @@ interface SurveyListProps {
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurveyId }) => {
     const { surveys, loading } = useSurveys(surveyType, parentSurveyId);
+    const [options, setOptions] = useState<string[]>([]);
     const history = useHistory();
+
+    useEffect(() => {
+        if (parentSurveyId) {
+            setOptions(["Edit"]);
+        } else {
+            setOptions(["Edit", "Assign Country", "List Countries"]);
+        }
+    }, [setOptions, parentSurveyId]);
 
     const editSurvey = (surveyId: Id) => {
         history.push({
             pathname: `/survey/${surveyType}/${surveyId}`,
+            state: { parentSurveyId: parentSurveyId },
         });
     };
 
     const assignCountry = (surveyId: Id) => {
         history.push({
-            pathname: `/new-survey/PPSCountryQuestionnaire`,
+            pathname: `/new-survey/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
+            state: { parentSurveyId: surveyId },
+        });
+    };
+
+    const listCountries = (surveyId: Id) => {
+        history.replace({
+            pathname: `/surveys/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
             state: { parentSurveyId: surveyId },
         });
     };
@@ -58,7 +76,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurvey
                         variant="contained"
                         color="primary"
                         component={NavLink}
-                        to={`/new-survey/${surveyType}`}
+                        to={{
+                            pathname: `/new-survey/${surveyType}`,
+                            state: { parentSurveyId: parentSurveyId },
+                        }}
                         exact={true}
                     >
                         {i18n.t("Create New Survey")}
@@ -113,11 +134,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurvey
                                                 <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                                 <TableCell style={{ opacity: 0.5 }}>
                                                     <ActionMenuButton
-                                                        options={[
-                                                            "Edit",
-                                                            "Assign Country",
-                                                            "List Countries",
-                                                        ]}
+                                                        options={options}
                                                         optionClickHandler={[
                                                             {
                                                                 option: "Edit",
@@ -132,7 +149,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurvey
                                                             {
                                                                 option: "List Countries",
                                                                 handler: () => {
-                                                                    alert("Coming soon!");
+                                                                    listCountries(survey.id);
                                                                 },
                                                             },
                                                         ]}

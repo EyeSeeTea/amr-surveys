@@ -29,8 +29,14 @@ export const NewSurveyPage: React.FC = () => {
     }, [setParentSurveyId, location.state?.parentSurveyId, resetOrgUnit]);
 
     const hideForm = () => {
-        history.push(`/surveys/${type}`);
+        if (parentSurveyId)
+            history.push({
+                pathname: `/surveys/${type}`,
+                state: { parentSurveyId: parentSurveyId },
+            });
+        else history.push(`/surveys/${type}`);
     };
+
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
         if (orgUnitPaths[0]) {
             const orgUnits = orgUnitPaths[0].split("/");
