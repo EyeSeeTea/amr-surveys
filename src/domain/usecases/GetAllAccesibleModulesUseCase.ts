@@ -4,18 +4,15 @@ import { ModuleRepository } from "../repositories/ModuleRepository";
 import _ from "../../domain/entities/generic/Collection";
 import { Future } from "../entities/generic/Future";
 import { NamedRef } from "../entities/Ref";
-import { Id } from "@eyeseetea/d2-api";
+import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 
 export class GetAllAccesibleModulesUseCase {
     constructor(private moduleRepository: ModuleRepository) {}
 
-    public execute(
-        currentUserGroups: NamedRef[],
-        currentOrgUnitId: Id
-    ): FutureData<AMRSurveyModule[]> {
+    public execute(currentUserGroups: NamedRef[]): FutureData<AMRSurveyModule[]> {
         return this.moduleRepository.getAll().flatMap(modules => {
             return this.moduleRepository
-                .getProgramsEnrolledInOrgUnit(currentOrgUnitId)
+                .getProgramsEnrolledInOrgUnit(GLOBAL_OU_ID)
                 .flatMap(programs => {
                     const accessibleModules = modules.map(module => {
                         const accesibleSurveysInModule = module.surveyPrograms.filter(sp =>

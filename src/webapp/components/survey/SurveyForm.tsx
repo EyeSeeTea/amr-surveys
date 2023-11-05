@@ -22,7 +22,6 @@ import {
     // @ts-ignore
     TableBody,
 } from "@dhis2/ui";
-
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import styled from "styled-components";
 import { useSurveyForm } from "./hook/useSurveyForm";
@@ -30,10 +29,10 @@ import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
 import { Question } from "../../../domain/entities/Questionnaire";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
-import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
 import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -55,16 +54,18 @@ const CancelButton = withStyles(() => ({
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const { compositionRoot } = useAppContext();
-    const { currentOrgUnitAccess } = useCurrentOrgUnitContext();
     const classes = useStyles();
     const formClasses = useFormStyles();
     const snackbar = useSnackbar();
-
-    const { questionnaire, setQuestionnaire, loading, setLoading } = useSurveyForm(
-        props.formType,
-        props.surveyId,
-        props.parentSurveyId
-    );
+    const { api, currentUser } = useAppContext();
+    const {
+        questionnaire,
+        setQuestionnaire,
+        loading,
+        setLoading,
+        currentOrgUnit,
+        setCurrentOrgUnit,
+    } = useSurveyForm(props.formType, props.surveyId, props.parentSurveyId);
 
     const saveSurvey = () => {
         setLoading(true);
@@ -74,7 +75,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 .execute(
                     props.formType,
                     questionnaire,
-                    currentOrgUnitAccess.orgUnitId,
+                    currentOrgUnit?.orgUnitId ?? "",
                     props.surveyId
                 )
                 .run(
@@ -114,6 +115,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.hideForm();
     };
 
+    const onOrgUnitChange = (orgUnitPaths: string[]) => {
+        if (props.surveyId) {
+            alert("Delete the Survey and create new one? Yes/No");
+            return;
+        }
+        if (orgUnitPaths[0]) {
+            const orgUnits = orgUnitPaths[0].split("/");
+            const selectedCountry = orgUnits[orgUnits.length - 1];
+            if (selectedCountry) {
+                const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
+                    ou => ou.orgUnitId === selectedCountry
+                );
+                if (currentOrgUnitAccess) {
+                    setCurrentOrgUnit(currentOrgUnitAccess);
+                }
+            }
+        }
+    };
+
     return (
         <div>
             <Backdrop open={loading} style={{ color: "#fff", zIndex: 1 }}>
@@ -123,6 +143,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             </Backdrop>
 
             <Typography variant="h5">{i18n.t(questionnaire?.name || "")}</Typography>
+
+            {props.formType === "PPSCountryQuestionnaire" && (
+                <OrgUnitsSelector
+                    api={api}
+                    fullWidth={false}
+                    selected={[currentOrgUnit?.orgUnitPath]}
+                    onChange={onOrgUnitChange}
+                    singleSelection={true}
+                    typeInput={"radio"}
+                    hideMemberCount={false}
+                    selectableLevels={[3]}
+                    controls={{
+                        filterByLevel: false,
+                        filterByGroup: false,
+                        filterByProgram: false,
+                        selectAll: false,
+                    }}
+                />
+            )}
 
             {questionnaire?.sections.map(section => {
                 if (!section.isVisible) return null;

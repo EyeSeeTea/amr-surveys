@@ -9,7 +9,6 @@ import { appConfig } from "../../../app-config";
 import { CompositionRoot } from "../../../CompositionRoot";
 import Share from "../../components/share/Share";
 import { AppContext, AppContextState } from "../../contexts/app-context";
-import { CurrentOrgUnitContextProvider } from "../../contexts/current-org-unit-context/CurrentOrgUnitContextProvider";
 import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
@@ -54,9 +53,7 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <CurrentOrgUnitContextProvider>
-                                <Router />
-                            </CurrentOrgUnitContextProvider>
+                            <Router />
                         </AppContext.Provider>
                     </div>
 

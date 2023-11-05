@@ -85,7 +85,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     id: resp.programs[0].id,
                     name: resp.programs[0].name,
                     description: resp.programs[0].name,
-                    orgUnit: { id: "" },
+                    orgUnit: { id: event?.orgUnit ?? "" },
                     year: "",
                     isCompleted: false,
                     isMandatory: false,
