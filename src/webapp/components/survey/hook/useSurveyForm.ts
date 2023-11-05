@@ -3,25 +3,22 @@ import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../../contexts/app-context";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
-import { Id } from "@eyeseetea/d2-api";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
+import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
-export function useSurveyForm(
-    formType: SURVEY_FORM_TYPES,
-    eventId: string | undefined,
-    parentSurveyId?: Id | undefined
-) {
+export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
     const snackbar = useSnackbar();
+    const { currentPPSSurveyForm } = useCurrentSurveys();
 
     useEffect(() => {
         setLoading(true);
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
-            return compositionRoot.surveys.getForm.execute(formType, parentSurveyId).run(
+            return compositionRoot.surveys.getForm.execute(formType, currentPPSSurveyForm).run(
                 questionnaireForm => {
                     setQuestionnaire(questionnaireForm);
                     setLoading(false);
@@ -55,7 +52,7 @@ export function useSurveyForm(
         snackbar,
         eventId,
         formType,
-        parentSurveyId,
+        currentPPSSurveyForm,
         currentUser.userOrgUnitsAccess,
     ]);
 

@@ -33,7 +33,7 @@ export class GetAllSurveysUseCase {
                         .compact()
                         .value();
                     return Future.success(filteredSurveys);
-                } else return Future.error(new Error("Unknown Survey Type"));
+                } else return Future.success([]);
             } else return Future.success(surveys);
         });
     }

@@ -20,6 +20,6 @@ export const getProgramId = (surveyType: SURVEY_FORM_TYPES): string => {
         case "PPSWardRegister":
             return PPS_WARD_REGISTER_ID;
         default:
-            throw new Error("Unkown Survey Type");
+            throw new Error("Unknown Survey Type");
     }
 };

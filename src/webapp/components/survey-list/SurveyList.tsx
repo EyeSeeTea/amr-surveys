@@ -13,7 +13,6 @@ import {
     CircularProgress,
 } from "@material-ui/core";
 import { NavLink, useHistory } from "react-router-dom";
-
 import styled from "styled-components";
 import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
@@ -23,42 +22,42 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { StyledLoaderContainer } from "../survey/SurveyForm";
 import { useEffect, useState } from "react";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 
 interface SurveyListProps {
-    parentSurveyId?: Id;
     surveyType: SURVEY_FORM_TYPES;
 }
-export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurveyId }) => {
-    const { surveys, loading } = useSurveys(surveyType, parentSurveyId);
+export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
+    const { currentPPSSurveyForm, changeCurrentPPSSurveyForm } = useCurrentSurveys();
+    const { surveys, loading } = useSurveys(surveyType, currentPPSSurveyForm);
     const [options, setOptions] = useState<string[]>([]);
     const history = useHistory();
 
     useEffect(() => {
-        if (parentSurveyId) {
+        if (currentPPSSurveyForm) {
             setOptions(["Edit"]);
         } else {
             setOptions(["Edit", "Assign Country", "List Countries"]);
         }
-    }, [setOptions, parentSurveyId]);
+    }, [setOptions, currentPPSSurveyForm]);
 
     const editSurvey = (surveyId: Id) => {
         history.push({
             pathname: `/survey/${surveyType}/${surveyId}`,
-            state: { parentSurveyId: parentSurveyId },
         });
     };
 
     const assignCountry = (surveyId: Id) => {
+        changeCurrentPPSSurveyForm(surveyId);
         history.push({
             pathname: `/new-survey/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-            state: { parentSurveyId: surveyId },
         });
     };
 
     const listCountries = (surveyId: Id) => {
+        changeCurrentPPSSurveyForm(surveyId);
         history.replace({
             pathname: `/surveys/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-            state: { parentSurveyId: surveyId },
         });
     };
 
@@ -78,7 +77,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType, parentSurvey
                         component={NavLink}
                         to={{
                             pathname: `/new-survey/${surveyType}`,
-                            state: { parentSurveyId: parentSurveyId },
                         }}
                         exact={true}
                     >

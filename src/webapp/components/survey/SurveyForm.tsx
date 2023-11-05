@@ -38,7 +38,6 @@ export interface SurveyFormProps {
     hideForm: () => void;
     surveyId?: Id;
     formType: SURVEY_FORM_TYPES;
-    parentSurveyId?: Id;
 }
 
 const CancelButton = withStyles(() => ({
@@ -58,6 +57,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const formClasses = useFormStyles();
     const snackbar = useSnackbar();
     const { api, currentUser } = useAppContext();
+
     const {
         questionnaire,
         setQuestionnaire,
@@ -65,7 +65,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
-    } = useSurveyForm(props.formType, props.surveyId, props.parentSurveyId);
+    } = useSurveyForm(props.formType, props.surveyId);
 
     const saveSurvey = () => {
         setLoading(true);
