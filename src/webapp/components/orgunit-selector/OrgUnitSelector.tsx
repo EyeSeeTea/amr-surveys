@@ -1,13 +1,12 @@
 import { MenuItem, Select } from "@material-ui/core";
 import React, { useState } from "react";
-
 import SearchInput from "./SearchInput";
 import styled from "styled-components";
-
 import { useAppContext } from "../../contexts/app-context";
 import { OrgUnitAccess } from "../../../domain/entities/User";
 import { useCurrentOrgUnitContext } from "../../contexts/current-org-unit-context/current-orgUnit-context";
 import i18n from "@eyeseetea/feedback-component/locales";
+
 interface OrgUnitProps {
     fullWidth?: boolean;
 }

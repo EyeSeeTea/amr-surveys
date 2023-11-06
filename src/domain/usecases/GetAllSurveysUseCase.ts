@@ -1,7 +1,7 @@
-import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../data/repositories/SurveyFormD2Repository";
 import { Future } from "../entities/generic/Future";
+import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 

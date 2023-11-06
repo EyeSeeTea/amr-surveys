@@ -19,9 +19,6 @@ export class GetPopulatedSurveyUseCase {
             default:
                 return Future.error(new Error("Unknown survey type"));
         }
-
-        return this.surveyReporsitory.getSurveyById(eventId).flatMap(event => {
-            return this.surveyReporsitory.getForm(programId, event);
-        });
+        return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId);
     }
 }

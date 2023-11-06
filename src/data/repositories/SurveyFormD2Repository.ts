@@ -19,9 +19,9 @@ import {
     EventProgramMetadata,
     ImportStrategy,
     Option,
-    TrackerEventsPostRequest,
 } from "../../domain/entities/EventProgram";
 import { Survey } from "../../domain/entities/Survey";
+import { DataValue } from "@eyeseetea/d2-api";
 
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
 export const PPS_COUNTRY_QUESTIONNAIRE_ID = "a4aYe2Eoaul";
@@ -209,21 +209,84 @@ export class SurveyD2Repository implements SurveyRepository {
         return questions;
     }
 
-    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void> {
-        return apiToFuture(this.api.tracker.postAsync({ importStrategy: action }, events)).flatMap(
-            response => {
+    saveFormData(
+        questionnaire: Questionnaire,
+        action: ImportStrategy,
+        orgUnitId: Id,
+        eventId: string | undefined,
+        programId: Id
+    ): FutureData<void> {
+        return this.mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, eventId).flatMap(
+            event => {
                 return apiToFuture(
-                    // eslint-disable-next-line testing-library/await-async-utils
-                    this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
-                ).flatMap(result => {
-                    if (result) {
-                        return Future.success(undefined);
-                    } else {
-                        return Future.error(new Error("An error occured while saving the survey"));
-                    }
+                    this.api.tracker.postAsync({ importStrategy: action }, { events: [event] })
+                ).flatMap(response => {
+                    return apiToFuture(
+                        // eslint-disable-next-line testing-library/await-async-utils
+                        this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+                    ).flatMap(result => {
+                        if (result) {
+                            return Future.success(undefined);
+                        } else {
+                            return Future.error(
+                                new Error("An error occured while saving the survey")
+                            );
+                        }
+                    });
                 });
             }
         );
+    }
+
+    private mapQuestionnaireToEvent(
+        questionnaire: Questionnaire,
+        orgUnitId: string,
+        programId: Id,
+        eventId: string | undefined = undefined
+    ): FutureData<D2TrackerEvent> {
+        const questions = questionnaire.sections.flatMap(section => section.questions);
+
+        const dataValues = _(
+            questions.map(q => {
+                if (q) {
+                    if (q.type === "select" && q.value) {
+                        return {
+                            dataElement: q.id,
+                            value: q.value.code,
+                        };
+                    } else {
+                        return {
+                            dataElement: q.id,
+                            value: q.value,
+                        };
+                    }
+                }
+            })
+        )
+            .compact()
+            .value();
+
+        if (eventId) {
+            return this.getSurveyById(eventId).flatMap(event => {
+                const updatedEvent: D2TrackerEvent = {
+                    ...event,
+
+                    dataValues: dataValues as DataValue[],
+                };
+                return Future.success(updatedEvent);
+            });
+        } else {
+            const event: D2TrackerEvent = {
+                event: "",
+                orgUnit: orgUnitId,
+                program: programId,
+                status: "ACTIVE",
+                occurredAt: new Date().toISOString().split("T")?.at(0) || "",
+                //@ts-ignore
+                dataValues: dataValues,
+            };
+            return Future.success(event);
+        }
     }
 
     getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]> {
@@ -274,6 +337,12 @@ export class SurveyD2Repository implements SurveyRepository {
             });
 
             return Future.success(surveys);
+        });
+    }
+
+    getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire> {
+        return this.getSurveyById(eventId).flatMap(event => {
+            return this.getForm(programId, event);
         });
     }
 

@@ -3,7 +3,7 @@ import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../../contexts/app-context";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
-import { Id } from "@eyeseetea/d2-api";
+import { Id } from "../../../../domain/entities/Ref";
 
 export function useSurveyForm(
     formType: SURVEY_FORM_TYPES,

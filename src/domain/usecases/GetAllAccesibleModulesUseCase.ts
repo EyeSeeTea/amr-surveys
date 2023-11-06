@@ -3,8 +3,7 @@ import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import _ from "../../domain/entities/generic/Collection";
 import { Future } from "../entities/generic/Future";
-import { NamedRef } from "../entities/Ref";
-import { Id } from "@eyeseetea/d2-api";
+import { NamedRef, Id } from "../entities/Ref";
 
 export class GetAllAccesibleModulesUseCase {
     constructor(private moduleRepository: ModuleRepository) {}

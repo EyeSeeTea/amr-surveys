@@ -2,7 +2,6 @@ import React, { PropsWithChildren } from "react";
 import { Box, Typography } from "@material-ui/core";
 import { Paper } from "material-ui";
 import styled from "styled-components";
-
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 
