@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
@@ -10,7 +10,9 @@ export const SurveyListPage: React.FC = React.memo(() => {
     const { type } = useParams<{ type: SURVEY_FORM_TYPES }>();
     const { changeCurrentPPSSurveyForm } = useCurrentSurveys();
 
-    if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined); //TO DO : Can we set this on menu click of surveys
+    useEffect(() => {
+        if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined); //TO DO : Can we set this on menu click of surveys
+    }, [type, changeCurrentPPSSurveyForm]);
 
     return (
         <ContentWrapper>
