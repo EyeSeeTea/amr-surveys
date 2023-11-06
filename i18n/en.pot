@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-03T15:54:44.130Z\n"
-"PO-Revision-Date: 2023-11-03T15:54:44.130Z\n"
+"POT-Creation-Date: 2023-11-06T06:17:10.253Z\n"
+"PO-Revision-Date: 2023-11-06T06:17:10.253Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -21,6 +21,15 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "PPS Survey Forms"
+msgstr ""
+
+msgid "New Survey"
+msgstr ""
+
+msgid "PPS Country Questionnaires"
 msgstr ""
 
 msgid "Create New Survey"

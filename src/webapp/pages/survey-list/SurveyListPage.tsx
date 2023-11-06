@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyList } from "../../components/survey-list/SurveyList";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { SurveyListBreadCrumb } from "../../components/survey-list/SurveyListBreadCrumb";
 
 export const SurveyListPage: React.FC = React.memo(() => {
     const { type } = useParams<{ type: SURVEY_FORM_TYPES }>();
@@ -13,6 +14,7 @@ export const SurveyListPage: React.FC = React.memo(() => {
 
     return (
         <ContentWrapper>
+            <SurveyListBreadCrumb type={type} />
             <SurveyList surveyType={type} />
         </ContentWrapper>
     );

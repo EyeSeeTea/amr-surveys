@@ -4,7 +4,6 @@ import { MainLayout } from "../components/main-layout/MainLayout";
 import { CurrentSurveysContextProvider } from "../contexts/CurrentSurveysContextProvider";
 import { SurveyPage } from "./edit-survey/SurveyPage";
 import { LandingPage } from "./landing/LandingPage";
-import { NewSurveyPage } from "./new-survey/NewSurveyPage";
 import { SurveyListPage } from "./survey-list/SurveyListPage";
 import { UserProfilePage } from "./user-profile/UserProfilePage";
 import { UserSettingsPage } from "./user-profile/UserSettings";
@@ -28,7 +27,7 @@ export function Router() {
                         path="/new-survey/:type"
                         render={() => (
                             <CurrentSurveysContextProvider>
-                                <NewSurveyPage />
+                                <SurveyPage />
                             </CurrentSurveysContextProvider>
                         )}
                     />
