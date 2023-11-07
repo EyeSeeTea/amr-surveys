@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useAppContext } from "../../../contexts/app-context";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
@@ -13,7 +12,7 @@ export function useSurveyForm(
     const { compositionRoot } = useAppContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
-    const snackbar = useSnackbar();
+    const [error, setError] = useState<string>();
 
     useEffect(() => {
         setLoading(true);
@@ -25,7 +24,7 @@ export function useSurveyForm(
                     setLoading(false);
                 },
                 err => {
-                    snackbar.error(err.message);
+                    setError(err.message);
                     setLoading(false);
                 }
             );
@@ -37,12 +36,12 @@ export function useSurveyForm(
                     setLoading(false);
                 },
                 err => {
-                    snackbar.error(err.message);
+                    setError(err.message);
                     setLoading(false);
                 }
             );
         }
-    }, [compositionRoot, snackbar, eventId, formType, parentSurveyId]);
+    }, [compositionRoot, eventId, formType, parentSurveyId, setError]);
 
-    return { questionnaire, setQuestionnaire, loading, setLoading };
+    return { questionnaire, setQuestionnaire, loading, setLoading, error };
 }

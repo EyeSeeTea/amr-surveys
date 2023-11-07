@@ -1,5 +1,3 @@
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
-import i18n from "@eyeseetea/feedback-component/locales";
 import { useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
@@ -9,7 +7,8 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
-    const snackbar = useSnackbar();
+    const [error, setError] = useState<string>();
+
     const { currentOrgUnitAccess } = useCurrentOrgUnitContext();
 
     useEffect(() => {
@@ -20,11 +19,11 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
                 setLoading(false);
             },
             err => {
-                snackbar.error(i18n.t(err.message));
+                setError(err.message);
                 setLoading(false);
             }
         );
-    }, [currentOrgUnitAccess.orgUnitId, snackbar, compositionRoot.surveys.getSurveys, surveyType]);
+    }, [currentOrgUnitAccess.orgUnitId, compositionRoot.surveys.getSurveys, surveyType]);
 
-    return { surveys, loading };
+    return { surveys, loading, error };
 }

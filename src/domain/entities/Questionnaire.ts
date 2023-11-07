@@ -42,6 +42,7 @@ export interface QuestionBase {
     id: Id;
     code: Code;
     text: string;
+    disabled?: boolean;
 }
 
 export interface SelectQuestion extends QuestionBase {

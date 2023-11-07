@@ -109,6 +109,8 @@ export class SurveyD2Repository implements SurveyRepository {
                     const dataValue = event
                         ? event.dataValues.find(dv => dv.dataElement === dataElement.id)
                         : undefined;
+                    let currentQuestion;
+
                     switch (dataElement.valueType) {
                         case "BOOLEAN": {
                             const boolQ: BooleanQuestion = {
@@ -123,8 +125,8 @@ export class SurveyD2Repository implements SurveyRepository {
                                         : false
                                     : true,
                             };
-
-                            return boolQ;
+                            currentQuestion = boolQ;
+                            break;
                         }
 
                         case "INTEGER": {
@@ -136,8 +138,8 @@ export class SurveyD2Repository implements SurveyRepository {
                                 numberType: "INTEGER",
                                 value: dataValue ? dataValue.value : "",
                             };
-
-                            return intQ;
+                            currentQuestion = intQ;
+                            break;
                         }
 
                         case "TEXT": {
@@ -160,7 +162,8 @@ export class SurveyD2Repository implements SurveyRepository {
                                         ? selectedOption
                                         : { name: "", id: "", code: "" },
                                 };
-                                return selectQ;
+                                currentQuestion = selectQ;
+                                break;
                             } else {
                                 const singleLineText: TextQuestion = {
                                     id: dataElement.id,
@@ -170,8 +173,8 @@ export class SurveyD2Repository implements SurveyRepository {
                                     value: dataValue ? (dataValue.value as string) : "",
                                     multiline: false,
                                 };
-
-                                return singleLineText;
+                                currentQuestion = singleLineText;
+                                break;
                             }
                         }
 
@@ -184,8 +187,8 @@ export class SurveyD2Repository implements SurveyRepository {
                                 value: dataValue ? (dataValue.value as string) : "",
                                 multiline: true,
                             };
-
-                            return singleLineTextQ;
+                            currentQuestion = singleLineTextQ;
+                            break;
                         }
 
                         case "DATE": {
@@ -196,10 +199,15 @@ export class SurveyD2Repository implements SurveyRepository {
                                 type: "date",
                                 value: dataValue ? new Date(dataValue.value as string) : new Date(),
                             };
-
-                            return dateQ;
+                            currentQuestion = dateQ;
+                            break;
                         }
                     }
+                    ///Disable Survey Id Question
+                    if (currentQuestion && currentQuestion.id === SURVEY_ID_DATAELEMENT_ID) {
+                        currentQuestion.disabled = true;
+                    }
+                    return currentQuestion;
                 }
             })
         )

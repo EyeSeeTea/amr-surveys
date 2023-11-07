@@ -14,43 +14,47 @@ import {
     InputLabel,
 } from "@material-ui/core";
 import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
-import { useAppContext } from "../../contexts/app-context";
 import { OrgUnitAccess, UserAttrs, UserRole } from "../../../domain/entities/User";
+import { useSavePassword } from "./hooks/useSavePassword";
 
 interface UserProfileContentProps {
     userInformation: UserAttrs;
 }
 
 export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInformation }) => {
-    const { compositionRoot } = useAppContext();
     const snackbar = useSnackbar();
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const {
+        password,
+        setPassword,
+        confirmPassword,
+        setConfirmPassword,
+        savePasswordStatus,
+        savePassword,
+    } = useSavePassword();
     const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const savePassword = () => {
+    useEffect(() => {
+        if (savePasswordStatus && savePasswordStatus.status === "success") {
+            snackbar.info(i18n.t(savePasswordStatus.message));
+            setIsChangePasswordDialogOpen(false);
+            setIsLoading(false);
+        } else if (savePasswordStatus && savePasswordStatus.status === "error") {
+            snackbar.error(i18n.t(savePasswordStatus.message));
+            setIsLoading(false);
+        }
+    }, [savePasswordStatus, snackbar]);
+
+    const saveUserPassword = () => {
         if (password !== confirmPassword) {
             snackbar.error(i18n.t("The password and confirm password fields don't match"));
         } else {
+            savePassword(password);
             setIsLoading(true);
-
-            compositionRoot.users.savePassword.execute(password).run(
-                () => {
-                    snackbar.success(i18n.t("User password changed successfully."));
-                    setPassword("");
-                    setConfirmPassword("");
-                    setIsLoading(false);
-                },
-                error => {
-                    snackbar.error(i18n.t(error.message));
-                    setIsLoading(false);
-                }
-            );
         }
     };
 
@@ -157,7 +161,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
             <ConfirmationDialog
                 isOpen={isChangePasswordDialogOpen}
                 title={i18n.t("Change password")}
-                onSave={savePassword}
+                onSave={saveUserPassword}
                 onCancel={() => setIsChangePasswordDialogOpen(false)}
                 saveText={i18n.t("Change Password")}
                 cancelText={i18n.t("Cancel")}

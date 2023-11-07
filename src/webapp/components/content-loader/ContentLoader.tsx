@@ -1,24 +1,19 @@
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
-import { CircularProgress } from "material-ui";
+import { Backdrop, CircularProgress } from "@material-ui/core";
 import React, { ReactNode, useEffect } from "react";
-
-type loadingStatus = "loading" | "error" | "loaded";
-
-export interface ContentLoaderValue {
-    kind: loadingStatus;
-    message?: string;
-    data?: unknown;
-}
+import styled from "styled-components";
 
 export interface ContentLoaderProps {
-    content: ContentLoaderValue;
+    loading: boolean;
+    error: string | undefined;
     children: ReactNode;
-    showErrorAsSnackbar?: boolean;
+    showErrorAsSnackbar: boolean;
     onError?: () => void;
 }
 
 export const ContentLoader: React.FC<ContentLoaderProps> = ({
-    content,
+    loading,
+    error,
     children,
     showErrorAsSnackbar,
     onError,
@@ -26,26 +21,30 @@ export const ContentLoader: React.FC<ContentLoaderProps> = ({
     const snackbar = useSnackbar();
 
     useEffect(() => {
-        if (content.kind === "error" && showErrorAsSnackbar) {
-            snackbar.error(content.message);
+        if (error && showErrorAsSnackbar) {
+            snackbar.error(error);
         }
 
-        if (content.kind === "error" && onError) {
+        if (error && onError) {
             onError();
         }
-    }, [content, snackbar, showErrorAsSnackbar, onError]);
+    }, [error, snackbar, showErrorAsSnackbar, onError]);
 
-    switch (content.kind) {
-        case "loading":
-            return <CircularProgress />;
-        case "error":
-            if (showErrorAsSnackbar) {
-                return null;
-            } else {
-                return <>{children}</>;
-            }
-
-        case "loaded":
-            return <>{children}</>;
+    if (loading) {
+        return (
+            <Backdrop open={true} style={{ color: "#fff", zIndex: 1 }}>
+                <StyledLoaderContainer>
+                    <CircularProgress color="inherit" size={50} />
+                </StyledLoaderContainer>
+            </Backdrop>
+        );
+    } else {
+        return <>{children}</>;
     }
 };
+
+const StyledLoaderContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+`;
