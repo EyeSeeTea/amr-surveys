@@ -1,13 +1,18 @@
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
-import { ImportStrategy, TrackerEventsPostRequest } from "../../../domain/entities/EventProgram";
+import { ImportStrategy } from "../../../domain/entities/EventProgram";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire";
+import { Id } from "../../../domain/entities/Ref";
 import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../SurveyFormD2Repository";
 
 export class SurveyTestRepository implements SurveyRepository {
+    getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
+        console.debug(eventId, programId);
+        throw new Error("Method not implemented.");
+    }
     getForm(programId: string): FutureData<Questionnaire> {
         const questionnaire: Questionnaire = {
             id: programId,
@@ -30,8 +35,14 @@ export class SurveyTestRepository implements SurveyRepository {
         return Future.success(questionnaire);
     }
 
-    saveFormData(events: TrackerEventsPostRequest, action: ImportStrategy): FutureData<void> {
-        if (events && action) return Future.success(undefined);
+    saveFormData(
+        events: Questionnaire,
+        action: ImportStrategy,
+        orgUnitId: Id,
+        eventId: string | undefined,
+        programId: Id
+    ): FutureData<void> {
+        if (events && action && orgUnitId && eventId && programId) return Future.success(undefined);
         else return Future.error(new Error("An error occured while saving the survey"));
     }
 

@@ -2,12 +2,11 @@ import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Select } from "@material-ui/core";
 import { MenuItem } from "material-ui";
-import { ChangeEvent, FC, SetStateAction, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect } from "react";
 import styled from "styled-components";
 import { UserAttrs } from "../../../domain/entities/User";
-import { LocalesType } from "../../../domain/usecases/GetDatabaseLocalesUseCase";
-import { useAppContext } from "../../contexts/app-context";
 import { CustomCard } from "../custom-card/CustomCard";
+import { useUserSettings } from "./hooks/useUserSettings";
 
 interface UserSettingsContentProps {
     userInformation: UserAttrs;
@@ -19,31 +18,19 @@ const booleanOptions: { label: string; value: string }[] = [
 ];
 
 export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformation }) => {
-    const { compositionRoot } = useAppContext();
-    const [databaseLocalesOptions, setDatabaseLocalesOptions] = useState<LocalesType>([]);
-    const [uiLocalesOptions, setUiLocalesOptions] = useState<LocalesType>([]);
     const snackbar = useSnackbar();
+    const { databaseLocalesOptions, uiLocalesOptions, saveLocaleStatus, changeLocale } =
+        useUserSettings();
 
     useEffect(() => {
-        compositionRoot.locales.getDatabaseLocales.execute().run(
-            (locales: SetStateAction<LocalesType>) => {
-                setDatabaseLocalesOptions(locales);
-            },
-            () => {
-                snackbar.error(i18n.t("Error fetching Database locales"));
-            }
-        );
-        compositionRoot.locales.getUiLocales.execute().run(
-            locales => {
-                setUiLocalesOptions(locales);
-            },
-            () => {
-                snackbar.error(i18n.t("Error fetching UI locales"));
-            }
-        );
-    }, [compositionRoot.locales, snackbar]);
+        if (saveLocaleStatus && saveLocaleStatus.status === "success") {
+            snackbar.info(saveLocaleStatus.message);
+        } else if (saveLocaleStatus && saveLocaleStatus.status === "error") {
+            snackbar.error(saveLocaleStatus.message);
+        }
+    }, [snackbar, saveLocaleStatus]);
 
-    const changeLocale = (
+    const changeUserLocale = (
         e: ChangeEvent<{
             name?: string | undefined;
             value: unknown;
@@ -51,23 +38,7 @@ export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformat
         isUiLocale: boolean
     ) => {
         if (e.target.value && typeof e.target.value === "string") {
-            isUiLocale
-                ? compositionRoot.users.saveKeyUiLocale.execute(e.target.value).run(
-                      () => {
-                          snackbar.success(i18n.t("Interface language updated successfully"));
-                      },
-                      () => {
-                          snackbar.error(i18n.t("Error updating interface language."));
-                      }
-                  )
-                : compositionRoot.users.saveKeyDbLocale.execute(e.target.value).run(
-                      () => {
-                          snackbar.success(i18n.t("Database language updated successfully"));
-                      },
-                      () => {
-                          snackbar.error(i18n.t("Error updating database language."));
-                      }
-                  );
+            changeLocale(isUiLocale, e.target.value);
         }
     };
 
@@ -82,7 +53,7 @@ export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformat
                                 <Select
                                     defaultValue={userInformation.settings.keyUiLocale}
                                     MenuProps={{ disableScrollLock: true }}
-                                    onChange={e => changeLocale(e, true)}
+                                    onChange={e => changeUserLocale(e, true)}
                                 >
                                     {uiLocalesOptions.map(option => (
                                         <MenuItem key={option.locale} value={option.locale}>
@@ -98,7 +69,7 @@ export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformat
                                 <Select
                                     defaultValue={userInformation.settings.keyDbLocale}
                                     MenuProps={{ disableScrollLock: true }}
-                                    onChange={e => changeLocale(e, false)}
+                                    onChange={e => changeUserLocale(e, false)}
                                 >
                                     {databaseLocalesOptions.map(option => (
                                         <MenuItem key={option.locale} value={option.locale}>

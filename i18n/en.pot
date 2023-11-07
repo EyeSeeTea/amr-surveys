@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-06T06:17:10.253Z\n"
-"PO-Revision-Date: 2023-11-06T06:17:10.253Z\n"
+"POT-Creation-Date: 2023-11-07T07:15:29.375Z\n"
+"PO-Revision-Date: 2023-11-07T07:15:29.375Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -23,13 +23,12 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-msgid "PPS Survey Forms"
+msgid "Submission Success!"
 msgstr ""
 
-msgid "New Survey"
-msgstr ""
-
-msgid "PPS Country Questionnaires"
+msgid ""
+"Submission Failed! You do not have the necessary permissions, please "
+"contact your administrator"
 msgstr ""
 
 msgid "Create New Survey"
@@ -66,9 +65,6 @@ msgid "Settings"
 msgstr ""
 
 msgid "The password and confirm password fields don't match"
-msgstr ""
-
-msgid "User password changed successfully."
 msgstr ""
 
 msgid "Full name"
@@ -110,6 +106,27 @@ msgstr ""
 msgid "Change password"
 msgstr ""
 
+msgid "New Password"
+msgstr ""
+
+msgid "Confirm Password"
+msgstr ""
+
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
+msgstr ""
+
+msgid "Enable message email notifications"
+msgstr ""
+
+msgid "Enable message SMS notifications"
+msgstr ""
+
+msgid "User password changed successfully."
+msgstr ""
+
 msgid "Error fetching Database locales"
 msgstr ""
 
@@ -126,16 +143,4 @@ msgid "Database language updated successfully"
 msgstr ""
 
 msgid "Error updating database language."
-msgstr ""
-
-msgid "Interface language"
-msgstr ""
-
-msgid "Database language"
-msgstr ""
-
-msgid "Enable message email notifications"
-msgstr ""
-
-msgid "Enable message SMS notifications"
 msgstr ""

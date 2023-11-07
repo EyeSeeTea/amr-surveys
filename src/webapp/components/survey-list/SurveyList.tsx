@@ -9,8 +9,6 @@ import {
     Table,
     TableBody,
     TableRow,
-    Backdrop,
-    CircularProgress,
 } from "@material-ui/core";
 import { NavLink, useHistory } from "react-router-dom";
 import styled from "styled-components";
@@ -20,16 +18,16 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
-import { StyledLoaderContainer } from "../survey/SurveyForm";
 import { useEffect, useState } from "react";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { ContentLoader } from "../content-loader/ContentLoader";
 
 interface SurveyListProps {
     surveyType: SURVEY_FORM_TYPES;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     const { currentPPSSurveyForm, changeCurrentPPSSurveyForm } = useCurrentSurveys();
-    const { surveys, loading } = useSurveys(surveyType, currentPPSSurveyForm);
+    const { surveys, loading, error } = useSurveys(surveyType, currentPPSSurveyForm);
     const [options, setOptions] = useState<string[]>([]);
     const history = useHistory();
 
@@ -63,111 +61,109 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
 
     return (
         <ContentWrapper>
-            <Backdrop open={loading} style={{ color: "#fff", zIndex: 1 }}>
-                <StyledLoaderContainer>
-                    <CircularProgress color="inherit" size={50} />
-                </StyledLoaderContainer>
-            </Backdrop>
+            <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+                <CustomCard padding="20px 30px 20px">
+                    <ButtonWrapper>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            component={NavLink}
+                            to={{
+                                pathname: `/new-survey/${surveyType}`,
+                            }}
+                            exact={true}
+                        >
+                            {i18n.t("Create New Survey")}
+                        </Button>
+                    </ButtonWrapper>
 
-            <CustomCard padding="20px 30px 20px">
-                <ButtonWrapper>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        component={NavLink}
-                        to={{
-                            pathname: `/new-survey/${surveyType}`,
-                        }}
-                        exact={true}
-                    >
-                        {i18n.t("Create New Survey")}
-                    </Button>
-                </ButtonWrapper>
-
-                <Typography variant="h3">{i18n.t("Survey List")}</Typography>
-                {surveys && (
-                    <TableContentWrapper>
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Start Date")}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Status")}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Survey Type")}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell style={{ cursor: "pointer" }}>
-                                            <Typography variant="caption">
-                                                {i18n.t("Assigned Org Unit")}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Action")}
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                {surveys && surveys.length ? (
-                                    <StyledTableBody>
-                                        {surveys.map(survey => (
-                                            <TableRow key={survey.id}>
-                                                <TableCell>
-                                                    {survey.startDate?.toDateString() || ""}
-                                                </TableCell>
-                                                <TableCell>{survey.status}</TableCell>
-                                                <TableCell>{survey.surveyType}</TableCell>
-                                                <TableCell>{survey.assignedOrgUnit.name}</TableCell>
-                                                <TableCell style={{ opacity: 0.5 }}>
-                                                    <ActionMenuButton
-                                                        options={options}
-                                                        optionClickHandler={[
-                                                            {
-                                                                option: "Edit",
-                                                                handler: () =>
-                                                                    editSurvey(survey.id),
-                                                            },
-                                                            {
-                                                                option: "Assign Country",
-                                                                handler: () =>
-                                                                    assignCountry(survey.id),
-                                                            },
-                                                            {
-                                                                option: "List Countries",
-                                                                handler: () => {
-                                                                    listCountries(survey.id);
-                                                                },
-                                                            },
-                                                        ]}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </StyledTableBody>
-                                ) : (
-                                    <StyledTableBody>
+                    <Typography variant="h3">{i18n.t("Survey List")}</Typography>
+                    {surveys && (
+                        <TableContentWrapper>
+                            <TableContainer component={Paper}>
+                                <Table>
+                                    <TableHead>
                                         <TableRow>
-                                            <TableCell>No data found...</TableCell>
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Start Date")}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Status")}
+                                                </Typography>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Survey Type")}
+                                                </Typography>
+                                            </TableCell>
+
+                                            <TableCell style={{ cursor: "pointer" }}>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Assigned Org Unit")}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Action")}
+                                                </Typography>
+                                            </TableCell>
                                         </TableRow>
-                                    </StyledTableBody>
-                                )}
-                            </Table>
-                        </TableContainer>
-                    </TableContentWrapper>
-                )}
-            </CustomCard>
+                                    </TableHead>
+                                    {surveys && surveys.length ? (
+                                        <StyledTableBody>
+                                            {surveys.map(survey => (
+                                                <TableRow key={survey.id}>
+                                                    <TableCell>
+                                                        {survey.startDate?.toDateString() || ""}
+                                                    </TableCell>
+                                                    <TableCell>{survey.status}</TableCell>
+                                                    <TableCell>{survey.surveyType}</TableCell>
+                                                    <TableCell>
+                                                        {survey.assignedOrgUnit.name}
+                                                    </TableCell>
+                                                    <TableCell style={{ opacity: 0.5 }}>
+                                                        <ActionMenuButton
+                                                            options={options}
+                                                            optionClickHandler={[
+                                                                {
+                                                                    option: "Edit",
+                                                                    handler: () =>
+                                                                        editSurvey(survey.id),
+                                                                },
+                                                                {
+                                                                    option: "Assign Country",
+                                                                    handler: () =>
+                                                                        assignCountry(survey.id),
+                                                                },
+                                                                {
+                                                                    option: "List Countries",
+                                                                    handler: () => {
+                                                                        listCountries(survey.id);
+                                                                    },
+                                                                },
+                                                            ]}
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </StyledTableBody>
+                                    ) : (
+                                        <StyledTableBody>
+                                            <TableRow>
+                                                <TableCell>No data found...</TableCell>
+                                            </TableRow>
+                                        </StyledTableBody>
+                                    )}
+                                </Table>
+                            </TableContainer>
+                        </TableContentWrapper>
+                    )}
+                </CustomCard>
+            </ContentLoader>
         </ContentWrapper>
     );
 };

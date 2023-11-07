@@ -107,14 +107,6 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
                             keepMounted
                             open={Boolean(anchorEl)}
                             onClose={() => handleClose()}
-                            anchorOrigin={{
-                                vertical: "bottom",
-                                horizontal: "left",
-                            }}
-                            transformOrigin={{
-                                vertical: "top",
-                                horizontal: "left",
-                            }}
                             disableScrollLock={true}
                         >
                             <MenuItem onClick={() => handleClose("/user-profile")}>

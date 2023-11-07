@@ -11,8 +11,6 @@ export class GetPopulatedSurveyUseCase {
 
     public execute(eventId: Id, surveyType: SURVEY_FORM_TYPES): FutureData<Questionnaire> {
         const programId = getProgramId(surveyType);
-        return this.surveyReporsitory.getSurveyById(eventId).flatMap(event => {
-            return this.surveyReporsitory.getForm(programId, event);
-        });
+        return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId);
     }
 }

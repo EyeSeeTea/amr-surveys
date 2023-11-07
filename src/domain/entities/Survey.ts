@@ -1,5 +1,4 @@
-import { Id, Ref } from "@eyeseetea/d2-api";
-import { NamedRef } from "./Ref";
+import { NamedRef, Ref, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
     | "PPSSurveyForm"

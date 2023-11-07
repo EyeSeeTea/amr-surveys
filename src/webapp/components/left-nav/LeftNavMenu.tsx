@@ -1,6 +1,5 @@
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, colors, ListItem, makeStyles, Theme, Typography } from "@material-ui/core";
-
 import { NavLink } from "react-router-dom";
 import { MenuLeaf } from "../../hooks/useMenu";
 import { palette } from "../../pages/app/themes/dhis2.theme";

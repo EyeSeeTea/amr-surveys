@@ -1,8 +1,3 @@
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
-
-export interface TrackerEventsPostRequest {
-    events: D2TrackerEvent[];
-}
 export type ImportStrategy = "CREATE" | "UPDATE" | "CREATE_AND_UPDATE" | "DELETE";
 
 export interface EventProgram {
