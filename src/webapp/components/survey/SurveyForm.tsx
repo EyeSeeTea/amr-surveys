@@ -63,7 +63,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     } = useSurveyForm(props.formType, props.surveyId);
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
         props.formType,
-        currentOrgUnit?.orgUnitId,
+        currentOrgUnit?.orgUnitId ?? "",
         props.surveyId
     );
 
