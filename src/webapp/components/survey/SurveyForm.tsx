@@ -64,12 +64,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
-            snackbar.info(i18n.t(saveCompleteState.message));
+            snackbar.info(saveCompleteState.message);
             if (props.hideForm) props.hideForm();
         }
 
         if (saveCompleteState && saveCompleteState.status === "error") {
-            snackbar.error(i18n.t(saveCompleteState.message));
+            snackbar.error(saveCompleteState.message);
             if (props.hideForm) props.hideForm();
         }
     }, [error, saveCompleteState, snackbar, props]);

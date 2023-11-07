@@ -1,6 +1,7 @@
 import { useAppContext } from "../../../contexts/app-context";
 import { useState } from "react";
 import { SaveState } from "../../survey/hook/useSaveSurvey";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 export function useSavePassword() {
     const { compositionRoot } = useAppContext();
@@ -13,18 +14,16 @@ export function useSavePassword() {
             () => {
                 setSavePasswordStatus({
                     status: "success",
-                    message: "User password changed successfully.",
+                    message: i18n.t("User password changed successfully."),
                 });
                 setPassword("");
                 setConfirmPassword("");
-                // setIsLoading(false);
             },
             error => {
                 setSavePasswordStatus({
                     status: "error",
-                    message: error.message,
+                    message: i18n.t(error.message),
                 });
-                // setIsLoading(false);
             }
         );
     };

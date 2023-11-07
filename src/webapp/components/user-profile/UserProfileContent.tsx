@@ -40,11 +40,11 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
 
     useEffect(() => {
         if (savePasswordStatus && savePasswordStatus.status === "success") {
-            snackbar.info(i18n.t(savePasswordStatus.message));
+            snackbar.info(savePasswordStatus.message);
             setIsChangePasswordDialogOpen(false);
             setIsLoading(false);
         } else if (savePasswordStatus && savePasswordStatus.status === "error") {
-            snackbar.error(i18n.t(savePasswordStatus.message));
+            snackbar.error(savePasswordStatus.message);
             setIsLoading(false);
         }
     }, [savePasswordStatus, snackbar]);
@@ -170,7 +170,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
             >
                 <DialogContainer>
                     <FormControl variant="standard">
-                        <InputLabel htmlFor="password">New Password</InputLabel>
+                        <InputLabel htmlFor="password">{i18n.t("New Password")}</InputLabel>
                         <Input
                             id="password"
                             type={showPassword ? "text" : "password"}
@@ -190,7 +190,9 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                         />
                     </FormControl>
                     <FormControl variant="standard">
-                        <InputLabel htmlFor="confirm-password">Confirm Password</InputLabel>
+                        <InputLabel htmlFor="confirm-password">
+                            {i18n.t("Confirm Password")}
+                        </InputLabel>
                         <Input
                             id="confirm-password"
                             type={showConfirmPassword ? "text" : "password"}

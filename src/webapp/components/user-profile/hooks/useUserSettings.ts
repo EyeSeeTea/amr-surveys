@@ -2,6 +2,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import { SetStateAction, useEffect, useState } from "react";
 import { LocalesType } from "../../../../domain/usecases/GetDatabaseLocalesUseCase";
 import { SaveState } from "../../survey/hook/useSaveSurvey";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 export function useUserSettings() {
     const { compositionRoot } = useAppContext();
@@ -18,7 +19,7 @@ export function useUserSettings() {
             () => {
                 setSaveLocaleStatus({
                     status: "error",
-                    message: "Error fetching Database locales",
+                    message: i18n.t("Error fetching Database locales"),
                 });
             }
         );
@@ -29,7 +30,7 @@ export function useUserSettings() {
             () => {
                 setSaveLocaleStatus({
                     status: "error",
-                    message: "Error fetching UI locales",
+                    message: i18n.t("Error fetching UI locales"),
                 });
             }
         );
@@ -41,13 +42,13 @@ export function useUserSettings() {
                   () => {
                       setSaveLocaleStatus({
                           status: "success",
-                          message: "Interface language updated successfully",
+                          message: i18n.t("Interface language updated successfully"),
                       });
                   },
                   () => {
                       setSaveLocaleStatus({
                           status: "error",
-                          message: "Error updating interface language.",
+                          message: i18n.t("Error updating interface language."),
                       });
                   }
               )
@@ -55,13 +56,13 @@ export function useUserSettings() {
                   () => {
                       setSaveLocaleStatus({
                           status: "success",
-                          message: "Database language updated successfully",
+                          message: i18n.t("Database language updated successfully"),
                       });
                   },
                   () => {
                       setSaveLocaleStatus({
                           status: "error",
-                          message: "Error updating database language.",
+                          message: i18n.t("Error updating database language."),
                       });
                   }
               );

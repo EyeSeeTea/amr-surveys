@@ -3,6 +3,7 @@ import { Questionnaire } from "../../../../domain/entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { Id } from "../../../../domain/entities/Ref";
 import { useState } from "react";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 export interface SaveState {
     status: "success" | "error";
@@ -23,14 +24,15 @@ export function useSaveSurvey(
                 () => {
                     setSaveCompleteState({
                         status: "success",
-                        message: "Submission Success!",
+                        message: i18n.t("Submission Success!"),
                     });
                 },
                 () => {
                     setSaveCompleteState({
                         status: "error",
-                        message:
-                            "Submission Failed! You do not have the necessary permissions, please contact your administrator",
+                        message: i18n.t(
+                            "Submission Failed! You do not have the necessary permissions, please contact your administrator"
+                        ),
                     });
                 }
             );

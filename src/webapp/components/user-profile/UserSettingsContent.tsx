@@ -24,9 +24,9 @@ export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformat
 
     useEffect(() => {
         if (saveLocaleStatus && saveLocaleStatus.status === "success") {
-            snackbar.info(i18n.t(saveLocaleStatus.message));
+            snackbar.info(saveLocaleStatus.message);
         } else if (saveLocaleStatus && saveLocaleStatus.status === "error") {
-            snackbar.error(i18n.t(saveLocaleStatus.message));
+            snackbar.error(saveLocaleStatus.message);
         }
     }, [snackbar, saveLocaleStatus]);
 
