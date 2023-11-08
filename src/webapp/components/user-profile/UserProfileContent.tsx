@@ -14,10 +14,11 @@ import {
     InputLabel,
 } from "@material-ui/core";
 import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
 import { OrgUnitAccess, UserAttrs, UserRole } from "../../../domain/entities/User";
 import { useSavePassword } from "./hooks/useSavePassword";
+import { useUserProfile } from "./hooks/useUserProfile";
 
 interface UserProfileContentProps {
     userInformation: UserAttrs;
@@ -33,10 +34,17 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
         savePasswordStatus,
         savePassword,
     } = useSavePassword();
-    const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+
+    const {
+        isChangePasswordDialogOpen,
+        setIsChangePasswordDialogOpen,
+        showPassword,
+        setShowPassword,
+        showConfirmPassword,
+        setShowConfirmPassword,
+        isLoading,
+        setIsLoading,
+    } = useUserProfile();
 
     useEffect(() => {
         if (savePasswordStatus && savePasswordStatus.status === "success") {
@@ -47,7 +55,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
             snackbar.error(savePasswordStatus.message);
             setIsLoading(false);
         }
-    }, [savePasswordStatus, snackbar]);
+    }, [savePasswordStatus, snackbar, setIsChangePasswordDialogOpen, setIsLoading]);
 
     const saveUserPassword = () => {
         if (password !== confirmPassword) {
