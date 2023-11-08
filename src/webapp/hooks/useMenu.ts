@@ -28,6 +28,7 @@ export function useMenu() {
     } = useAppContext();
     const [menu, setMenu] = useState<Menu[]>();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string>();
     const snackbar = useSnackbar();
 
     const mapModuleToMenu = (modules: AMRSurveyModule[]): Menu[] => {
@@ -58,11 +59,11 @@ export function useMenu() {
                 setLoading(false);
             },
             err => {
-                snackbar.error(i18n.t(err.message));
+                setError(i18n.t(err.message));
                 setLoading(false);
             }
         );
     }, [compositionRoot.modules.getAllAccessible, userGroups, snackbar]);
 
-    return { menu, loading };
+    return { menu, loading, error };
 }

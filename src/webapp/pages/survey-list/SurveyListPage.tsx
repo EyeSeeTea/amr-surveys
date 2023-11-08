@@ -11,7 +11,7 @@ export const SurveyListPage: React.FC = React.memo(() => {
     const { changeCurrentPPSSurveyForm } = useCurrentSurveys();
 
     useEffect(() => {
-        if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined); //TO DO : Can we set this on menu click of surveys
+        if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined);
     }, [type, changeCurrentPPSSurveyForm]);
 
     return (

@@ -109,7 +109,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
         if (props.surveyId) {
-            alert("Delete the Survey and create new one? Yes/No");
+            alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
             return;
         }
         if (orgUnitPaths[0]) {
