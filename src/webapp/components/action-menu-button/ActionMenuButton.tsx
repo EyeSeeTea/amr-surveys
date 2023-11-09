@@ -5,9 +5,14 @@ import * as React from "react";
 interface ActionMenuProps {
     options: string[];
     optionClickHandler: { option: string; handler: () => void }[];
+    onClickHandler: () => void;
 }
 
-export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionClickHandler }) => {
+export const ActionMenuButton: React.FC<ActionMenuProps> = ({
+    options,
+    optionClickHandler,
+    onClickHandler,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -23,7 +28,7 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionCli
     };
 
     return (
-        <div>
+        <div onClick={onClickHandler}>
             <IconButton
                 aria-label="more"
                 id="long-button"

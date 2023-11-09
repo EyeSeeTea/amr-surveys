@@ -239,11 +239,15 @@ export class SurveyD2Repository implements SurveyRepository {
                         // eslint-disable-next-line testing-library/await-async-utils
                         this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
                     ).flatMap(result => {
-                        if (result) {
+                        if (result && result.status !== "ERROR") {
                             return Future.success(undefined);
                         } else {
                             return Future.error(
-                                new Error("An error occured while saving the survey")
+                                new Error(
+                                    `Error: ${
+                                        result?.validationReport?.errorReports?.at(0)?.message
+                                    } `
+                                )
                             );
                         }
                     });
@@ -304,11 +308,16 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]> {
+        const ouMode =
+            programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID
+                ? "DESCENDANTS"
+                : undefined;
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
                 program: programId,
                 orgUnit: orgUnitId,
+                ouMode: ouMode,
             })
         ).flatMap(events => {
             const surveys: Survey[] = events.instances.map(event => {

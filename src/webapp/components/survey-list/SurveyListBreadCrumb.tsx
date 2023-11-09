@@ -12,13 +12,16 @@ export interface SurveyListBreadCrumbProps {
 }
 
 export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type }) => {
-    const { currentPPSSurveyForm } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentCountryQuestionnaire, currentHospitalForm } =
+        useCurrentSurveys();
     return (
         <StyledBreadCrumbs aria-label="breadcrumb" separator="">
             <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
                 <span> {i18n.t("PPS Survey Forms")}</span>
             </Button>
-            {type === "PPSCountryQuestionnaire" && (
+            {(type === "PPSCountryQuestionnaire" ||
+                type === "PPSHospitalForm" ||
+                type === "PPSWardRegister") && (
                 <StyledBreadCrumbChild>
                     <ChevronRightIcon />
                     <Button
@@ -31,6 +34,39 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                     <ChevronRightIcon />
                     <Button>
                         <span>{i18n.t("PPS Country Questionnaires")}</span>
+                    </Button>
+                </StyledBreadCrumbChild>
+            )}
+            {(type === "PPSHospitalForm" || type === "PPSWardRegister") && (
+                <StyledBreadCrumbChild>
+                    <ChevronRightIcon />
+                    <Button
+                        component={NavLink}
+                        to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire?.id}`}
+                        exact={true}
+                    >
+                        <span>{currentCountryQuestionnaire?.id}</span>
+                    </Button>
+                    <ChevronRightIcon />
+                    <Button>
+                        <span>{i18n.t("PPS Hospital Forms")}</span>
+                    </Button>
+                </StyledBreadCrumbChild>
+            )}
+
+            {type === "PPSWardRegister" && (
+                <StyledBreadCrumbChild>
+                    <ChevronRightIcon />
+                    <Button
+                        component={NavLink}
+                        to={`/survey/PPSHospitalForm/${currentHospitalForm?.id}`}
+                        exact={true}
+                    >
+                        <span>{currentHospitalForm?.id}</span>
+                    </Button>
+                    <ChevronRightIcon />
+                    <Button>
+                        <span>{i18n.t("PPS Ward Registers")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}

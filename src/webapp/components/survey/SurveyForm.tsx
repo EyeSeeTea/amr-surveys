@@ -28,10 +28,12 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
+import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 
 export interface SurveyFormProps {
     hideForm: () => void;
-    surveyId?: Id;
+    currentSurveyId?: Id;
     formType: SURVEY_FORM_TYPES;
 }
 
@@ -60,12 +62,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
-    } = useSurveyForm(props.formType, props.surveyId);
+    } = useSurveyForm(props.formType, props.currentSurveyId);
+
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
         props.formType,
         currentOrgUnit?.orgUnitId ?? "",
-        props.surveyId
+        props.currentSurveyId
     );
+
+    const { currentCountryQuestionnaire } = useCurrentSurveys();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -108,19 +113,34 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     };
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        if (props.surveyId) {
+        if (props.currentSurveyId) {
             alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
             return;
         }
         if (orgUnitPaths[0]) {
             const orgUnits = orgUnitPaths[0].split("/");
-            const selectedCountry = orgUnits[orgUnits.length - 1];
-            if (selectedCountry) {
-                const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
-                    ou => ou.orgUnitId === selectedCountry
-                );
-                if (currentOrgUnitAccess) {
-                    setCurrentOrgUnit(currentOrgUnitAccess);
+
+            const selectedOU = orgUnits[orgUnits.length - 1];
+            if (selectedOU) {
+                if (props.formType === "PPSCountryQuestionnaire") {
+                    const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
+                        ou => ou.orgUnitId === selectedOU
+                    );
+                    if (currentOrgUnitAccess) {
+                        setCurrentOrgUnit(currentOrgUnitAccess);
+                    }
+                } else if (props.formType === "PPSHospitalForm") {
+                    //TO DO : Hospital OU should also be part of currentUser.userOrgUnitsAccess
+                    //maybe in another data structure?
+                    setCurrentOrgUnit({
+                        orgUnitId: selectedOU,
+                        orgUnitName: "",
+                        orgUnitShortName: "",
+                        orgUnitCode: "",
+                        orgUnitPath: orgUnitPaths[0],
+                        readAccess: true,
+                        captureAccess: true,
+                    });
                 }
             }
         }
@@ -131,7 +151,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <Typography variant="h5">{i18n.t(questionnaire?.name || "")}</Typography>
 
-                {props.formType === "PPSCountryQuestionnaire" && (
+                {(props.formType === "PPSCountryQuestionnaire" ||
+                    props.formType === "PPSHospitalForm") && (
                     <OrgUnitsSelector
                         api={api}
                         fullWidth={false}
@@ -140,13 +161,18 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         singleSelection={true}
                         typeInput={"radio"}
                         hideMemberCount={false}
-                        selectableLevels={[3]}
+                        selectableLevels={props.formType === "PPSCountryQuestionnaire" ? [3] : [4]}
                         controls={{
                             filterByLevel: false,
                             filterByGroup: false,
                             filterByProgram: false,
                             selectAll: false,
                         }}
+                        rootIds={
+                            props.formType === "PPSHospitalForm"
+                                ? [currentCountryQuestionnaire?.orgUnitId]
+                                : [GLOBAL_OU_ID]
+                        }
                     />
                 )}
 

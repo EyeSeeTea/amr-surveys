@@ -10,7 +10,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
-    const { currentPPSSurveyForm } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentHospitalForm } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
     useEffect(() => {
@@ -32,11 +32,26 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
             return compositionRoot.surveys.getPopulatedForm.execute(eventId, formType).run(
                 questionnaireWithData => {
                     setQuestionnaire(questionnaireWithData);
-                    const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
-                        ou => ou.orgUnitId === questionnaireWithData.orgUnit.id
-                    );
-                    if (currentOrgUnitAccess) {
-                        setCurrentOrgUnit(currentOrgUnitAccess);
+
+                    if (formType === "PPSCountryQuestionnaire") {
+                        const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
+                            ou => ou.orgUnitId === questionnaireWithData.orgUnit.id
+                        );
+                        if (currentOrgUnitAccess) {
+                            setCurrentOrgUnit(currentOrgUnitAccess);
+                        }
+                    } else if (formType === "PPSHospitalForm") {
+                        if (currentHospitalForm) {
+                            setCurrentOrgUnit({
+                                orgUnitId: currentHospitalForm.orgUnitId,
+                                orgUnitName: "",
+                                orgUnitShortName: "",
+                                orgUnitCode: "",
+                                orgUnitPath: "",
+                                readAccess: true,
+                                captureAccess: true,
+                            });
+                        }
                     }
                     setLoading(false);
                 },
@@ -53,6 +68,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentPPSSurveyForm,
         currentUser.userOrgUnitsAccess,
         setError,
+        currentHospitalForm,
     ]);
 
     return {

@@ -1,6 +1,7 @@
 import React from "react";
 import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
+
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyForm } from "../../components/survey/SurveyForm";
 import { SurveyFormBreadCrumb } from "../../components/survey/SurveyFormBreadCrumb";
@@ -13,10 +14,13 @@ export const SurveyPage: React.FC = () => {
         history.push(`/surveys/${type}`);
     };
 
+    // if ((type === "PPSHospitalForm" || type === "PPSWardRegister") && !parentHierarchy) {
+    //     return <CircularProgress />;
+    // }
     return (
         <ContentWrapper>
             <SurveyFormBreadCrumb type={type} id={id} />
-            <SurveyForm hideForm={hideForm} formType={type} surveyId={id} />
+            <SurveyForm hideForm={hideForm} formType={type} currentSurveyId={id} />
         </ContentWrapper>
     );
 };

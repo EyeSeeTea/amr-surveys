@@ -18,45 +18,77 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
-import { useEffect, useState } from "react";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
+import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
+import { useState } from "react";
 
 interface SurveyListProps {
     surveyType: SURVEY_FORM_TYPES;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
-    const { currentPPSSurveyForm, changeCurrentPPSSurveyForm } = useCurrentSurveys();
-    const { surveys, loading, error } = useSurveys(surveyType, currentPPSSurveyForm);
+    const {
+        changeCurrentPPSSurveyForm,
+        changeCurrentCountryQuestionnaire,
+        changeCurrentHospitalForm,
+    } = useCurrentSurveys();
+    const { surveys, loading, error } = useSurveys(surveyType);
     const [options, setOptions] = useState<string[]>([]);
+
     const history = useHistory();
 
-    useEffect(() => {
-        if (currentPPSSurveyForm) {
-            setOptions(["Edit"]);
-        } else {
-            setOptions(["Edit", "Assign Country", "List Countries"]);
-        }
-    }, [setOptions, currentPPSSurveyForm]);
-
-    const editSurvey = (surveyId: Id) => {
+    const editSurvey = (surveyId: Id, orgUnitId: Id) => {
+        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
+        else if (surveyType === "PPSCountryQuestionnaire")
+            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
+        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
         history.push({
             pathname: `/survey/${surveyType}/${surveyId}`,
         });
     };
 
-    const assignCountry = (surveyId: Id) => {
-        changeCurrentPPSSurveyForm(surveyId);
-        history.push({
-            pathname: `/new-survey/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-        });
+    const assignChild = (surveyId: Id, orgUnitId: Id) => {
+        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
+        else if (surveyType === "PPSCountryQuestionnaire")
+            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
+        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
+
+        const childSurveyType = getChildSurveyType(surveyType);
+        if (childSurveyType) {
+            history.push({
+                pathname: `/new-survey/${childSurveyType}`,
+            });
+        } else {
+            console.debug("An error occured, unknown survey type");
+        }
     };
 
-    const listCountries = (surveyId: Id) => {
-        changeCurrentPPSSurveyForm(surveyId);
-        history.replace({
-            pathname: `/surveys/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-        });
+    const listChildren = (surveyId: Id, orgUnitId: Id) => {
+        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
+        else if (surveyType === "PPSCountryQuestionnaire")
+            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
+        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
+
+        const childSurveyType = getChildSurveyType(surveyType);
+        if (childSurveyType)
+            history.replace({
+                pathname: `/surveys/${childSurveyType}`,
+            });
+        else {
+            console.debug("An error occured, unknown survey type");
+        }
+    };
+
+    // const getSurveyOptionsCallback = useCallback(
+    //     (ppsSurveyType: string) => {
+    //         return getSurveyOptions(surveyType, ppsSurveyType);
+    //     },
+    //     [surveyType]
+    // );
+
+    const actionClick = (ppsSurveyType: string) => {
+        const currentOptions = getSurveyOptions(surveyType, ppsSurveyType);
+        setOptions(currentOptions);
     };
 
     return (
@@ -77,7 +109,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                         </Button>
                     </ButtonWrapper>
 
-                    <Typography variant="h3">{i18n.t("Survey List")}</Typography>
+                    <Typography variant="h3">{i18n.t(`Survey List [${surveyType}]`)}</Typography>
                     {surveys && (
                         <TableContentWrapper>
                             <TableContainer component={Paper}>
@@ -127,22 +159,87 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                     </TableCell>
                                                     <TableCell style={{ opacity: 0.5 }}>
                                                         <ActionMenuButton
+                                                            onClickHandler={() =>
+                                                                actionClick(survey.surveyType)
+                                                            }
                                                             options={options}
                                                             optionClickHandler={[
                                                                 {
                                                                     option: "Edit",
                                                                     handler: () =>
-                                                                        editSurvey(survey.id),
+                                                                        editSurvey(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        ),
                                                                 },
                                                                 {
                                                                     option: "Assign Country",
                                                                     handler: () =>
-                                                                        assignCountry(survey.id),
+                                                                        assignChild(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        ),
                                                                 },
                                                                 {
                                                                     option: "List Countries",
+
                                                                     handler: () => {
-                                                                        listCountries(survey.id);
+                                                                        listChildren(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
+                                                                    },
+                                                                },
+                                                                {
+                                                                    option: "Assign Hospital",
+                                                                    handler: () =>
+                                                                        assignChild(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        ),
+                                                                },
+                                                                {
+                                                                    option: "List Hospitals",
+
+                                                                    handler: () => {
+                                                                        listChildren(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
+                                                                    },
+                                                                },
+                                                                {
+                                                                    option: "Assign Ward",
+                                                                    handler: () =>
+                                                                        assignChild(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        ),
+                                                                },
+                                                                {
+                                                                    option: "List Wards",
+                                                                    handler: () => {
+                                                                        listChildren(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
+                                                                    },
+                                                                },
+                                                                {
+                                                                    option: "List Country",
+                                                                    handler: () => {
+                                                                        listChildren(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
                                                                     },
                                                                 },
                                                             ]}

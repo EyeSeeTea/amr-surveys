@@ -2,7 +2,7 @@ import React from "react";
 import { HashRouter, Route, Switch } from "react-router-dom";
 import { MainLayout } from "../components/main-layout/MainLayout";
 import { CurrentSurveysContextProvider } from "../contexts/CurrentSurveysContextProvider";
-import { SurveyPage } from "./edit-survey/SurveyPage";
+import { SurveyPage } from "./survey/SurveyPage";
 import { LandingPage } from "./landing/LandingPage";
 import { SurveyListPage } from "./survey-list/SurveyListPage";
 import { UserProfilePage } from "./user-profile/UserProfilePage";

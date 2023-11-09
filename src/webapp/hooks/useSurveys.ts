@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
-import { Id } from "../../domain/entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
+import { useCurrentSurveys } from "../contexts/current-surveys-context";
 
-export function useSurveys(surveyType: SURVEY_FORM_TYPES, parentSurveyId: Id | undefined) {
+export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
+    const { currentPPSSurveyForm, currentCountryQuestionnaire, currentHospitalForm } =
+        useCurrentSurveys();
 
     useEffect(() => {
         setLoading(true);
-        compositionRoot.surveys.getSurveys.execute(surveyType, parentSurveyId).run(
+        let orgUnitId = "";
+        if (surveyType === "PPSHospitalForm")
+            orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
+        else if (surveyType === "PPSWardRegister") orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+
+        compositionRoot.surveys.getSurveys.execute(surveyType, orgUnitId, currentPPSSurveyForm).run(
             surveys => {
                 setSurveys(surveys);
                 setLoading(false);
@@ -21,7 +28,13 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES, parentSurveyId: Id | u
                 setLoading(false);
             }
         );
-    }, [compositionRoot.surveys.getSurveys, surveyType, parentSurveyId]);
+    }, [
+        compositionRoot.surveys.getSurveys,
+        surveyType,
+        currentPPSSurveyForm,
+        currentCountryQuestionnaire?.orgUnitId,
+        currentHospitalForm?.orgUnitId,
+    ]);
 
     return { surveys, loading, error };
 }

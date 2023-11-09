@@ -12,22 +12,22 @@ export class GetAllSurveysUseCase {
 
     public execute(
         surveyType: SURVEY_FORM_TYPES,
-        parentSurveyId: Id | undefined
+        orgUnitId: Id,
+        ppsSurveyId: Id | undefined
     ): FutureData<Survey[]> {
-        let orgUnitId = "";
         const programId = getProgramId(surveyType);
 
         //All PPS Survey Forms are Global.
         if (surveyType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
         return this.surveyReporsitory.getSurveys(programId, orgUnitId).flatMap(surveys => {
-            if (parentSurveyId) {
+            if (ppsSurveyId) {
                 //Parent Id should be set only for child forms, this is a just an additional check
-                if (surveyType === "PPSCountryQuestionnaire") {
+                if (surveyType !== "PPSSurveyForm") {
                     //Filter Surveys by parentSurveyId
                     const filteredSurveys = _(
                         surveys.map(survey => {
-                            if (survey.parentSurveyId === parentSurveyId) return survey;
+                            if (survey.parentSurveyId === ppsSurveyId) return survey;
                         })
                     )
                         .compact()

@@ -5,8 +5,8 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
-import { Id } from "../../../domain/entities/Ref";
 import i18n from "@eyeseetea/feedback-component/locales";
+import { Id } from "../../../domain/entities/Ref";
 
 export interface SurveyFormBreadCrumbProps {
     type: SURVEY_FORM_TYPES;
@@ -14,18 +14,44 @@ export interface SurveyFormBreadCrumbProps {
 }
 
 export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type, id }) => {
-    const { currentPPSSurveyForm } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentCountryQuestionnaire, currentHospitalForm } =
+        useCurrentSurveys();
     return (
         <StyledBreadCrumbs aria-label="breadcrumb" separator="">
             <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
                 <span>{i18n.t("PPS Survey Forms")}</span>
             </Button>
-            {type === "PPSSurveyForm" && (
+
+            <StyledBreadCrumbChild>
+                <ChevronRightIcon />
+                {currentPPSSurveyForm ? (
+                    <Button>
+                        <span>{currentPPSSurveyForm}</span>
+                    </Button>
+                ) : (
+                    <Button>
+                        <span>{i18n.t("New Survey")}</span>
+                    </Button>
+                )}
+            </StyledBreadCrumbChild>
+
+            {(type === "PPSCountryQuestionnaire" ||
+                type === "PPSHospitalForm" ||
+                type === "PPSWardRegister") && (
                 <StyledBreadCrumbChild>
                     <ChevronRightIcon />
-                    {id ? (
+
+                    <Button
+                        component={NavLink}
+                        to={`/surveys/PPSCountryQuestionnaire`}
+                        exact={true}
+                    >
+                        <span>{i18n.t("PPS Country Questionnaires")}</span>
+                    </Button>
+                    <ChevronRightIcon />
+                    {currentCountryQuestionnaire ? (
                         <Button>
-                            <span>{id}</span>
+                            <span>{currentCountryQuestionnaire.id}</span>
                         </Button>
                     ) : (
                         <Button>
@@ -34,23 +60,29 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     )}
                 </StyledBreadCrumbChild>
             )}
-            {type === "PPSCountryQuestionnaire" && (
+            {(type === "PPSHospitalForm" || type === "PPSWardRegister") && (
                 <StyledBreadCrumbChild>
                     <ChevronRightIcon />
-                    <Button
-                        component={NavLink}
-                        to={`/survey/PPSSurveyForm/${currentPPSSurveyForm}`}
-                        exact={true}
-                    >
-                        <span>{currentPPSSurveyForm}</span>
+                    <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
+                        <span>{i18n.t("PPS Hospital Forms")}</span>
                     </Button>
                     <ChevronRightIcon />
-                    <Button
-                        component={NavLink}
-                        to={`/surveys/PPSCountryQuestionnaire`}
-                        exact={true}
-                    >
-                        <span>{i18n.t("PPS Country Questionnaires")}</span>
+                    {currentHospitalForm ? (
+                        <Button>
+                            <span>{currentHospitalForm.id}</span>
+                        </Button>
+                    ) : (
+                        <Button>
+                            <span>{i18n.t("New Survey")}</span>
+                        </Button>
+                    )}
+                </StyledBreadCrumbChild>
+            )}
+            {type === "PPSWardRegister" && (
+                <StyledBreadCrumbChild>
+                    <ChevronRightIcon />
+                    <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
+                        <span>{i18n.t("PPS Ward Registers")}</span>
                     </Button>
                     <ChevronRightIcon />
                     {id ? (
