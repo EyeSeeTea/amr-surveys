@@ -1,6 +1,6 @@
-import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { Questionnaire } from "../entities/Questionnaire";
+import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 
 import { SurveyRepository } from "../repositories/SurveyRepository";
@@ -11,6 +11,6 @@ export class GetPopulatedSurveyUseCase {
 
     public execute(eventId: Id, surveyType: SURVEY_FORM_TYPES): FutureData<Questionnaire> {
         const programId = getProgramId(surveyType);
-        return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId);
+        return this.surveyReporsitory.getForm(eventId, programId);
     }
 }
