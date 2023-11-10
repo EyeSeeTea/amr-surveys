@@ -3,7 +3,7 @@ import { FeedbackOptions } from "@eyeseetea/feedback-component";
 export const appConfig: AppConfig = {
     appKey: "dhis2-app-skeleton",
     appearance: {
-        showShareButton: true,
+        showShareButton: false,
     },
     feedback: {
         repositories: {

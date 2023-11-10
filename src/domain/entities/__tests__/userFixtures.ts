@@ -18,6 +18,23 @@ export function createUserWithGroups(userGroups: NamedRef[] = []): User {
         username: "user",
         userRoles: [],
         userGroups,
+        userOrgUnitsAccess: [],
+        email: "johntraore@johntraore.com",
+        phoneNumber: "1234567890",
+        introduction: "",
+        birthday: "01/01/1990",
+        nationality: "",
+        employer: "",
+        jobTitle: "",
+        education: "",
+        interests: "",
+        languages: "",
+        settings: {
+            keyUiLocale: "en",
+            keyDbLocale: "en",
+            keyMessageEmailNotification: true,
+            keyMessageSmsNotification: true,
+        },
     });
 }
 function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
@@ -27,5 +44,22 @@ function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
         username: "user",
         userRoles,
         userGroups,
+        userOrgUnitsAccess: [],
+        email: "johntraore@johntraore.com",
+        phoneNumber: "1234567890",
+        introduction: "",
+        birthday: "01/01/1990",
+        nationality: "",
+        employer: "",
+        jobTitle: "",
+        education: "",
+        interests: "",
+        languages: "",
+        settings: {
+            keyUiLocale: "en",
+            keyDbLocale: "en",
+            keyMessageEmailNotification: true,
+            keyMessageSmsNotification: true,
+        },
     });
 }

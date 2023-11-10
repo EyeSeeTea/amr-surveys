@@ -16,7 +16,10 @@ export default ({ mode }) => {
             react(),
             checker({
                 typescript: true,
-                // eslint: { lintCommand: 'eslint "./src/**/*.{ts,tsx}"', dev: { logLevel: ["error"] } },
+                eslint: {
+                    lintCommand: 'eslint "./src/**/*.{ts,tsx}"',
+                    dev: { logLevel: ["error", "warning"] },
+                },
             }),
         ],
         test: {

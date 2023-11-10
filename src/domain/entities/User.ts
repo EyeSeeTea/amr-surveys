@@ -1,12 +1,50 @@
 import { Struct } from "./generic/Struct";
-import { NamedRef } from "./Ref";
+import { Id, NamedRef } from "./Ref";
 
+export interface OrgUnitAccess {
+    orgUnitId: Id;
+    orgUnitName: string;
+    orgUnitShortName: string;
+    orgUnitCode: string;
+    orgUnitPath: string;
+    readAccess: boolean;
+    captureAccess: boolean;
+}
+export interface UserGroup {
+    id: Id;
+    name: string;
+}
+export interface ModuleAccess {
+    moduleId: Id;
+    moduleName: string;
+    readAccess: boolean;
+    captureAccess: boolean;
+    usergroups: UserGroup[];
+}
+export interface UserSettings {
+    keyUiLocale: string;
+    keyDbLocale: string;
+    keyMessageEmailNotification: boolean;
+    keyMessageSmsNotification: boolean;
+}
 export interface UserAttrs {
     id: string;
     name: string;
     username: string;
     userRoles: UserRole[];
     userGroups: NamedRef[];
+    userOrgUnitsAccess: OrgUnitAccess[];
+    email: string;
+    phoneNumber: string;
+    introduction: string;
+    birthday: string;
+    nationality: string;
+    employer: string;
+    jobTitle: string;
+    education: string;
+    interests: string;
+    languages: string;
+    settings: UserSettings;
 }
 
 export interface UserRole extends NamedRef {

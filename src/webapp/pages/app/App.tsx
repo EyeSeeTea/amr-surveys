@@ -1,4 +1,3 @@
-import { HeaderBar } from "@dhis2/ui";
 import { SnackbarProvider } from "@eyeseetea/d2-ui-components";
 import { Feedback } from "@eyeseetea/feedback-component";
 import { MuiThemeProvider } from "@material-ui/core/styles";
@@ -9,6 +8,7 @@ import { appConfig } from "../../../app-config";
 import { CompositionRoot } from "../../../CompositionRoot";
 import Share from "../../components/share/Share";
 import { AppContext, AppContextState } from "../../contexts/app-context";
+import { CurrentOrgUnitContextProvider } from "../../contexts/current-org-unit-context/CurrentOrgUnitContextProvider";
 import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
@@ -43,8 +43,6 @@ function App(props: AppProps) {
         <MuiThemeProvider theme={muiTheme}>
             <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                 <SnackbarProvider>
-                    <HeaderBar appName="Skeleton App" />
-
                     {appConfig.feedback && appContext && (
                         <Feedback
                             options={appConfig.feedback}
@@ -54,7 +52,9 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <Router />
+                            <CurrentOrgUnitContextProvider>
+                                <Router />
+                            </CurrentOrgUnitContextProvider>
                         </AppContext.Provider>
                     </div>
 

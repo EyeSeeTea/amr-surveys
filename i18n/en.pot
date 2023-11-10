@@ -5,23 +5,148 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-09-18T13:40:05.079Z\n"
-"PO-Revision-Date: 2023-09-18T13:40:05.079Z\n"
+"POT-Creation-Date: 2023-11-07T07:15:29.375Z\n"
+"PO-Revision-Date: 2023-11-07T07:15:29.375Z\n"
 
-msgid "Add"
+msgid "WHO privacy policy"
 msgstr ""
 
-msgid "List"
+msgid "HOME"
 msgstr ""
 
-msgid "Back"
+msgid "Log Out"
 msgstr ""
 
-msgid "Help"
+msgid "No Organisation Units found"
 msgstr ""
 
-msgid "Hello {{name}}"
+msgid "Search"
 msgstr ""
 
-msgid "Detail page"
+msgid "Cancel"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Submission Success!"
+msgstr ""
+
+msgid ""
+"Submission Failed! You do not have the necessary permissions, please "
+"contact your administrator"
+msgstr ""
+
+msgid "Create New Survey"
+msgstr ""
+
+msgid "Survey List"
+msgstr ""
+
+msgid "Start Date"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Survey Type"
+msgstr ""
+
+msgid "Assigned Org Unit"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "The password and confirm password fields don't match"
+msgstr ""
+
+msgid "Full name"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Phone number"
+msgstr ""
+
+msgid "Birthday"
+msgstr ""
+
+msgid "Nationality"
+msgstr ""
+
+msgid "Job title"
+msgstr ""
+
+msgid "Employer"
+msgstr ""
+
+msgid "Education"
+msgstr ""
+
+msgid "Interests"
+msgstr ""
+
+msgid "Languages"
+msgstr ""
+
+msgid "Change Password"
+msgstr ""
+
+msgid "Change password"
+msgstr ""
+
+msgid "New Password"
+msgstr ""
+
+msgid "Confirm Password"
+msgstr ""
+
+msgid "Interface language"
+msgstr ""
+
+msgid "Database language"
+msgstr ""
+
+msgid "Enable message email notifications"
+msgstr ""
+
+msgid "Enable message SMS notifications"
+msgstr ""
+
+msgid "User password changed successfully."
+msgstr ""
+
+msgid "Error fetching Database locales"
+msgstr ""
+
+msgid "Error fetching UI locales"
+msgstr ""
+
+msgid "Interface language updated successfully"
+msgstr ""
+
+msgid "Error updating interface language."
+msgstr ""
+
+msgid "Database language updated successfully"
+msgstr ""
+
+msgid "Error updating database language."
 msgstr ""
