@@ -1,6 +1,6 @@
 import { useConfig } from "@dhis2/app-runtime";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { Backdrop, Box, Button, Typography } from "@material-ui/core";
+import { Box, Button, Typography } from "@material-ui/core";
 import { CircularProgress, List } from "material-ui";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
@@ -10,10 +10,11 @@ import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import LeftNavMenu from "./LeftNavMenu";
 import LeftNavMenuGroup from "./LeftNavMenuGroup";
 import { useMenu } from "../../hooks/useMenu";
+import { ContentLoader } from "../content-loader/ContentLoader";
 
 export const LeftNav: React.FC = () => {
     const { baseUrl } = useConfig();
-    const { menu, loading } = useMenu();
+    const { menu, loading, error } = useMenu();
 
     const logout = () => {
         //TO D0 : Actually logout, this is just redirecting the page.
@@ -25,49 +26,46 @@ export const LeftNav: React.FC = () => {
 
     return (
         <LeftNavContainer>
-            <CustomCard minheight="600px" padding="0 0 80px 0" maxwidth="250px">
-                <HomeButtonWrapper>
-                    <Button className="home-button" component={NavLink} to="/" exact={true}>
-                        <StarGradient className="star-icon" />
-                        <Box width={15} />
-                        <Typography>{i18n.t("HOME")}</Typography>
-                    </Button>
-                </HomeButtonWrapper>
-                {menu && (
-                    <List>
-                        {menu.map(menu =>
-                            menu.kind === "MenuGroup" ? (
-                                <LeftNavMenuGroup
-                                    menu={menu}
-                                    key={menu.title}
-                                    groupName={menu.title}
-                                />
-                            ) : (
-                                <LeftNavMenu menu={menu} key={menu.title} />
-                            )
-                        )}
-                    </List>
-                )}
-
-                <Backdrop open={loading} style={{ zIndex: 1 }}>
-                    <StyledCircularProgress color="white" size={30} />
-                </Backdrop>
-
-                <div style={{ flexGrow: 1 }} />
-            </CustomCard>
-            <ButtonContainer>
-                <div>
-                    <StyledButton
-                        onClick={logout}
-                        variant="contained"
-                        color="default"
-                        startIcon={<ExitToAppIcon />}
-                        disableElevation
-                    >
-                        {i18n.t("Log Out")}
-                    </StyledButton>
-                </div>
-            </ButtonContainer>
+            <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+                <CustomCard minheight="600px" padding="0 0 80px 0" maxwidth="250px">
+                    <HomeButtonWrapper>
+                        <Button className="home-button" component={NavLink} to="/" exact={true}>
+                            <StarGradient className="star-icon" />
+                            <Box width={15} />
+                            <Typography>{i18n.t("HOME")}</Typography>
+                        </Button>
+                    </HomeButtonWrapper>
+                    {menu && (
+                        <List>
+                            {menu.map(menu =>
+                                menu.kind === "MenuGroup" ? (
+                                    <LeftNavMenuGroup
+                                        menu={menu}
+                                        key={menu.title}
+                                        groupName={menu.title}
+                                    />
+                                ) : (
+                                    <LeftNavMenu menu={menu} key={menu.title} />
+                                )
+                            )}
+                        </List>
+                    )}
+                    <div style={{ flexGrow: 1 }} />
+                </CustomCard>
+                <ButtonContainer>
+                    <div>
+                        <StyledButton
+                            onClick={logout}
+                            variant="contained"
+                            color="default"
+                            startIcon={<ExitToAppIcon />}
+                            disableElevation
+                        >
+                            {i18n.t("Log Out")}
+                        </StyledButton>
+                    </div>
+                </ButtonContainer>
+            </ContentLoader>
         </LeftNavContainer>
     );
 };

@@ -16,13 +16,28 @@ import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
-import { ContentLoader } from "../content-loader/ContentLoader";
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
+import { useEffect, useState } from "react";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { ContentLoader } from "../content-loader/ContentLoader";
 
-export const SurveyList: React.FC = () => {
-    const surveyType = "PPSSurveyForm"; //TO DO: Get from Props.
-    const { surveys, loading, error } = useSurveys(surveyType);
+interface SurveyListProps {
+    surveyType: SURVEY_FORM_TYPES;
+}
+export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
+    const { currentPPSSurveyForm, changeCurrentPPSSurveyForm } = useCurrentSurveys();
+    const { surveys, loading, error } = useSurveys(surveyType, currentPPSSurveyForm);
+    const [options, setOptions] = useState<string[]>([]);
     const history = useHistory();
+
+    useEffect(() => {
+        if (currentPPSSurveyForm) {
+            setOptions(["Edit"]);
+        } else {
+            setOptions(["Edit", "Assign Country", "List Countries"]);
+        }
+    }, [setOptions, currentPPSSurveyForm]);
 
     const editSurvey = (surveyId: Id) => {
         history.push({
@@ -31,9 +46,16 @@ export const SurveyList: React.FC = () => {
     };
 
     const assignCountry = (surveyId: Id) => {
+        changeCurrentPPSSurveyForm(surveyId);
         history.push({
-            pathname: `/new-survey/PPSCountryQuestionnaire`,
-            state: { parentSurveyId: surveyId },
+            pathname: `/new-survey/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
+        });
+    };
+
+    const listCountries = (surveyId: Id) => {
+        changeCurrentPPSSurveyForm(surveyId);
+        history.replace({
+            pathname: `/surveys/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
         });
     };
 
@@ -46,7 +68,9 @@ export const SurveyList: React.FC = () => {
                             variant="contained"
                             color="primary"
                             component={NavLink}
-                            to={`/new-survey/${surveyType}`}
+                            to={{
+                                pathname: `/new-survey/${surveyType}`,
+                            }}
                             exact={true}
                         >
                             {i18n.t("Create New Survey")}
@@ -103,7 +127,7 @@ export const SurveyList: React.FC = () => {
                                                     </TableCell>
                                                     <TableCell style={{ opacity: 0.5 }}>
                                                         <ActionMenuButton
-                                                            options={["Edit", "Assign Country"]}
+                                                            options={options}
                                                             optionClickHandler={[
                                                                 {
                                                                     option: "Edit",
@@ -114,6 +138,12 @@ export const SurveyList: React.FC = () => {
                                                                     option: "Assign Country",
                                                                     handler: () =>
                                                                         assignCountry(survey.id),
+                                                                },
+                                                                {
+                                                                    option: "List Countries",
+                                                                    handler: () => {
+                                                                        listCountries(survey.id);
+                                                                    },
                                                                 },
                                                             ]}
                                                         />

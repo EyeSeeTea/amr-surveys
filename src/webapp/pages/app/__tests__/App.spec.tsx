@@ -29,7 +29,7 @@ describe("App", () => {
         expect(await view.findByText("Point Prevalence Survey")).toBeInTheDocument();
     });
 
-    it("menu click navigates to survey list", async () => {
+    it("Survey menu click navigates to survey list", async () => {
         const view = getView();
 
         const ppsSurveysButton = await view.findByRole("button", {
@@ -43,7 +43,7 @@ describe("App", () => {
         ppsSurveysButton.click();
 
         //After click we are at survey list page
-        expect(window.location.toString()).toBe("http://localhost:3000/#/surveys");
+        expect(window.location.toString()).toBe("http://localhost:3000/#/surveys/PPSSurveyForm");
     });
 });
 

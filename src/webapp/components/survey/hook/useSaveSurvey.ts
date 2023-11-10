@@ -9,11 +9,7 @@ export interface SaveState {
     status: "success" | "error";
     message: string;
 }
-export function useSaveSurvey(
-    formType: SURVEY_FORM_TYPES,
-    orgUnitId: Id,
-    surveyId?: Id | undefined
-) {
+export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, surveyId?: Id) {
     const { compositionRoot } = useAppContext();
     const [saveCompleteState, setSaveCompleteState] = useState<SaveState>();
 
