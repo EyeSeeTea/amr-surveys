@@ -1,4 +1,4 @@
-import { NamedRef, Ref } from "./Ref";
+import { NamedRef, Ref, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
     | "PPSSurveyForm"
@@ -9,6 +9,7 @@ export type SURVEY_FORM_TYPES =
 
 export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
 export interface Survey extends Ref {
+    parentSurveyId?: Id;
     startDate?: Date;
     status: SURVEY_STATUS;
     assignedOrgUnit: NamedRef;

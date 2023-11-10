@@ -1,11 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyList } from "../../components/survey-list/SurveyList";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { SurveyListBreadCrumb } from "../../components/survey-list/SurveyListBreadCrumb";
 
 export const SurveyListPage: React.FC = React.memo(() => {
+    const { type } = useParams<{ type: SURVEY_FORM_TYPES }>();
+    const { changeCurrentPPSSurveyForm } = useCurrentSurveys();
+
+    useEffect(() => {
+        if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined);
+    }, [type, changeCurrentPPSSurveyForm]);
+
     return (
         <ContentWrapper>
-            <SurveyList />
+            <SurveyListBreadCrumb type={type} />
+            <SurveyList surveyType={type} />
         </ContentWrapper>
     );
 });

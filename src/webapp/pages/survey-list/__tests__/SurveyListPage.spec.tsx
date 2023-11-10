@@ -46,7 +46,7 @@ describe("Survey List Page", () => {
         expect(survey2).toBeInTheDocument();
     });
 
-    it("navigates to New Survey Page on Create New Survey click", async () => {
+    it("click of 'Create New Survey' on surveys/PPSSurveyForm page navigates to new-survey/PPSSurveyForm page", async () => {
         const view = getView();
 
         const createNewSurveyButton = await view.findByRole("button", {
@@ -54,7 +54,7 @@ describe("Survey List Page", () => {
         });
         console.debug(window.location);
         //Before click we are at survey list page
-        expect(window.location.toString()).toBe("http://localhost:3000/#/surveys");
+        expect(window.location.toString()).toBe("http://localhost:3000/#/surveys/PPSSurveyForm");
 
         //click the Create new survey button
         createNewSurveyButton.click();

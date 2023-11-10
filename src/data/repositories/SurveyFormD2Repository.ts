@@ -25,8 +25,14 @@ import {
 import { Survey } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 
+//PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
 export const PPS_COUNTRY_QUESTIONNAIRE_ID = "a4aYe2Eoaul";
+export const PPS_HOSPITAL_FORM_ID = "mesnCzaLc7u";
+export const PPS_PATIENT_REGISTER_ID = "GWcT6PN9NmI";
+export const PPS_WARD_REGISTER_ID = "aIyAtgpYYrS";
+
+//Data element Ids
 const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
@@ -363,30 +369,31 @@ export class SurveyD2Repository implements SurveyRepository {
                     dv => dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID
                 )?.value;
 
-                if (startDateString && surveyType) {
-                    const startDate = new Date(startDateString);
-                    const status =
-                        surveyCompleted === "false"
-                            ? startDate > new Date()
-                                ? "FUTURE"
-                                : "ACTIVE"
-                            : "COMPLETED";
+                const parentSurveyId = event.dataValues.find(
+                    dv => dv.dataElement === SURVEY_ID_DATAELEMENT_ID
+                )?.value;
 
-                    return {
-                        id: event.event,
-                        startDate: startDate,
-                        status: status,
-                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: surveyType,
-                    };
-                } else {
-                    return {
-                        id: event.event,
-                        status: surveyCompleted === "false" ? "ACTIVE" : "COMPLETED",
-                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: "",
-                    };
-                }
+                const startDate = startDateString ? new Date(startDateString) : undefined;
+                const status =
+                    surveyCompleted === "false" && startDate
+                        ? startDate > new Date()
+                            ? "FUTURE"
+                            : "ACTIVE"
+                        : "COMPLETED";
+
+                return {
+                    id: event.event,
+                    parentSurveyId: parentSurveyId,
+                    startDate: startDate,
+                    status:
+                        programId === PPS_SURVEY_FORM_ID
+                            ? status
+                            : event.status === "COMPLETED"
+                            ? "COMPLETED"
+                            : "ACTIVE",
+                    assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                    surveyType: surveyType ? surveyType : "",
+                };
             });
 
             return Future.success(surveys);

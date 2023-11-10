@@ -1,3 +1,4 @@
+import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { SnackbarProvider } from "@eyeseetea/d2-ui-components";
 import { Feedback } from "@eyeseetea/feedback-component";
 import { MuiThemeProvider } from "@material-ui/core/styles";
@@ -8,7 +9,6 @@ import { appConfig } from "../../../app-config";
 import { CompositionRoot } from "../../../CompositionRoot";
 import Share from "../../components/share/Share";
 import { AppContext, AppContextState } from "../../contexts/app-context";
-import { CurrentOrgUnitContextProvider } from "../../contexts/current-org-unit-context/CurrentOrgUnitContextProvider";
 import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
@@ -16,10 +16,11 @@ import { muiTheme } from "./themes/dhis2.theme";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
+    api?: D2Api;
 }
 
 function App(props: AppProps) {
-    const { compositionRoot } = props;
+    const { compositionRoot, api } = props;
     const [showShareButton, setShowShareButton] = useState(false);
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
@@ -30,12 +31,12 @@ function App(props: AppProps) {
             const currentUser = await compositionRoot.users.getCurrent.execute().toPromise();
             if (!currentUser) throw new Error("User not logged in");
 
-            setAppContext({ currentUser, compositionRoot });
+            setAppContext({ currentUser, compositionRoot, api });
             setShowShareButton(isShareButtonVisible);
             setLoading(false);
         }
         setup();
-    }, [compositionRoot]);
+    }, [compositionRoot, api]);
 
     if (loading) return null;
 
@@ -52,9 +53,7 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <CurrentOrgUnitContextProvider>
-                                <Router />
-                            </CurrentOrgUnitContextProvider>
+                            <Router />
                         </AppContext.Provider>
                     </div>
 

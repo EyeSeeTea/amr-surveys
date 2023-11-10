@@ -3,7 +3,6 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import { useEffect, useState } from "react";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { useAppContext } from "../contexts/app-context";
-import { useCurrentOrgUnitContext } from "../contexts/current-org-unit-context/current-orgUnit-context";
 
 export interface MenuGroup {
     kind: "MenuGroup";
@@ -29,8 +28,8 @@ export function useMenu() {
     } = useAppContext();
     const [menu, setMenu] = useState<Menu[]>();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string>();
     const snackbar = useSnackbar();
-    const { currentOrgUnitAccess } = useCurrentOrgUnitContext();
 
     const mapModuleToMenu = (modules: AMRSurveyModule[]): Menu[] => {
         return modules.map(m => {
@@ -38,7 +37,7 @@ export function useMenu() {
                 {
                     kind: "MenuLeaf",
                     title: "Surveys",
-                    path: "/surveys",
+                    path: `/surveys/PPSSurveyForm`,
                 },
             ];
 
@@ -53,25 +52,18 @@ export function useMenu() {
 
     useEffect(() => {
         setLoading(true);
-        compositionRoot.modules.getAllAccessible
-            .execute(userGroups, currentOrgUnitAccess.orgUnitId)
-            .run(
-                modules => {
-                    const parsedMenu = mapModuleToMenu(modules);
-                    setMenu(parsedMenu);
-                    setLoading(false);
-                },
-                err => {
-                    snackbar.error(i18n.t(err.message));
-                    setLoading(false);
-                }
-            );
-    }, [
-        compositionRoot.modules.getAllAccessible,
-        userGroups,
-        currentOrgUnitAccess.orgUnitId,
-        snackbar,
-    ]);
+        compositionRoot.modules.getAllAccessible.execute(userGroups).run(
+            modules => {
+                const parsedMenu = mapModuleToMenu(modules);
+                setMenu(parsedMenu);
+                setLoading(false);
+            },
+            err => {
+                setError(i18n.t(err.message));
+                setLoading(false);
+            }
+        );
+    }, [compositionRoot.modules.getAllAccessible, userGroups, snackbar]);
 
-    return { menu, loading };
+    return { menu, loading, error };
 }
