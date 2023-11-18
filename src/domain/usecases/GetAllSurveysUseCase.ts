@@ -13,7 +13,8 @@ export class GetAllSurveysUseCase {
     public execute(
         surveyType: SURVEY_FORM_TYPES,
         orgUnitId: Id,
-        ppsSurveyId: Id | undefined
+        parentPPSSurveyId: Id | undefined,
+        parentWardRegisterId: Id | undefined
     ): FutureData<Survey[]> {
         const programId = getProgramId(surveyType);
 
@@ -21,17 +22,29 @@ export class GetAllSurveysUseCase {
         if (surveyType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
         return this.surveyReporsitory.getSurveys(programId, orgUnitId).flatMap(surveys => {
-            if (ppsSurveyId) {
-                //Parent Id should be set only for child forms, this is a just an additional check
-                if (surveyType !== "PPSSurveyForm") {
-                    //Filter Surveys by parentSurveyId
+            //Parent Id should be set only for child forms, this is a just an additional check
+            if (parentPPSSurveyId) {
+                if (surveyType === "PPSPatientRegister") {
+                    //Filter Surveys by parentWardRegisterId
                     const filteredSurveys = _(
                         surveys.map(survey => {
-                            if (survey.parentSurveyId === ppsSurveyId) return survey;
+                            if (survey.parentWardRegisterId === parentWardRegisterId) return survey;
                         })
                     )
                         .compact()
                         .value();
+
+                    return Future.success(filteredSurveys);
+                } else if (surveyType !== "PPSSurveyForm") {
+                    //Filter Surveys by parentPPSSurveyId
+                    const filteredSurveys = _(
+                        surveys.map(survey => {
+                            if (survey.parentPPSSurveyId === parentPPSSurveyId) return survey;
+                        })
+                    )
+                        .compact()
+                        .value();
+
                     return Future.success(filteredSurveys);
                 } else return Future.success([]);
             } else return Future.success(surveys);

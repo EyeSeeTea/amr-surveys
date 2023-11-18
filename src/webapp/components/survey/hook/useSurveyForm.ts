@@ -10,23 +10,25 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
-    const { currentPPSSurveyForm, currentHospitalForm } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentHospitalForm, currentWardRegister } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
     useEffect(() => {
         setLoading(true);
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
-            return compositionRoot.surveys.getForm.execute(formType, currentPPSSurveyForm).run(
-                questionnaireForm => {
-                    setQuestionnaire(questionnaireForm);
-                    setLoading(false);
-                },
-                err => {
-                    setError(err.message);
-                    setLoading(false);
-                }
-            );
+            return compositionRoot.surveys.getForm
+                .execute(formType, currentPPSSurveyForm, currentWardRegister)
+                .run(
+                    questionnaireForm => {
+                        setQuestionnaire(questionnaireForm);
+                        setLoading(false);
+                    },
+                    err => {
+                        setError(err.message);
+                        setLoading(false);
+                    }
+                );
         } else {
             //If Event Id has been specified, pre-populate event data in Questionnaire form
             return compositionRoot.surveys.getPopulatedForm.execute(eventId, formType).run(
@@ -69,6 +71,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentUser.userOrgUnitsAccess,
         setError,
         currentHospitalForm,
+        currentWardRegister,
     ]);
 
     return {

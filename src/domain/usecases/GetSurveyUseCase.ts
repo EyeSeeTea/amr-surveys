@@ -1,5 +1,9 @@
 import { FutureData } from "../../data/api-futures";
-import { SURVEY_ID_DATAELEMENT_ID } from "../../data/repositories/SurveyFormD2Repository";
+import {
+    SURVEY_ID_DATAELEMENT_ID,
+    SURVEY_ID_PATIENT_DATAELEMENT_ID,
+    WARD_ID_DATAELEMENT_ID,
+} from "../../data/repositories/SurveyFormD2Repository";
 import { Future } from "../entities/generic/Future";
 import { Questionnaire } from "../entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
@@ -12,23 +16,43 @@ export class GetSurveyUseCase {
 
     public execute(
         surveyType: SURVEY_FORM_TYPES,
-        parentSurveyId: string | undefined
+        parentPPSSurveyId: string | undefined,
+        parentWardRegisterId: string | undefined
     ): FutureData<Questionnaire> {
         const programId = getProgramId(surveyType);
-        if (parentSurveyId) {
-            return this.surveyReporsitory.getForm(programId, undefined).flatMap(q => {
-                const surveyIdSection = q.sections.find(
-                    s => s.questions.find(q => q.id === SURVEY_ID_DATAELEMENT_ID) !== undefined
+        if (parentPPSSurveyId) {
+            return this.surveyReporsitory.getForm(programId, undefined).flatMap(questionnaire => {
+                const surveyIdSection = questionnaire.sections.find(
+                    s =>
+                        s.questions.find(
+                            q =>
+                                q.id === SURVEY_ID_DATAELEMENT_ID ||
+                                q.id === SURVEY_ID_PATIENT_DATAELEMENT_ID
+                        ) !== undefined
                 );
                 if (surveyIdSection) {
                     const surveyIdDataElement = surveyIdSection.questions.find(
-                        q => q.id === SURVEY_ID_DATAELEMENT_ID
+                        q =>
+                            q.id === SURVEY_ID_DATAELEMENT_ID ||
+                            q.id === SURVEY_ID_PATIENT_DATAELEMENT_ID
                     );
                     if (surveyIdDataElement) {
-                        surveyIdDataElement.value = parentSurveyId;
+                        surveyIdDataElement.value = parentPPSSurveyId;
                     }
                 }
-                return Future.success(q);
+
+                const wardIdSection = questionnaire.sections.find(
+                    s => s.questions.find(q => q.id === WARD_ID_DATAELEMENT_ID) !== undefined
+                );
+                if (wardIdSection) {
+                    const wardIdDataElement = wardIdSection.questions.find(
+                        q => q.id === WARD_ID_DATAELEMENT_ID
+                    );
+                    if (wardIdDataElement) {
+                        wardIdDataElement.value = parentWardRegisterId;
+                    }
+                }
+                return Future.success(questionnaire);
             });
         } else return this.surveyReporsitory.getForm(programId, undefined);
     }

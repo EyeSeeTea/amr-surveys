@@ -8,32 +8,40 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
-    const { currentPPSSurveyForm, currentCountryQuestionnaire, currentHospitalForm } =
-        useCurrentSurveys();
+    const {
+        currentPPSSurveyForm,
+        currentCountryQuestionnaire,
+        currentHospitalForm,
+        currentWardRegister,
+    } = useCurrentSurveys();
 
     useEffect(() => {
         setLoading(true);
         let orgUnitId = "";
         if (surveyType === "PPSHospitalForm")
             orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
-        else if (surveyType === "PPSWardRegister") orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+        else if (surveyType === "PPSWardRegister" || surveyType === "PPSPatientRegister")
+            orgUnitId = currentHospitalForm?.orgUnitId ?? "";
 
-        compositionRoot.surveys.getSurveys.execute(surveyType, orgUnitId, currentPPSSurveyForm).run(
-            surveys => {
-                setSurveys(surveys);
-                setLoading(false);
-            },
-            err => {
-                setError(err.message);
-                setLoading(false);
-            }
-        );
+        compositionRoot.surveys.getSurveys
+            .execute(surveyType, orgUnitId, currentPPSSurveyForm, currentWardRegister)
+            .run(
+                surveys => {
+                    setSurveys(surveys);
+                    setLoading(false);
+                },
+                err => {
+                    setError(err.message);
+                    setLoading(false);
+                }
+            );
     }, [
         compositionRoot.surveys.getSurveys,
         surveyType,
         currentPPSSurveyForm,
         currentCountryQuestionnaire?.orgUnitId,
         currentHospitalForm?.orgUnitId,
+        currentWardRegister,
     ]);
 
     return { surveys, loading, error };

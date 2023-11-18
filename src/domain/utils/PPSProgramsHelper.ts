@@ -34,8 +34,9 @@ export const getChildSurveyType = (
             return "PPSHospitalForm";
         case "PPSHospitalForm":
             return "PPSWardRegister";
-        case "PPSPatientRegister":
         case "PPSWardRegister":
+            return "PPSPatientRegister";
+        case "PPSPatientRegister":
         default:
             return undefined;
     }
@@ -61,9 +62,11 @@ export const getSurveyOptions = (
             return ["Edit", "Assign Hospital", "List Hospitals"];
         case "PPSHospitalForm":
             return ["Edit", "Assign Ward", "List Wards"];
-        case "PPSPatientRegister":
         case "PPSWardRegister":
+            return ["Edit", "Assign Patient", "List Patients"];
+        case "PPSPatientRegister":
         default:
             return ["Edit"];
     }
 };
+

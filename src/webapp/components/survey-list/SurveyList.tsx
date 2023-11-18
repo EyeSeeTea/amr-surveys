@@ -31,28 +31,30 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
+        changeCurrentWardRegister,
     } = useCurrentSurveys();
     const { surveys, loading, error } = useSurveys(surveyType);
     const [options, setOptions] = useState<string[]>([]);
 
     const history = useHistory();
 
-    const editSurvey = (surveyId: Id, orgUnitId: Id) => {
+    const updateSelectedSurveyDetails = (surveyId: Id, orgUnitId: Id) => {
         if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
         else if (surveyType === "PPSCountryQuestionnaire")
             changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
         else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
+        else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(surveyId);
+    };
+
+    const editSurvey = (surveyId: Id, orgUnitId: Id) => {
+        updateSelectedSurveyDetails(surveyId, orgUnitId);
         history.push({
             pathname: `/survey/${surveyType}/${surveyId}`,
         });
     };
 
     const assignChild = (surveyId: Id, orgUnitId: Id) => {
-        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
-        else if (surveyType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
-        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
-
+        updateSelectedSurveyDetails(surveyId, orgUnitId);
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType) {
             history.push({
@@ -64,10 +66,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     };
 
     const listChildren = (surveyId: Id, orgUnitId: Id) => {
-        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
-        else if (surveyType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
-        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
+        updateSelectedSurveyDetails(surveyId, orgUnitId);
 
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType)
@@ -78,13 +77,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
             console.debug("An error occured, unknown survey type");
         }
     };
-
-    // const getSurveyOptionsCallback = useCallback(
-    //     (ppsSurveyType: string) => {
-    //         return getSurveyOptions(surveyType, ppsSurveyType);
-    //     },
-    //     [surveyType]
-    // );
 
     const actionClick = (ppsSurveyType: string) => {
         const currentOptions = getSurveyOptions(surveyType, ppsSurveyType);
@@ -234,6 +226,26 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                 },
                                                                 {
                                                                     option: "List Country",
+                                                                    handler: () => {
+                                                                        listChildren(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
+                                                                    },
+                                                                },
+                                                                {
+                                                                    option: "Assign Patient",
+                                                                    handler: () => {
+                                                                        assignChild(
+                                                                            survey.id,
+                                                                            survey.assignedOrgUnit
+                                                                                .id
+                                                                        );
+                                                                    },
+                                                                },
+                                                                {
+                                                                    option: "List Patients",
                                                                     handler: () => {
                                                                         listChildren(
                                                                             survey.id,

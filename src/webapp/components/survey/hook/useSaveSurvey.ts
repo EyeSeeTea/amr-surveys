@@ -16,7 +16,8 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
     const { currentHospitalForm } = useCurrentSurveys();
 
     const saveSurvey = (questionnaire: Questionnaire) => {
-        if (formType === "PPSWardRegister") orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+        if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
+            orgUnitId = currentHospitalForm?.orgUnitId ?? "";
         compositionRoot.surveys.saveFormData
             .execute(formType, questionnaire, orgUnitId, surveyId)
             .run(

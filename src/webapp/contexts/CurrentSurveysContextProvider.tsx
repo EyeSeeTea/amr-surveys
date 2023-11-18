@@ -12,6 +12,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
         id: string;
         orgUnitId: string;
     }>();
+    const [currentWardRegister, setCurrentWardRegister] = useState<Id>();
 
     const changeCurrentPPSSurveyForm = (surveyId: Id | undefined) => {
         setCurrentPPSSurveyForm(surveyId);
@@ -33,6 +34,14 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
         setCurrentHospitalForm(undefined);
     };
 
+    const changeCurrentWardRegister = (surveyId: Id | undefined) => {
+        setCurrentWardRegister(surveyId);
+    };
+
+    const resetCurrentWardRegister = () => {
+        setCurrentWardRegister(undefined);
+    };
+
     return (
         <CurrentSurveysContext.Provider
             value={{
@@ -44,6 +53,9 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
                 currentHospitalForm,
                 changeCurrentHospitalForm,
                 resetCurrentHospitalForm,
+                currentWardRegister,
+                changeCurrentWardRegister,
+                resetCurrentWardRegister,
             }}
         >
             {children}

@@ -13,21 +13,26 @@ export interface CurrentSurveysContextProps {
     changeCurrentHospitalForm: (surveyId: Id, orgUnitId: Id) => void;
     resetCurrentHospitalForm: () => void;
 
-    // currentWardRegister: Id | undefined;
-    // changeCurrentWardRegister: (surveyId: Id | undefined) => void;
+    currentWardRegister: Id | undefined;
+    changeCurrentWardRegister: (surveyId: Id | undefined) => void;
+    resetCurrentWardRegister: () => void;
 }
 
 export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
     currentPPSSurveyForm: undefined,
     changeCurrentPPSSurveyForm: () => {},
+
     currentCountryQuestionnaire: undefined,
     resetCurrentCountryQuestionnaire: () => {},
     changeCurrentCountryQuestionnaire: () => {},
+
     currentHospitalForm: undefined,
     changeCurrentHospitalForm: () => {},
     resetCurrentHospitalForm: () => {},
-    // currentWardRegister: undefined,
-    // changeCurrentWardRegister: () => {},
+
+    currentWardRegister: undefined,
+    changeCurrentWardRegister: () => {},
+    resetCurrentWardRegister: () => {},
 });
 
 export function useCurrentSurveys() {

@@ -35,6 +35,8 @@ const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
+export const SURVEY_ID_PATIENT_DATAELEMENT_ID = "X2EkNfUHANO";
+export const WARD_ID_DATAELEMENT_ID = "o4YMhVrXTeG";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -210,7 +212,12 @@ export class SurveyD2Repository implements SurveyRepository {
                         }
                     }
                     ///Disable Survey Id Question
-                    if (currentQuestion && currentQuestion.id === SURVEY_ID_DATAELEMENT_ID) {
+                    if (
+                        currentQuestion &&
+                        (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||
+                            currentQuestion.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
+                            currentQuestion.id === WARD_ID_DATAELEMENT_ID)
+                    ) {
                         currentQuestion.disabled = true;
                     }
                     return currentQuestion;
@@ -309,7 +316,9 @@ export class SurveyD2Repository implements SurveyRepository {
 
     getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]> {
         const ouMode =
-            programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID
+            programId === PPS_WARD_REGISTER_ID ||
+            programId === PPS_HOSPITAL_FORM_ID ||
+            programId === PPS_PATIENT_REGISTER_ID
                 ? "DESCENDANTS"
                 : undefined;
         return apiToFuture(
@@ -333,8 +342,14 @@ export class SurveyD2Repository implements SurveyRepository {
                     dv => dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID
                 )?.value;
 
-                const parentSurveyId = event.dataValues.find(
-                    dv => dv.dataElement === SURVEY_ID_DATAELEMENT_ID
+                const parentPPSSurveyId = event.dataValues.find(
+                    dv =>
+                        dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
+                        dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID
+                )?.value;
+
+                const parentWardRegisterId = event.dataValues.find(
+                    dv => dv.dataElement === WARD_ID_DATAELEMENT_ID
                 )?.value;
 
                 const startDate = startDateString ? new Date(startDateString) : undefined;
@@ -347,7 +362,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 return {
                     id: event.event,
-                    parentSurveyId: parentSurveyId,
+                    parentPPSSurveyId: parentPPSSurveyId,
                     startDate: startDate,
                     status:
                         programId === PPS_SURVEY_FORM_ID
@@ -357,6 +372,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             : "ACTIVE",
                     assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
                     surveyType: surveyType ? surveyType : "",
+                    parentWardRegisterId: parentWardRegisterId,
                 };
             });
 
