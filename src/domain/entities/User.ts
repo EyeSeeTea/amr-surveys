@@ -33,7 +33,8 @@ export interface UserAttrs {
     username: string;
     userRoles: UserRole[];
     userGroups: NamedRef[];
-    userOrgUnitsAccess: OrgUnitAccess[];
+    userCountriesAccess: OrgUnitAccess[];
+    userHospitalsAccess: OrgUnitAccess[];
     email: string;
     phoneNumber: string;
     introduction: string;

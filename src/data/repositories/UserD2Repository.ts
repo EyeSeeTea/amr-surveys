@@ -46,96 +46,141 @@ export class UserD2Repository implements UserRepository {
     private buildUser(d2User: D2User): FutureData<User> {
         const { organisationUnits, dataViewOrganisationUnits } = d2User;
 
-        const filteredOrgUnits = organisationUnits.filter(
+        const filteredOUs = organisationUnits.filter(
             ou => ou.code !== "NA" && ou.parent?.code !== "NA"
         );
-        const filteredDataViewOrgUnits = dataViewOrganisationUnits.filter(
+        const filteredDataViewOUs = dataViewOrganisationUnits.filter(
             ou => ou.code !== "NA" && ou.parent?.code !== "NA"
         );
 
-        const countryOrgUnits: OrgUnit[] = [];
-        const dataViewCountryOrgUnits: OrgUnit[] = [];
+        const countryOUs: OrgUnit[] = [];
+        const dataViewCountryOUs: OrgUnit[] = [];
+
+        const hospitalOUs: OrgUnit[] = [];
+        const dataViewHospitalOUs: OrgUnit[] = [];
 
         //TO DO : Fetch country level from datastore.
         const countryLevel = 3;
+        const hospitalLevel = 4;
 
-        filteredOrgUnits.forEach(orgUnit => {
-            if (orgUnit.level === countryLevel && orgUnit.parent.code !== "NA") {
-                countryOrgUnits.push({
-                    name: orgUnit.name,
-                    id: orgUnit.id,
-                    shortName: orgUnit.shortName,
-                    code: orgUnit.code,
-                    path: orgUnit.path,
-                });
+        filteredOUs.forEach(orgUnit => {
+            if (orgUnit?.parent?.code !== "NA") {
+                if (orgUnit.level === countryLevel)
+                    countryOUs.push({
+                        name: orgUnit.name,
+                        id: orgUnit.id,
+                        shortName: orgUnit.shortName,
+                        code: orgUnit.code,
+                        path: orgUnit.path,
+                    });
+                else if (orgUnit.level === hospitalLevel) {
+                    hospitalOUs.push({
+                        name: orgUnit.name,
+                        id: orgUnit.id,
+                        shortName: orgUnit.shortName,
+                        code: orgUnit.code,
+                        path: orgUnit.path,
+                    });
+                }
             }
         });
 
-        filteredDataViewOrgUnits.forEach(dataViewOrgUnit => {
-            if (dataViewOrgUnit.level === countryLevel && dataViewOrgUnit.parent.code !== "NA") {
-                dataViewCountryOrgUnits.push({
-                    name: dataViewOrgUnit.name,
-                    id: dataViewOrgUnit.id,
-                    shortName: dataViewOrgUnit.shortName,
-                    code: dataViewOrgUnit.code,
-                    path: dataViewOrgUnit.path,
-                });
+        filteredDataViewOUs.forEach(dataViewOrgUnit => {
+            if (dataViewOrgUnit?.parent?.code !== "NA") {
+                if (dataViewOrgUnit.level === countryLevel)
+                    dataViewCountryOUs.push({
+                        name: dataViewOrgUnit.name,
+                        id: dataViewOrgUnit.id,
+                        shortName: dataViewOrgUnit.shortName,
+                        code: dataViewOrgUnit.code,
+                        path: dataViewOrgUnit.path,
+                    });
+                else if (dataViewOrgUnit.level === hospitalLevel)
+                    dataViewHospitalOUs.push({
+                        name: dataViewOrgUnit.name,
+                        id: dataViewOrgUnit.id,
+                        shortName: dataViewOrgUnit.shortName,
+                        code: dataViewOrgUnit.code,
+                        path: dataViewOrgUnit.path,
+                    });
             }
         });
 
-        return this.getAllCountryOrgUnits(filteredOrgUnits, countryLevel).flatMap(
-            childrenOrgUnits => {
-                return this.getAllCountryOrgUnits(filteredDataViewOrgUnits, countryLevel).flatMap(
-                    childrenDataViewOrgUnits => {
-                        return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
-                            userSettings => {
-                                const uniqueOrgUnits = _([...countryOrgUnits, ...childrenOrgUnits])
-                                    .uniq()
-                                    .value();
+        return this.getAllLevelOrgUnits(filteredOUs, countryLevel).flatMap(countries => {
+            return this.getAllLevelOrgUnits(filteredDataViewOUs, countryLevel).flatMap(
+                dataViewCountries => {
+                    return this.getAllLevelOrgUnits(filteredOUs, hospitalLevel).flatMap(
+                        hospitals => {
+                            return this.getAllLevelOrgUnits(
+                                filteredDataViewOUs,
+                                hospitalLevel
+                            ).flatMap(dataViewHospitals => {
+                                return apiToFuture(
+                                    this.api.get<D2UserSettings>(`userSettings`)
+                                ).flatMap(userSettings => {
+                                    const uniqueCountries = _([...countryOUs, ...countries])
+                                        .uniq()
+                                        .value();
 
-                                const uniqueDataViewOrgUnits = _([
-                                    ...dataViewCountryOrgUnits,
-                                    ...childrenDataViewOrgUnits,
-                                ])
-                                    .uniq()
-                                    .value();
+                                    const uniqueDataViewCountries = _([
+                                        ...dataViewCountryOUs,
+                                        ...dataViewCountries,
+                                    ])
+                                        .uniq()
+                                        .value();
 
-                                const user = new User({
-                                    id: d2User.id,
-                                    name: d2User.displayName,
-                                    userGroups: d2User.userGroups,
-                                    ...d2User.userCredentials,
-                                    email: d2User.email,
-                                    phoneNumber: d2User.phoneNumber,
-                                    introduction: d2User.introduction,
-                                    birthday: d2User.birthday,
-                                    nationality: d2User.nationality,
-                                    employer: d2User.employer,
-                                    jobTitle: d2User.jobTitle,
-                                    education: d2User.education,
-                                    interests: d2User.interests,
-                                    languages: d2User.languages,
-                                    userOrgUnitsAccess: this.mapUserOrgUnitsAccess(
-                                        uniqueOrgUnits,
-                                        uniqueDataViewOrgUnits
-                                    ),
-                                    settings: {
-                                        keyUiLocale: userSettings.keyUiLocale,
-                                        keyDbLocale: userSettings.keyDbLocale,
-                                        keyMessageEmailNotification:
-                                            userSettings.keyMessageEmailNotification,
-                                        keyMessageSmsNotification:
-                                            userSettings.keyMessageSmsNotification,
-                                    },
+                                    const uniqueHospitals = _([...hospitalOUs, ...hospitals])
+                                        .uniq()
+                                        .value();
+
+                                    const uniqueDataViewHospitals = _([
+                                        ...dataViewHospitalOUs,
+                                        ...dataViewHospitals,
+                                    ])
+                                        .uniq()
+                                        .value();
+
+                                    const user = new User({
+                                        id: d2User.id,
+                                        name: d2User.displayName,
+                                        userGroups: d2User.userGroups,
+                                        ...d2User.userCredentials,
+                                        email: d2User.email,
+                                        phoneNumber: d2User.phoneNumber,
+                                        introduction: d2User.introduction,
+                                        birthday: d2User.birthday,
+                                        nationality: d2User.nationality,
+                                        employer: d2User.employer,
+                                        jobTitle: d2User.jobTitle,
+                                        education: d2User.education,
+                                        interests: d2User.interests,
+                                        languages: d2User.languages,
+                                        userCountriesAccess: this.mapUserOrgUnitsAccess(
+                                            uniqueCountries,
+                                            uniqueDataViewCountries
+                                        ),
+                                        userHospitalsAccess: this.mapUserOrgUnitsAccess(
+                                            uniqueHospitals,
+                                            uniqueDataViewHospitals
+                                        ),
+                                        settings: {
+                                            keyUiLocale: userSettings.keyUiLocale,
+                                            keyDbLocale: userSettings.keyDbLocale,
+                                            keyMessageEmailNotification:
+                                                userSettings.keyMessageEmailNotification,
+                                            keyMessageSmsNotification:
+                                                userSettings.keyMessageSmsNotification,
+                                        },
+                                    });
+
+                                    return Future.success(user);
                                 });
-
-                                return Future.success(user);
-                            }
-                        );
-                    }
-                );
-            }
-        );
+                            });
+                        }
+                    );
+                }
+            );
+        });
     }
 
     mapUserOrgUnitsAccess = (
@@ -172,10 +217,7 @@ export class UserD2Repository implements UserRepository {
         return orgUnitsAccess;
     };
 
-    private getAllCountryOrgUnits(
-        orgUnits: OrgUnit[],
-        countryLevel: number
-    ): FutureData<OrgUnit[]> {
+    private getAllLevelOrgUnits(orgUnits: OrgUnit[], countryLevel: number): FutureData<OrgUnit[]> {
         const result: OrgUnit[] = [];
 
         const recursiveGetOrgUnits = (
@@ -208,7 +250,7 @@ export class UserD2Repository implements UserRepository {
 
             return childrenOrgUnits.flatMap(childrenOrgUnits => {
                 if (childrenOrgUnits[0] && childrenOrgUnits[0]?.level < countryLevel) {
-                    return this.getAllCountryOrgUnits(
+                    return this.getAllLevelOrgUnits(
                         childrenOrgUnits.map(el => {
                             return {
                                 name: el.name,

@@ -142,7 +142,17 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                     <tbody>
                         <tr>
                             <td style={{ textAlign: "left" }}>
-                                {userInformation.userOrgUnitsAccess.map(
+                                {userInformation.userCountriesAccess.map(
+                                    (orgUnits: OrgUnitAccess) => (
+                                        <StyledChip
+                                            size="small"
+                                            key={orgUnits.orgUnitId}
+                                            label={orgUnits.orgUnitName}
+                                            color="primary"
+                                        />
+                                    )
+                                )}
+                                {userInformation.userHospitalsAccess.map(
                                     (orgUnits: OrgUnitAccess) => (
                                         <StyledChip
                                             size="small"

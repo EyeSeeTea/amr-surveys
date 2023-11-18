@@ -36,25 +36,21 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     setQuestionnaire(questionnaireWithData);
 
                     if (formType === "PPSCountryQuestionnaire") {
-                        const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
+                        const currentOrgUnitAccess = currentUser.userCountriesAccess.find(
                             ou => ou.orgUnitId === questionnaireWithData.orgUnit.id
                         );
                         if (currentOrgUnitAccess) {
                             setCurrentOrgUnit(currentOrgUnitAccess);
                         }
                     } else if (formType === "PPSHospitalForm") {
-                        if (currentHospitalForm) {
-                            setCurrentOrgUnit({
-                                orgUnitId: currentHospitalForm.orgUnitId,
-                                orgUnitName: "",
-                                orgUnitShortName: "",
-                                orgUnitCode: "",
-                                orgUnitPath: "",
-                                readAccess: true,
-                                captureAccess: true,
-                            });
+                        const currentHospital = currentUser.userHospitalsAccess.find(
+                            hospital => hospital.orgUnitId === questionnaireWithData.orgUnit.id
+                        );
+                        if (currentHospital) {
+                            setCurrentOrgUnit(currentHospital);
                         }
                     }
+
                     setLoading(false);
                 },
                 err => {
@@ -68,7 +64,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         eventId,
         formType,
         currentPPSSurveyForm,
-        currentUser.userOrgUnitsAccess,
+        currentUser.userCountriesAccess,
+        currentUser.userHospitalsAccess,
         setError,
         currentHospitalForm,
         currentWardRegister,

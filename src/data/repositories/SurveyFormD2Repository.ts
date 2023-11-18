@@ -37,6 +37,7 @@ const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
 export const SURVEY_ID_PATIENT_DATAELEMENT_ID = "X2EkNfUHANO";
 export const WARD_ID_DATAELEMENT_ID = "o4YMhVrXTeG";
+export const WARD2_ID_DATAELEMENT_ID = "aSI3ZfIb3YS";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -216,7 +217,8 @@ export class SurveyD2Repository implements SurveyRepository {
                         currentQuestion &&
                         (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||
                             currentQuestion.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
-                            currentQuestion.id === WARD_ID_DATAELEMENT_ID)
+                            currentQuestion.id === WARD_ID_DATAELEMENT_ID ||
+                            currentQuestion.id === WARD2_ID_DATAELEMENT_ID)
                     ) {
                         currentQuestion.disabled = true;
                     }

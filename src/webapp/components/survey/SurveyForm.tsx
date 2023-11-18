@@ -123,24 +123,19 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             const selectedOU = orgUnits[orgUnits.length - 1];
             if (selectedOU) {
                 if (props.formType === "PPSCountryQuestionnaire") {
-                    const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
+                    const currentCountry = currentUser.userCountriesAccess.find(
                         ou => ou.orgUnitId === selectedOU
                     );
-                    if (currentOrgUnitAccess) {
-                        setCurrentOrgUnit(currentOrgUnitAccess);
+                    if (currentCountry) {
+                        setCurrentOrgUnit(currentCountry);
                     }
                 } else if (props.formType === "PPSHospitalForm") {
-                    //TO DO : Hospital OU should also be part of currentUser.userOrgUnitsAccess
-                    //maybe in another data structure?
-                    setCurrentOrgUnit({
-                        orgUnitId: selectedOU,
-                        orgUnitName: "",
-                        orgUnitShortName: "",
-                        orgUnitCode: "",
-                        orgUnitPath: orgUnitPaths[0],
-                        readAccess: true,
-                        captureAccess: true,
-                    });
+                    const currentHospital = currentUser.userHospitalsAccess.find(
+                        hospital => hospital.orgUnitId === selectedOU
+                    );
+                    if (currentHospital) {
+                        setCurrentOrgUnit(currentHospital);
+                    }
                 }
             }
         }
@@ -157,6 +152,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         api={api}
                         fullWidth={false}
                         selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
+                        initiallyExpanded={[currentOrgUnit?.orgUnitPath]}
                         onChange={onOrgUnitChange}
                         singleSelection={true}
                         typeInput={"radio"}
