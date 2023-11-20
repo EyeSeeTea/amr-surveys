@@ -4,12 +4,12 @@ import { NamedRef } from "../Ref";
 export function createAdminUser(): User {
     const adminRoles = [{ id: "Hg7n0MwzUQn", name: "Super user", authorities: ["ALL"] }];
 
-    return createUser(adminRoles, []);
+    return createUser(adminRoles, [{ id: "3", name: "pps-admin-ug" }]);
 }
 export function createNonAdminUser(): User {
     const nonAdminRoles = [{ id: "Hg7n0MwzUQn", name: "Malaria", authorities: ["F_EXPORT_DATA"] }];
 
-    return createUser(nonAdminRoles, []);
+    return createUser(nonAdminRoles, [{ id: "1", name: "pps-capture-ug" }]);
 }
 export function createUserWithGroups(userGroups: NamedRef[] = []): User {
     return new User({

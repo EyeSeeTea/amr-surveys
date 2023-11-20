@@ -1,7 +1,9 @@
 import { render } from "@testing-library/react";
 import App from "../App";
-import { getTestContext } from "../../../../utils/tests";
+import { getAdminTestContext, getHospitalDataEntryTestContext } from "../../../../utils/tests";
 import { Provider } from "@dhis2/app-runtime";
+import { CurrentModuleContext } from "../../../contexts/current-module-context";
+import { createModuleList } from "../../../../domain/entities/__tests__/moduleFixtures";
 
 describe("App", () => {
     beforeAll(() => {
@@ -26,16 +28,16 @@ describe("App", () => {
     it("renders left menu", async () => {
         const view = getView();
 
-        expect(await view.findByText("Point Prevalence Survey")).toBeInTheDocument();
+        expect(await view.findByText("PPS")).toBeInTheDocument();
     });
 
-    it("Survey menu click navigates to survey list", async () => {
+    it("Survey menu click navigates to PPS survey form list for Admin user ", async () => {
         const view = getView();
 
         const ppsSurveysButton = await view.findByRole("button", {
             name: /Surveys/i,
         });
-        console.debug(window.location);
+
         //Before click we are at homepage
         expect(window.location.toString()).toBe("http://localhost:3000/#/");
 
@@ -45,13 +47,54 @@ describe("App", () => {
         //After click we are at survey list page
         expect(window.location.toString()).toBe("http://localhost:3000/#/surveys/PPSSurveyForm");
     });
+
+    it("Survey menu click navigates to Hospital form list for hospital data entry user ", async () => {
+        const view = getHospitalDataEntryView();
+
+        const ppsSurveysButton = await view.findByRole("button", {
+            name: /Surveys/i,
+        });
+
+        //click the PPS surveys menu button
+        ppsSurveysButton.click();
+
+        //After click we are at survey list page
+        expect(window.location.toString()).toBe("http://localhost:3000/#/surveys/PPSHospitalForm");
+    });
 });
 
 function getView() {
-    const { compositionRoot } = getTestContext();
+    const { compositionRoot } = getAdminTestContext();
+    const currentModule = createModuleList().at(0);
     return render(
         <Provider config={{ baseUrl: "http://localhost:8080", apiVersion: 30 }}>
-            <App compositionRoot={compositionRoot} />
+            <CurrentModuleContext.Provider
+                value={{
+                    currentModule: currentModule,
+                    changeCurrentModule: () => {},
+                    resetCurrentModule: () => {},
+                }}
+            >
+                <App compositionRoot={compositionRoot} />
+            </CurrentModuleContext.Provider>
+        </Provider>
+    );
+}
+
+function getHospitalDataEntryView() {
+    const { compositionRoot } = getHospitalDataEntryTestContext();
+    const currentModule = createModuleList().at(0);
+    return render(
+        <Provider config={{ baseUrl: "http://localhost:8080", apiVersion: 30 }}>
+            <CurrentModuleContext.Provider
+                value={{
+                    currentModule: currentModule,
+                    changeCurrentModule: () => {},
+                    resetCurrentModule: () => {},
+                }}
+            >
+                <App compositionRoot={compositionRoot} />
+            </CurrentModuleContext.Provider>
         </Provider>
     );
 }

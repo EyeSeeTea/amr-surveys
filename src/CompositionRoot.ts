@@ -23,6 +23,7 @@ import { SurveyTestRepository } from "./data/repositories/testRepositories/Surve
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
 import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
+import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -69,9 +70,9 @@ export function getWebappCompositionRoot(api: D2Api) {
     return getCompositionRoot(repositories);
 }
 
-export function getTestCompositionRoot() {
+export function getTestCompositionRoot(nonAdminUser?: boolean) {
     const repositories: Repositories = {
-        usersRepository: new UserTestRepository(),
+        usersRepository: nonAdminUser ? new NonAdminUserTestRepository() : new UserTestRepository(),
         localeRepository: new LocalesTestRepository(),
         moduleRepository: new ModulesTestRepository(),
         surveyFormRepository: new SurveyTestRepository(),

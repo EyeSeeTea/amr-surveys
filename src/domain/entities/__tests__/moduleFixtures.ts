@@ -5,51 +5,35 @@ export function createModuleList(): AMRSurveyModule[] {
         {
             color: "#A6228F",
             id: "ER1eGzQetqt",
-            name: "Point Prevalence Survey",
+            name: "PPS",
             surveyPrograms: [
-                {
-                    id: "SiUPBRxBvSS",
-                    name: "PPS Country Questionnaire",
-                    type: "NationalSurvey",
-                },
                 {
                     id: "Kimo6Gb1Lxu",
                     name: "PPS Hospital Form",
-                    type: "HospitalSurvey",
                 },
-                {
-                    id: "ukcTasHwgdG",
-                    name: "PPS Patient Register",
-                    type: "SupranationalSurvey",
-                },
+
                 {
                     id: "iwwz8Xssua2",
                     name: "PPS Survey Form",
-                    type: "NationalSurvey",
-                },
-                {
-                    id: "WWeEoX0pfYL",
-                    name: "PPS Ward Register",
-                    type: "SupranationalSurvey",
                 },
             ],
             userGroups: {
                 captureAccess: [
                     {
-                        id: "",
-                        name: "",
+                        id: "1",
+                        name: "pps-capture-ug",
                     },
                 ],
                 readAccess: [
                     {
-                        id: "",
-                        name: "",
+                        id: "2",
+                        name: "pps-read-ug",
                     },
                 ],
                 adminAccess: [
                     {
-                        id: "",
-                        name: "",
+                        id: "3",
+                        name: "pps-admin-ug",
                     },
                 ],
             },
@@ -62,7 +46,6 @@ export function createModuleList(): AMRSurveyModule[] {
                 {
                     id: "i9nXRCg5eWd",
                     name: "Sneha's Test Event Program",
-                    type: "NationalSurvey",
                 },
             ],
             userGroups: {

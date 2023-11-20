@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { getTestContext } from "../../../../utils/tests";
+import { getAdminTestContext } from "../../../../utils/tests";
 import { Provider } from "@dhis2/app-runtime";
 import App from "../../app/App";
 
@@ -52,7 +52,7 @@ describe("Survey List Page", () => {
         const createNewSurveyButton = await view.findByRole("button", {
             name: /CREATE NEW SURVEY/i,
         });
-        console.debug(window.location);
+
         //Before click we are at survey list page
         expect(window.location.toString()).toBe("http://localhost:3000/#/surveys/PPSSurveyForm");
 
@@ -65,7 +65,7 @@ describe("Survey List Page", () => {
 });
 
 function getView() {
-    const { compositionRoot } = getTestContext();
+    const { compositionRoot } = getAdminTestContext();
     return render(
         <Provider config={{ baseUrl: "http://localhost:8080", apiVersion: 30 }}>
             <App compositionRoot={compositionRoot} />
