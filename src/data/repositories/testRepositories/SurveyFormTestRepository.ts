@@ -50,6 +50,7 @@ export class SurveyTestRepository implements SurveyRepository {
         if (programId === PPS_SURVEY_FORM_ID)
             return Future.success([
                 {
+                    name: "TestSurvey1",
                     id: "TestSurvey1",
                     startDate: new Date(),
                     status: "ACTIVE",
@@ -57,6 +58,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "SUPRANATIONAL",
                 },
                 {
+                    name: "TestSurvey2",
                     id: "TestSurvey2",
                     startDate: new Date(),
                     status: "COMPLETED",

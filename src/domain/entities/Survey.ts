@@ -10,6 +10,7 @@ export type SURVEY_FORM_TYPES =
 
 export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
 export interface Survey extends Ref {
+    name: string;
     parentPPSSurveyId?: Id;
     startDate?: Date;
     status: SURVEY_STATUS;

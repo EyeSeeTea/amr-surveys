@@ -38,6 +38,7 @@ export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
 export const SURVEY_ID_PATIENT_DATAELEMENT_ID = "X2EkNfUHANO";
 export const WARD_ID_DATAELEMENT_ID = "o4YMhVrXTeG";
 export const WARD2_ID_DATAELEMENT_ID = "aSI3ZfIb3YS";
+export const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -355,6 +356,9 @@ export class SurveyD2Repository implements SurveyRepository {
                     dv => dv.dataElement === WARD_ID_DATAELEMENT_ID
                 )?.value;
 
+                const surveyName = event.dataValues.find(
+                    dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
+                )?.value;
                 const startDate = startDateString ? new Date(startDateString) : undefined;
                 const status =
                     surveyCompleted === "false" && startDate
@@ -365,6 +369,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 return {
                     id: event.event,
+                    name: surveyName ?? "",
                     parentPPSSurveyId: parentPPSSurveyId,
                     startDate: startDate,
                     status:

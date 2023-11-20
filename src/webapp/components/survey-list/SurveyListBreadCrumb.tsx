@@ -44,10 +44,10 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                         <ChevronRightIcon />
                         <Button
                             component={NavLink}
-                            to={`/survey/PPSSurveyForm/${currentPPSSurveyForm}`}
+                            to={`/survey/PPSSurveyForm/${currentPPSSurveyForm?.id}`}
                             exact={true}
                         >
-                            <span>{currentPPSSurveyForm}</span>
+                            <span>{currentPPSSurveyForm?.name}</span>
                         </Button>
                         <ChevronRightIcon />
                         <Button

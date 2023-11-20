@@ -3,7 +3,9 @@ import { Id } from "../../domain/entities/Ref";
 import { CurrentSurveysContext } from "./current-surveys-context";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<Id>();
+    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<
+        { id: Id; name: string } | undefined
+    >();
     const [currentCountryQuestionnaire, setCurrentCountryQuestionnaire] = useState<{
         id: string;
         orgUnitId: string;
@@ -14,8 +16,13 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     }>();
     const [currentWardRegister, setCurrentWardRegister] = useState<Id>();
 
-    const changeCurrentPPSSurveyForm = (surveyId: Id | undefined) => {
-        setCurrentPPSSurveyForm(surveyId);
+    const changeCurrentPPSSurveyForm = (survey: { id: Id; name: string } | undefined) => {
+        setCurrentPPSSurveyForm(survey);
+    };
+
+    const resetCurrentPPSSurveyForm = () => {
+        console.debug("SNEHA");
+        setCurrentPPSSurveyForm(undefined);
     };
 
     const changeCurrentCountryQuestionnaire = (surveyId: Id, orgUnitId: Id) => {
@@ -47,6 +54,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
             value={{
                 currentPPSSurveyForm,
                 changeCurrentPPSSurveyForm,
+                resetCurrentPPSSurveyForm,
                 currentCountryQuestionnaire,
                 changeCurrentCountryQuestionnaire,
                 resetCurrentCountryQuestionnaire,

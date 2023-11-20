@@ -31,6 +31,7 @@ interface SurveyListProps {
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     const {
+        currentPPSSurveyForm,
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
@@ -48,23 +49,27 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
 
     const history = useHistory();
 
-    const updateSelectedSurveyDetails = (surveyId: Id, orgUnitId: Id) => {
-        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(surveyId);
+    const updateSelectedSurveyDetails = (survey: { id: Id; name: string }, orgUnitId: Id) => {
+        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
         else if (surveyType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(surveyId, orgUnitId);
-        else if (surveyType === "PPSHospitalForm") changeCurrentHospitalForm(surveyId, orgUnitId);
-        else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(surveyId);
+            changeCurrentCountryQuestionnaire(survey.id, orgUnitId);
+        else if (surveyType === "PPSHospitalForm") {
+            // if (parentPPSSurvey && !currentPPSSurveyForm) {
+            //     changeCurrentPPSSurveyForm(parentPPSSurvey);
+            // }
+            changeCurrentHospitalForm(survey.id, orgUnitId);
+        } else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(survey.id);
     };
 
-    const editSurvey = (surveyId: Id, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(surveyId, orgUnitId);
+    const editSurvey = (survey: { id: Id; name: string }, orgUnitId: Id) => {
+        updateSelectedSurveyDetails(survey, orgUnitId);
         history.push({
-            pathname: `/survey/${surveyType}/${surveyId}`,
+            pathname: `/survey/${surveyType}/${survey.id}`,
         });
     };
 
-    const assignChild = (surveyId: Id, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(surveyId, orgUnitId);
+    const assignChild = (survey: { id: Id; name: string }, orgUnitId: Id) => {
+        updateSelectedSurveyDetails(survey, orgUnitId);
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType) {
             history.push({
@@ -75,8 +80,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         }
     };
 
-    const listChildren = (surveyId: Id, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(surveyId, orgUnitId);
+    const listChildren = (survey: { id: Id; name: string }, orgUnitId: Id) => {
+        updateSelectedSurveyDetails(survey, orgUnitId);
 
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType)
@@ -125,21 +130,30 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                         <TableRow>
                                             <TableCell>
                                                 <Typography variant="caption">
-                                                    {i18n.t("Start Date")}
+                                                    {i18n.t("PPS Survey Name")}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Status")}
-                                                </Typography>
-                                            </TableCell>
+                                            {surveyType === "PPSSurveyForm" && (
+                                                <>
+                                                    <TableCell>
+                                                        <Typography variant="caption">
+                                                            {i18n.t("Start Date")}
+                                                        </Typography>
+                                                    </TableCell>
 
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Survey Type")}
-                                                </Typography>
-                                            </TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="caption">
+                                                            {i18n.t("Status")}
+                                                        </Typography>
+                                                    </TableCell>
 
+                                                    <TableCell>
+                                                        <Typography variant="caption">
+                                                            {i18n.t("Survey Type")}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </>
+                                            )}
                                             <TableCell style={{ cursor: "pointer" }}>
                                                 <Typography variant="caption">
                                                     {i18n.t("Assigned Org Unit")}
@@ -157,10 +171,20 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                             {surveys.map(survey => (
                                                 <TableRow key={survey.id}>
                                                     <TableCell>
-                                                        {survey.startDate?.toDateString() || ""}
+                                                        {currentPPSSurveyForm?.name ?? survey.name}
                                                     </TableCell>
-                                                    <TableCell>{survey.status}</TableCell>
-                                                    <TableCell>{survey.surveyType}</TableCell>
+                                                    {surveyType === "PPSSurveyForm" && (
+                                                        <>
+                                                            <TableCell>
+                                                                {survey.startDate?.toDateString() ||
+                                                                    ""}
+                                                            </TableCell>
+                                                            <TableCell>{survey.status}</TableCell>
+                                                            <TableCell>
+                                                                {survey.surveyType}
+                                                            </TableCell>
+                                                        </>
+                                                    )}
                                                     <TableCell>
                                                         {survey.assignedOrgUnit.name}
                                                     </TableCell>
@@ -175,7 +199,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "Edit",
                                                                     handler: () =>
                                                                         editSurvey(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         ),
@@ -184,7 +211,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "Assign Country",
                                                                     handler: () =>
                                                                         assignChild(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         ),
@@ -194,7 +224,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
 
                                                                     handler: () => {
                                                                         listChildren(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );
@@ -204,7 +237,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "Assign Hospital",
                                                                     handler: () =>
                                                                         assignChild(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         ),
@@ -214,7 +250,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
 
                                                                     handler: () => {
                                                                         listChildren(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );
@@ -224,7 +263,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "Assign Ward",
                                                                     handler: () =>
                                                                         assignChild(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         ),
@@ -233,7 +275,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "List Wards",
                                                                     handler: () => {
                                                                         listChildren(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );
@@ -243,7 +288,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "List Country",
                                                                     handler: () => {
                                                                         listChildren(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );
@@ -253,7 +301,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "Assign Patient",
                                                                     handler: () => {
                                                                         assignChild(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );
@@ -263,7 +314,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                     option: "List Patients",
                                                                     handler: () => {
                                                                         listChildren(
-                                                                            survey.id,
+                                                                            {
+                                                                                id: survey.id,
+                                                                                name: survey.name,
+                                                                            },
                                                                             survey.assignedOrgUnit
                                                                                 .id
                                                                         );

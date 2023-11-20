@@ -2,8 +2,9 @@ import { useContext, createContext } from "react";
 import { Id } from "../../domain/entities/Ref";
 
 export interface CurrentSurveysContextProps {
-    currentPPSSurveyForm: Id | undefined;
-    changeCurrentPPSSurveyForm: (surveyId: Id | undefined) => void;
+    currentPPSSurveyForm: { id: Id; name: string } | undefined;
+    changeCurrentPPSSurveyForm: (survey: { id: Id; name: string } | undefined) => void;
+    resetCurrentPPSSurveyForm: () => void;
 
     currentCountryQuestionnaire: { id: Id; orgUnitId: Id } | undefined;
     changeCurrentCountryQuestionnaire: (surveyId: Id, orgUnitId: Id) => void;
@@ -21,6 +22,7 @@ export interface CurrentSurveysContextProps {
 export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
     currentPPSSurveyForm: undefined,
     changeCurrentPPSSurveyForm: () => {},
+    resetCurrentPPSSurveyForm: () => {},
 
     currentCountryQuestionnaire: undefined,
     resetCurrentCountryQuestionnaire: () => {},

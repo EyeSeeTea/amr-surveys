@@ -152,7 +152,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         api={api}
                         fullWidth={false}
                         selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
-                        initiallyExpanded={[currentOrgUnit?.orgUnitPath]}
+                        initiallyExpanded={
+                            currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
+                        }
                         onChange={onOrgUnitChange}
                         singleSelection={true}
                         typeInput={"radio"}

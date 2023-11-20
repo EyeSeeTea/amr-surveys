@@ -29,8 +29,12 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
             <StyledBreadCrumbChild>
                 <ChevronRightIcon />
                 {currentPPSSurveyForm ? (
-                    <Button>
-                        <span>{currentPPSSurveyForm}</span>
+                    <Button
+                        component={NavLink}
+                        to={`/survey/PPSSurveyForm/${currentPPSSurveyForm.id}`}
+                        exact={true}
+                    >
+                        <span>{currentPPSSurveyForm.name}</span>
                     </Button>
                 ) : (
                     <Button>
@@ -55,7 +59,11 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     </Button>
                     <ChevronRightIcon />
                     {currentCountryQuestionnaire ? (
-                        <Button>
+                        <Button
+                            component={NavLink}
+                            to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire.id}`}
+                            exact={true}
+                        >
                             <span>{currentCountryQuestionnaire.id}</span>
                         </Button>
                     ) : (
@@ -75,7 +83,11 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     </Button>
                     <ChevronRightIcon />
                     {currentHospitalForm ? (
-                        <Button>
+                        <Button
+                            component={NavLink}
+                            to={`/survey/PPSHospitalForm/${currentHospitalForm.id}`}
+                            exact={true}
+                        >
                             <span>{currentHospitalForm.id}</span>
                         </Button>
                     ) : (
@@ -93,7 +105,11 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     </Button>
                     <ChevronRightIcon />
                     {currentWardRegister ? (
-                        <Button>
+                        <Button
+                            component={NavLink}
+                            to={`/survey/PPSWardRegister/${currentWardRegister}`}
+                            exact={true}
+                        >
                             <span>{currentWardRegister}</span>
                         </Button>
                     ) : (
