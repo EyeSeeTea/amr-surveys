@@ -1,6 +1,7 @@
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, colors, ListItem, makeStyles, Theme, Typography } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
+import { useCurrentModule } from "../../contexts/current-module-context";
 import { MenuLeaf } from "../../hooks/useMenu";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 
@@ -12,10 +13,21 @@ interface LeftNavMenuProps {
 
 const LeftNavMenu: React.FC<LeftNavMenuProps> = ({ menu }) => {
     const classes = useStyles(0);
+    const { changeCurrentModule } = useCurrentModule();
 
+    //On menu click, set the current module
+    const menuItemClick = () => {
+        changeCurrentModule(menu.module);
+    };
     return (
         <ListItem disableGutters>
-            <Button className={classes.button} component={NavLink} to={menu.path} exact={true}>
+            <Button
+                className={classes.button}
+                component={NavLink}
+                to={menu.path}
+                exact={true}
+                onClick={menuItemClick}
+            >
                 <div className={classes.icon}>{menu.icon}</div>
                 <Typography variant="body1" style={{ color: palette.text.primary }}>
                     {i18n.t(menu.title)}

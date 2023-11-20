@@ -22,6 +22,9 @@ import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useState } from "react";
+import { getUserAccess } from "../../../domain/utils/menuHelper";
+import { useAppContext } from "../../contexts/app-context";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 interface SurveyListProps {
     surveyType: SURVEY_FORM_TYPES;
@@ -33,6 +36,13 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         changeCurrentHospitalForm,
         changeCurrentWardRegister,
     } = useCurrentSurveys();
+    const { currentUser } = useAppContext();
+    const { currentModule } = useCurrentModule();
+
+    let isAdmin = false;
+    if (currentModule)
+        isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
+
     const { surveys, loading, error } = useSurveys(surveyType);
     const [options, setOptions] = useState<string[]>([]);
 
@@ -87,19 +97,24 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         <ContentWrapper>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
-                    <ButtonWrapper>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            component={NavLink}
-                            to={{
-                                pathname: `/new-survey/${surveyType}`,
-                            }}
-                            exact={true}
-                        >
-                            {i18n.t("Create New Survey")}
-                        </Button>
-                    </ButtonWrapper>
+                    {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
+                    {surveyType === "PPSHospitalForm" && !isAdmin ? (
+                        <></>
+                    ) : (
+                        <ButtonWrapper>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                component={NavLink}
+                                to={{
+                                    pathname: `/new-survey/${surveyType}`,
+                                }}
+                                exact={true}
+                            >
+                                {i18n.t("Create New Survey")}
+                            </Button>
+                        </ButtonWrapper>
+                    )}
 
                     <Typography variant="h3">{i18n.t(`Survey List [${surveyType}]`)}</Typography>
                     {surveys && (

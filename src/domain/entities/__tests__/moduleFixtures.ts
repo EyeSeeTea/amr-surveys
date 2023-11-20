@@ -46,6 +46,12 @@ export function createModuleList(): AMRSurveyModule[] {
                         name: "",
                     },
                 ],
+                adminAccess: [
+                    {
+                        id: "",
+                        name: "",
+                    },
+                ],
             },
         },
         {
@@ -67,6 +73,12 @@ export function createModuleList(): AMRSurveyModule[] {
                     },
                 ],
                 readAccess: [
+                    {
+                        id: "",
+                        name: "",
+                    },
+                ],
+                adminAccess: [
                     {
                         id: "",
                         name: "",

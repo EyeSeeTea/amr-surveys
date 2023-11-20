@@ -318,9 +318,10 @@ export class SurveyD2Repository implements SurveyRepository {
 
     getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]> {
         const ouMode =
-            programId === PPS_WARD_REGISTER_ID ||
-            programId === PPS_HOSPITAL_FORM_ID ||
-            programId === PPS_PATIENT_REGISTER_ID
+            orgUnitId !== "" &&
+            (programId === PPS_WARD_REGISTER_ID ||
+                programId === PPS_HOSPITAL_FORM_ID ||
+                programId === PPS_PATIENT_REGISTER_ID)
                 ? "DESCENDANTS"
                 : undefined;
         return apiToFuture(

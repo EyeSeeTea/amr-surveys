@@ -5,7 +5,8 @@ export type SURVEY_FORM_TYPES =
     | "PPSCountryQuestionnaire"
     | "PPSHospitalForm"
     | "PPSPatientRegister"
-    | "PPSWardRegister";
+    | "PPSWardRegister"
+    | "PrevelancePlaceholder";
 
 export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
 export interface Survey extends Ref {
