@@ -51,18 +51,18 @@ export class SurveyTestRepository implements SurveyRepository {
             return Future.success([
                 {
                     name: "TestSurvey1",
-                    id: "TestSurvey1",
+                    id: "1",
                     startDate: new Date(),
                     status: "ACTIVE",
-                    assignedOrgUnit: { id: orgUnitId, name: "TestSurvey1" },
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
                     surveyType: "SUPRANATIONAL",
                 },
                 {
                     name: "TestSurvey2",
-                    id: "TestSurvey2",
+                    id: "2",
                     startDate: new Date(),
                     status: "COMPLETED",
-                    assignedOrgUnit: { id: "OU1234", name: "TestSurvey2" },
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
                     surveyType: "NATIONAL",
                 },
             ]);
