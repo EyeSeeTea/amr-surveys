@@ -21,33 +21,36 @@ export class GetAllSurveysUseCase {
         //All PPS Survey Forms are Global.
         if (surveyType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
-        return this.surveyReporsitory.getSurveys(programId, orgUnitId).flatMap(surveys => {
-            //Parent Id should be set only for child forms, this is a just an additional check
-            if (parentPPSSurveyId) {
-                if (surveyType === "PPSPatientRegister") {
-                    //Filter Surveys by parentWardRegisterId
-                    const filteredSurveys = _(
-                        surveys.map(survey => {
-                            if (survey.parentWardRegisterId === parentWardRegisterId) return survey;
-                        })
-                    )
-                        .compact()
-                        .value();
+        return this.surveyReporsitory
+            .getSurveys(surveyType, programId, orgUnitId)
+            .flatMap(surveys => {
+                //Parent Id should be set only for child forms
+                if (parentPPSSurveyId) {
+                    if (surveyType === "PPSPatientRegister") {
+                        //Filter Surveys by parentWardRegisterId
+                        const filteredSurveys = _(
+                            surveys.map(survey => {
+                                if (survey.parentWardRegisterId === parentWardRegisterId)
+                                    return survey;
+                            })
+                        )
+                            .compact()
+                            .value();
 
-                    return Future.success(filteredSurveys);
-                } else if (surveyType !== "PPSSurveyForm") {
-                    //Filter Surveys by parentPPSSurveyId
-                    const filteredSurveys = _(
-                        surveys.map(survey => {
-                            if (survey.parentPPSSurveyId === parentPPSSurveyId) return survey;
-                        })
-                    )
-                        .compact()
-                        .value();
+                        return Future.success(filteredSurveys);
+                    } else if (surveyType !== "PPSSurveyForm") {
+                        //Filter Surveys by parentPPSSurveyId
+                        const filteredSurveys = _(
+                            surveys.map(survey => {
+                                if (survey.rootSurvey.id === parentPPSSurveyId) return survey;
+                            })
+                        )
+                            .compact()
+                            .value();
 
-                    return Future.success(filteredSurveys);
-                } else return Future.success([]);
-            } else return Future.success(surveys);
-        });
+                        return Future.success(filteredSurveys);
+                    } else return Future.success([]);
+                } else return Future.success(surveys);
+            });
     }
 }

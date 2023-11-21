@@ -31,7 +31,6 @@ interface SurveyListProps {
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     const {
-        currentPPSSurveyForm,
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
@@ -170,9 +169,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                         <StyledTableBody>
                                             {surveys.map(survey => (
                                                 <TableRow key={survey.id}>
-                                                    <TableCell>
-                                                        {currentPPSSurveyForm?.name ?? survey.name}
-                                                    </TableCell>
+                                                    <TableCell>{survey.rootSurvey.name}</TableCell>
                                                     {surveyType === "PPSSurveyForm" && (
                                                         <>
                                                             <TableCell>
