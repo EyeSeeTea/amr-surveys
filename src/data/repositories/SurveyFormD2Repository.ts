@@ -296,12 +296,16 @@ export class SurveyD2Repository implements SurveyRepository {
 
         if (eventId) {
             return this.getSurveyById(eventId).flatMap(event => {
-                const updatedEvent: D2TrackerEvent = {
-                    ...event,
+                if (event) {
+                    const updatedEvent: D2TrackerEvent = {
+                        ...event,
 
-                    dataValues: dataValues as DataValue[],
-                };
-                return Future.success(updatedEvent);
+                        dataValues: dataValues as DataValue[],
+                    };
+                    return Future.success(updatedEvent);
+                } else {
+                    return Future.error(new Error("Unable to find event to update"));
+                }
             });
         } else {
             const event: D2TrackerEvent = {
@@ -337,7 +341,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 ouMode: ouMode,
             })
         ).flatMap(events => {
-            const surveys: Survey[] = events.instances.map(event => {
+            const surveys = events.instances.map(event => {
                 let startDateString,
                     surveyType = "",
                     surveyCompleted,
@@ -373,60 +377,86 @@ export class SurveyD2Repository implements SurveyRepository {
                         : "COMPLETED";
 
                 return this.getSurveyNameFromId(parentPPSSurveyId).map(parentppsSurveyName => {
-                    const survey = {
-                        id: event.event,
-                        name: surveyName,
-                        rootSurvey: {
-                            id:
-                                surveyFormType === "PPSSurveyForm"
-                                    ? event.event
-                                    : parentPPSSurveyId,
-                            name:
-                                surveyFormType === "PPSSurveyForm"
-                                    ? surveyName
-                                    : parentppsSurveyName,
-                        },
-                        startDate: startDate,
-                        status:
-                            programId === PPS_SURVEY_FORM_ID
-                                ? status
-                                : event.status === "COMPLETED"
-                                ? ("COMPLETED" as SURVEY_STATUS)
-                                : ("ACTIVE" as SURVEY_STATUS),
-                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: surveyType ? surveyType : "",
-                        parentWardRegisterId: parentWardRegisterId,
-                        surveyFormType: surveyFormType,
-                    };
-                    return survey;
+                    if (parentPPSSurveyId === "") {
+                        const survey = {
+                            id: event.event,
+                            name: surveyName,
+                            rootSurvey: {
+                                id: event.event,
+                                name: surveyName,
+                            },
+                            startDate: startDate,
+                            status:
+                                programId === PPS_SURVEY_FORM_ID
+                                    ? status
+                                    : event.status === "COMPLETED"
+                                    ? ("COMPLETED" as SURVEY_STATUS)
+                                    : ("ACTIVE" as SURVEY_STATUS),
+                            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                            surveyType: surveyType ? surveyType : "",
+                            parentWardRegisterId: parentWardRegisterId,
+                            surveyFormType: surveyFormType,
+                        };
+                        return survey;
+                    } else {
+                        const survey = {
+                            id: event.event,
+                            name: surveyName,
+                            rootSurvey: {
+                                id: parentPPSSurveyId,
+                                name: parentppsSurveyName,
+                            },
+                            startDate: startDate,
+                            status:
+                                programId === PPS_SURVEY_FORM_ID
+                                    ? status
+                                    : event.status === "COMPLETED"
+                                    ? ("COMPLETED" as SURVEY_STATUS)
+                                    : ("ACTIVE" as SURVEY_STATUS),
+                            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                            surveyType: surveyType ? surveyType : "",
+                            parentWardRegisterId: parentWardRegisterId,
+                            surveyFormType: surveyFormType,
+                        };
+                        return survey;
+                    }
                 });
             });
-            return Future.success(surveys);
+
+            const surveysSeq = Future.sequential(surveys);
+            return surveysSeq;
         });
     }
 
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire> {
         return this.getSurveyById(eventId).flatMap(event => {
-            return this.getForm(programId, event);
+            if (event) return this.getForm(programId, event);
+            else return Future.error(new Error("Cannot find form data"));
         });
     }
 
-    getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
+    getSurveyById(eventId: string): FutureData<D2TrackerEvent | void> {
         return apiToFuture(
             this.api.tracker.events.getById(eventId, {
                 fields: { $all: true },
             })
         ).flatMap(resp => {
-            return Future.success(resp);
+            if (resp) return Future.success(resp);
+            else return Future.success(undefined);
         });
     }
 
     getSurveyNameFromId(id: Id): FutureData<string> {
-        return this.getSurveyById(id).flatMap(survey => {
-            const surveyName = survey.dataValues.find(
-                dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
-            )?.value;
-            return Future.success(surveyName ?? "");
-        });
+        if (id !== "")
+            return this.getSurveyById(id).flatMap(survey => {
+                if (survey) {
+                    const surveyName = survey.dataValues?.find(
+                        dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
+                    )?.value;
+
+                    return Future.success(surveyName ?? "");
+                } else return Future.success("");
+            });
+        else return Future.success("");
     }
 }

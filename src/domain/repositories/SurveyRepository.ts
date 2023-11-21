@@ -19,7 +19,7 @@ export interface SurveyRepository {
         programId: Id,
         orgUnitId: Id
     ): FutureData<Survey[]>;
-    getSurveyById(eventId: string): FutureData<D2TrackerEvent>;
+    getSurveyById(eventId: string): FutureData<D2TrackerEvent | void>;
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
     getSurveyNameFromId(id: Id): FutureData<string | undefined>;
 }

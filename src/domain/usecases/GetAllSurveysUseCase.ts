@@ -24,8 +24,12 @@ export class GetAllSurveysUseCase {
         return this.surveyReporsitory
             .getSurveys(surveyType, programId, orgUnitId)
             .flatMap(surveys => {
-                //Parent Id should be set only for child forms
-                if (parentPPSSurveyId) {
+                if (
+                    surveyType === "PPSSurveyForm" ||
+                    (surveyType === "PPSHospitalForm" && !parentPPSSurveyId)
+                ) {
+                    return Future.success(surveys);
+                } else {
                     if (surveyType === "PPSPatientRegister") {
                         //Filter Surveys by parentWardRegisterId
                         const filteredSurveys = _(
@@ -38,7 +42,7 @@ export class GetAllSurveysUseCase {
                             .value();
 
                         return Future.success(filteredSurveys);
-                    } else if (surveyType !== "PPSSurveyForm") {
+                    } else {
                         //Filter Surveys by parentPPSSurveyId
                         const filteredSurveys = _(
                             surveys.map(survey => {
@@ -49,8 +53,8 @@ export class GetAllSurveysUseCase {
                             .value();
 
                         return Future.success(filteredSurveys);
-                    } else return Future.success([]);
-                } else return Future.success(surveys);
+                    }
+                }
             });
     }
 }

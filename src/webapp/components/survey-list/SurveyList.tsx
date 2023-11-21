@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 import { NavLink, useHistory } from "react-router-dom";
 import styled from "styled-components";
-import { Id } from "../../../domain/entities/Ref";
+import { Id, NamedRef } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
@@ -21,7 +21,7 @@ import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
@@ -32,6 +32,7 @@ interface SurveyListProps {
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     const {
         changeCurrentPPSSurveyForm,
+        resetCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
         changeCurrentWardRegister,
@@ -48,27 +49,33 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
 
     const history = useHistory();
 
-    const updateSelectedSurveyDetails = (survey: { id: Id; name: string }, orgUnitId: Id) => {
+    useEffect(() => {
+        if (surveyType === "PPSHospitalForm" && !isAdmin) {
+            resetCurrentPPSSurveyForm();
+        }
+    }, [isAdmin, surveyType, resetCurrentPPSSurveyForm]);
+
+    const updateSelectedSurveyDetails = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
         if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
         else if (surveyType === "PPSCountryQuestionnaire")
             changeCurrentCountryQuestionnaire(survey.id, orgUnitId);
         else if (surveyType === "PPSHospitalForm") {
-            // if (parentPPSSurvey && !currentPPSSurveyForm) {
-            //     changeCurrentPPSSurveyForm(parentPPSSurvey);
-            // }
+            if (!isAdmin) {
+                changeCurrentPPSSurveyForm(rootSurvey);
+            }
             changeCurrentHospitalForm(survey.id, orgUnitId);
         } else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(survey.id);
     };
 
-    const editSurvey = (survey: { id: Id; name: string }, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(survey, orgUnitId);
+    const editSurvey = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
         history.push({
             pathname: `/survey/${surveyType}/${survey.id}`,
         });
     };
 
-    const assignChild = (survey: { id: Id; name: string }, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(survey, orgUnitId);
+    const assignChild = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType) {
             history.push({
@@ -79,8 +86,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         }
     };
 
-    const listChildren = (survey: { id: Id; name: string }, orgUnitId: Id) => {
-        updateSelectedSurveyDetails(survey, orgUnitId);
+    const listChildren = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
 
         const childSurveyType = getChildSurveyType(surveyType);
         if (childSurveyType)
@@ -201,7 +208,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         ),
                                                                 },
                                                                 {
@@ -213,7 +221,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         ),
                                                                 },
                                                                 {
@@ -226,7 +235,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
@@ -239,7 +249,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         ),
                                                                 },
                                                                 {
@@ -252,7 +263,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
@@ -265,7 +277,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         ),
                                                                 },
                                                                 {
@@ -277,7 +290,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
@@ -290,7 +304,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
@@ -303,7 +318,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
@@ -316,7 +332,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                                                                 name: survey.name,
                                                                             },
                                                                             survey.assignedOrgUnit
-                                                                                .id
+                                                                                .id,
+                                                                            survey.rootSurvey
                                                                         );
                                                                     },
                                                                 },
