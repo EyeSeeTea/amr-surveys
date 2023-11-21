@@ -337,7 +337,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 ouMode: ouMode,
             })
         ).flatMap(events => {
-            const surveys = events.instances.map(event => {
+            const surveys: Survey[] = events.instances.map(event => {
                 let startDateString,
                     surveyType = "",
                     surveyCompleted,
