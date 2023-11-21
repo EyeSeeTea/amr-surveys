@@ -1,4 +1,4 @@
-import { NamedRef, Ref, Id } from "./Ref";
+import { NamedRef, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
     | "PPSSurveyForm"
@@ -9,12 +9,13 @@ export type SURVEY_FORM_TYPES =
     | "PrevelancePlaceholder";
 
 export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
-export interface Survey extends Ref {
-    name: string;
-    parentPPSSurveyId?: Id;
+
+export interface Survey extends NamedRef {
+    rootSurvey: NamedRef; //For PPS module, all surveys are associated with a given PPS Survey Form instance.
     startDate?: Date;
     status: SURVEY_STATUS;
     assignedOrgUnit: NamedRef;
     surveyType: string;
+    surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
 }
