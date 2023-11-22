@@ -31,6 +31,7 @@ import styled from "styled-components";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
+import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -160,7 +161,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         singleSelection={true}
                         typeInput={"radio"}
                         hideMemberCount={false}
-                        selectableLevels={props.formType === "PPSCountryQuestionnaire" ? [3] : [4]}
+                        selectableLevels={
+                            props.formType === "PPSCountryQuestionnaire"
+                                ? [COUNTRY_OU_LEVEL]
+                                : [HOSPITAL_OU_LEVEL]
+                        }
                         controls={{
                             filterByLevel: false,
                             filterByGroup: false,
