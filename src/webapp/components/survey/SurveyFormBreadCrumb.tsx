@@ -31,27 +31,27 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
     return (
         <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
             {isAdmin && (
-                <>
-                    <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
-                        <span>{i18n.t("PPS Surveys")}</span>
-                    </Button>
+                <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
+                    <span>{i18n.t("PPS Surveys")}</span>
+                </Button>
+            )}
 
-                    <StyledBreadCrumbChild>
-                        {currentPPSSurveyForm ? (
-                            <Button
-                                component={NavLink}
-                                to={`/survey/PPSSurveyForm/${currentPPSSurveyForm.id}`}
-                                exact={true}
-                            >
-                                <span>{currentPPSSurveyForm.name}</span>
-                            </Button>
-                        ) : (
-                            <Button>
-                                <span>{i18n.t("New Survey")}</span>
-                            </Button>
-                        )}
-                    </StyledBreadCrumbChild>
-                </>
+            {isAdmin && (
+                <StyledBreadCrumbChild>
+                    {currentPPSSurveyForm ? (
+                        <Button
+                            component={NavLink}
+                            to={`/survey/PPSSurveyForm/${currentPPSSurveyForm.id}`}
+                            exact={true}
+                        >
+                            <span>{currentPPSSurveyForm.name}</span>
+                        </Button>
+                    ) : (
+                        <Button>
+                            <span>{i18n.t("New Survey")}</span>
+                        </Button>
+                    )}
+                </StyledBreadCrumbChild>
             )}
 
             {isAdmin &&

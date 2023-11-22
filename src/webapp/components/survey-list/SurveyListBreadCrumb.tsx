@@ -32,7 +32,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
         <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
             {isAdmin && (
                 <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
-                    <span> {i18n.t("PPS Survey Forms")}</span>
+                    <span> {i18n.t("PPS Surveys")}</span>
                 </Button>
             )}
             {isAdmin &&
