@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-22T06:15:51.058Z\n"
-"PO-Revision-Date: 2023-11-22T06:15:51.058Z\n"
+"POT-Creation-Date: 2023-11-22T06:41:37.873Z\n"
+"PO-Revision-Date: 2023-11-22T06:41:37.873Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -49,6 +49,9 @@ msgid ""
 "contact your administrator"
 msgstr ""
 
+msgid "PPS Survey Forms"
+msgstr ""
+
 msgid "PPS Survey Name"
 msgstr ""
 
@@ -61,13 +64,22 @@ msgstr ""
 msgid "Survey Type"
 msgstr ""
 
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Name"
+msgstr ""
+
+msgid "Ward Code"
+msgstr ""
+
+msgid "Hospital Code"
+msgstr ""
+
 msgid "Assigned Org Unit"
 msgstr ""
 
 msgid "Action"
-msgstr ""
-
-msgid "PPS Survey Forms"
 msgstr ""
 
 msgid "Yes"

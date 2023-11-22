@@ -6,6 +6,9 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Id } from "../../../domain/entities/Ref";
 import { StyledBreadCrumbChild, StyledBreadCrumbs } from "../survey-list/SurveyListBreadCrumb";
+import { useAppContext } from "../../contexts/app-context";
+import { useCurrentModule } from "../../contexts/current-module-context";
+import { getUserAccess } from "../../../domain/utils/menuHelper";
 
 export interface SurveyFormBreadCrumbProps {
     type: SURVEY_FORM_TYPES;
@@ -19,56 +22,67 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
         currentHospitalForm,
         currentWardRegister,
     } = useCurrentSurveys();
+    const { currentUser } = useAppContext();
+    const { currentModule } = useCurrentModule();
+
+    const isAdmin = currentModule
+        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
+        : false;
     return (
         <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
-            <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
-                <span>{i18n.t("PPS Surveys")}</span>
-            </Button>
+            {isAdmin && (
+                <>
+                    <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
+                        <span>{i18n.t("PPS Surveys")}</span>
+                    </Button>
 
-            <StyledBreadCrumbChild>
-                {currentPPSSurveyForm ? (
-                    <Button
-                        component={NavLink}
-                        to={`/survey/PPSSurveyForm/${currentPPSSurveyForm.id}`}
-                        exact={true}
-                    >
-                        <span>{currentPPSSurveyForm.name}</span>
-                    </Button>
-                ) : (
-                    <Button>
-                        <span>{i18n.t("New Survey")}</span>
-                    </Button>
-                )}
-            </StyledBreadCrumbChild>
+                    <StyledBreadCrumbChild>
+                        {currentPPSSurveyForm ? (
+                            <Button
+                                component={NavLink}
+                                to={`/survey/PPSSurveyForm/${currentPPSSurveyForm.id}`}
+                                exact={true}
+                            >
+                                <span>{currentPPSSurveyForm.name}</span>
+                            </Button>
+                        ) : (
+                            <Button>
+                                <span>{i18n.t("New Survey")}</span>
+                            </Button>
+                        )}
+                    </StyledBreadCrumbChild>
+                </>
+            )}
 
-            {(type === "PPSCountryQuestionnaire" ||
-                type === "PPSHospitalForm" ||
-                type === "PPSWardRegister" ||
-                type === "PPSPatientRegister") && (
-                <StyledBreadCrumbChild>
-                    <Button
-                        component={NavLink}
-                        to={`/surveys/PPSCountryQuestionnaire`}
-                        exact={true}
-                    >
-                        <span>{i18n.t("Country Questionnaires")}</span>
-                    </Button>
-                    <ChevronRightIcon />
-                    {currentCountryQuestionnaire ? (
+            {isAdmin &&
+                (type === "PPSCountryQuestionnaire" ||
+                    type === "PPSHospitalForm" ||
+                    type === "PPSWardRegister" ||
+                    type === "PPSPatientRegister") && (
+                    <StyledBreadCrumbChild>
                         <Button
                             component={NavLink}
-                            to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire.id}`}
+                            to={`/surveys/PPSCountryQuestionnaire`}
                             exact={true}
                         >
-                            <span>{currentCountryQuestionnaire.name}</span>
+                            <span>{i18n.t("Country Questionnaires")}</span>
                         </Button>
-                    ) : (
-                        <Button>
-                            <span>{i18n.t("New Survey")}</span>
-                        </Button>
-                    )}
-                </StyledBreadCrumbChild>
-            )}
+                        <ChevronRightIcon />
+                        {currentCountryQuestionnaire ? (
+                            <Button
+                                component={NavLink}
+                                to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire.id}`}
+                                exact={true}
+                            >
+                                <span>{currentCountryQuestionnaire.name}</span>
+                            </Button>
+                        ) : (
+                            <Button>
+                                <span>{i18n.t("New Survey")}</span>
+                            </Button>
+                        )}
+                    </StyledBreadCrumbChild>
+                )}
             {(type === "PPSHospitalForm" ||
                 type === "PPSWardRegister" ||
                 type === "PPSPatientRegister") && (

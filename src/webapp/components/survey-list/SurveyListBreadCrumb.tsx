@@ -24,9 +24,9 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
 
-    let isAdmin = false;
-    if (currentModule)
-        isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
+    const isAdmin = currentModule
+        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
+        : false;
 
     return (
         <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
