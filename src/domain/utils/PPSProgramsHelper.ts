@@ -69,3 +69,20 @@ export const getSurveyOptions = (
             return ["Edit"];
     }
 };
+
+export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string => {
+    switch (surveyFormType) {
+        case "PPSSurveyForm":
+            return "PPS Survey";
+        case "PPSCountryQuestionnaire":
+            return "Country Questionnaire";
+        case "PPSHospitalForm":
+            return "Hospital Form";
+        case "PPSWardRegister":
+            return "Ward Register";
+        case "PPSPatientRegister":
+            return "Patient Register";
+        default:
+            return "Survey";
+    }
+};

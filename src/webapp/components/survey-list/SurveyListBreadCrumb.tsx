@@ -54,7 +54,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                             to={`/surveys/PPSCountryQuestionnaire`}
                             exact={true}
                         >
-                            <span>{i18n.t("PPS Country Questionnaires")}</span>
+                            <span>{i18n.t("Country Questionnaires")}</span>
                         </Button>
                     </StyledBreadCrumbChild>
                 )}
@@ -75,7 +75,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                         </>
                     )}
                     <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
-                        <span>{i18n.t("PPS Hospital Forms")}</span>
+                        <span>{i18n.t("Hospital Forms")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}
@@ -91,7 +91,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                     </Button>
                     <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
-                        <span>{i18n.t("PPS Ward Registers")}</span>
+                        <span>{i18n.t("Ward Registers")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}
@@ -107,7 +107,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                     </Button>
                     <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSPatientRegister`} exact={true}>
-                        <span>{i18n.t("PPS Patient Registers")}</span>
+                        <span>{i18n.t("Patient Registers")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}

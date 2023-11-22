@@ -20,7 +20,11 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
+import {
+    getChildSurveyType,
+    getSurveyDisplayName,
+    getSurveyOptions,
+} from "../../../domain/utils/PPSProgramsHelper";
 import { useEffect, useState } from "react";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
@@ -142,12 +146,14 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                 }}
                                 exact={true}
                             >
-                                {i18n.t("Create New Survey")}
+                                {i18n.t(`Create New ${getSurveyDisplayName(surveyType)}`)}
                             </Button>
                         </ButtonWrapper>
                     )}
 
-                    <Typography variant="h3">{i18n.t(`Survey List [${surveyType}]`)}</Typography>
+                    <Typography variant="h3">
+                        {i18n.t(`${getSurveyDisplayName(surveyType)} List`)}
+                    </Typography>
                     {surveys && (
                         <TableContentWrapper>
                             <TableContainer component={Paper}>
