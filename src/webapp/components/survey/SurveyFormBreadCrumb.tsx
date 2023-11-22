@@ -1,12 +1,11 @@
-import { Breadcrumbs, Button } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
-import styled from "styled-components";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import { palette } from "../../pages/app/themes/dhis2.theme";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Id } from "../../../domain/entities/Ref";
+import { StyledBreadCrumbChild, StyledBreadCrumbs } from "../survey-list/SurveyListBreadCrumb";
 
 export interface SurveyFormBreadCrumbProps {
     type: SURVEY_FORM_TYPES;
@@ -21,13 +20,12 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
         currentWardRegister,
     } = useCurrentSurveys();
     return (
-        <StyledBreadCrumbs aria-label="breadcrumb" separator="">
+        <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
             <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
                 <span>{i18n.t("PPS Survey Forms")}</span>
             </Button>
 
             <StyledBreadCrumbChild>
-                <ChevronRightIcon />
                 {currentPPSSurveyForm ? (
                     <Button
                         component={NavLink}
@@ -48,8 +46,6 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                 type === "PPSWardRegister" ||
                 type === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
-
                     <Button
                         component={NavLink}
                         to={`/surveys/PPSCountryQuestionnaire`}
@@ -77,7 +73,6 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                 type === "PPSWardRegister" ||
                 type === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
                         <span>{i18n.t("PPS Hospital Forms")}</span>
                     </Button>
@@ -99,7 +94,6 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
             )}
             {(type === "PPSWardRegister" || type === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
                         <span>{i18n.t("PPS Ward Registers")}</span>
                     </Button>
@@ -121,7 +115,6 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
             )}
             {type === "PPSPatientRegister" && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSPatientRegister`} exact={true}>
                         <span>{i18n.t("PPS Patient Registers")}</span>
                     </Button>
@@ -140,28 +133,3 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
         </StyledBreadCrumbs>
     );
 };
-
-export const StyledBreadCrumbChild = styled.div`
-    display: flex;
-    align-items: center;
-`;
-
-export const StyledBreadCrumbs = styled(Breadcrumbs)`
-    font-weight: 400;
-    li {
-        display: flex;
-        align-items: center;
-        p {
-            padding: 6px 8px;
-        }
-        .MuiButton-root {
-            span {
-                color: ${palette.primary.main};
-                font-size: 15px;
-            }
-        }
-    }
-    svg {
-        color: ${palette.shadow};
-    }
-`;

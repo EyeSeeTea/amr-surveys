@@ -29,7 +29,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
         isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
     return (
-        <StyledBreadCrumbs aria-label="breadcrumb" separator="">
+        <StyledBreadCrumbs aria-label="breadcrumb" separator={<ChevronRightIcon />}>
             {isAdmin && (
                 <Button component={NavLink} to={`/surveys/PPSSurveyForm`} exact={true}>
                     <span> {i18n.t("PPS Survey Forms")}</span>
@@ -41,7 +41,6 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                     type === "PPSWardRegister" ||
                     type === "PPSPatientRegister") && (
                     <StyledBreadCrumbChild>
-                        <ChevronRightIcon />
                         <Button
                             component={NavLink}
                             to={`/survey/PPSSurveyForm/${currentPPSSurveyForm?.id}`}
@@ -65,7 +64,6 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                 <StyledBreadCrumbChild>
                     {isAdmin && (
                         <>
-                            <ChevronRightIcon />
                             <Button
                                 component={NavLink}
                                 to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire?.id}`}
@@ -84,7 +82,6 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
 
             {(type === "PPSWardRegister" || type === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
                     <Button
                         component={NavLink}
                         to={`/survey/PPSHospitalForm/${currentHospitalForm?.id}`}
@@ -101,7 +98,6 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
 
             {type === "PPSPatientRegister" && (
                 <StyledBreadCrumbChild>
-                    <ChevronRightIcon />
                     <Button
                         component={NavLink}
                         to={`/survey/PPSWardRegister/${currentWardRegister}`}
@@ -125,21 +121,28 @@ export const StyledBreadCrumbChild = styled.div`
 `;
 
 export const StyledBreadCrumbs = styled(Breadcrumbs)`
-    font-weight: 400;
+    font-weight: 300;
+
+    a {
+        padding: 0px;
+    }
     li {
         display: flex;
         align-items: center;
-        p {
-            padding: 6px 8px;
-        }
         .MuiButton-root {
             span {
                 color: ${palette.primary.main};
-                font-size: 15px;
             }
+        }
+        .MuiButton-text {
+            min-width: 0;
         }
     }
     svg {
         color: ${palette.shadow};
+    }
+    .MuiBreadcrumbs-separator {
+        padding: 0;
+        margin: 0;
     }
 `;
