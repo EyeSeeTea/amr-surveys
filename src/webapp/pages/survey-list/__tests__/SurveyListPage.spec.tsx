@@ -30,7 +30,7 @@ describe("Survey List Page", () => {
         const view = getView();
 
         const createNewSurveyButton = await view.findByRole("button", {
-            name: /CREATE NEW SURVEY/i,
+            name: /CREATE NEW PPS SURVEY/i,
         });
 
         //Before click we are at homepage
@@ -50,7 +50,7 @@ describe("Survey List Page", () => {
         const view = getView();
 
         const createNewSurveyButton = await view.findByRole("button", {
-            name: /CREATE NEW SURVEY/i,
+            name: /CREATE NEW PPS SURVEY/i,
         });
 
         //Before click we are at survey list page

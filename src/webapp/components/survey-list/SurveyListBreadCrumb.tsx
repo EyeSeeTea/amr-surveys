@@ -100,7 +100,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                 <StyledBreadCrumbChild>
                     <Button
                         component={NavLink}
-                        to={`/survey/PPSWardRegister/${currentWardRegister}`}
+                        to={`/survey/PPSWardRegister/${currentWardRegister?.id}`}
                         exact={true}
                     >
                         <span>{currentWardRegister?.name}</span>

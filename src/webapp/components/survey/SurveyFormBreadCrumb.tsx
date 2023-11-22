@@ -101,7 +101,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     {currentWardRegister ? (
                         <Button
                             component={NavLink}
-                            to={`/survey/PPSWardRegister/${currentWardRegister}`}
+                            to={`/survey/PPSWardRegister/${currentWardRegister.id}`}
                             exact={true}
                         >
                             <span>{currentWardRegister.name}</span>
