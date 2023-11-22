@@ -14,9 +14,6 @@ export const SurveyPage: React.FC = () => {
         history.push(`/surveys/${type}`);
     };
 
-    // if ((type === "PPSHospitalForm" || type === "PPSWardRegister") && !parentHierarchy) {
-    //     return <CircularProgress />;
-    // }
     return (
         <ContentWrapper>
             <SurveyFormBreadCrumb type={type} id={id} />

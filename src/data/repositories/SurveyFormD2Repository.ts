@@ -37,8 +37,11 @@ const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
 export const SURVEY_ID_PATIENT_DATAELEMENT_ID = "X2EkNfUHANO";
 export const WARD_ID_DATAELEMENT_ID = "o4YMhVrXTeG";
-export const WARD2_ID_DATAELEMENT_ID = "aSI3ZfIb3YS";
-export const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
+const WARD2_ID_DATAELEMENT_ID = "aSI3ZfIb3YS";
+const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
+const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
+const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
+const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -321,6 +324,35 @@ export class SurveyD2Repository implements SurveyRepository {
         }
     }
 
+    getSurveyNameBySurveyFormType(
+        surveyFormType: SURVEY_FORM_TYPES,
+        options: {
+            eventId: string;
+            surveyName: string;
+            orgUnitName: string | undefined;
+            hospitalCode: string;
+            wardCode: string;
+            patientCode: string;
+        }
+    ): string {
+        switch (surveyFormType) {
+            case "PPSSurveyForm":
+                return options.surveyName !== "" ? options.surveyName : options.eventId;
+            case "PPSCountryQuestionnaire":
+                return options.orgUnitName && options.orgUnitName !== ""
+                    ? options.orgUnitName
+                    : options.eventId;
+            case "PPSHospitalForm":
+                return options.hospitalCode !== "" ? options.hospitalCode : options.eventId;
+            case "PPSWardRegister":
+                return options.wardCode !== "" ? options.wardCode : options.eventId;
+            case "PPSPatientRegister":
+                return options.patientCode !== "" ? options.patientCode : options.eventId;
+            default:
+                return "";
+        }
+    }
+
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
@@ -347,25 +379,28 @@ export class SurveyD2Repository implements SurveyRepository {
                     surveyCompleted,
                     parentPPSSurveyId = "",
                     parentWardRegisterId = "",
-                    surveyName = "";
+                    surveyName = "",
+                    hospitalCode = "",
+                    wardCode = "",
+                    patientCode = "";
 
                 event.dataValues.forEach(dv => {
                     if (dv.dataElement === START_DATE_DATAELEMENT_ID) startDateString = dv.value;
-
                     if (dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID) surveyType = dv.value;
-
                     if (dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID)
                         surveyCompleted = dv.value;
-
                     if (
                         dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
                         dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID
                     )
                         parentPPSSurveyId = dv.value;
-
                     if (dv.dataElement === WARD_ID_DATAELEMENT_ID) parentWardRegisterId = dv.value;
-
                     if (dv.dataElement === SURVEY_NAME_DATAELEMENT_ID) surveyName = dv.value;
+                    if (dv.dataElement === SURVEY_HOSPITAL_CODE_DATAELEMENT_ID)
+                        hospitalCode = dv.value;
+                    if (dv.dataElement === SURVEY_WARD_CODE_DATAELEMENT_ID) wardCode = dv.value;
+                    if (dv.dataElement === SURVEY_PATIENT_CODE_DATAELEMENT_ID)
+                        patientCode = dv.value;
                 });
 
                 const startDate = startDateString ? new Date(startDateString) : undefined;
@@ -377,54 +412,43 @@ export class SurveyD2Repository implements SurveyRepository {
                         : "COMPLETED";
 
                 return this.getSurveyNameFromId(parentPPSSurveyId).map(parentppsSurveyName => {
-                    if (parentPPSSurveyId === "") {
-                        const survey = {
-                            id: event.event,
-                            name: surveyName,
-                            rootSurvey: {
-                                id: event.event,
-                                name: surveyName,
-                            },
-                            startDate: startDate,
-                            status:
-                                programId === PPS_SURVEY_FORM_ID
-                                    ? status
-                                    : event.status === "COMPLETED"
-                                    ? ("COMPLETED" as SURVEY_STATUS)
-                                    : ("ACTIVE" as SURVEY_STATUS),
-                            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                            surveyType: surveyType ? surveyType : "",
-                            parentWardRegisterId: parentWardRegisterId,
-                            surveyFormType: surveyFormType,
-                        };
-                        return survey;
-                    } else {
-                        const survey = {
-                            id: event.event,
-                            name: surveyName,
-                            rootSurvey: {
-                                id: parentPPSSurveyId,
-                                name: parentppsSurveyName,
-                            },
-                            startDate: startDate,
-                            status:
-                                programId === PPS_SURVEY_FORM_ID
-                                    ? status
-                                    : event.status === "COMPLETED"
-                                    ? ("COMPLETED" as SURVEY_STATUS)
-                                    : ("ACTIVE" as SURVEY_STATUS),
-                            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                            surveyType: surveyType ? surveyType : "",
-                            parentWardRegisterId: parentWardRegisterId,
-                            surveyFormType: surveyFormType,
-                        };
-                        return survey;
-                    }
+                    const survey: Survey = {
+                        id: event.event,
+                        name: this.getSurveyNameBySurveyFormType(surveyFormType, {
+                            eventId: event.event,
+                            surveyName,
+                            orgUnitName: event.orgUnitName,
+                            hospitalCode,
+                            wardCode,
+                            patientCode,
+                        }),
+                        rootSurvey: {
+                            id:
+                                surveyFormType !== "PPSSurveyForm"
+                                    ? parentPPSSurveyId
+                                    : event.event,
+                            name:
+                                surveyFormType !== "PPSSurveyForm"
+                                    ? parentppsSurveyName
+                                    : surveyName,
+                        },
+                        startDate: startDate,
+                        status:
+                            programId === PPS_SURVEY_FORM_ID
+                                ? status
+                                : event.status === "COMPLETED"
+                                ? ("COMPLETED" as SURVEY_STATUS)
+                                : ("ACTIVE" as SURVEY_STATUS),
+                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                        surveyType: surveyType ? surveyType : "",
+                        parentWardRegisterId: parentWardRegisterId,
+                        surveyFormType: surveyFormType,
+                    };
+                    return survey;
                 });
             });
 
-            const surveysSeq = Future.sequential(surveys);
-            return surveysSeq;
+            return Future.sequential(surveys);
         });
     }
 

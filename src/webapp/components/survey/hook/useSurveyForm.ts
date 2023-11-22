@@ -18,7 +18,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
             return compositionRoot.surveys.getForm
-                .execute(formType, currentPPSSurveyForm?.id, currentWardRegister)
+                .execute(formType, currentPPSSurveyForm?.id, currentWardRegister?.id)
                 .run(
                     questionnaireForm => {
                         setQuestionnaire(questionnaireForm);

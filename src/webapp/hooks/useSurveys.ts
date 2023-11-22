@@ -24,7 +24,7 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
 
         compositionRoot.surveys.getSurveys
-            .execute(surveyType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister)
+            .execute(surveyType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister?.id)
             .run(
                 surveys => {
                     setSurveys(surveys);

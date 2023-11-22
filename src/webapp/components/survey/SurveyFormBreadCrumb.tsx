@@ -64,7 +64,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                             to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire.id}`}
                             exact={true}
                         >
-                            <span>{currentCountryQuestionnaire.id}</span>
+                            <span>{currentCountryQuestionnaire.name}</span>
                         </Button>
                     ) : (
                         <Button>
@@ -88,7 +88,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                             to={`/survey/PPSHospitalForm/${currentHospitalForm.id}`}
                             exact={true}
                         >
-                            <span>{currentHospitalForm.id}</span>
+                            <span>{currentHospitalForm.name}</span>
                         </Button>
                     ) : (
                         <Button>
@@ -110,7 +110,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                             to={`/survey/PPSWardRegister/${currentWardRegister}`}
                             exact={true}
                         >
-                            <span>{currentWardRegister}</span>
+                            <span>{currentWardRegister.name}</span>
                         </Button>
                     ) : (
                         <Button>

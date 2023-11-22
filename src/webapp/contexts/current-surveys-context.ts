@@ -1,21 +1,21 @@
 import { useContext, createContext } from "react";
-import { Id } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 
 export interface CurrentSurveysContextProps {
-    currentPPSSurveyForm: { id: Id; name: string } | undefined;
-    changeCurrentPPSSurveyForm: (survey: { id: Id; name: string } | undefined) => void;
+    currentPPSSurveyForm: NamedRef | undefined;
+    changeCurrentPPSSurveyForm: (survey: NamedRef | undefined) => void;
     resetCurrentPPSSurveyForm: () => void;
 
-    currentCountryQuestionnaire: { id: Id; orgUnitId: Id } | undefined;
-    changeCurrentCountryQuestionnaire: (surveyId: Id, orgUnitId: Id) => void;
+    currentCountryQuestionnaire: { id: Id; name: string; orgUnitId: Id } | undefined;
+    changeCurrentCountryQuestionnaire: (id: Id, name: string, orgUnitId: Id) => void;
     resetCurrentCountryQuestionnaire: () => void;
 
-    currentHospitalForm: { id: Id; orgUnitId: Id } | undefined;
-    changeCurrentHospitalForm: (surveyId: Id, orgUnitId: Id) => void;
+    currentHospitalForm: { id: Id; name: string; orgUnitId: Id } | undefined;
+    changeCurrentHospitalForm: (id: Id, name: string, orgUnitId: Id) => void;
     resetCurrentHospitalForm: () => void;
 
-    currentWardRegister: Id | undefined;
-    changeCurrentWardRegister: (surveyId: Id | undefined) => void;
+    currentWardRegister: NamedRef | undefined;
+    changeCurrentWardRegister: (ward: NamedRef | undefined) => void;
     resetCurrentWardRegister: () => void;
 }
 

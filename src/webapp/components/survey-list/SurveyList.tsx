@@ -32,10 +32,13 @@ interface SurveyListProps {
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     const {
         changeCurrentPPSSurveyForm,
-        resetCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
         changeCurrentWardRegister,
+        resetCurrentPPSSurveyForm,
+        resetCurrentCountryQuestionnaire,
+        resetCurrentHospitalForm,
+        resetCurrentWardRegister,
     } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
@@ -53,18 +56,35 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
         if (surveyType === "PPSHospitalForm" && !isAdmin) {
             resetCurrentPPSSurveyForm();
         }
-    }, [isAdmin, surveyType, resetCurrentPPSSurveyForm]);
+
+        if (surveyType === "PPSSurveyForm") {
+            resetCurrentCountryQuestionnaire();
+        } else if (surveyType === "PPSCountryQuestionnaire") {
+            resetCurrentCountryQuestionnaire();
+        } else if (surveyType === "PPSHospitalForm") {
+            resetCurrentHospitalForm();
+        } else if (surveyType === "PPSWardRegister") {
+            resetCurrentWardRegister();
+        }
+    }, [
+        isAdmin,
+        surveyType,
+        resetCurrentPPSSurveyForm,
+        resetCurrentCountryQuestionnaire,
+        resetCurrentHospitalForm,
+        resetCurrentWardRegister,
+    ]);
 
     const updateSelectedSurveyDetails = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
         if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
         else if (surveyType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(survey.id, orgUnitId);
+            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
         else if (surveyType === "PPSHospitalForm") {
             if (!isAdmin) {
                 changeCurrentPPSSurveyForm(rootSurvey);
             }
-            changeCurrentHospitalForm(survey.id, orgUnitId);
-        } else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(survey.id);
+            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
+        } else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(survey);
     };
 
     const editSurvey = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
