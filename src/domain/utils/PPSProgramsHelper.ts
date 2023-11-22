@@ -86,3 +86,11 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Survey";
     }
 };
+
+export const getParentOUIdFromPath = (path: string | undefined) => {
+    if (path) {
+        const orgUnitsHeirarchy = path.split("/");
+        const parentId = orgUnitsHeirarchy?.at(orgUnitsHeirarchy.length - 2);
+        return parentId;
+    } else return "";
+};

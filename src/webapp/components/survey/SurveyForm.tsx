@@ -30,6 +30,7 @@ import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -168,7 +169,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         }}
                         rootIds={
                             props.formType === "PPSHospitalForm"
-                                ? [currentCountryQuestionnaire?.orgUnitId]
+                                ? currentCountryQuestionnaire?.orgUnitId
+                                    ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
+                                    : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
                                 : [GLOBAL_OU_ID]
                         }
                     />
