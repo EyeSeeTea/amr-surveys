@@ -50,67 +50,65 @@ export class UserD2Repository implements UserRepository {
     private buildUser(d2User: D2User): FutureData<User> {
         const { organisationUnits, dataViewOrganisationUnits } = d2User;
 
-        const countries$ = this.getAllOrgUnitsByLevel(organisationUnits, COUNTRY_OU_LEVEL);
-        const dataViewCountries$ = this.getAllOrgUnitsByLevel(
+        const countries$ = this.getAllOrgUnitsByLevel(
+            organisationUnits,
             dataViewOrganisationUnits,
             COUNTRY_OU_LEVEL
         );
-        const hospitals$ = this.getAllOrgUnitsByLevel(organisationUnits, HOSPITAL_OU_LEVEL);
-        const dataViewHospitals$ = this.getAllOrgUnitsByLevel(
+
+        const hospitals$ = this.getAllOrgUnitsByLevel(
+            organisationUnits,
             dataViewOrganisationUnits,
             HOSPITAL_OU_LEVEL
         );
+
         return countries$.flatMap(countries => {
-            return dataViewCountries$.flatMap(dataViewCountries => {
-                return hospitals$.flatMap(hospitals => {
-                    return dataViewHospitals$.flatMap(dataViewHospitals => {
-                        return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
-                            userSettings => {
-                                const user = new User({
-                                    id: d2User.id,
-                                    name: d2User.displayName,
-                                    userGroups: d2User.userGroups,
-                                    ...d2User.userCredentials,
-                                    email: d2User.email,
-                                    phoneNumber: d2User.phoneNumber,
-                                    introduction: d2User.introduction,
-                                    birthday: d2User.birthday,
-                                    nationality: d2User.nationality,
-                                    employer: d2User.employer,
-                                    jobTitle: d2User.jobTitle,
-                                    education: d2User.education,
-                                    interests: d2User.interests,
-                                    languages: d2User.languages,
-                                    userCountriesAccess: this.mapUserOrgUnitsAccess(
-                                        countries,
-                                        dataViewCountries
-                                    ),
-                                    userHospitalsAccess: this.mapUserOrgUnitsAccess(
-                                        hospitals,
-                                        dataViewHospitals
-                                    ),
-                                    settings: {
-                                        keyUiLocale: userSettings.keyUiLocale,
-                                        keyDbLocale: userSettings.keyDbLocale,
-                                        keyMessageEmailNotification:
-                                            userSettings.keyMessageEmailNotification,
-                                        keyMessageSmsNotification:
-                                            userSettings.keyMessageSmsNotification,
-                                    },
-                                });
-                                return Future.success(user);
-                            }
-                        );
-                    });
-                });
+            return hospitals$.flatMap(hospitals => {
+                return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
+                    userSettings => {
+                        const user = new User({
+                            id: d2User.id,
+                            name: d2User.displayName,
+                            userGroups: d2User.userGroups,
+                            ...d2User.userCredentials,
+                            email: d2User.email,
+                            phoneNumber: d2User.phoneNumber,
+                            introduction: d2User.introduction,
+                            birthday: d2User.birthday,
+                            nationality: d2User.nationality,
+                            employer: d2User.employer,
+                            jobTitle: d2User.jobTitle,
+                            education: d2User.education,
+                            interests: d2User.interests,
+                            languages: d2User.languages,
+                            userCountriesAccess: this.mapUserOrgUnitsAccess(
+                                countries.userOrgUnits,
+                                countries.userDataViewOrgUnits
+                            ),
+                            userHospitalsAccess: this.mapUserOrgUnitsAccess(
+                                hospitals.userOrgUnits,
+                                hospitals.userDataViewOrgUnits
+                            ),
+                            settings: {
+                                keyUiLocale: userSettings.keyUiLocale,
+                                keyDbLocale: userSettings.keyDbLocale,
+                                keyMessageEmailNotification:
+                                    userSettings.keyMessageEmailNotification,
+                                keyMessageSmsNotification: userSettings.keyMessageSmsNotification,
+                            },
+                        });
+                        return Future.success(user);
+                    }
+                );
             });
         });
     }
 
     getAllOrgUnitsByLevel = (
         organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[],
         level: number
-    ): FutureData<OrgUnit[]> => {
+    ): FutureData<{ userOrgUnits: OrgUnit[]; userDataViewOrgUnits: OrgUnit[] }> => {
         //1. Get all OUs
         return apiToFuture(
             this.api.models.organisationUnits.get({
@@ -149,10 +147,13 @@ export class UserD2Repository implements UserRepository {
             //2. Filter OUs which the user has access to.
             //If the user has access to any parent of the OU, then they have access to the OU.
             //So, check the path to see if it contains any OU  user has access to.
-            const userAccessLevelOrgUnits = allLevelOUs.filter(levelOU =>
+            const userOrgUnits = allLevelOUs.filter(levelOU =>
                 organisationUnits.some(userOU => levelOU.path.includes(userOU.id))
             );
-            return Future.success(userAccessLevelOrgUnits);
+            const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
+                dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
+            );
+            return Future.success({ userOrgUnits, userDataViewOrgUnits });
         });
     };
 
