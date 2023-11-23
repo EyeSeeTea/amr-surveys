@@ -38,6 +38,16 @@ export interface Option {
     optionSet: { id: string };
 }
 
+export interface TrackedEntityAttibute {
+    id: string;
+    code: string;
+    name: string;
+    formName: string;
+    valueType: string;
+    optionSet?: { id: string };
+    value?: string;
+}
+
 export interface EventProgramMetadata {
     programs: EventProgram[];
     programStageDataElements: ProgramStageDataElement[];
@@ -45,4 +55,5 @@ export interface EventProgramMetadata {
     dataElements: EventProgramDataElement[];
     optionSets: OptionSet[];
     options: Option[];
+    trackedEntityAttributes?: TrackedEntityAttibute[];
 }

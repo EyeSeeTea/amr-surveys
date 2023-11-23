@@ -6,7 +6,8 @@ import _ from "../../domain/entities/generic/Collection";
 import { Id } from "../entities/Ref";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 
-export const GLOBAL_OU_ID = "H8RixfF8ugH";
+//TODO: Changed GLOBAL_OU_ID for amr-prevalence, to be changed to the unified one
+export const GLOBAL_OU_ID = "PdB4jUjgRj6";
 export class SaveFormDataUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, makeStyles, Typography, withStyles } from "@material-ui/core";
 // @ts-ignore
 import {
@@ -19,7 +19,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { Question } from "../../../domain/entities/Questionnaire";
+import { Question, QuestionnaireSection } from "../../../domain/entities/Questionnaire";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
 import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
@@ -28,6 +28,14 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
+import _ from "lodash";
+import { muiTheme } from "../../pages/app/themes/dhis2.theme";
+
+type QuestionnairesSectionsStatusType = {
+    section: string;
+    current: number;
+    length: number;
+};
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -51,6 +59,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const formClasses = useFormStyles();
     const snackbar = useSnackbar();
     const { api, currentUser } = useAppContext();
+    const [questionnairesSectionsStatus, setQuestionnairesSectionsStatus] = useState<
+        QuestionnairesSectionsStatusType[]
+    >([]);
+    const [questionnaireSections, setQuestionnaireSections] =
+        useState<_.Dictionary<QuestionnaireSection[]>>();
 
     const {
         questionnaire,
@@ -126,6 +139,34 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
+    useEffect(() => {
+        const sectionedQuestionnaire = _.groupBy(questionnaire?.sections, section =>
+            section.title.substring(0, section.title.indexOf(" "))
+        );
+        setQuestionnaireSections(sectionedQuestionnaire);
+
+        const questionnaireState: QuestionnairesSectionsStatusType[] = [];
+
+        for (const key in sectionedQuestionnaire) {
+            questionnaireState.push({
+                section: key,
+                current: 1,
+                length: sectionedQuestionnaire[key]?.length || 0,
+            });
+        }
+        setQuestionnairesSectionsStatus(questionnaireState);
+    }, [questionnaire]);
+
+    const addNew = (sectionName: string) => {
+        const newStatus = questionnairesSectionsStatus.map(status => {
+            if (status.section === sectionName) {
+                status.current = status.current + 1;
+            }
+            return status;
+        });
+        setQuestionnairesSectionsStatus(newStatus);
+    };
+
     return (
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
@@ -150,46 +191,69 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     />
                 )}
 
-                {questionnaire?.sections.map(section => {
-                    if (!section.isVisible) return null;
+                {_.map(questionnaireSections, (questionnaire, sectionName) => {
+                    return questionnaire.map((section, i) => {
+                        const sectionStatus = questionnairesSectionsStatus.find(
+                            status => status.section === sectionName
+                        );
+                        const statusCurrent = sectionStatus?.current ?? 0;
 
-                    return (
-                        <div key={section.title} className={classes.wrapper}>
-                            <DataTable>
-                                <TableHead>
-                                    <DataTableRow>
-                                        <DataTableColumnHeader colSpan="2">
-                                            <span className={classes.header}>{section.title}</span>
-                                        </DataTableColumnHeader>
-                                    </DataTableRow>
-                                </TableHead>
+                        if (!section.isVisible) return null;
+                        if (i < statusCurrent) {
+                            return (
+                                <div
+                                    key={section.title}
+                                    className={classes.wrapper}
+                                    style={{ paddingBottom: "50px" }}
+                                >
+                                    <DataTable>
+                                        <TableHead>
+                                            <DataTableRow>
+                                                <DataTableColumnHeader colSpan="2">
+                                                    <span className={classes.header}>
+                                                        {section.title}
+                                                    </span>
+                                                </DataTableColumnHeader>
+                                            </DataTableRow>
+                                        </TableHead>
 
-                                <TableBody>
-                                    {section.questions.map(question => (
-                                        <DataTableRow key={question.id}>
-                                            <DataTableCell width="60%">
-                                                <span>{question.text}</span>
-                                            </DataTableCell>
+                                        <TableBody>
+                                            {section.questions.map(question => (
+                                                <DataTableRow key={question.id}>
+                                                    <DataTableCell width="60%">
+                                                        <span>{question.text}</span>
+                                                    </DataTableCell>
 
-                                            <DataTableCell>
-                                                <div className={formClasses.valueWrapper}>
-                                                    <div className={formClasses.valueInput}>
-                                                        <QuestionWidget
-                                                            onChange={updateQuestion}
-                                                            question={question}
-                                                            disabled={
-                                                                question.disabled ? true : false
-                                                            }
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </DataTableCell>
-                                        </DataTableRow>
-                                    ))}
-                                </TableBody>
-                            </DataTable>
-                        </div>
-                    );
+                                                    <DataTableCell>
+                                                        <div className={formClasses.valueWrapper}>
+                                                            <div className={formClasses.valueInput}>
+                                                                <QuestionWidget
+                                                                    onChange={updateQuestion}
+                                                                    question={question}
+                                                                    disabled={
+                                                                        question.disabled
+                                                                            ? true
+                                                                            : false
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </DataTableCell>
+                                                </DataTableRow>
+                                            ))}
+                                        </TableBody>
+                                    </DataTable>
+                                    {sectionStatus &&
+                                        sectionStatus.current < sectionStatus.length &&
+                                        i === sectionStatus.current - 1 && (
+                                            <StyledButton onClick={() => addNew(sectionName)}>
+                                                {i18n.t("Add new")}
+                                            </StyledButton>
+                                        )}
+                                </div>
+                            );
+                        }
+                    });
                 })}
             </ContentLoader>
             <PageFooter>
@@ -221,4 +285,16 @@ const PageFooter = styled.div`
     flex-direction: row;
     justify-content: flex-end;
     padding: 20px;
+`;
+
+const StyledButton = styled(Button)`
+    color: white;
+    background-color: ${muiTheme.palette.primary.main};
+    margin: 10px 5px 10px 0px;
+    text-transform: none;
+    float: right;
+    &:hover {
+        background-color: ${muiTheme.palette.primary.main};
+        opacity: 0.7;
+    }
 `;
