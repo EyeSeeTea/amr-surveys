@@ -8,7 +8,8 @@ export type SURVEY_FORM_TYPES =
     | "PPSWardRegister"
     | "PrevelancePlaceholder";
 
-export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
+export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
+export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
 
 export interface Survey extends NamedRef {
     rootSurvey: {
@@ -17,7 +18,7 @@ export interface Survey extends NamedRef {
         surveyType: string;
     }; //For PPS module, all surveys are associated with a given PPS Survey Form instance.
     startDate?: Date;
-    status: SURVEY_STATUS;
+    status: SURVEY_STATUSES;
     assignedOrgUnit: NamedRef;
     surveyType: string;
     surveyFormType: SURVEY_FORM_TYPES;

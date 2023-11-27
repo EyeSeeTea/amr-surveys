@@ -20,7 +20,7 @@ import {
     ImportStrategy,
     Option,
 } from "../../domain/entities/EventProgram";
-import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUS } from "../../domain/entities/Survey";
+import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 
 //PPS Program Ids
@@ -438,8 +438,8 @@ export class SurveyD2Repository implements SurveyRepository {
                             programId === PPS_SURVEY_FORM_ID
                                 ? status
                                 : event.status === "COMPLETED"
-                                ? ("COMPLETED" as SURVEY_STATUS)
-                                : ("ACTIVE" as SURVEY_STATUS),
+                                ? ("COMPLETED" as SURVEY_STATUSES)
+                                : ("ACTIVE" as SURVEY_STATUSES),
                         assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
                         surveyType: surveyType,
                         parentWardRegisterId: parentWardRegisterId,

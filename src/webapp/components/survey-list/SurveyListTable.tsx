@@ -16,7 +16,7 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
 
@@ -46,7 +46,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     updateSelectedSurveyDetails,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
-    const [sortedSurveys, setSortedSurveys] = useState<Survey[] | undefined>(surveys);
+    const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
@@ -57,6 +57,10 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
     const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
         useState<SortDirection>("asc");
+
+    useEffect(() => {
+        if (surveys) setSortedSurveys(surveys);
+    }, [surveys]);
 
     const history = useHistory();
 
