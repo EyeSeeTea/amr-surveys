@@ -17,6 +17,8 @@ import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
+import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
+import _ from "../../../domain/entities/generic/Collection";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -36,12 +38,26 @@ interface SurveyListTableProps {
     ) => void;
 }
 
+export type SortDirection = "asc" | "desc";
+export type SurveyColumns = keyof Survey;
 export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
+    const [sortedSurveys, setSortedSurveys] = useState<Survey[] | undefined>(surveys);
+    //states for column sort
+    const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
+    const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
+    const [statusSortDirection, setStatusSortDirection] = useState<SortDirection>("asc");
+    const [surveyTypeSortDirection, setSurveyTypeSortDirection] = useState<SortDirection>("asc");
+    const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
+    const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
+    const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
+    const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
+        useState<SortDirection>("asc");
+
     const history = useHistory();
 
     const editSurvey = (
@@ -118,68 +134,196 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
         setOptions(currentOptions);
     };
+
+    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
+        setSortedSurveys(surveys => {
+            if (surveys)
+                return _(surveys)
+                    .sortBy(x => x[columnName], { direction: sortDirection })
+                    .value();
+        });
+    };
+
     return (
         <>
-            {surveys && (
+            {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>
-                                        <Typography variant="caption">
-                                            {i18n.t("PPS Survey Name")}
-                                        </Typography>
+                                    <TableCell
+                                        onClick={() => {
+                                            surveyNameSortDirection === "asc"
+                                                ? setSurveyNameSortDirection("desc")
+                                                : setSurveyNameSortDirection("asc");
+                                            sortByColumn("name", surveyNameSortDirection);
+                                        }}
+                                    >
+                                        <span>
+                                            <Typography variant="caption">
+                                                {i18n.t("PPS Survey Name")}
+                                            </Typography>
+                                            {surveyNameSortDirection === "asc" ? (
+                                                <ArrowUpward fontSize="small" />
+                                            ) : (
+                                                <ArrowDownward fontSize="small" />
+                                            )}
+                                        </span>
                                     </TableCell>
                                     {surveyFormType === "PPSSurveyForm" && (
                                         <>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Start Date")}
-                                                </Typography>
+                                            <TableCell
+                                                onClick={() => {
+                                                    startDateSortDirection === "asc"
+                                                        ? setStartDateSortDirection("desc")
+                                                        : setStartDateSortDirection("asc");
+                                                    sortByColumn(
+                                                        "startDate",
+                                                        startDateSortDirection
+                                                    );
+                                                }}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {i18n.t("Start Date")}
+                                                    </Typography>
+                                                    {startDateSortDirection === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
                                             </TableCell>
 
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Status")}
-                                                </Typography>
+                                            <TableCell
+                                                onClick={() => {
+                                                    statusSortDirection === "asc"
+                                                        ? setStatusSortDirection("desc")
+                                                        : setStatusSortDirection("asc");
+                                                    sortByColumn("status", statusSortDirection);
+                                                }}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {i18n.t("Status")}
+                                                    </Typography>
+                                                    {statusSortDirection === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
                                             </TableCell>
 
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Survey Type")}
-                                                </Typography>
+                                            <TableCell
+                                                onClick={() => {
+                                                    surveyTypeSortDirection === "asc"
+                                                        ? setSurveyTypeSortDirection("desc")
+                                                        : setSurveyTypeSortDirection("asc");
+                                                    sortByColumn(
+                                                        "surveyType",
+                                                        surveyTypeSortDirection
+                                                    );
+                                                }}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {i18n.t("Survey Type")}
+                                                    </Typography>
+                                                    {surveyTypeSortDirection === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
                                             </TableCell>
                                         </>
                                     )}
 
                                     {surveyFormType === "PPSPatientRegister" && (
                                         <>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Patient Id")}
-                                                </Typography>
+                                            <TableCell
+                                                onClick={() => {
+                                                    patientIdSortDirection === "asc"
+                                                        ? setPatientIdSortDirection("desc")
+                                                        : setPatientIdSortDirection("asc");
+                                                    sortByColumn("id", patientIdSortDirection);
+                                                }}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {i18n.t("Patient Id")}
+                                                    </Typography>
+                                                    {patientIdSortDirection === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Patient Name")}
-                                                </Typography>
+                                            <TableCell
+                                                onClick={() => {
+                                                    patientNameSortDirection === "asc"
+                                                        ? setPatientNameSortDirection("desc")
+                                                        : setPatientNameSortDirection("asc");
+                                                    sortByColumn("name", patientNameSortDirection);
+                                                }}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {i18n.t("Patient Name")}
+                                                    </Typography>
+                                                    {patientNameSortDirection === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
                                             </TableCell>
                                         </>
                                     )}
                                     {surveyFormType === "PPSWardRegister" && (
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Ward Code")}
-                                            </Typography>
+                                        <TableCell
+                                            onClick={() => {
+                                                wardCodeSortDirection === "asc"
+                                                    ? setWardCodeSortDirection("desc")
+                                                    : setWardCodeSortDirection("asc");
+                                                sortByColumn("name", wardCodeSortDirection);
+                                            }}
+                                        >
+                                            <span>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Ward Code")}
+                                                </Typography>
+                                                {wardCodeSortDirection === "asc" ? (
+                                                    <ArrowUpward fontSize="small" />
+                                                ) : (
+                                                    <ArrowDownward fontSize="small" />
+                                                )}
+                                            </span>
                                         </TableCell>
                                     )}
 
                                     {surveyFormType === "PPSHospitalForm" && (
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Hospital Code")}
-                                            </Typography>
+                                        <TableCell
+                                            onClick={() => {
+                                                hospitalCodeSortDirection === "asc"
+                                                    ? setHospitalCodeSortDirection("desc")
+                                                    : setHospitalCodeSortDirection("asc");
+                                                sortByColumn("name", hospitalCodeSortDirection);
+                                            }}
+                                        >
+                                            <span>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Hospital Code")}
+                                                </Typography>
+                                                {hospitalCodeSortDirection === "asc" ? (
+                                                    <ArrowUpward fontSize="small" />
+                                                ) : (
+                                                    <ArrowDownward fontSize="small" />
+                                                )}
+                                            </span>
                                         </TableCell>
                                     )}
                                     <TableCell style={{ cursor: "pointer" }}>
@@ -194,9 +338,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     </TableCell>
                                 </TableRow>
                             </TableHead>
-                            {surveys && surveys.length ? (
+                            {sortedSurveys && sortedSurveys.length ? (
                                 <StyledTableBody>
-                                    {surveys.map(survey => (
+                                    {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
                                             <TableCell>{survey.rootSurvey.name}</TableCell>
                                             {surveyFormType === "PPSSurveyForm" && (

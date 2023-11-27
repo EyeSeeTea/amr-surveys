@@ -116,14 +116,18 @@ export class Collection<T> {
         return _c([...this.xs].reverse());
     }
 
-    sortWith(compareFn: CompareFn<T>): Collection<T> {
-        return _c(this.xs.slice().sort(compareFn));
+    sortWith(compareFn: CompareFn<T>, direction?: Direction): Collection<T> {
+        if (direction === "asc") return _c(this.xs.slice().sort(compareFn));
+        else return _c(this.xs.slice().sort(compareFn).reverse());
     }
 
-    sortBy<U>(fn: (x: T) => U, options: { compareFn?: CompareFn<U> } = {}): Collection<T> {
+    sortBy<U>(
+        fn: (x: T) => U,
+        options: { compareFn?: CompareFn<U>; direction?: Direction } = {}
+    ): Collection<T> {
         const compareFn = options.compareFn || defaultCompareFn;
         // TODO: Schwartzian transform: decorate + sort tuple + undecorate
-        return this.sortWith((a, b) => compareFn(fn(a), fn(b)));
+        return this.sortWith((a, b) => compareFn(fn(a), fn(b)), options.direction);
     }
 
     orderBy(items: OrderItem<T>[]): Collection<T> {

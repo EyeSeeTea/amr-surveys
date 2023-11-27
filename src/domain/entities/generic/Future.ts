@@ -21,7 +21,7 @@ export class Future<E, D> {
     static error<E, D>(error: E): Future<E, D> {
         return new Future(() => rcpromise.CancellablePromise.reject(error));
     }
-    
+
     static fromPromise<Data>(promise: Promise<Data>): FutureData<Data> {
         return Future.fromComputation((resolve, reject) => {
             promise.then(resolve).catch(err => reject(err ? err.message : "Unknown error"));
