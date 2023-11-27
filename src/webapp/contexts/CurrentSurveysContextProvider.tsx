@@ -3,7 +3,11 @@ import { Id, NamedRef } from "../../domain/entities/Ref";
 import { CurrentSurveysContext } from "./current-surveys-context";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<NamedRef>();
+    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<{
+        id: Id;
+        name: string;
+        surveyType: string;
+    }>();
     const [currentCountryQuestionnaire, setCurrentCountryQuestionnaire] = useState<{
         id: string;
         name: string;
@@ -16,7 +20,9 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     }>();
     const [currentWardRegister, setCurrentWardRegister] = useState<NamedRef>();
 
-    const changeCurrentPPSSurveyForm = (survey: NamedRef | undefined) => {
+    const changeCurrentPPSSurveyForm = (
+        survey: { id: Id; name: string; surveyType: string } | undefined
+    ) => {
         setCurrentPPSSurveyForm(survey);
     };
 

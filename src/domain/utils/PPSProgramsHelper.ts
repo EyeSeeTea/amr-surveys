@@ -25,11 +25,21 @@ export const getProgramId = (surveyType: SURVEY_FORM_TYPES): string => {
 };
 
 export const getChildSurveyType = (
-    surveyType: SURVEY_FORM_TYPES
+    surveyType: SURVEY_FORM_TYPES,
+    ppsSurveyType?: string
 ): SURVEY_FORM_TYPES | undefined => {
     switch (surveyType) {
-        case "PPSSurveyForm":
-            return "PPSCountryQuestionnaire";
+        case "PPSSurveyForm": {
+            switch (ppsSurveyType) {
+                case "HOSP":
+                    return "PPSHospitalForm";
+                case "NATIONAL":
+                case "SUPRANATIONAL":
+                default:
+                    return "PPSCountryQuestionnaire";
+            }
+        }
+
         case "PPSCountryQuestionnaire":
             return "PPSHospitalForm";
         case "PPSHospitalForm":

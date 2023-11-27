@@ -60,7 +60,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     status: "ACTIVE",
                     assignedOrgUnit: { id: orgUnitId, name: "OU1" },
                     surveyType: "SUPRANATIONAL",
-                    rootSurvey: { id: "1", name: "TestSurvey1" },
+                    rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
                 },
                 {
@@ -70,7 +70,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     status: "COMPLETED",
                     assignedOrgUnit: { id: "OU1234", name: "OU2" },
                     surveyType: "NATIONAL",
-                    rootSurvey: { id: "2", name: "TestSurvey1" },
+                    rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
                 },
             ]);

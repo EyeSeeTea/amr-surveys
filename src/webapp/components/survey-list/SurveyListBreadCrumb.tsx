@@ -11,10 +11,10 @@ import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
 
 export interface SurveyListBreadCrumbProps {
-    type: SURVEY_FORM_TYPES;
+    formType: SURVEY_FORM_TYPES;
 }
 
-export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type }) => {
+export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ formType }) => {
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -36,10 +36,10 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                 </Button>
             )}
             {isAdmin &&
-                (type === "PPSCountryQuestionnaire" ||
-                    type === "PPSHospitalForm" ||
-                    type === "PPSWardRegister" ||
-                    type === "PPSPatientRegister") && (
+                (formType === "PPSCountryQuestionnaire" ||
+                    formType === "PPSHospitalForm" ||
+                    formType === "PPSWardRegister" ||
+                    formType === "PPSPatientRegister") && (
                     <StyledBreadCrumbChild>
                         <Button
                             component={NavLink}
@@ -49,20 +49,22 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                             <span>{currentPPSSurveyForm?.name}</span>
                         </Button>
                         <ChevronRightIcon />
-                        <Button
-                            component={NavLink}
-                            to={`/surveys/PPSCountryQuestionnaire`}
-                            exact={true}
-                        >
-                            <span>{i18n.t("Country Questionnaires")}</span>
-                        </Button>
+                        {currentPPSSurveyForm?.surveyType !== "HOSP" && (
+                            <Button
+                                component={NavLink}
+                                to={`/surveys/PPSCountryQuestionnaire`}
+                                exact={true}
+                            >
+                                <span>{i18n.t("Country Questionnaires")}</span>
+                            </Button>
+                        )}
                     </StyledBreadCrumbChild>
                 )}
-            {(type === "PPSHospitalForm" ||
-                type === "PPSWardRegister" ||
-                type === "PPSPatientRegister") && (
+            {(formType === "PPSHospitalForm" ||
+                formType === "PPSWardRegister" ||
+                formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
-                    {isAdmin && (
+                    {isAdmin && currentPPSSurveyForm?.surveyType !== "HOSP" && (
                         <>
                             <Button
                                 component={NavLink}
@@ -80,7 +82,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                 </StyledBreadCrumbChild>
             )}
 
-            {(type === "PPSWardRegister" || type === "PPSPatientRegister") && (
+            {(formType === "PPSWardRegister" || formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
                     <Button
                         component={NavLink}
@@ -96,7 +98,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ type
                 </StyledBreadCrumbChild>
             )}
 
-            {type === "PPSPatientRegister" && (
+            {formType === "PPSPatientRegister" && (
                 <StyledBreadCrumbChild>
                     <Button
                         component={NavLink}

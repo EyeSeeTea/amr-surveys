@@ -431,6 +431,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                 surveyFormType !== "PPSSurveyForm"
                                     ? parentppsSurveyName
                                     : surveyName,
+                            surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
                         },
                         startDate: startDate,
                         status:
@@ -440,7 +441,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                 ? ("COMPLETED" as SURVEY_STATUS)
                                 : ("ACTIVE" as SURVEY_STATUS),
                         assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: surveyType ? surveyType : "",
+                        surveyType: surveyType,
                         parentWardRegisterId: parentWardRegisterId,
                         surveyFormType: surveyFormType,
                     };

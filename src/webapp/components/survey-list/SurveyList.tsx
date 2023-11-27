@@ -2,7 +2,7 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, Typography } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { Id, NamedRef } from "../../../domain/entities/Ref";
+import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
@@ -17,10 +17,11 @@ import { useCurrentModule } from "../../contexts/current-module-context";
 import { SurveyListTable } from "./SurveyListTable";
 
 interface SurveyListProps {
-    surveyType: SURVEY_FORM_TYPES;
+    surveyFormType: SURVEY_FORM_TYPES;
 }
-export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
+export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     const {
+        currentPPSSurveyForm,
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
@@ -37,41 +38,53 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
     if (currentModule)
         isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
-    const { surveys, loading, error } = useSurveys(surveyType);
+    const { surveys, loading, error } = useSurveys(surveyFormType);
 
     useEffect(() => {
-        if (surveyType === "PPSHospitalForm" && !isAdmin) {
+        if (surveyFormType === "PPSHospitalForm" && !isAdmin) {
             resetCurrentPPSSurveyForm();
         }
 
-        if (surveyType === "PPSSurveyForm") {
+        if (surveyFormType === "PPSSurveyForm") {
             resetCurrentCountryQuestionnaire();
-        } else if (surveyType === "PPSCountryQuestionnaire") {
+        } else if (surveyFormType === "PPSCountryQuestionnaire") {
             resetCurrentCountryQuestionnaire();
-        } else if (surveyType === "PPSHospitalForm") {
+        } else if (surveyFormType === "PPSHospitalForm") {
             resetCurrentHospitalForm();
-        } else if (surveyType === "PPSWardRegister") {
+        } else if (surveyFormType === "PPSWardRegister") {
             resetCurrentWardRegister();
         }
     }, [
         isAdmin,
-        surveyType,
+        surveyFormType,
         resetCurrentPPSSurveyForm,
         resetCurrentCountryQuestionnaire,
         resetCurrentHospitalForm,
         resetCurrentWardRegister,
     ]);
 
-    const updateSelectedSurveyDetails = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
-        if (surveyType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
-        else if (surveyType === "PPSCountryQuestionnaire")
+    const updateSelectedSurveyDetails = (
+        survey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        orgUnitId: Id,
+        rootSurvey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        }
+    ) => {
+        if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
+        else if (surveyFormType === "PPSCountryQuestionnaire")
             changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
-        else if (surveyType === "PPSHospitalForm") {
+        else if (surveyFormType === "PPSHospitalForm") {
             if (!isAdmin) {
                 changeCurrentPPSSurveyForm(rootSurvey);
             }
             changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
-        } else if (surveyType === "PPSWardRegister") changeCurrentWardRegister(survey);
+        } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
     };
 
     return (
@@ -79,7 +92,12 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
                     {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
-                    {surveyType === "PPSHospitalForm" && !isAdmin ? (
+                    {(surveyFormType === "PPSHospitalForm" && !isAdmin) ||
+                    // For PPS Survey Forms of National Type, only one child survey(country) should be allowed.
+                    (surveyFormType === "PPSCountryQuestionnaire" &&
+                        currentPPSSurveyForm?.surveyType === "NATIONAL" &&
+                        surveys &&
+                        surveys.length >= 1) ? (
                         <></>
                     ) : (
                         <ButtonWrapper>
@@ -88,21 +106,21 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
                                 color="primary"
                                 component={NavLink}
                                 to={{
-                                    pathname: `/new-survey/${surveyType}`,
+                                    pathname: `/new-survey/${surveyFormType}`,
                                 }}
                                 exact={true}
                             >
-                                {i18n.t(`Create New ${getSurveyDisplayName(surveyType)}`)}
+                                {i18n.t(`Create New ${getSurveyDisplayName(surveyFormType)}`)}
                             </Button>
                         </ButtonWrapper>
                     )}
 
                     <Typography variant="h3">
-                        {i18n.t(`${getSurveyDisplayName(surveyType)} List`)}
+                        {i18n.t(`${getSurveyDisplayName(surveyFormType)} List`)}
                     </Typography>
                     <SurveyListTable
                         surveys={surveys}
-                        surveyType={surveyType}
+                        surveyFormType={surveyFormType}
                         updateSelectedSurveyDetails={updateSelectedSurveyDetails}
                     />
                 </CustomCard>

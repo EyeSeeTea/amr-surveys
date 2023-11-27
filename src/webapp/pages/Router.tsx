@@ -16,7 +16,7 @@ export function Router() {
                     <Route path="/user-profile" render={() => <UserProfilePage />} />
                     <Route path="/user-settings" render={() => <UserSettingsPage />} />
                     <Route
-                        path="/surveys/:type"
+                        path="/surveys/:formType"
                         render={() => (
                             <CurrentSurveysContextProvider>
                                 <SurveyListPage />
@@ -24,7 +24,7 @@ export function Router() {
                         )}
                     />
                     <Route
-                        path="/new-survey/:type"
+                        path="/new-survey/:formType"
                         render={() => (
                             <CurrentSurveysContextProvider>
                                 <SurveyPage />
@@ -32,7 +32,7 @@ export function Router() {
                         )}
                     />
                     <Route
-                        path="/survey/:type/:id"
+                        path="/survey/:formType/:id"
                         render={() => (
                             <CurrentSurveysContextProvider>
                                 <SurveyPage />

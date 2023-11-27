@@ -11,7 +11,11 @@ export type SURVEY_FORM_TYPES =
 export type SURVEY_STATUS = "FUTURE" | "ACTIVE" | "COMPLETED";
 
 export interface Survey extends NamedRef {
-    rootSurvey: NamedRef; //For PPS module, all surveys are associated with a given PPS Survey Form instance.
+    rootSurvey: {
+        id: Id;
+        name: string;
+        surveyType: string;
+    }; //For PPS module, all surveys are associated with a given PPS Survey Form instance.
     startDate?: Date;
     status: SURVEY_STATUS;
     assignedOrgUnit: NamedRef;

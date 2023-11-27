@@ -11,11 +11,11 @@ import { useCurrentModule } from "../../contexts/current-module-context";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 
 export interface SurveyFormBreadCrumbProps {
-    type: SURVEY_FORM_TYPES;
+    formType: SURVEY_FORM_TYPES;
     id: Id;
 }
 
-export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type, id }) => {
+export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ formType, id }) => {
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -55,10 +55,11 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
             )}
 
             {isAdmin &&
-                (type === "PPSCountryQuestionnaire" ||
-                    type === "PPSHospitalForm" ||
-                    type === "PPSWardRegister" ||
-                    type === "PPSPatientRegister") && (
+                currentPPSSurveyForm?.surveyType !== "HOSP" &&
+                (formType === "PPSCountryQuestionnaire" ||
+                    formType === "PPSHospitalForm" ||
+                    formType === "PPSWardRegister" ||
+                    formType === "PPSPatientRegister") && (
                     <StyledBreadCrumbChild>
                         <Button
                             component={NavLink}
@@ -83,9 +84,9 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                         )}
                     </StyledBreadCrumbChild>
                 )}
-            {(type === "PPSHospitalForm" ||
-                type === "PPSWardRegister" ||
-                type === "PPSPatientRegister") && (
+            {(formType === "PPSHospitalForm" ||
+                formType === "PPSWardRegister" ||
+                formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
                         <span>{i18n.t("Hospital Forms")}</span>
@@ -106,7 +107,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     )}
                 </StyledBreadCrumbChild>
             )}
-            {(type === "PPSWardRegister" || type === "PPSPatientRegister") && (
+            {(formType === "PPSWardRegister" || formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
                         <span>{i18n.t("Ward Registers")}</span>
@@ -127,7 +128,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ type
                     )}
                 </StyledBreadCrumbChild>
             )}
-            {type === "PPSPatientRegister" && (
+            {formType === "PPSPatientRegister" && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSPatientRegister`} exact={true}>
                         <span>{i18n.t("Patient Registers")}</span>

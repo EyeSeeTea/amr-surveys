@@ -7,17 +7,17 @@ import { SurveyForm } from "../../components/survey/SurveyForm";
 import { SurveyFormBreadCrumb } from "../../components/survey/SurveyFormBreadCrumb";
 
 export const SurveyPage: React.FC = () => {
-    const { type, id } = useParams<{ type: SURVEY_FORM_TYPES; id: string }>();
+    const { formType, id } = useParams<{ formType: SURVEY_FORM_TYPES; id: string }>();
     const history = useHistory();
 
     const hideForm = () => {
-        history.push(`/surveys/${type}`);
+        history.push(`/surveys/${formType}`);
     };
 
     return (
         <ContentWrapper>
-            <SurveyFormBreadCrumb type={type} id={id} />
-            <SurveyForm hideForm={hideForm} formType={type} currentSurveyId={id} />
+            <SurveyFormBreadCrumb formType={formType} id={id} />
+            <SurveyForm hideForm={hideForm} formType={formType} currentSurveyId={id} />
         </ContentWrapper>
     );
 };

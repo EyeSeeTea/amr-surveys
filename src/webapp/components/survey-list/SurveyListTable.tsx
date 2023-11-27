@@ -13,35 +13,72 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { Id, NamedRef } from "../../../domain/entities/Ref";
+import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
-    surveyType: SURVEY_FORM_TYPES;
-    updateSelectedSurveyDetails: (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => void;
+    surveyFormType: SURVEY_FORM_TYPES;
+    updateSelectedSurveyDetails: (
+        survey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        orgUnitId: Id,
+        rootSurvey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        }
+    ) => void;
 }
 
 export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
-    surveyType,
+    surveyFormType,
     updateSelectedSurveyDetails,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
     const history = useHistory();
 
-    const editSurvey = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+    const editSurvey = (
+        survey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        orgUnitId: Id,
+        rootSurvey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        }
+    ) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
         history.push({
-            pathname: `/survey/${surveyType}/${survey.id}`,
+            pathname: `/survey/${surveyFormType}/${survey.id}`,
         });
     };
 
-    const assignChild = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+    const assignChild = (
+        survey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        orgUnitId: Id,
+        rootSurvey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        ppsSurveyType?: string
+    ) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
-        const childSurveyType = getChildSurveyType(surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, ppsSurveyType);
         if (childSurveyType) {
             history.push({
                 pathname: `/new-survey/${childSurveyType}`,
@@ -51,10 +88,23 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         }
     };
 
-    const listChildren = (survey: NamedRef, orgUnitId: Id, rootSurvey: NamedRef) => {
+    const listChildren = (
+        survey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        orgUnitId: Id,
+        rootSurvey: {
+            id: Id;
+            name: string;
+            surveyType: string;
+        },
+        ppsSurveyType?: string
+    ) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
 
-        const childSurveyType = getChildSurveyType(surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, ppsSurveyType);
         if (childSurveyType)
             history.replace({
                 pathname: `/surveys/${childSurveyType}`,
@@ -65,7 +115,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     };
 
     const actionClick = (ppsSurveyType: string) => {
-        const currentOptions = getSurveyOptions(surveyType, ppsSurveyType);
+        const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
         setOptions(currentOptions);
     };
     return (
@@ -81,7 +131,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {i18n.t("PPS Survey Name")}
                                         </Typography>
                                     </TableCell>
-                                    {surveyType === "PPSSurveyForm" && (
+                                    {surveyFormType === "PPSSurveyForm" && (
                                         <>
                                             <TableCell>
                                                 <Typography variant="caption">
@@ -103,7 +153,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </>
                                     )}
 
-                                    {surveyType === "PPSPatientRegister" && (
+                                    {surveyFormType === "PPSPatientRegister" && (
                                         <>
                                             <TableCell>
                                                 <Typography variant="caption">
@@ -117,7 +167,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             </TableCell>
                                         </>
                                     )}
-                                    {surveyType === "PPSWardRegister" && (
+                                    {surveyFormType === "PPSWardRegister" && (
                                         <TableCell>
                                             <Typography variant="caption">
                                                 {i18n.t("Ward Code")}
@@ -125,7 +175,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </TableCell>
                                     )}
 
-                                    {surveyType === "PPSHospitalForm" && (
+                                    {surveyFormType === "PPSHospitalForm" && (
                                         <TableCell>
                                             <Typography variant="caption">
                                                 {i18n.t("Hospital Code")}
@@ -149,7 +199,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     {surveys.map(survey => (
                                         <TableRow key={survey.id}>
                                             <TableCell>{survey.rootSurvey.name}</TableCell>
-                                            {surveyType === "PPSSurveyForm" && (
+                                            {surveyFormType === "PPSSurveyForm" && (
                                                 <>
                                                     <TableCell>
                                                         {survey.startDate?.toDateString() || ""}
@@ -159,16 +209,16 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 </>
                                             )}
 
-                                            {surveyType === "PPSPatientRegister" && (
+                                            {surveyFormType === "PPSPatientRegister" && (
                                                 <>
                                                     <TableCell>{survey.id}</TableCell>
                                                     <TableCell>{survey.name}</TableCell>
                                                 </>
                                             )}
-                                            {surveyType === "PPSWardRegister" && (
+                                            {surveyFormType === "PPSWardRegister" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
-                                            {surveyType === "PPSHospitalForm" && (
+                                            {surveyFormType === "PPSHospitalForm" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
                                             <TableCell>{survey.assignedOrgUnit.name}</TableCell>
@@ -186,6 +236,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
@@ -198,9 +250,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
+                                                                    survey.rootSurvey,
+                                                                    survey.surveyType
                                                                 ),
                                                         },
                                                         {
@@ -211,6 +266,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
@@ -224,9 +281,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
+                                                                    survey.rootSurvey,
+                                                                    survey.surveyType
                                                                 ),
                                                         },
                                                         {
@@ -237,9 +297,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
+                                                                    survey.rootSurvey,
+                                                                    survey.surveyType
                                                                 );
                                                             },
                                                         },
@@ -250,6 +313,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
@@ -262,6 +327,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
@@ -275,6 +342,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
@@ -288,7 +357,10 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
+
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
                                                                 );
@@ -301,6 +373,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     {
                                                                         id: survey.id,
                                                                         name: survey.name,
+                                                                        surveyType:
+                                                                            survey.surveyType,
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey

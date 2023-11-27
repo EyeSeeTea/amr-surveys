@@ -72,7 +72,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.currentSurveyId
     );
 
-    const { currentCountryQuestionnaire } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentCountryQuestionnaire } = useCurrentSurveys();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -174,7 +174,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         }}
                         rootIds={
                             props.formType === "PPSHospitalForm"
-                                ? currentCountryQuestionnaire?.orgUnitId
+                                ? currentPPSSurveyForm?.surveyType === "HOSP"
+                                    ? [GLOBAL_OU_ID]
+                                    : currentCountryQuestionnaire?.orgUnitId
                                     ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
                                     : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
                                 : [GLOBAL_OU_ID]
