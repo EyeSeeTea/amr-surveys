@@ -105,7 +105,7 @@ export const getParentOUIdFromPath = (path: string | undefined) => {
     } else return "";
 };
 
-export const showCreateNewButton = (
+export const hideCreateNewButton = (
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
     currentPPSFormType: string,

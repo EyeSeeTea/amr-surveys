@@ -9,7 +9,7 @@ import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import { getSurveyDisplayName, showCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
@@ -67,7 +67,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
                     {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
-                    {showCreateNewButton(
+                    {!hideCreateNewButton(
                         surveyFormType,
                         isAdmin,
                         currentPPSSurveyForm?.surveyType ? currentPPSSurveyForm?.surveyType : "",
