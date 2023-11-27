@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-27T03:31:31.710Z\n"
-"PO-Revision-Date: 2023-11-27T03:31:31.710Z\n"
+"POT-Creation-Date: 2023-11-27T09:20:19.721Z\n"
+"PO-Revision-Date: 2023-11-27T09:20:19.721Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -47,6 +47,27 @@ msgstr ""
 msgid ""
 "Submission Failed! You do not have the necessary permissions, please "
 "contact your administrator"
+msgstr ""
+
+msgid "COMPLETED"
+msgstr ""
+
+msgid "ACTIVE"
+msgstr ""
+
+msgid "FUTURE"
+msgstr ""
+
+msgid "NONE"
+msgstr ""
+
+msgid "SUPRANATIONAL"
+msgstr ""
+
+msgid "NATIONAL"
+msgstr ""
+
+msgid "HOSP"
 msgstr ""
 
 msgid "PPS Survey Name"

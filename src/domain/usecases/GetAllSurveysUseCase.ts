@@ -11,26 +11,26 @@ export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
     public execute(
-        surveyType: SURVEY_FORM_TYPES,
+        surveyFormType: SURVEY_FORM_TYPES,
         orgUnitId: Id,
         parentPPSSurveyId: Id | undefined,
         parentWardRegisterId: Id | undefined
     ): FutureData<Survey[]> {
-        const programId = getProgramId(surveyType);
+        const programId = getProgramId(surveyFormType);
 
         //All PPS Survey Forms are Global.
-        if (surveyType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
+        if (surveyFormType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
         return this.surveyReporsitory
-            .getSurveys(surveyType, programId, orgUnitId)
+            .getSurveys(surveyFormType, programId, orgUnitId)
             .flatMap(surveys => {
                 if (
-                    surveyType === "PPSSurveyForm" ||
-                    (surveyType === "PPSHospitalForm" && !parentPPSSurveyId)
+                    surveyFormType === "PPSSurveyForm" ||
+                    (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)
                 ) {
                     return Future.success(surveys);
                 } else {
-                    if (surveyType === "PPSPatientRegister") {
+                    if (surveyFormType === "PPSPatientRegister") {
                         //Filter Surveys by parentWardRegisterId
                         const filteredSurveys = _(
                             surveys.map(survey => {

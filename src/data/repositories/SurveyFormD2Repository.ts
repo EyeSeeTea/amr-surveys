@@ -216,7 +216,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             break;
                         }
                     }
-                    ///Disable Survey Id Question
+                    ///Disable Id fields which are auto generated.
                     if (
                         currentQuestion &&
                         (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||

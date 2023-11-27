@@ -48,15 +48,18 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                         >
                             <span>{currentPPSSurveyForm?.name}</span>
                         </Button>
-                        <ChevronRightIcon />
                         {currentPPSSurveyForm?.surveyType !== "HOSP" && (
-                            <Button
-                                component={NavLink}
-                                to={`/surveys/PPSCountryQuestionnaire`}
-                                exact={true}
-                            >
-                                <span>{i18n.t("Country Questionnaires")}</span>
-                            </Button>
+                            <>
+                                <ChevronRightIcon />
+
+                                <Button
+                                    component={NavLink}
+                                    to={`/surveys/PPSCountryQuestionnaire`}
+                                    exact={true}
+                                >
+                                    <span>{i18n.t("Country Questionnaires")}</span>
+                                </Button>
+                            </>
                         )}
                     </StyledBreadCrumbChild>
                 )}

@@ -3,7 +3,7 @@ import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 
-export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
+export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
@@ -18,13 +18,13 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
     useEffect(() => {
         setLoading(true);
         let orgUnitId = "";
-        if (surveyType === "PPSHospitalForm")
+        if (surveyFormType === "PPSHospitalForm")
             orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
-        else if (surveyType === "PPSWardRegister" || surveyType === "PPSPatientRegister")
+        else if (surveyFormType === "PPSWardRegister" || surveyFormType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
 
         compositionRoot.surveys.getSurveys
-            .execute(surveyType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister?.id)
+            .execute(surveyFormType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister?.id)
             .run(
                 surveys => {
                     setSurveys(surveys);
@@ -37,7 +37,7 @@ export function useSurveys(surveyType: SURVEY_FORM_TYPES) {
             );
     }, [
         compositionRoot.surveys.getSurveys,
-        surveyType,
+        surveyFormType,
         currentPPSSurveyForm,
         currentCountryQuestionnaire?.orgUnitId,
         currentHospitalForm?.orgUnitId,

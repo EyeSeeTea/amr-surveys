@@ -9,8 +9,8 @@ import { getProgramId } from "../utils/PPSProgramsHelper";
 export class GetPopulatedSurveyUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
-    public execute(eventId: Id, surveyType: SURVEY_FORM_TYPES): FutureData<Questionnaire> {
-        const programId = getProgramId(surveyType);
+    public execute(eventId: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<Questionnaire> {
+        const programId = getProgramId(surveyFormType);
         return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId);
     }
 }

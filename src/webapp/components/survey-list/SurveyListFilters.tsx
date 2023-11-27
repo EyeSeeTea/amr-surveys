@@ -21,13 +21,6 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
             <FormControl fullWidth>
                 <InputLabel id="status-label">Filter by Status</InputLabel>
                 <Select
-                    MenuProps={{
-                        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                        transformOrigin: {
-                            vertical: "top",
-                            horizontal: "left",
-                        },
-                    }}
                     labelId="status-label"
                     value={status}
                     onChange={e => {

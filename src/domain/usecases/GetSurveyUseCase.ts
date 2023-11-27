@@ -15,11 +15,11 @@ export class GetSurveyUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
     public execute(
-        surveyType: SURVEY_FORM_TYPES,
+        surveyFormType: SURVEY_FORM_TYPES,
         parentPPSSurveyId: string | undefined,
         parentWardRegisterId: string | undefined
     ): FutureData<Questionnaire> {
-        const programId = getProgramId(surveyType);
+        const programId = getProgramId(surveyFormType);
         if (parentPPSSurveyId) {
             return this.surveyReporsitory.getForm(programId, undefined).flatMap(questionnaire => {
                 const surveyIdSection = questionnaire.sections.find(
