@@ -116,7 +116,7 @@ export class Collection<T> {
         return _c([...this.xs].reverse());
     }
 
-    sortWith(compareFn: CompareFn<T>, direction?: Direction): Collection<T> {
+    sortWith(compareFn: CompareFn<T>, direction: Direction = "asc"): Collection<T> {
         if (direction === "asc") return _c(this.xs.slice().sort(compareFn));
         else return _c(this.xs.slice().sort(compareFn).reverse());
     }
