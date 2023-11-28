@@ -30,7 +30,10 @@ import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
+import {
+    getParentOUIdFromPath,
+    getSurveyDisplayName,
+} from "../../../domain/utils/PPSProgramsHelper";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
 
 export interface SurveyFormProps {
@@ -146,7 +149,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     return (
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
-                <Typography variant="h5">{i18n.t(questionnaire?.name || "")}</Typography>
+                <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
 
                 {(props.formType === "PPSCountryQuestionnaire" ||
                     props.formType === "PPSHospitalForm") && (
@@ -255,4 +258,8 @@ const PageFooter = styled.div`
     flex-direction: row;
     justify-content: flex-end;
     padding: 20px;
+`;
+
+const Title = styled(Typography)`
+    margin-block-end: 10px;
 `;
