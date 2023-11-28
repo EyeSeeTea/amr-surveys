@@ -85,13 +85,13 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
         case "PPSSurveyForm":
             return "PPS Survey";
         case "PPSCountryQuestionnaire":
-            return "Country Questionnaire";
+            return "Country";
         case "PPSHospitalForm":
-            return "Hospital Form";
+            return "Hospital";
         case "PPSWardRegister":
-            return "Ward Register";
+            return "Ward";
         case "PPSPatientRegister":
-            return "Patient Register";
+            return "Patient";
         default:
             return "Survey";
     }
