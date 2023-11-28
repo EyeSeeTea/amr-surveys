@@ -5,10 +5,10 @@ import {
     PPS_SURVEY_FORM_ID,
     PPS_WARD_REGISTER_ID,
 } from "../../data/repositories/SurveyFormD2Repository";
-import { SURVEY_FORM_TYPES } from "../entities/Survey";
+import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
-export const getProgramId = (surveyType: SURVEY_FORM_TYPES): string => {
-    switch (surveyType) {
+export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
+    switch (surveyFormType) {
         case "PPSSurveyForm":
             return PPS_SURVEY_FORM_ID;
         case "PPSCountryQuestionnaire":
@@ -25,10 +25,10 @@ export const getProgramId = (surveyType: SURVEY_FORM_TYPES): string => {
 };
 
 export const getChildSurveyType = (
-    surveyType: SURVEY_FORM_TYPES,
+    surveyFormType: SURVEY_FORM_TYPES,
     ppsSurveyType?: string
 ): SURVEY_FORM_TYPES | undefined => {
-    switch (surveyType) {
+    switch (surveyFormType) {
         case "PPSSurveyForm": {
             switch (ppsSurveyType) {
                 case "HOSP":
@@ -53,10 +53,10 @@ export const getChildSurveyType = (
 };
 
 export const getSurveyOptions = (
-    surveyType: SURVEY_FORM_TYPES,
+    surveyFormType: SURVEY_FORM_TYPES,
     ppsSurveyType?: string
 ): string[] => {
-    switch (surveyType) {
+    switch (surveyFormType) {
         case "PPSSurveyForm": {
             switch (ppsSurveyType) {
                 case "NATIONAL":
@@ -103,4 +103,20 @@ export const getParentOUIdFromPath = (path: string | undefined) => {
         const parentId = orgUnitsHeirarchy?.at(orgUnitsHeirarchy.length - 2);
         return parentId;
     } else return "";
+};
+
+export const hideCreateNewButton = (
+    surveyFormType: SURVEY_FORM_TYPES,
+    isAdmin: boolean,
+    currentPPSFormType: string,
+    surveys: Survey[] | undefined
+): boolean => {
+    return (
+        (surveyFormType === "PPSHospitalForm" && !isAdmin) ||
+        // For PPS Survey Forms of National Type, only one child survey(country) should be allowed.
+        (surveyFormType === "PPSCountryQuestionnaire" &&
+            currentPPSFormType === "NATIONAL" &&
+            surveys !== undefined &&
+            surveys.length >= 1)
+    );
 };

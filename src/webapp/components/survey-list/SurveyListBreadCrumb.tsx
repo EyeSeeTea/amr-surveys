@@ -48,7 +48,6 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                         >
                             <span>{currentPPSSurveyForm?.name}</span>
                         </Button>
-                        <ChevronRightIcon />
                         {currentPPSSurveyForm?.surveyType !== "HOSP" && (
                             <Button
                                 component={NavLink}

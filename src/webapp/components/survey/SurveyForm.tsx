@@ -177,7 +177,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         }}
                         rootIds={
                             props.formType === "PPSHospitalForm"
-                                ? currentPPSSurveyForm?.surveyType === "HOSP"
+                                ? currentPPSSurveyForm?.surveyType === "HOSP" //For HOSP PPS surveys, show all hospitals across all OUs
                                     ? [GLOBAL_OU_ID]
                                     : currentCountryQuestionnaire?.orgUnitId
                                     ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path

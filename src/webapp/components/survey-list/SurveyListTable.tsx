@@ -1,4 +1,4 @@
-import { Survey, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import styled from "styled-components";
 import {
     TableBody,
@@ -24,17 +24,9 @@ interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
     updateSelectedSurveyDetails: (
-        survey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        survey: SurveyBase,
         orgUnitId: Id,
-        rootSurvey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        }
+        rootSurvey: SurveyBase
     ) => void;
 }
 
@@ -64,19 +56,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
 
     const history = useHistory();
 
-    const editSurvey = (
-        survey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
-        orgUnitId: Id,
-        rootSurvey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        }
-    ) => {
+    const editSurvey = (survey: SurveyBase, orgUnitId: Id, rootSurvey: SurveyBase) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
         history.push({
             pathname: `/survey/${surveyFormType}/${survey.id}`,
@@ -84,17 +64,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     };
 
     const assignChild = (
-        survey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        survey: SurveyBase,
         orgUnitId: Id,
-        rootSurvey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        rootSurvey: SurveyBase,
         ppsSurveyType?: string
     ) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
@@ -109,17 +81,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     };
 
     const listChildren = (
-        survey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        survey: SurveyBase,
         orgUnitId: Id,
-        rootSurvey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        rootSurvey: SurveyBase,
         ppsSurveyType?: string
     ) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);

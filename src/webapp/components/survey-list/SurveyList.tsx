@@ -5,23 +5,18 @@ import styled from "styled-components";
 import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import {
-    Survey,
-    SURVEY_FORM_TYPES,
-    SURVEY_STATUSES,
-    SURVEY_TYPES,
-} from "../../../domain/entities/Survey";
+import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
-import { useEffect, useState } from "react";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
 import { SurveyListTable } from "./SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
+import { useSurveyList } from "./hook/useSurveyList";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -33,10 +28,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
         changeCurrentWardRegister,
-        resetCurrentPPSSurveyForm,
-        resetCurrentCountryQuestionnaire,
-        resetCurrentHospitalForm,
-        resetCurrentWardRegister,
     } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
@@ -46,73 +37,19 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
     const { surveys, loading, error } = useSurveys(surveyFormType);
-    const [statusFilter, setStatusFilter] = useState<SURVEY_STATUSES>();
-    const [surveyTypeFilter, setSurveyTypeFilter] = useState<SURVEY_TYPES>();
-    const [filteredSurveys, setFilteredSurveys] = useState<Survey[]>();
 
-    useEffect(() => {
-        if (surveyFormType === "PPSHospitalForm" && !isAdmin) {
-            resetCurrentPPSSurveyForm();
-        }
-
-        if (surveyFormType === "PPSSurveyForm") {
-            resetCurrentCountryQuestionnaire();
-        } else if (surveyFormType === "PPSCountryQuestionnaire") {
-            resetCurrentCountryQuestionnaire();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
-        } else if (surveyFormType === "PPSHospitalForm") {
-            resetCurrentHospitalForm();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
-        } else if (surveyFormType === "PPSWardRegister") {
-            resetCurrentWardRegister();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
-        }
-
-        if (statusFilter && surveyTypeFilter && surveys) {
-            //Apply both filters
-            const filteredList = surveys.filter(
-                survey => survey.status === statusFilter && survey.surveyType === surveyTypeFilter
-            );
-            setFilteredSurveys(filteredList);
-        } else if (statusFilter && surveys) {
-            //Apply only status filter
-            const filteredList = surveys.filter(survey => survey.status === statusFilter);
-            setFilteredSurveys(filteredList);
-        } else if (surveyTypeFilter && surveys) {
-            //Apply only survey type filter
-            const filteredList = surveys.filter(survey => survey.surveyType === surveyTypeFilter);
-            setFilteredSurveys(filteredList);
-        } else {
-            //all surveys
-            setFilteredSurveys(surveys);
-        }
-    }, [
-        isAdmin,
-        surveyFormType,
-        resetCurrentPPSSurveyForm,
-        resetCurrentCountryQuestionnaire,
-        resetCurrentHospitalForm,
-        resetCurrentWardRegister,
-        surveys,
+    const {
         statusFilter,
+        setStatusFilter,
         surveyTypeFilter,
-    ]);
+        setSurveyTypeFilter,
+        filteredSurveys,
+    } = useSurveyList(surveyFormType, isAdmin, surveys);
 
     const updateSelectedSurveyDetails = (
-        survey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        },
+        survey: SurveyBase,
         orgUnitId: Id,
-        rootSurvey: {
-            id: Id;
-            name: string;
-            surveyType: string;
-        }
+        rootSurvey: SurveyBase
     ) => {
         if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
         else if (surveyFormType === "PPSCountryQuestionnaire")
@@ -130,14 +67,12 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
                     {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
-                    {(surveyFormType === "PPSHospitalForm" && !isAdmin) ||
-                    // For PPS Survey Forms of National Type, only one child survey(country) should be allowed.
-                    (surveyFormType === "PPSCountryQuestionnaire" &&
-                        currentPPSSurveyForm?.surveyType === "NATIONAL" &&
-                        surveys &&
-                        surveys.length >= 1) ? (
-                        <></>
-                    ) : (
+                    {!hideCreateNewButton(
+                        surveyFormType,
+                        isAdmin,
+                        currentPPSSurveyForm?.surveyType ? currentPPSSurveyForm?.surveyType : "",
+                        surveys
+                    ) && (
                         <ButtonWrapper>
                             <Button
                                 variant="contained"

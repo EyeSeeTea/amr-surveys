@@ -1,5 +1,6 @@
 import { PropsWithChildren, useState } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
+import { SurveyBase } from "../../domain/entities/Survey";
 import { CurrentSurveysContext } from "./current-surveys-context";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
@@ -20,9 +21,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     }>();
     const [currentWardRegister, setCurrentWardRegister] = useState<NamedRef>();
 
-    const changeCurrentPPSSurveyForm = (
-        survey: { id: Id; name: string; surveyType: string } | undefined
-    ) => {
+    const changeCurrentPPSSurveyForm = (survey: SurveyBase | undefined) => {
         setCurrentPPSSurveyForm(survey);
     };
 

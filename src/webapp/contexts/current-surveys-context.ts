@@ -1,11 +1,10 @@
 import { useContext, createContext } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
+import { SurveyBase } from "../../domain/entities/Survey";
 
 export interface CurrentSurveysContextProps {
-    currentPPSSurveyForm: { id: Id; name: string; surveyType: string } | undefined;
-    changeCurrentPPSSurveyForm: (
-        survey: { id: Id; name: string; surveyType: string } | undefined
-    ) => void;
+    currentPPSSurveyForm: SurveyBase | undefined;
+    changeCurrentPPSSurveyForm: (survey: SurveyBase | undefined) => void;
     resetCurrentPPSSurveyForm: () => void;
 
     currentCountryQuestionnaire: { id: Id; name: string; orgUnitId: Id } | undefined;
