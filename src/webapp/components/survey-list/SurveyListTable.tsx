@@ -542,6 +542,7 @@ const TableContentWrapper = styled.div`
         tr {
             border: none;
             &:hover {
+                transition: background-color ease-in-out 300ms;
                 background-color: #e0e0e0;
             }
             td {
