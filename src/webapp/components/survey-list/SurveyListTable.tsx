@@ -386,7 +386,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                 ),
                                                         },
                                                         {
-                                                            option: "Assign Country",
+                                                            option: "Add new Country",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -417,7 +417,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Hospital",
+                                                            option: "Add new Hospital",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -449,7 +449,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Ward",
+                                                            option: "Add new Ward",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -493,7 +493,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Patient",
+                                                            option: "Add new Patient",
                                                             handler: () => {
                                                                 assignChild(
                                                                     {
