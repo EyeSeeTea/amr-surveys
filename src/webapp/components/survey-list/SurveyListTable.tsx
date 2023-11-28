@@ -330,11 +330,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             </span>
                                         </TableCell>
                                     )}
-                                    <TableCell style={{ cursor: "pointer" }}>
-                                        <Typography variant="caption">
-                                            {i18n.t("Assigned Org Unit")}
-                                        </Typography>
-                                    </TableCell>
                                     <TableCell>
                                         <Typography variant="caption">
                                             {i18n.t("Action")}
@@ -369,7 +364,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {surveyFormType === "PPSHospitalForm" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
-                                            <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>
