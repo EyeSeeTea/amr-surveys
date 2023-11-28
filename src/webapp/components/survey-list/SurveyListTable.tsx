@@ -563,7 +563,7 @@ const TableContentWrapper = styled.div`
 
             vertical-align: bottom;
             position: relative;
-            &:after {
+            &:not(:last-child):after {
                 content: "";
                 height: 25px;
                 border-right: 2px solid #e0e0e0;
