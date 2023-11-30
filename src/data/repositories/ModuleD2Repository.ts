@@ -1,6 +1,7 @@
-import { D2Api, Id } from "@eyeseetea/d2-api/2.36";
+import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { Future } from "../../domain/entities/generic/Future";
+import { Id } from "../../domain/entities/Ref";
 import { ModuleRepository } from "../../domain/repositories/ModuleRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import { DataStoreClient } from "../DataStoreClient";
