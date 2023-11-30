@@ -10,7 +10,7 @@ import {
     SelectQuestion,
     TextQuestion,
 } from "../../domain/entities/Questionnaire";
-import { Id } from "../../domain/entities/Ref";
+import { Id, Ref } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
@@ -19,6 +19,8 @@ import {
     EventProgramMetadata,
     ImportStrategy,
     Option,
+    EventProgram,
+    ProgramStageSection,
 } from "../../domain/entities/EventProgram";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
@@ -46,7 +48,7 @@ const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
-    getForm(programId: Id, event: D2TrackerEvent | undefined): FutureData<Questionnaire> {
+    getForm(programId: Id, eventId: Id | undefined): FutureData<Questionnaire> {
         return apiToFuture(
             this.api.request<EventProgramMetadata>({
                 method: "get",
@@ -57,54 +59,97 @@ export class SurveyD2Repository implements SurveyRepository {
                 const programDataElements = resp.programStageDataElements.map(
                     psde => psde.dataElement
                 );
-                //If the EventProgram has sections, fetch and use programStageSections
-                const sections = resp.programStageSections
-                    ? resp.programStageSections.map(section => {
-                          const questions: Question[] = this.mapProgramDataElementToQuestions(
-                              section.dataElements,
-                              resp.dataElements,
-                              resp.options,
-                              event
-                          );
 
-                          return {
-                              title: section.name,
-                              code: section.id,
-                              questions: questions,
-                              isVisible: true,
-                          };
-                      })
-                    : //If the EventProgram has no sections, create a single section
-                      [
-                          {
-                              title: "Survey Info",
-                              code: "",
-                              questions: this.mapProgramDataElementToQuestions(
-                                  programDataElements,
-                                  resp.dataElements,
-                                  resp.options,
-                                  event
-                              ),
-                              isVisible: true,
-                          },
-                      ];
-                const form: Questionnaire = {
-                    id: resp.programs[0].id,
-                    name: resp.programs[0].name,
-                    description: resp.programs[0].name,
-                    orgUnit: { id: event?.orgUnit ?? "" },
-                    year: "",
-                    isCompleted: false,
-                    isMandatory: false,
-                    rules: [],
-                    sections: sections,
-                };
-
-                return Future.success(form);
+                //If event specified,populate the form
+                if (eventId) {
+                    //Get event from eventId
+                    return this.getSurveyById(eventId).flatMap(event => {
+                        if (resp.programs[0] && event) {
+                            return Future.success(
+                                this.mapProgramToQuestionnaire(
+                                    resp.programs[0],
+                                    event,
+                                    programDataElements,
+                                    resp.dataElements,
+                                    resp.options,
+                                    resp.programStageSections
+                                )
+                            );
+                        } else {
+                            return Future.error(new Error("Event Program not found"));
+                        }
+                    });
+                }
+                //return empty form
+                else {
+                    return Future.success(
+                        this.mapProgramToQuestionnaire(
+                            resp.programs[0],
+                            undefined,
+                            programDataElements,
+                            resp.dataElements,
+                            resp.options,
+                            resp.programStageSections
+                        )
+                    );
+                }
             } else {
                 return Future.error(new Error("Event Program not found"));
             }
         });
+    }
+
+    private mapProgramToQuestionnaire(
+        program: EventProgram,
+        event: D2TrackerEvent | undefined,
+        programDataElements: Ref[],
+        dataElements: EventProgramDataElement[],
+        options: Option[],
+        programStageSections?: ProgramStageSection[]
+    ): Questionnaire {
+        //If the EventProgram has sections, fetch and use programStageSections
+        const sections = programStageSections
+            ? programStageSections.map(section => {
+                  const questions: Question[] = this.mapProgramDataElementToQuestions(
+                      section.dataElements,
+                      dataElements,
+                      options,
+                      event
+                  );
+
+                  return {
+                      title: section.name,
+                      code: section.id,
+                      questions: questions,
+                      isVisible: true,
+                  };
+              })
+            : //If the EventProgram has no sections, create a single section
+              [
+                  {
+                      title: "Survey Info",
+                      code: "",
+                      questions: this.mapProgramDataElementToQuestions(
+                          programDataElements,
+                          dataElements,
+                          options,
+                          event
+                      ),
+                      isVisible: true,
+                  },
+              ];
+        const form: Questionnaire = {
+            id: program.id,
+            name: program.name,
+            description: program.name,
+            orgUnit: { id: "" },
+            year: "",
+            isCompleted: false,
+            isMandatory: false,
+            rules: [],
+            sections: sections,
+        };
+        return form;
     }
 
     private mapProgramDataElementToQuestions(
@@ -454,10 +499,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire> {
-        return this.getSurveyById(eventId).flatMap(event => {
-            if (event) return this.getForm(programId, event);
-            else return Future.error(new Error("Cannot find form data"));
-        });
+        return this.getForm(programId, eventId);
     }
 
     getSurveyById(eventId: string): FutureData<D2TrackerEvent | void> {
