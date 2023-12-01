@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-27T09:20:19.721Z\n"
-"PO-Revision-Date: 2023-11-27T09:20:19.721Z\n"
+"POT-Creation-Date: 2023-11-28T10:56:14.436Z\n"
+"PO-Revision-Date: 2023-11-28T10:56:14.436Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -29,16 +29,16 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
-msgid "Country Questionnaires"
+msgid "Countries"
 msgstr ""
 
-msgid "Hospital Forms"
+msgid "Hospitals"
 msgstr ""
 
-msgid "Ward Registers"
+msgid "Wards"
 msgstr ""
 
-msgid "Patient Registers"
+msgid "Patients"
 msgstr ""
 
 msgid "Submission Success!"
@@ -47,6 +47,9 @@ msgstr ""
 msgid ""
 "Submission Failed! You do not have the necessary permissions, please "
 "contact your administrator"
+msgstr ""
+
+msgid "Country"
 msgstr ""
 
 msgid "COMPLETED"
@@ -92,9 +95,6 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
-msgstr ""
-
-msgid "Assigned Org Unit"
 msgstr ""
 
 msgid "Action"

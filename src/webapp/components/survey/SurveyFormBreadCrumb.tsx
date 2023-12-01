@@ -66,7 +66,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ form
                             to={`/surveys/PPSCountryQuestionnaire`}
                             exact={true}
                         >
-                            <span>{i18n.t("Country Questionnaires")}</span>
+                            <span>{i18n.t("Countries")}</span>
                         </Button>
                         <ChevronRightIcon />
                         {currentCountryQuestionnaire ? (
@@ -89,7 +89,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ form
                 formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
-                        <span>{i18n.t("Hospital Forms")}</span>
+                        <span>{i18n.t("Hospitals")}</span>
                     </Button>
                     <ChevronRightIcon />
                     {currentHospitalForm ? (
@@ -110,7 +110,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ form
             {(formType === "PPSWardRegister" || formType === "PPSPatientRegister") && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
-                        <span>{i18n.t("Ward Registers")}</span>
+                        <span>{i18n.t("Wards")}</span>
                     </Button>
                     <ChevronRightIcon />
                     {currentWardRegister ? (
@@ -131,7 +131,7 @@ export const SurveyFormBreadCrumb: React.FC<SurveyFormBreadCrumbProps> = ({ form
             {formType === "PPSPatientRegister" && (
                 <StyledBreadCrumbChild>
                     <Button component={NavLink} to={`/surveys/PPSPatientRegister`} exact={true}>
-                        <span>{i18n.t("Patient Registers")}</span>
+                        <span>{i18n.t("Patients")}</span>
                     </Button>
                     <ChevronRightIcon />
                     {id ? (
