@@ -28,10 +28,17 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
+import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import {
+    getParentOUIdFromPath,
+    getSurveyDisplayName,
+} from "../../../domain/utils/PPSProgramsHelper";
+import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
 
 export interface SurveyFormProps {
     hideForm: () => void;
-    surveyId?: Id;
+    currentSurveyId?: Id;
     formType: SURVEY_FORM_TYPES;
 }
 
@@ -60,12 +67,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
-    } = useSurveyForm(props.formType, props.surveyId);
+    } = useSurveyForm(props.formType, props.currentSurveyId);
+
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
         props.formType,
         currentOrgUnit?.orgUnitId ?? "",
-        props.surveyId
+        props.currentSurveyId
     );
+
+    const { currentPPSSurveyForm, currentCountryQuestionnaire } = useCurrentSurveys();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -108,19 +118,29 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     };
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        if (props.surveyId) {
+        if (props.currentSurveyId) {
             alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
             return;
         }
         if (orgUnitPaths[0]) {
             const orgUnits = orgUnitPaths[0].split("/");
-            const selectedCountry = orgUnits[orgUnits.length - 1];
-            if (selectedCountry) {
-                const currentOrgUnitAccess = currentUser.userOrgUnitsAccess.find(
-                    ou => ou.orgUnitId === selectedCountry
-                );
-                if (currentOrgUnitAccess) {
-                    setCurrentOrgUnit(currentOrgUnitAccess);
+
+            const selectedOU = orgUnits[orgUnits.length - 1];
+            if (selectedOU) {
+                if (props.formType === "PPSCountryQuestionnaire") {
+                    const currentCountry = currentUser.userCountriesAccess.find(
+                        ou => ou.orgUnitId === selectedOU
+                    );
+                    if (currentCountry) {
+                        setCurrentOrgUnit(currentCountry);
+                    }
+                } else if (props.formType === "PPSHospitalForm") {
+                    const currentHospital = currentUser.userHospitalsAccess.find(
+                        hospital => hospital.orgUnitId === selectedOU
+                    );
+                    if (currentHospital) {
+                        setCurrentOrgUnit(currentHospital);
+                    }
                 }
             }
         }
@@ -129,24 +149,41 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     return (
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
-                <Typography variant="h5">{i18n.t(questionnaire?.name || "")}</Typography>
+                <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
 
-                {props.formType === "PPSCountryQuestionnaire" && (
+                {(props.formType === "PPSCountryQuestionnaire" ||
+                    props.formType === "PPSHospitalForm") && (
                     <OrgUnitsSelector
                         api={api}
                         fullWidth={false}
                         selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
+                        initiallyExpanded={
+                            currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
+                        }
                         onChange={onOrgUnitChange}
                         singleSelection={true}
                         typeInput={"radio"}
                         hideMemberCount={false}
-                        selectableLevels={[3]}
+                        selectableLevels={
+                            props.formType === "PPSCountryQuestionnaire"
+                                ? [COUNTRY_OU_LEVEL]
+                                : [HOSPITAL_OU_LEVEL]
+                        }
                         controls={{
                             filterByLevel: false,
                             filterByGroup: false,
                             filterByProgram: false,
                             selectAll: false,
                         }}
+                        rootIds={
+                            props.formType === "PPSHospitalForm"
+                                ? currentPPSSurveyForm?.surveyType === "HOSP" //For HOSP PPS surveys, show all hospitals across all OUs
+                                    ? [GLOBAL_OU_ID]
+                                    : currentCountryQuestionnaire?.orgUnitId
+                                    ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
+                                    : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
+                                : [GLOBAL_OU_ID]
+                        }
                     />
                 )}
 
@@ -221,4 +258,8 @@ const PageFooter = styled.div`
     flex-direction: row;
     justify-content: flex-end;
     padding: 20px;
+`;
+
+const Title = styled(Typography)`
+    margin-block-end: 10px;
 `;

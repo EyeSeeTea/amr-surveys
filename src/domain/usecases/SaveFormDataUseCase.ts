@@ -11,15 +11,15 @@ export class SaveFormDataUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
     public execute(
-        surveyType: SURVEY_FORM_TYPES,
+        surveyFormType: SURVEY_FORM_TYPES,
         questionnaire: Questionnaire,
         orgUnitId: Id,
         eventId: string | undefined = undefined
     ): FutureData<void> {
-        const programId = getProgramId(surveyType);
+        const programId = getProgramId(surveyFormType);
 
         //All PPS Survey Forms are Global.
-        if (surveyType === "PPSSurveyForm" && orgUnitId === "") orgUnitId = GLOBAL_OU_ID;
+        if (surveyFormType === "PPSSurveyForm" && orgUnitId === "") orgUnitId = GLOBAL_OU_ID;
 
         return this.surveyReporsitory.saveFormData(
             questionnaire,

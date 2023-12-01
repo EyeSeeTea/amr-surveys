@@ -1,13 +1,19 @@
 import { IconButton, Menu, MenuItem } from "@material-ui/core";
 import MoreVert from "@material-ui/icons/MoreVert";
 import * as React from "react";
+import styled from "styled-components";
 
 interface ActionMenuProps {
     options: string[];
     optionClickHandler: { option: string; handler: () => void }[];
+    onClickHandler: () => void;
 }
 
-export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionClickHandler }) => {
+export const ActionMenuButton: React.FC<ActionMenuProps> = ({
+    options,
+    optionClickHandler,
+    onClickHandler,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -23,8 +29,8 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionCli
     };
 
     return (
-        <div>
-            <IconButton
+        <div onClick={onClickHandler}>
+            <StyledIconButton
                 aria-label="more"
                 id="long-button"
                 aria-controls={open ? "long-menu" : undefined}
@@ -33,7 +39,7 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionCli
                 onClick={handleClick}
             >
                 <MoreVert />
-            </IconButton>
+            </StyledIconButton>
             <Menu
                 id="long-menu"
                 MenuListProps={{
@@ -52,3 +58,10 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({ options, optionCli
         </div>
     );
 };
+
+const StyledIconButton = styled(IconButton)`
+    :hover {
+        transition: background-color ease-in-out 300ms;
+        background-color: white;
+    }
+`;

@@ -11,30 +11,50 @@ export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
     public execute(
-        surveyType: SURVEY_FORM_TYPES,
-        parentSurveyId: Id | undefined
+        surveyFormType: SURVEY_FORM_TYPES,
+        orgUnitId: Id,
+        parentPPSSurveyId: Id | undefined,
+        parentWardRegisterId: Id | undefined
     ): FutureData<Survey[]> {
-        let orgUnitId = "";
-        const programId = getProgramId(surveyType);
+        const programId = getProgramId(surveyFormType);
 
         //All PPS Survey Forms are Global.
-        if (surveyType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
+        if (surveyFormType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
-        return this.surveyReporsitory.getSurveys(programId, orgUnitId).flatMap(surveys => {
-            if (parentSurveyId) {
-                //Parent Id should be set only for child forms, this is a just an additional check
-                if (surveyType === "PPSCountryQuestionnaire") {
-                    //Filter Surveys by parentSurveyId
-                    const filteredSurveys = _(
-                        surveys.map(survey => {
-                            if (survey.parentSurveyId === parentSurveyId) return survey;
-                        })
-                    )
-                        .compact()
-                        .value();
-                    return Future.success(filteredSurveys);
-                } else return Future.success([]);
-            } else return Future.success(surveys);
-        });
+        return this.surveyReporsitory
+            .getSurveys(surveyFormType, programId, orgUnitId)
+            .flatMap(surveys => {
+                if (
+                    surveyFormType === "PPSSurveyForm" ||
+                    (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)
+                ) {
+                    return Future.success(surveys);
+                } else {
+                    if (surveyFormType === "PPSPatientRegister") {
+                        //Filter Surveys by parentWardRegisterId
+                        const filteredSurveys = _(
+                            surveys.map(survey => {
+                                if (survey.parentWardRegisterId === parentWardRegisterId)
+                                    return survey;
+                            })
+                        )
+                            .compact()
+                            .value();
+
+                        return Future.success(filteredSurveys);
+                    } else {
+                        //Filter Surveys by parentPPSSurveyId
+                        const filteredSurveys = _(
+                            surveys.map(survey => {
+                                if (survey.rootSurvey.id === parentPPSSurveyId) return survey;
+                            })
+                        )
+                            .compact()
+                            .value();
+
+                        return Future.success(filteredSurveys);
+                    }
+                }
+            });
     }
 }

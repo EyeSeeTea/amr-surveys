@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-07T16:11:33.130Z\n"
-"PO-Revision-Date: 2023-11-07T16:11:33.130Z\n"
+"POT-Creation-Date: 2023-11-28T10:56:14.436Z\n"
+"PO-Revision-Date: 2023-11-28T10:56:14.436Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -23,13 +23,22 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-msgid "PPS Survey Forms"
+msgid "PPS Surveys"
 msgstr ""
 
 msgid "New Survey"
 msgstr ""
 
-msgid "PPS Country Questionnaires"
+msgid "Countries"
+msgstr ""
+
+msgid "Hospitals"
+msgstr ""
+
+msgid "Wards"
+msgstr ""
+
+msgid "Patients"
 msgstr ""
 
 msgid "Submission Success!"
@@ -40,10 +49,31 @@ msgid ""
 "contact your administrator"
 msgstr ""
 
-msgid "Create New Survey"
+msgid "Country"
 msgstr ""
 
-msgid "Survey List"
+msgid "COMPLETED"
+msgstr ""
+
+msgid "ACTIVE"
+msgstr ""
+
+msgid "FUTURE"
+msgstr ""
+
+msgid "NONE"
+msgstr ""
+
+msgid "SUPRANATIONAL"
+msgstr ""
+
+msgid "NATIONAL"
+msgstr ""
+
+msgid "HOSP"
+msgstr ""
+
+msgid "PPS Survey Name"
 msgstr ""
 
 msgid "Start Date"
@@ -55,7 +85,16 @@ msgstr ""
 msgid "Survey Type"
 msgstr ""
 
-msgid "Assigned Org Unit"
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Name"
+msgstr ""
+
+msgid "Ward Code"
+msgstr ""
+
+msgid "Hospital Code"
 msgstr ""
 
 msgid "Action"

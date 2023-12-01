@@ -1,7 +1,8 @@
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
+import { getBaseSurveyFormType } from "../../domain/utils/menuHelper";
 import { useAppContext } from "../contexts/app-context";
 
 export interface MenuGroup {
@@ -17,6 +18,7 @@ export interface MenuLeaf {
     title: string;
     path: string;
     icon?: any;
+    module: AMRSurveyModule;
 }
 
 export type Menu = MenuGroup | MenuLeaf;
@@ -31,24 +33,28 @@ export function useMenu() {
     const [error, setError] = useState<string>();
     const snackbar = useSnackbar();
 
-    const mapModuleToMenu = (modules: AMRSurveyModule[]): Menu[] => {
-        return modules.map(m => {
-            const childMenus: MenuLeaf[] = [
-                {
-                    kind: "MenuLeaf",
-                    title: "Surveys",
-                    path: `/surveys/PPSSurveyForm`,
-                },
-            ];
-
-            return {
-                kind: "MenuGroup",
-                title: m.name,
-                moduleColor: m.color,
-                children: childMenus,
-            };
-        });
-    };
+    const mapModuleToMenu = useCallback(
+        (modules: AMRSurveyModule[]): Menu[] => {
+            return modules.map(m => {
+                const surveyFormType = getBaseSurveyFormType(m, userGroups);
+                const childMenus: MenuLeaf[] = [
+                    {
+                        kind: "MenuLeaf",
+                        title: "Surveys",
+                        path: `/surveys/${surveyFormType}`,
+                        module: m,
+                    },
+                ];
+                return {
+                    kind: "MenuGroup",
+                    title: m.name,
+                    moduleColor: m.color,
+                    children: childMenus,
+                };
+            });
+        },
+        [userGroups]
+    );
 
     useEffect(() => {
         setLoading(true);
@@ -63,7 +69,7 @@ export function useMenu() {
                 setLoading(false);
             }
         );
-    }, [compositionRoot.modules.getAllAccessible, userGroups, snackbar]);
+    }, [compositionRoot.modules.getAllAccessible, userGroups, snackbar, mapModuleToMenu]);
 
     return { menu, loading, error };
 }

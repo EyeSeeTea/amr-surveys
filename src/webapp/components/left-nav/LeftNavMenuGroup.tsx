@@ -7,6 +7,7 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import LeftNavMenu from "./LeftNavMenu";
 import styled from "styled-components";
 import { MenuGroup, MenuLeaf } from "../../hooks/useMenu";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 interface LeftNavMenuProps {
     className?: string;
@@ -17,8 +18,10 @@ interface LeftNavMenuProps {
 const LeftNavMenuGroup: React.FC<LeftNavMenuProps> = ({ menu, groupName, className }) => {
     const classes = useStyles(0);
     const [expanded, setExpanded] = React.useState(true);
+    const { resetCurrentModule } = useCurrentModule();
 
     const toggleExpanded = () => {
+        resetCurrentModule();
         setExpanded(!expanded);
     };
 

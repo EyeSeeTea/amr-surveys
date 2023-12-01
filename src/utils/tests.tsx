@@ -3,9 +3,9 @@ import { SnackbarProvider } from "@eyeseetea/d2-ui-components";
 import { ReactNode } from "react";
 import { AppContext, AppContextState } from "../webapp/contexts/app-context";
 import { getTestCompositionRoot } from "../CompositionRoot";
-import { createAdminUser } from "../domain/entities/__tests__/userFixtures";
+import { createAdminUser, createNonAdminUser } from "../domain/entities/__tests__/userFixtures";
 
-export function getTestContext() {
+export function getAdminTestContext() {
     const context: AppContextState = {
         currentUser: createAdminUser(),
         compositionRoot: getTestCompositionRoot(),
@@ -14,8 +14,17 @@ export function getTestContext() {
     return context;
 }
 
+export function getHospitalDataEntryTestContext() {
+    const context: AppContextState = {
+        currentUser: createNonAdminUser(),
+        compositionRoot: getTestCompositionRoot(true),
+    };
+
+    return context;
+}
+
 export function getReactComponent(children: ReactNode): RenderResult {
-    const context = getTestContext();
+    const context = getAdminTestContext();
 
     return render(
         <AppContext.Provider value={context}>

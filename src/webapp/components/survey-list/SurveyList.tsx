@@ -1,167 +1,108 @@
 import i18n from "@eyeseetea/feedback-component/locales";
-import {
-    Button,
-    Paper,
-    TableCell,
-    TableContainer,
-    TableHead,
-    Typography,
-    Table,
-    TableBody,
-    TableRow,
-} from "@material-ui/core";
-import { NavLink, useHistory } from "react-router-dom";
+import { Button, Typography } from "@material-ui/core";
+import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
-import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
-import { useEffect, useState } from "react";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
+import { getUserAccess } from "../../../domain/utils/menuHelper";
+import { useAppContext } from "../../contexts/app-context";
+import { useCurrentModule } from "../../contexts/current-module-context";
+import { SurveyListTable } from "./SurveyListTable";
+import { SurveyListFilters } from "./SurveyListFilters";
+import _ from "../../../domain/entities/generic/Collection";
+import { useSurveyList } from "./hook/useSurveyList";
 
 interface SurveyListProps {
-    surveyType: SURVEY_FORM_TYPES;
+    surveyFormType: SURVEY_FORM_TYPES;
 }
-export const SurveyList: React.FC<SurveyListProps> = ({ surveyType }) => {
-    const { currentPPSSurveyForm, changeCurrentPPSSurveyForm } = useCurrentSurveys();
-    const { surveys, loading, error } = useSurveys(surveyType, currentPPSSurveyForm);
-    const [options, setOptions] = useState<string[]>([]);
-    const history = useHistory();
+export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
+    const {
+        currentPPSSurveyForm,
+        changeCurrentPPSSurveyForm,
+        changeCurrentCountryQuestionnaire,
+        changeCurrentHospitalForm,
+        changeCurrentWardRegister,
+    } = useCurrentSurveys();
+    const { currentUser } = useAppContext();
+    const { currentModule } = useCurrentModule();
 
-    useEffect(() => {
-        if (currentPPSSurveyForm) {
-            setOptions(["Edit"]);
-        } else {
-            setOptions(["Edit", "Assign Country", "List Countries"]);
-        }
-    }, [setOptions, currentPPSSurveyForm]);
+    let isAdmin = false;
+    if (currentModule)
+        isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
-    const editSurvey = (surveyId: Id) => {
-        history.push({
-            pathname: `/survey/${surveyType}/${surveyId}`,
-        });
-    };
+    const { surveys, loading, error } = useSurveys(surveyFormType);
 
-    const assignCountry = (surveyId: Id) => {
-        changeCurrentPPSSurveyForm(surveyId);
-        history.push({
-            pathname: `/new-survey/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-        });
-    };
+    const {
+        statusFilter,
+        setStatusFilter,
+        surveyTypeFilter,
+        setSurveyTypeFilter,
+        filteredSurveys,
+    } = useSurveyList(surveyFormType, isAdmin, surveys);
 
-    const listCountries = (surveyId: Id) => {
-        changeCurrentPPSSurveyForm(surveyId);
-        history.replace({
-            pathname: `/surveys/PPSCountryQuestionnaire`, //TO DO : Replace with 'surveyType' for extending to other surveys
-        });
+    const updateSelectedSurveyDetails = (
+        survey: SurveyBase,
+        orgUnitId: Id,
+        rootSurvey: SurveyBase
+    ) => {
+        if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
+        else if (surveyFormType === "PPSCountryQuestionnaire")
+            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
+        else if (surveyFormType === "PPSHospitalForm") {
+            if (!isAdmin) {
+                changeCurrentPPSSurveyForm(rootSurvey);
+            }
+            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
+        } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
     };
 
     return (
         <ContentWrapper>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
-                    <ButtonWrapper>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            component={NavLink}
-                            to={{
-                                pathname: `/new-survey/${surveyType}`,
-                            }}
-                            exact={true}
-                        >
-                            {i18n.t("Create New Survey")}
-                        </Button>
-                    </ButtonWrapper>
-
-                    <Typography variant="h3">{i18n.t("Survey List")}</Typography>
-                    {surveys && (
-                        <TableContentWrapper>
-                            <TableContainer component={Paper}>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Start Date")}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Status")}
-                                                </Typography>
-                                            </TableCell>
-
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Survey Type")}
-                                                </Typography>
-                                            </TableCell>
-
-                                            <TableCell style={{ cursor: "pointer" }}>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Assigned Org Unit")}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Action")}
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    {surveys && surveys.length ? (
-                                        <StyledTableBody>
-                                            {surveys.map(survey => (
-                                                <TableRow key={survey.id}>
-                                                    <TableCell>
-                                                        {survey.startDate?.toDateString() || ""}
-                                                    </TableCell>
-                                                    <TableCell>{survey.status}</TableCell>
-                                                    <TableCell>{survey.surveyType}</TableCell>
-                                                    <TableCell>
-                                                        {survey.assignedOrgUnit.name}
-                                                    </TableCell>
-                                                    <TableCell style={{ opacity: 0.5 }}>
-                                                        <ActionMenuButton
-                                                            options={options}
-                                                            optionClickHandler={[
-                                                                {
-                                                                    option: "Edit",
-                                                                    handler: () =>
-                                                                        editSurvey(survey.id),
-                                                                },
-                                                                {
-                                                                    option: "Assign Country",
-                                                                    handler: () =>
-                                                                        assignCountry(survey.id),
-                                                                },
-                                                                {
-                                                                    option: "List Countries",
-                                                                    handler: () => {
-                                                                        listCountries(survey.id);
-                                                                    },
-                                                                },
-                                                            ]}
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </StyledTableBody>
-                                    ) : (
-                                        <StyledTableBody>
-                                            <TableRow>
-                                                <TableCell>No data found...</TableCell>
-                                            </TableRow>
-                                        </StyledTableBody>
-                                    )}
-                                </Table>
-                            </TableContainer>
-                        </TableContentWrapper>
+                    {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
+                    {!hideCreateNewButton(
+                        surveyFormType,
+                        isAdmin,
+                        currentPPSSurveyForm?.surveyType ? currentPPSSurveyForm?.surveyType : "",
+                        surveys
+                    ) && (
+                        <ButtonWrapper>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                component={NavLink}
+                                to={{
+                                    pathname: `/new-survey/${surveyFormType}`,
+                                }}
+                                exact={true}
+                            >
+                                {i18n.t(`Create New ${getSurveyDisplayName(surveyFormType)}`)}
+                            </Button>
+                        </ButtonWrapper>
                     )}
+                    <Typography variant="h3">
+                        {i18n.t(`${getSurveyDisplayName(surveyFormType)} List`)}
+                    </Typography>
+                    {surveyFormType === "PPSSurveyForm" && (
+                        <SurveyListFilters
+                            status={statusFilter}
+                            setStatus={setStatusFilter}
+                            surveyType={surveyTypeFilter}
+                            setSurveyType={setSurveyTypeFilter}
+                        />
+                    )}
+                    <SurveyListTable
+                        surveys={filteredSurveys}
+                        surveyFormType={surveyFormType}
+                        updateSelectedSurveyDetails={updateSelectedSurveyDetails}
+                    />
                 </CustomCard>
             </ContentLoader>
         </ContentWrapper>
@@ -184,66 +125,4 @@ const ButtonWrapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-`;
-export const StyledTableBody = styled(TableBody)`
-    td.cta {
-        text-align: center;
-        svg {
-            color: "#9E9E9E";
-        }
-        &:hover {
-            svg {
-                color: "#494949";
-            }
-        }
-    }
-`;
-const TableContentWrapper = styled.div`
-    h3 {
-        font-size: 22px;
-        color: ${palette.text.primary};
-        font-weight: 500;
-    }
-    .MuiTableContainer-root {
-        border: none;
-        box-shadow: none;
-    }
-    thead {
-        border-bottom: 3px solid #e0e0e0;
-        th {
-            color: #9e9e9e;
-            font-weight: 400;
-            font-size: 15px;
-
-            vertical-align: bottom;
-            position: relative;
-            &:after {
-                content: "";
-                height: 25px;
-                border-right: 2px solid #e0e0e0;
-                position: absolute;
-                right: 0;
-                top: 30px;
-            }
-        }
-    }
-    tbody {
-        tr {
-            border: none;
-            &:hover {
-                background-color: #e0e0e0;
-            }
-            td {
-                border-bottom: 1px solid #e0e0e0;
-            }
-        }
-    }
-    &.error-group {
-        tbody {
-            td:nth-child(7) {
-                color: #c62828;
-                opacity: 1;
-            }
-        }
-    }
 `;
