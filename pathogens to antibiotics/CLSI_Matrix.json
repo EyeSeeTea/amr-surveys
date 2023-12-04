@@ -73,7 +73,7 @@
         "Trimethoprim",
         "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"
     ],
-    "P. aeruginosa": [
+    "Pseudomonas": [
         "Amikacin",
         "Aztreonam",
         "Cefepime",
@@ -126,7 +126,7 @@
         "Tobramycin",
         "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"
     ],
-    "B. cepacia complex": [
+    "B. cepacia": [
         "Ceftazidime",
         "Levofloxacin",
         "Meropenem",
@@ -240,7 +240,7 @@
         "Tetracycline",
         "Vancomycin"
     ],
-    "Haemophilus influenzae and parainfluenzae": [
+    "H. influenzae and parainfluenzae": [
         "Amoxicillin-clavulanate (Amoxicillin-clavulanic acid)",
         "Ampicillin",
         "Ampicillin-sulbactam",
