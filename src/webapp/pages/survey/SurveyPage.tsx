@@ -1,22 +1,25 @@
 import React from "react";
 import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
+
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyForm } from "../../components/survey/SurveyForm";
 import { SurveyFormBreadCrumb } from "../../components/survey/SurveyFormBreadCrumb";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 export const SurveyPage: React.FC = () => {
-    const { type, id } = useParams<{ type: SURVEY_FORM_TYPES; id: string }>();
+    const { formType, id } = useParams<{ formType: SURVEY_FORM_TYPES; id: string }>();
+    const { currentModule } = useCurrentModule();
     const history = useHistory();
 
     const hideForm = () => {
-        history.push(`/surveys/${type}`);
+        history.push(`/surveys/${formType}`);
     };
 
     return (
         <ContentWrapper>
-            <SurveyFormBreadCrumb type={type} id={id} />
-            <SurveyForm hideForm={hideForm} formType={type} surveyId={id} />
+            {currentModule?.name === "PPS" && <SurveyFormBreadCrumb formType={formType} id={id} />}
+            <SurveyForm hideForm={hideForm} formType={formType} currentSurveyId={id} />
         </ContentWrapper>
     );
 };

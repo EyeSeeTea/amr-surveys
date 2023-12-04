@@ -9,6 +9,10 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../SurveyFormD2Repository";
 
 export class SurveyTestRepository implements SurveyRepository {
+    getSurveyNameFromId(id: string): FutureData<string | undefined> {
+        console.debug(id);
+        throw new Error("Method not implemented.");
+    }
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");
@@ -50,18 +54,24 @@ export class SurveyTestRepository implements SurveyRepository {
         if (programId === PPS_SURVEY_FORM_ID)
             return Future.success([
                 {
-                    id: "TestSurvey1",
+                    name: "TestSurvey1",
+                    id: "1",
                     startDate: new Date(),
                     status: "ACTIVE",
-                    assignedOrgUnit: { id: orgUnitId, name: "TestSurvey1" },
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
                     surveyType: "SUPRANATIONAL",
+                    rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
+                    surveyFormType: "PPSSurveyForm",
                 },
                 {
-                    id: "TestSurvey2",
+                    name: "TestSurvey2",
+                    id: "2",
                     startDate: new Date(),
                     status: "COMPLETED",
-                    assignedOrgUnit: { id: "OU1234", name: "TestSurvey2" },
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
                     surveyType: "NATIONAL",
+                    rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
+                    surveyFormType: "PPSSurveyForm",
                 },
             ]);
         else return Future.success([]);

@@ -11,10 +11,12 @@ import LeftNavMenu from "./LeftNavMenu";
 import LeftNavMenuGroup from "./LeftNavMenuGroup";
 import { useMenu } from "../../hooks/useMenu";
 import { ContentLoader } from "../content-loader/ContentLoader";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 export const LeftNav: React.FC = () => {
     const { baseUrl } = useConfig();
     const { menu, loading, error } = useMenu();
+    const { resetCurrentModule } = useCurrentModule();
 
     const logout = () => {
         //TO D0 : Actually logout, this is just redirecting the page.
@@ -24,12 +26,22 @@ export const LeftNav: React.FC = () => {
         ].join("/") as unknown as Location;
     };
 
+    const homeMenuClick = () => {
+        resetCurrentModule();
+    };
+
     return (
         <LeftNavContainer>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <CustomCard minheight="600px" padding="0 0 80px 0" maxwidth="250px">
                     <HomeButtonWrapper>
-                        <Button className="home-button" component={NavLink} to="/" exact={true}>
+                        <Button
+                            className="home-button"
+                            component={NavLink}
+                            to="/"
+                            exact={true}
+                            onClick={homeMenuClick}
+                        >
                             <StarGradient className="star-icon" />
                             <Box width={15} />
                             <Typography>{i18n.t("HOME")}</Typography>

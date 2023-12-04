@@ -2,7 +2,7 @@ import { FutureData } from "../../data/api-futures";
 import { ImportStrategy } from "../entities/EventProgram";
 import { Questionnaire } from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
-import { Survey } from "../entities/Survey";
+import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export interface SurveyRepository {
     getForm(programId: Id, eventId: Id | undefined): FutureData<Questionnaire>;
@@ -13,5 +13,11 @@ export interface SurveyRepository {
         eventId: string | undefined,
         programId: Id
     ): FutureData<void>;
-    getSurveys(programId: Id, orgUnitId: Id): FutureData<Survey[]>;
+    getSurveys(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id
+    ): FutureData<Survey[]>;
+    getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
+    getSurveyNameFromId(id: Id): FutureData<string | undefined>;
 }

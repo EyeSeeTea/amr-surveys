@@ -5,19 +5,21 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyList } from "../../components/survey-list/SurveyList";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { SurveyListBreadCrumb } from "../../components/survey-list/SurveyListBreadCrumb";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 export const SurveyListPage: React.FC = React.memo(() => {
-    const { type } = useParams<{ type: SURVEY_FORM_TYPES }>();
+    const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
     const { changeCurrentPPSSurveyForm } = useCurrentSurveys();
+    const { currentModule } = useCurrentModule();
 
     useEffect(() => {
-        if (type === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined);
-    }, [type, changeCurrentPPSSurveyForm]);
+        if (formType === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined);
+    }, [formType, changeCurrentPPSSurveyForm]);
 
     return (
         <ContentWrapper>
-            <SurveyListBreadCrumb type={type} />
-            <SurveyList surveyType={type} />
+            {currentModule?.name === "PPS" && <SurveyListBreadCrumb formType={formType} />}
+            <SurveyList surveyFormType={formType} />
         </ContentWrapper>
     );
 });

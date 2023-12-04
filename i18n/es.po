@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2023-11-07T16:11:33.130Z\n"
+"POT-Creation-Date: 2023-11-28T10:56:14.436Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,13 +23,22 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-msgid "PPS Survey Forms"
+msgid "PPS Surveys"
 msgstr ""
 
 msgid "New Survey"
 msgstr ""
 
-msgid "PPS Country Questionnaires"
+msgid "Countries"
+msgstr ""
+
+msgid "Hospitals"
+msgstr ""
+
+msgid "Wards"
+msgstr ""
+
+msgid "Patients"
 msgstr ""
 
 msgid "Submission Success!"
@@ -40,10 +49,31 @@ msgid ""
 "your administrator"
 msgstr ""
 
-msgid "Create New Survey"
+msgid "Country"
 msgstr ""
 
-msgid "Survey List"
+msgid "COMPLETED"
+msgstr ""
+
+msgid "ACTIVE"
+msgstr ""
+
+msgid "FUTURE"
+msgstr ""
+
+msgid "NONE"
+msgstr ""
+
+msgid "SUPRANATIONAL"
+msgstr ""
+
+msgid "NATIONAL"
+msgstr ""
+
+msgid "HOSP"
+msgstr ""
+
+msgid "PPS Survey Name"
 msgstr ""
 
 msgid "Start Date"
@@ -55,7 +85,16 @@ msgstr ""
 msgid "Survey Type"
 msgstr ""
 
-msgid "Assigned Org Unit"
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Name"
+msgstr ""
+
+msgid "Ward Code"
+msgstr ""
+
+msgid "Hospital Code"
 msgstr ""
 
 msgid "Action"
