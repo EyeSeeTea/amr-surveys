@@ -484,4 +484,34 @@ export class SurveyD2Repository implements SurveyRepository {
             });
         else return Future.success("");
     }
+
+    deleteSurvey(orgUnitId: Id, eventId: string | undefined, programId: Id): FutureData<void> {
+        const event: D2TrackerEvent = {
+            event: eventId || "",
+            orgUnit: orgUnitId,
+            program: programId,
+            // status doesn't play a part in deleting but is required
+            status: "ACTIVE",
+            occurredAt: "",
+            dataValues: [],
+        };
+        return apiToFuture(
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+        ).flatMap(response => {
+            return apiToFuture(
+                // eslint-disable-next-line testing-library/await-async-utils
+                this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+            ).flatMap(result => {
+                if (result && result.status !== "ERROR") {
+                    return Future.success(undefined);
+                } else {
+                    return Future.error(
+                        new Error(
+                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
+                        )
+                    );
+                }
+            });
+        });
+    }
 }

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-27T09:20:19.721Z\n"
-"PO-Revision-Date: 2023-11-27T09:20:19.721Z\n"
+"POT-Creation-Date: 2023-12-05T09:04:10.639Z\n"
+"PO-Revision-Date: 2023-12-05T09:04:10.640Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -98,6 +98,12 @@ msgid "Assigned Org Unit"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Survey deleted!"
+msgstr ""
+
+msgid "Error deleting the survery"
 msgstr ""
 
 msgid "Yes"

@@ -65,7 +65,7 @@ export const getSurveyOptions = (
                     return ["Edit", "Assign Hospital", "List Hospitals"];
                 case "SUPRANATIONAL":
                 default:
-                    return ["Edit", "Assign Country", "List Countries"];
+                    return ["Edit", "Assign Country", "List Countries", "Delete"];
             }
         }
         case "PPSCountryQuestionnaire":

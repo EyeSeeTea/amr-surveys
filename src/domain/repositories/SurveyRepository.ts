@@ -22,4 +22,5 @@ export interface SurveyRepository {
     getSurveyById(eventId: string): FutureData<D2TrackerEvent | void>;
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
     getSurveyNameFromId(id: Id): FutureData<string | undefined>;
+    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 }

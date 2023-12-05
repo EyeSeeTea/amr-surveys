@@ -19,6 +19,7 @@ import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
+import { useDeleteSurvey } from "./hook/useDeleteSurvey";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -61,6 +62,13 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         history.push({
             pathname: `/survey/${surveyFormType}/${survey.id}`,
         });
+    };
+
+    const { deleteSurvey } = useDeleteSurvey(surveyFormType);
+
+    const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
+        console.log("1- DeleteSelectedSurvey: ", surveyId, orgUnitId);
+        deleteSurvey(surveyId, orgUnitId);
     };
 
     const assignChild = (
@@ -353,6 +361,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                     },
                                                                     survey.assignedOrgUnit.id,
                                                                     survey.rootSurvey
+                                                                ),
+                                                        },
+                                                        {
+                                                            option: "Delete",
+                                                            handler: () =>
+                                                                deleteSelectedSurvey(
+                                                                    survey.id,
+                                                                    survey.assignedOrgUnit.id
                                                                 ),
                                                         },
                                                         {
