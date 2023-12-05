@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2023-12-05T09:04:10.639Z\n"
+"POT-Creation-Date: 2023-11-28T10:56:14.436Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,16 +29,16 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
-msgid "Country Questionnaires"
+msgid "Countries"
 msgstr ""
 
-msgid "Hospital Forms"
+msgid "Hospitals"
 msgstr ""
 
-msgid "Ward Registers"
+msgid "Wards"
 msgstr ""
 
-msgid "Patient Registers"
+msgid "Patients"
 msgstr ""
 
 msgid "Submission Success!"
@@ -47,6 +47,9 @@ msgstr ""
 msgid ""
 "Submission Failed! You do not have the necessary permissions, please contact "
 "your administrator"
+msgstr ""
+
+msgid "Country"
 msgstr ""
 
 msgid "COMPLETED"

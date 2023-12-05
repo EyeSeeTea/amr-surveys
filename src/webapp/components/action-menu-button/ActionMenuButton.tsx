@@ -1,6 +1,7 @@
 import { IconButton, Menu, MenuItem } from "@material-ui/core";
 import MoreVert from "@material-ui/icons/MoreVert";
 import * as React from "react";
+import styled from "styled-components";
 
 interface ActionMenuProps {
     options: string[];
@@ -29,7 +30,7 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({
 
     return (
         <div onClick={onClickHandler}>
-            <IconButton
+            <StyledIconButton
                 aria-label="more"
                 id="long-button"
                 aria-controls={open ? "long-menu" : undefined}
@@ -38,7 +39,7 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({
                 onClick={handleClick}
             >
                 <MoreVert />
-            </IconButton>
+            </StyledIconButton>
             <Menu
                 id="long-menu"
                 MenuListProps={{
@@ -57,3 +58,10 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({
         </div>
     );
 };
+
+const StyledIconButton = styled(IconButton)`
+    :hover {
+        transition: background-color ease-in-out 300ms;
+        background-color: white;
+    }
+`;

@@ -315,11 +315,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             </span>
                                         </TableCell>
                                     )}
-                                    <TableCell style={{ cursor: "pointer" }}>
-                                        <Typography variant="caption">
-                                            {i18n.t("Assigned Org Unit")}
-                                        </Typography>
-                                    </TableCell>
                                     <TableCell>
                                         <Typography variant="caption">
                                             {i18n.t("Action")}
@@ -354,7 +349,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {surveyFormType === "PPSHospitalForm" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
-                                            <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>
@@ -385,7 +379,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                 ),
                                                         },
                                                         {
-                                                            option: "Assign Country",
+                                                            option: "Add new Country",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -416,7 +410,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Hospital",
+                                                            option: "Add new Hospital",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -448,7 +442,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Ward",
+                                                            option: "Add new Ward",
                                                             handler: () =>
                                                                 assignChild(
                                                                     {
@@ -492,7 +486,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             },
                                                         },
                                                         {
-                                                            option: "Assign Patient",
+                                                            option: "Add new Patient",
                                                             handler: () => {
                                                                 assignChild(
                                                                     {
@@ -555,14 +549,15 @@ const TableContentWrapper = styled.div`
     }
     thead {
         border-bottom: 3px solid #e0e0e0;
+        min-height: 100px;
         th {
             color: #9e9e9e;
             font-weight: 400;
             font-size: 15px;
-
             vertical-align: bottom;
             position: relative;
-            &:after {
+            padding-block-end: 30px;
+            &:not(:last-child):after {
                 content: "";
                 height: 25px;
                 border-right: 2px solid #e0e0e0;
@@ -576,6 +571,7 @@ const TableContentWrapper = styled.div`
         tr {
             border: none;
             &:hover {
+                transition: background-color ease-in-out 300ms;
                 background-color: #e0e0e0;
             }
             td {

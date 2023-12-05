@@ -51,13 +51,12 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                         {currentPPSSurveyForm?.surveyType !== "HOSP" && (
                             <>
                                 <ChevronRightIcon />
-
                                 <Button
                                     component={NavLink}
                                     to={`/surveys/PPSCountryQuestionnaire`}
                                     exact={true}
                                 >
-                                    <span>{i18n.t("Country Questionnaires")}</span>
+                                    <span>{i18n.t("Country")}</span>
                                 </Button>
                             </>
                         )}
@@ -80,7 +79,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                         </>
                     )}
                     <Button component={NavLink} to={`/surveys/PPSHospitalForm`} exact={true}>
-                        <span>{i18n.t("Hospital Forms")}</span>
+                        <span>{i18n.t("Hospitals")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}
@@ -96,7 +95,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                     </Button>
                     <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSWardRegister`} exact={true}>
-                        <span>{i18n.t("Ward Registers")}</span>
+                        <span>{i18n.t("Wards")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}
@@ -112,7 +111,7 @@ export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ form
                     </Button>
                     <ChevronRightIcon />
                     <Button component={NavLink} to={`/surveys/PPSPatientRegister`} exact={true}>
-                        <span>{i18n.t("Patient Registers")}</span>
+                        <span>{i18n.t("Patients")}</span>
                     </Button>
                 </StyledBreadCrumbChild>
             )}
