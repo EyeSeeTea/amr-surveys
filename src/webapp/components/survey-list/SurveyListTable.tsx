@@ -1,4 +1,5 @@
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
     TableBody,
@@ -24,6 +25,7 @@ import { useDeleteSurvey } from "./hook/useDeleteSurvey";
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
+    refreshSurveys: any;
     updateSelectedSurveyDetails: (
         survey: SurveyBase,
         orgUnitId: Id,
@@ -37,6 +39,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
+    refreshSurveys,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
@@ -64,12 +67,22 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         });
     };
 
-    const { deleteSurvey } = useDeleteSurvey(surveyFormType);
+    const { deleteSurvey, deleteCompleteState } = useDeleteSurvey(surveyFormType, refreshSurveys);
 
     const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
-        console.log("1- DeleteSelectedSurvey: ", surveyId, orgUnitId);
         deleteSurvey(surveyId, orgUnitId);
     };
+
+    const snackbar = useSnackbar();
+
+    useEffect(() => {
+        if (deleteCompleteState?.status === "success") {
+            snackbar.success(deleteCompleteState.message);
+        }
+        if (deleteCompleteState?.status === "error") {
+            snackbar.error(deleteCompleteState.message);
+        }
+    }, [deleteCompleteState, snackbar]);
 
     const assignChild = (
         survey: SurveyBase,

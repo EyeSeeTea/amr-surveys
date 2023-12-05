@@ -11,26 +11,23 @@ export interface DeleteState {
     message: string;
 }
 
-export function useDeleteSurvey(formType: SURVEY_FORM_TYPES) {
+export function useDeleteSurvey(formType: SURVEY_FORM_TYPES, refreshSurveys: any) {
     const { compositionRoot } = useAppContext();
     const [deleteCompleteState, setDeleteCompleteState] = useState<DeleteState>();
     const { currentHospitalForm } = useCurrentSurveys();
 
     const deleteSurvey = (surveyId: Id, orgUnitId: Id) => {
-        console.log("2- deleteSurvey");
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
-        console.log("3- deleteSurvey: ", formType, orgUnitId, surveyId);
         compositionRoot.surveys.deleteSurvey.execute(formType, orgUnitId, surveyId).run(
             () => {
-                console.log("FIN OK!!!!");
                 setDeleteCompleteState({
                     status: "success",
                     message: i18n.t("Survey deleted!"),
                 });
+                refreshSurveys({});
             },
             err => {
-                console.log("FIN error", err);
                 setDeleteCompleteState({
                     status: "error",
                     message: err ? err.message : i18n.t("Error deleting the survery"),

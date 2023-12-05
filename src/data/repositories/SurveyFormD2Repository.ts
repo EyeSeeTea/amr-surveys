@@ -485,7 +485,7 @@ export class SurveyD2Repository implements SurveyRepository {
         else return Future.success("");
     }
 
-    deleteSurvey(orgUnitId: Id, eventId: string | undefined, programId: Id): FutureData<void> {
+    deleteSurvey(eventId: string | undefined, orgUnitId: Id, programId: Id): FutureData<void> {
         const event: D2TrackerEvent = {
             event: eventId || "",
             orgUnit: orgUnitId,

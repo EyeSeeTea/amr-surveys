@@ -14,7 +14,6 @@ export class DeleteSurveyUseCase {
         eventId: Id
     ): FutureData<void> {
         const programId = getProgramId(surveyFormType);
-        console.log("4- DeleteSurveyUseCase: ", eventId, orgUnitId, programId);
         return this.surveyReporsitory.deleteSurvey(eventId, orgUnitId, programId);
     }
 }

@@ -36,7 +36,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     if (currentModule)
         isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
-    const { surveys, loading, error } = useSurveys(surveyFormType);
+    const { surveys, loading, error, setRefreshSurveys } = useSurveys(surveyFormType);
 
     const {
         statusFilter,
@@ -102,6 +102,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         surveys={filteredSurveys}
                         surveyFormType={surveyFormType}
                         updateSelectedSurveyDetails={updateSelectedSurveyDetails}
+                        refreshSurveys={setRefreshSurveys}
                     />
                 </CustomCard>
             </ContentLoader>
