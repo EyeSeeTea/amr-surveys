@@ -24,6 +24,9 @@ export class GetAllSurveysUseCase {
         return this.surveyReporsitory
             .getSurveys(surveyFormType, programId, orgUnitId)
             .flatMap(surveys => {
+                if (surveyFormType === "PrevelancePlaceholder") {
+                    return Future.success(surveys);
+                }
                 if (
                     surveyFormType === "PPSSurveyForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)

@@ -294,6 +294,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             </span>
                                         </TableCell>
                                     )}
+
+                                    {surveyFormType === "PrevelancePlaceholder" && (
+                                        <TableCell>
+                                            <Typography variant="caption">
+                                                {i18n.t("Prevelance OrgUnit, Id")}
+                                            </Typography>
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <Typography variant="caption">
                                             {i18n.t("Action")}
@@ -328,6 +336,13 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {surveyFormType === "PPSHospitalForm" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
+                                            {surveyFormType === "PrevelancePlaceholder" && (
+                                                <TableCell>
+                                                    {`${survey.assignedOrgUnit.name},
+                                                        ${survey.id} `}
+                                                </TableCell>
+                                            )}
+
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>

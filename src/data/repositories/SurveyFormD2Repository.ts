@@ -29,6 +29,11 @@ import {
 } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
+import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import {
+    D2TrackerEnrollment,
+    D2TrackerEnrollmentAttribute,
+} from "@eyeseetea/d2-api/api/trackerEnrollments";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -37,7 +42,7 @@ export const PPS_HOSPITAL_FORM_ID = "mesnCzaLc7u";
 export const PPS_PATIENT_REGISTER_ID = "GWcT6PN9NmI";
 export const PPS_WARD_REGISTER_ID = "aIyAtgpYYrS";
 
-//Data element Ids
+//PPS Data element Ids
 const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
@@ -49,6 +54,12 @@ const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
 const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
+
+//Prevalance Program Ids
+export const PREVALANCE_SUPRANATIONAL_REFERENCE_LAB = "igEDINFwytu";
+
+///Prevelance Tracked Entity Attribute types
+export const PREVALANCE_PATIENT_AST_SUPRANATIONAL = "KQMBM3q32FC";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -325,6 +336,17 @@ export class SurveyD2Repository implements SurveyRepository {
                 };
                 return boolQ;
             }
+            case "TRUE_ONLY": {
+                const boolQ: BooleanQuestion = {
+                    id: id,
+                    code: code, //code
+                    text: formName, //formName
+                    type: "boolean",
+                    storeFalse: false,
+                    value: dataValue ? (dataValue === "true" ? true : false) : true,
+                };
+                return boolQ;
+            }
 
             case "INTEGER": {
                 const intQ: NumberQuestion = {
@@ -393,6 +415,24 @@ export class SurveyD2Repository implements SurveyRepository {
         }
     }
 
+    private isTrackerProgram(programId: Id) {
+        switch (programId) {
+            case PREVALANCE_SUPRANATIONAL_REFERENCE_LAB:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private getTrackedEntityAttributeType(programId: Id) {
+        switch (programId) {
+            case PREVALANCE_SUPRANATIONAL_REFERENCE_LAB:
+                return PREVALANCE_PATIENT_AST_SUPRANATIONAL;
+            default:
+                return "";
+        }
+    }
+
     saveFormData(
         questionnaire: Questionnaire,
         action: ImportStrategy,
@@ -400,30 +440,30 @@ export class SurveyD2Repository implements SurveyRepository {
         eventId: string | undefined,
         programId: Id
     ): FutureData<void> {
-        return this.mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, eventId).flatMap(
-            event => {
+        const $payload = this.isTrackerProgram(programId)
+            ? this.mapQuestionnaireToTrackedEntities(questionnaire, orgUnitId, programId, eventId)
+            : this.mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, eventId);
+
+        return $payload.flatMap(payload => {
+            return apiToFuture(
+                this.api.tracker.postAsync({ importStrategy: action }, payload)
+            ).flatMap(response => {
                 return apiToFuture(
-                    this.api.tracker.postAsync({ importStrategy: action }, { events: [event] })
-                ).flatMap(response => {
-                    return apiToFuture(
-                        // eslint-disable-next-line testing-library/await-async-utils
-                        this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
-                    ).flatMap(result => {
-                        if (result && result.status !== "ERROR") {
-                            return Future.success(undefined);
-                        } else {
-                            return Future.error(
-                                new Error(
-                                    `Error: ${
-                                        result?.validationReport?.errorReports?.at(0)?.message
-                                    } `
-                                )
-                            );
-                        }
-                    });
+                    // eslint-disable-next-line testing-library/await-async-utils
+                    this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+                ).flatMap(result => {
+                    if (result && result.status !== "ERROR") {
+                        return Future.success(undefined);
+                    } else {
+                        return Future.error(
+                            new Error(
+                                `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
+                            )
+                        );
+                    }
                 });
-            }
-        );
+            });
+        });
     }
 
     private mapQuestionnaireToEvent(
@@ -431,7 +471,7 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: string,
         programId: Id,
         eventId: string | undefined = undefined
-    ): FutureData<D2TrackerEvent> {
+    ): FutureData<{ events: D2TrackerEvent[] }> {
         const questions = questionnaire.stages.flatMap(stages =>
             stages.sections.flatMap(section => section.questions)
         );
@@ -464,7 +504,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
                         dataValues: dataValues as DataValue[],
                     };
-                    return Future.success(updatedEvent);
+                    return Future.success({ events: [updatedEvent] });
                 } else {
                     return Future.error(new Error("Unable to find event to update"));
                 }
@@ -479,8 +519,97 @@ export class SurveyD2Repository implements SurveyRepository {
                 //@ts-ignore
                 dataValues: dataValues,
             };
-            return Future.success(event);
+            return Future.success({ events: [event] });
         }
+    }
+
+    private mapQuestionnaireToTrackedEntities(
+        questionnaire: Questionnaire,
+        orgUnitId: string,
+        programId: Id,
+        eventId: string | undefined = undefined
+    ): FutureData<{ trackedEntities: TrackedEntity[] }> {
+        const eventsByStage: D2TrackerEvent[] = questionnaire.stages.map(stage => {
+            const dataValuesByStage: { dataElement: string; value: string }[] =
+                stage.sections.flatMap(section => {
+                    return section.questions.map(question => {
+                        if (question.type === "select" && question.value) {
+                            return {
+                                dataElement: question.id,
+                                value: question.value.code ? question.value.code : "",
+                            };
+                        } else {
+                            return {
+                                dataElement: question.id,
+                                value: question.value ? question.value.toString() : "",
+                            };
+                        }
+                    });
+                });
+
+            return {
+                program: programId,
+                event: "",
+                programStage: stage.code,
+                orgUnit: orgUnitId,
+                dataValues: dataValuesByStage,
+                occurredAt: new Date().getTime().toString(),
+                status: "ACTIVE",
+            };
+        });
+
+        const attributes: D2TrackerEnrollmentAttribute[] = questionnaire.entity
+            ? questionnaire.entity.questions.map(question => {
+                  if (question.type === "select" && question.value) {
+                      return {
+                          attribute: question.id,
+                          value: question.value.code ? question.value.code : "",
+                      };
+                  } else if (question.type === "date") {
+                      return {
+                          attribute: question.id,
+                          value: question.value ? question.value : new Date(),
+                      };
+                  } else {
+                      return {
+                          attribute: question.id,
+                          value: question.value ? question.value.toString() : "",
+                      };
+                  }
+              })
+            : [];
+
+        const enrollments: D2TrackerEnrollment[] = [
+            {
+                orgUnit: orgUnitId,
+                program: programId,
+                enrollment: "",
+                trackedEntityType: this.getTrackedEntityAttributeType(programId),
+                notes: [],
+                relationships: [],
+                attributes: attributes,
+                events: eventsByStage,
+                enrolledAt: new Date().getTime().toString(),
+                occurredAt: new Date().getTime().toString(),
+                createdAt: new Date().getTime().toString(),
+                createdAtClient: new Date().getTime().toString(),
+                updatedAt: new Date().getTime().toString(),
+                updatedAtClient: new Date().getTime().toString(),
+                status: "ACTIVE",
+                orgUnitName: "",
+                followUp: false,
+                deleted: false,
+                storedBy: "",
+            },
+        ];
+
+        const entity: TrackedEntity = {
+            orgUnit: orgUnitId,
+            trackedEntity: "",
+            trackedEntityType: this.getTrackedEntityAttributeType(programId),
+            enrollments: enrollments,
+        };
+        return Future.success({ trackedEntities: [entity] });
     }
 
     getSurveyNameBySurveyFormType(
