@@ -1,7 +1,7 @@
 import { useAppContext } from "../../../contexts/app-context";
 import { SetStateAction, useEffect, useState } from "react";
 import { LocalesType } from "../../../../domain/usecases/GetDatabaseLocalesUseCase";
-import { SaveState } from "../../survey/hook/useSaveSurvey";
+import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 import i18n from "@eyeseetea/feedback-component/locales";
 
 export function useUserSettings() {
@@ -9,7 +9,7 @@ export function useUserSettings() {
     const [databaseLocalesOptions, setDatabaseLocalesOptions] = useState<LocalesType>([]);
     const [uiLocalesOptions, setUiLocalesOptions] = useState<LocalesType>([]);
 
-    const [saveLocaleStatus, setSaveLocaleStatus] = useState<SaveState>();
+    const [saveLocaleStatus, setSaveLocaleStatus] = useState<ActionOutcome>();
 
     useEffect(() => {
         compositionRoot.locales.getDatabaseLocales.execute().run(

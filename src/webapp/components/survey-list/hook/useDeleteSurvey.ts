@@ -5,15 +5,11 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useAppContext } from "../../../contexts/app-context";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Id } from "../../../../domain/entities/Ref";
-
-export interface DeleteState {
-    status: "success" | "error";
-    message: string;
-}
+import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 
 export function useDeleteSurvey(formType: SURVEY_FORM_TYPES, refreshSurveys: any) {
     const { compositionRoot } = useAppContext();
-    const [deleteCompleteState, setDeleteCompleteState] = useState<DeleteState>();
+    const [deleteCompleteState, setDeleteCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm } = useCurrentSurveys();
 
     const deleteSurvey = (surveyId: Id, orgUnitId: Id) => {
