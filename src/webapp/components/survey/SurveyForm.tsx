@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Button, makeStyles, Typography, withStyles } from "@material-ui/core";
 // @ts-ignore
 import {
@@ -19,7 +19,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { Question, QuestionnaireSection } from "../../../domain/entities/Questionnaire";
+import { Question } from "../../../domain/entities/Questionnaire";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
 import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
@@ -28,8 +28,6 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
-import _ from "lodash";
-import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import {
@@ -37,12 +35,7 @@ import {
     getSurveyDisplayName,
 } from "../../../domain/utils/PPSProgramsHelper";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
-
-type QuestionnairesSectionsStatusType = {
-    section: string;
-    current: number;
-    length: number;
-};
+import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -66,11 +59,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const formClasses = useFormStyles();
     const snackbar = useSnackbar();
     const { api, currentUser } = useAppContext();
-    const [questionnairesSectionsStatus, setQuestionnairesSectionsStatus] = useState<
-        QuestionnairesSectionsStatusType[]
-    >([]);
-    const [questionnaireSections, setQuestionnaireSections] =
-        useState<_.Dictionary<QuestionnaireSection[]>>();
 
     const {
         questionnaire,
@@ -80,6 +68,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
+        addNew,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -112,15 +101,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         setQuestionnaire(questionnaire => {
-            const sectionToBeUpdated = questionnaire?.sections.filter(sec =>
-                sec.questions.find(q => q.id === question?.id)
+            const stageToBeUpdated = questionnaire?.stages.filter(stages =>
+                stages.sections.filter(sec => sec.questions.find(q => q.id === question?.id))
             );
-            if (sectionToBeUpdated) {
-                const questionToBeUpdated = sectionToBeUpdated[0]?.questions.filter(
-                    q => q.id === question.id
+            if (stageToBeUpdated) {
+                const sectionToBeUpdated = stageToBeUpdated[0]?.sections.filter(section =>
+                    section.questions.find(q => q.id === question?.id)
                 );
-                if (questionToBeUpdated && questionToBeUpdated[0])
-                    questionToBeUpdated[0].value = question.value;
+                if (sectionToBeUpdated) {
+                    const questionToBeUpdated = sectionToBeUpdated[0]?.questions.filter(
+                        q => q.id === question.id
+                    );
+                    if (questionToBeUpdated && questionToBeUpdated[0])
+                        questionToBeUpdated[0].value = question.value;
+                }
             }
             return questionnaire;
         });
@@ -157,34 +151,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 }
             }
         }
-    };
-
-    useEffect(() => {
-        const sectionedQuestionnaire = _.groupBy(questionnaire?.sections, section =>
-            section.title.substring(0, section.title.indexOf(" "))
-        );
-        setQuestionnaireSections(sectionedQuestionnaire);
-
-        const questionnaireState: QuestionnairesSectionsStatusType[] = [];
-
-        for (const key in sectionedQuestionnaire) {
-            questionnaireState.push({
-                section: key,
-                current: 1,
-                length: sectionedQuestionnaire[key]?.length || 0,
-            });
-        }
-        setQuestionnairesSectionsStatus(questionnaireState);
-    }, [questionnaire]);
-
-    const addNew = (sectionName: string) => {
-        const newStatus = questionnairesSectionsStatus.map(status => {
-            if (status.section === sectionName) {
-                status.current = status.current + 1;
-            }
-            return status;
-        });
-        setQuestionnairesSectionsStatus(newStatus);
     };
 
     return (
@@ -228,69 +194,112 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     />
                 )}
 
-                {_.map(questionnaireSections, (questionnaire, sectionName) => {
-                    return questionnaire.map((section, i) => {
-                        const sectionStatus = questionnairesSectionsStatus.find(
-                            status => status.section === sectionName
-                        );
-                        const statusCurrent = sectionStatus?.current ?? 0;
+                {questionnaire?.entity && (
+                    <div key={questionnaire.entity.title} className={classes.wrapper}>
+                        <DataTable>
+                            <TableHead>
+                                <DataTableRow>
+                                    <DataTableColumnHeader colSpan="2">
+                                        <span className={classes.header}>
+                                            {questionnaire.entity.title}
+                                        </span>
+                                    </DataTableColumnHeader>
+                                </DataTableRow>
+                            </TableHead>
 
-                        if (!section.isVisible) return null;
-                        if (i < statusCurrent) {
-                            return (
-                                <div
-                                    key={section.title}
-                                    className={classes.wrapper}
-                                    style={{ paddingBottom: "50px" }}
-                                >
-                                    <DataTable>
-                                        <TableHead>
-                                            <DataTableRow>
-                                                <DataTableColumnHeader colSpan="2">
-                                                    <span className={classes.header}>
-                                                        {section.title}
-                                                    </span>
-                                                </DataTableColumnHeader>
-                                            </DataTableRow>
-                                        </TableHead>
+                            <TableBody>
+                                {questionnaire.entity.questions.map(question => (
+                                    <DataTableRow key={question.id}>
+                                        <DataTableCell width="60%">
+                                            <span>{question.text}</span>
+                                        </DataTableCell>
 
-                                        <TableBody>
-                                            {section.questions.map(question => (
-                                                <DataTableRow key={question.id}>
-                                                    <DataTableCell width="60%">
-                                                        <span>{question.text}</span>
-                                                    </DataTableCell>
+                                        <DataTableCell>
+                                            <div className={formClasses.valueWrapper}>
+                                                <div className={formClasses.valueInput}>
+                                                    <QuestionWidget
+                                                        onChange={updateQuestion}
+                                                        question={question}
+                                                        disabled={question.disabled ? true : false}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </DataTableCell>
+                                    </DataTableRow>
+                                ))}
+                            </TableBody>
+                        </DataTable>
+                    </div>
+                )}
 
-                                                    <DataTableCell>
-                                                        <div className={formClasses.valueWrapper}>
-                                                            <div className={formClasses.valueInput}>
-                                                                <QuestionWidget
-                                                                    onChange={updateQuestion}
-                                                                    question={question}
-                                                                    disabled={
-                                                                        question.disabled
-                                                                            ? true
-                                                                            : false
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </DataTableCell>
+                {questionnaire?.stages.map(stage => {
+                    if (!stage.isVisible) return null;
+
+                    return (
+                        <div key={stage.code}>
+                            <p> {`Stage : ${stage.title}`}</p>
+                            {stage.sections.map(section => {
+                                if (!section.isVisible) return null;
+
+                                return (
+                                    <div key={section.title} className={classes.wrapper}>
+                                        <DataTable>
+                                            <TableHead>
+                                                <DataTableRow>
+                                                    <DataTableColumnHeader colSpan="2">
+                                                        <span className={classes.header}>
+                                                            {section.title}
+                                                        </span>
+                                                    </DataTableColumnHeader>
                                                 </DataTableRow>
-                                            ))}
-                                        </TableBody>
-                                    </DataTable>
-                                    {sectionStatus &&
-                                        sectionStatus.current < sectionStatus.length &&
-                                        i === sectionStatus.current - 1 && (
-                                            <StyledButton onClick={() => addNew(sectionName)}>
+                                            </TableHead>
+
+                                            <TableBody>
+                                                {section.questions.map(question => (
+                                                    <DataTableRow key={question.id}>
+                                                        <DataTableCell width="60%">
+                                                            <span>{question.text}</span>
+                                                        </DataTableCell>
+
+                                                        <DataTableCell>
+                                                            <div
+                                                                className={formClasses.valueWrapper}
+                                                            >
+                                                                <div
+                                                                    className={
+                                                                        formClasses.valueInput
+                                                                    }
+                                                                >
+                                                                    <QuestionWidget
+                                                                        onChange={updateQuestion}
+                                                                        question={question}
+                                                                        disabled={
+                                                                            question.disabled
+                                                                                ? true
+                                                                                : false
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </DataTableCell>
+                                                    </DataTableRow>
+                                                ))}
+                                            </TableBody>
+                                        </DataTable>
+                                        {section.showAddnew && (
+                                            <StyledButton
+                                                onClick={() =>
+                                                    addNew(section.stageId, section.sortOrder + 1)
+                                                }
+                                            >
                                                 {i18n.t("Add new")}
                                             </StyledButton>
                                         )}
-                                </div>
-                            );
-                        }
-                    });
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
                 })}
             </ContentLoader>
             <PageFooter>
@@ -316,14 +325,6 @@ export const useStyles = makeStyles({
     header: { fontWeight: "bold" as const },
     center: { display: "table", margin: "0 auto" },
 });
-
-const PageFooter = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    padding: 20px;
-`;
-
 const StyledButton = styled(Button)`
     color: white;
     background-color: ${muiTheme.palette.primary.main};
@@ -335,6 +336,14 @@ const StyledButton = styled(Button)`
         opacity: 0.7;
     }
 `;
+
+const PageFooter = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    padding: 20px;
+`;
+
 const Title = styled(Typography)`
     margin-block-end: 10px;
 `;

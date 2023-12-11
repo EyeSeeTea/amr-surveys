@@ -44,7 +44,7 @@ export const getBaseSurveyFormType = (
                     "You dont have the neccessary permissions. Please contact your system administrator."
                 );
         }
-        case "Prevalence": {
+        case "Prevelance": {
             return "PrevelancePlaceholder";
         }
         default:

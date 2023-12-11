@@ -7,6 +7,9 @@ import {
     NumberQuestion,
     Question,
     Questionnaire,
+    QuestionnaireEntity,
+    QuestionnaireSection,
+    QuestionnaireStage,
     SelectQuestion,
     TextQuestion,
 } from "../../domain/entities/Questionnaire";
@@ -15,14 +18,15 @@ import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import {
-    EventProgramDataElement,
-    EventProgramMetadata,
+    ProgramDataElement,
+    ProgramMetadata,
     ImportStrategy,
     Option,
-    EventProgram,
+    Program,
     ProgramStageSection,
     TrackedEntityAttibute,
-} from "../../domain/entities/EventProgram";
+    ProgramStage,
+} from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 
@@ -51,10 +55,9 @@ export class SurveyD2Repository implements SurveyRepository {
 
     getForm(programId: Id, eventId: Id | undefined): FutureData<Questionnaire> {
         return apiToFuture(
-            this.api.request<EventProgramMetadata>({
+            this.api.request<ProgramMetadata>({
                 method: "get",
-                //TODO: Changed programId to supranational, to be reverted after tests
-                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes`,
+                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages`,
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
@@ -74,6 +77,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                     programDataElements,
                                     resp.dataElements,
                                     resp.options,
+                                    resp.programStages,
                                     resp.programStageSections,
                                     resp.trackedEntityAttributes
                                 )
@@ -92,6 +96,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             programDataElements,
                             resp.dataElements,
                             resp.options,
+                            resp.programStages,
                             resp.programStageSections,
                             resp.trackedEntityAttributes
                         )
@@ -104,16 +109,17 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     private mapProgramToQuestionnaire(
-        program: EventProgram,
+        program: Program,
         event: D2TrackerEvent | undefined,
         programDataElements: Ref[],
-        dataElements: EventProgramDataElement[],
+        dataElements: ProgramDataElement[],
         options: Option[],
+        programStages?: ProgramStage[],
         programStageSections?: ProgramStageSection[],
         trackedEntityAttributes?: TrackedEntityAttibute[]
     ): Questionnaire {
-        //If the EventProgram has sections, fetch and use programStageSections
-        const sections = programStageSections
+        //If the Program has sections, fetch and use programStageSections
+        const sections: QuestionnaireSection[] = programStageSections
             ? programStageSections.map(section => {
                   const questions: Question[] = this.mapProgramDataElementToQuestions(
                       section.dataElements,
@@ -127,13 +133,15 @@ export class SurveyD2Repository implements SurveyRepository {
                       code: section.id,
                       questions: questions,
                       isVisible: true,
+                      stageId: section.programStage.id,
+                      sortOrder: section.sortOrder,
                   };
               })
-            : //If the EventProgram has no sections, create a single section
+            : //If the Program has no sections, create a single section
               [
                   {
                       title: "Survey Info",
-                      code: "",
+                      code: "default",
                       questions: this.mapProgramDataElementToQuestions(
                           programDataElements,
                           dataElements,
@@ -141,26 +149,61 @@ export class SurveyD2Repository implements SurveyRepository {
                           event
                       ),
                       isVisible: true,
+                      stageId: "default",
+                      sortOrder: 1,
                   },
               ];
 
-        if (trackedEntityAttributes) {
-            const profileQuestions: Question[] = this.mapTrackedAttributesToQuestions(
-                trackedEntityAttributes,
-                options
-            );
+        //If the Program has stages, fetch and use programStages
+        const stages: QuestionnaireStage[] = programStages
+            ? programStages.map(stage => {
+                  const currentProgramStageSections =
+                      programStages.length === 1 //If there is only 1 program stage, then all the sections belong to it.
+                          ? sections
+                          : sections.filter(section => section.stageId === stage.id);
 
-            const profileSection = {
-                title: "Profile",
-                code: "PROFILE",
-                questions: profileQuestions,
-                isVisible: true,
-            };
+                  const groupedProgramStageSections = _(currentProgramStageSections)
+                      .sortBy(s => s.sortOrder)
+                      .groupBy(section =>
+                          section.title.substring(0, section.title.lastIndexOf(" "))
+                      );
 
-            sections.unshift(profileSection);
-        }
+                  const processedSections: QuestionnaireSection[] = [];
+                  groupedProgramStageSections.forEach(group => {
+                      if (group[1].length > 1) {
+                          const currentSectionGroup: QuestionnaireSection[] = group[1].map(
+                              (section, index) => {
+                                  return {
+                                      title: section.title,
+                                      code: section.code,
+                                      questions: section.questions,
+                                      isVisible: index === 0 ? true : false,
+                                      sortOrder: section.sortOrder,
+                                      stageId: section.stageId,
+                                      showAddnew: true,
+                                  };
+                              }
+                          );
+                          processedSections.push(...currentSectionGroup);
+                      } else processedSections.push(...group[1]);
+                  });
 
-        sections.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true }));
+                  return {
+                      title: stage.name,
+                      code: stage.id,
+                      sections: processedSections,
+                      isVisible: true, //TO DO : Can we get stage visibility from DHIS2?
+                  };
+              })
+            : //If the Program has no stages, create a single stage
+              [
+                  {
+                      title: "STAGE",
+                      code: "STAGE",
+                      sections: sections,
+                      isVisible: true,
+                  },
+              ];
 
         const form: Questionnaire = {
             id: program.id,
@@ -171,14 +214,30 @@ export class SurveyD2Repository implements SurveyRepository {
             isCompleted: false,
             isMandatory: false,
             rules: [],
-            sections: sections,
+            stages: stages.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true })),
         };
+
+        if (trackedEntityAttributes) {
+            const profileQuestions: Question[] = this.mapTrackedAttributesToQuestions(
+                trackedEntityAttributes,
+                options
+            );
+
+            const profileSection: QuestionnaireEntity = {
+                title: "Profile",
+                code: "PROFILE",
+                questions: profileQuestions,
+                isVisible: true,
+                stageId: "PROFILE",
+            };
+            form.entity = profileSection;
+        }
         return form;
     }
 
     private mapProgramDataElementToQuestions(
         sectionDataElements: { id: string }[],
-        dataElements: EventProgramDataElement[],
+        dataElements: ProgramDataElement[],
         options: Option[],
         event: D2TrackerEvent | undefined = undefined
     ): Question[] {
@@ -191,100 +250,17 @@ export class SurveyD2Repository implements SurveyRepository {
                     const dataValue = event
                         ? event.dataValues.find(dv => dv.dataElement === dataElement.id)
                         : undefined;
-                    let currentQuestion;
 
-                    switch (dataElement.valueType) {
-                        case "BOOLEAN": {
-                            const boolQ: BooleanQuestion = {
-                                id: dataElement.id,
-                                code: dataElement.code, //code
-                                text: dataElement.formName, //formName
-                                type: "boolean",
-                                storeFalse: true,
-                                value: dataValue
-                                    ? dataValue.value === "true"
-                                        ? true
-                                        : false
-                                    : true,
-                            };
-                            currentQuestion = boolQ;
-                            break;
-                        }
+                    const currentQuestion = this.getQuestion(
+                        dataElement.valueType,
+                        dataElement.id,
+                        dataElement.code,
+                        dataElement.formName,
+                        options,
+                        dataElement.optionSet,
+                        dataValue?.value
+                    );
 
-                        case "INTEGER": {
-                            const intQ: NumberQuestion = {
-                                id: dataElement.id,
-                                code: dataElement.code, //code
-                                text: dataElement.formName, //formName
-                                type: "number",
-                                numberType: "INTEGER",
-                                value: dataValue ? dataValue.value : "",
-                            };
-                            currentQuestion = intQ;
-                            break;
-                        }
-
-                        case "TEXT": {
-                            if (dataElement.optionSet) {
-                                const selectOptions = options.filter(
-                                    op => op.optionSet.id === dataElement.optionSet?.id
-                                );
-
-                                const selectedOption = dataValue
-                                    ? selectOptions.find(o => o.code === dataValue.value)
-                                    : undefined;
-
-                                const selectQ: SelectQuestion = {
-                                    id: dataElement.id || "",
-                                    code: dataElement.code || "",
-                                    text: dataElement.formName || "",
-                                    type: "select",
-                                    options: selectOptions,
-                                    value: selectedOption
-                                        ? selectedOption
-                                        : { name: "", id: "", code: "" },
-                                };
-                                currentQuestion = selectQ;
-                                break;
-                            } else {
-                                const singleLineText: TextQuestion = {
-                                    id: dataElement.id,
-                                    code: dataElement.code,
-                                    text: dataElement.formName,
-                                    type: "text",
-                                    value: dataValue ? (dataValue.value as string) : "",
-                                    multiline: false,
-                                };
-                                currentQuestion = singleLineText;
-                                break;
-                            }
-                        }
-
-                        case "LONG_TEXT": {
-                            const singleLineTextQ: TextQuestion = {
-                                id: dataElement.id,
-                                code: dataElement.code,
-                                text: dataElement.formName,
-                                type: "text",
-                                value: dataValue ? (dataValue.value as string) : "",
-                                multiline: true,
-                            };
-                            currentQuestion = singleLineTextQ;
-                            break;
-                        }
-
-                        case "DATE": {
-                            const dateQ: DateQuestion = {
-                                id: dataElement.id,
-                                code: dataElement.code,
-                                text: dataElement.formName,
-                                type: "date",
-                                value: dataValue ? new Date(dataValue.value as string) : new Date(),
-                            };
-                            currentQuestion = dateQ;
-                            break;
-                        }
-                    }
                     ///Disable Id fields which are auto generated.
                     if (
                         currentQuestion &&
@@ -311,120 +287,110 @@ export class SurveyD2Repository implements SurveyRepository {
     ): Question[] {
         const questions: Question[] = _(
             attributes.map(attribute => {
-                let currentQuestion;
-
-                switch (attribute.valueType) {
-                    case "BOOLEAN": {
-                        const boolQ: BooleanQuestion = {
-                            id: attribute.id,
-                            code: attribute.code, //code
-                            text: attribute.formName, //formName
-                            type: "boolean",
-                            storeFalse: true,
-                            value: attribute ? (attribute.value === "true" ? true : false) : true,
-                        };
-                        currentQuestion = boolQ;
-                        break;
-                    }
-
-                    case "TRUE_ONLY": {
-                        const boolQ: BooleanQuestion = {
-                            id: attribute.id,
-                            code: attribute.code, //code
-                            text: attribute.formName, //formName
-                            type: "boolean",
-                            storeFalse: true,
-                            value: attribute ? (attribute.value === "true" ? true : false) : true,
-                        };
-                        currentQuestion = boolQ;
-                        break;
-                    }
-
-                    case "INTEGER": {
-                        const intQ: NumberQuestion = {
-                            id: attribute.id,
-                            code: attribute.code, //code
-                            text: attribute.formName, //formName
-                            type: "number",
-                            numberType: "INTEGER",
-                            value: attribute ? attribute.value : "",
-                        };
-                        currentQuestion = intQ;
-                        break;
-                    }
-
-                    case "TEXT": {
-                        if (attribute.optionSet) {
-                            const selectOptions = options.filter(
-                                op => op.optionSet.id === attribute.optionSet?.id
-                            );
-
-                            const selectedOption = attribute
-                                ? selectOptions.find(o => o.code === attribute.value)
-                                : undefined;
-
-                            const selectQ: SelectQuestion = {
-                                id: attribute.id || "",
-                                code: attribute.code || "",
-                                text: attribute.formName || "",
-                                type: "select",
-                                options: selectOptions,
-                                value: selectedOption
-                                    ? selectedOption
-                                    : { name: "", id: "", code: "" },
-                            };
-                            currentQuestion = selectQ;
-                            break;
-                        } else {
-                            const singleLineText: TextQuestion = {
-                                id: attribute.id,
-                                code: attribute.code,
-                                text: attribute.formName,
-                                type: "text",
-                                value: attribute ? (attribute.value as string) : "",
-                                multiline: false,
-                            };
-                            currentQuestion = singleLineText;
-                            break;
-                        }
-                    }
-
-                    case "LONG_TEXT": {
-                        const singleLineTextQ: TextQuestion = {
-                            id: attribute.id,
-                            code: attribute.code,
-                            text: attribute.formName,
-                            type: "text",
-                            value: attribute ? (attribute.value as string) : "",
-                            multiline: true,
-                        };
-                        currentQuestion = singleLineTextQ;
-                        break;
-                    }
-
-                    case "DATE": {
-                        const dateQ: DateQuestion = {
-                            id: attribute.id,
-                            code: attribute.code,
-                            text: attribute.formName,
-                            type: "date",
-                            value: attribute ? new Date(attribute.value as string) : new Date(),
-                        };
-                        currentQuestion = dateQ;
-                        break;
-                    }
-                }
-                ///Disable Survey Id Question
-                if (currentQuestion && currentQuestion.id === SURVEY_ID_DATAELEMENT_ID) {
-                    currentQuestion.disabled = true;
-                }
-                return currentQuestion;
+                return this.getQuestion(
+                    attribute.valueType,
+                    attribute.id,
+                    attribute.code,
+                    attribute.formName,
+                    options,
+                    attribute.optionSet,
+                    attribute?.value
+                );
             })
         )
             .compact()
             .value();
 
         return questions;
+    }
+
+    private getQuestion(
+        valueType: string,
+        id: Id,
+        code: string,
+        formName: string,
+        options: Option[],
+        optionSet?: { id: string },
+        dataValue?: string
+    ): Question | undefined {
+        switch (valueType) {
+            case "BOOLEAN": {
+                const boolQ: BooleanQuestion = {
+                    id: id,
+                    code: code, //code
+                    text: formName, //formName
+                    type: "boolean",
+                    storeFalse: true,
+                    value: dataValue ? (dataValue === "true" ? true : false) : true,
+                };
+                return boolQ;
+            }
+
+            case "INTEGER": {
+                const intQ: NumberQuestion = {
+                    id: id,
+                    code: code, //code
+                    text: formName, //formName
+                    type: "number",
+                    numberType: "INTEGER",
+                    value: dataValue ? dataValue : "",
+                };
+                return intQ;
+            }
+
+            case "TEXT": {
+                if (optionSet) {
+                    const selectOptions = options.filter(op => op.optionSet.id === optionSet?.id);
+
+                    const selectedOption = dataValue
+                        ? selectOptions.find(o => o.code === dataValue)
+                        : undefined;
+
+                    const selectQ: SelectQuestion = {
+                        id: id || "",
+                        code: code || "",
+                        text: formName || "",
+                        type: "select",
+                        options: selectOptions,
+                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                    };
+                    return selectQ;
+                } else {
+                    const singleLineText: TextQuestion = {
+                        id: id,
+                        code: code,
+                        text: formName,
+                        type: "text",
+                        value: dataValue ? (dataValue as string) : "",
+                        multiline: false,
+                    };
+                    return singleLineText;
+                }
+            }
+
+            case "LONG_TEXT": {
+                const singleLineTextQ: TextQuestion = {
+                    id: id,
+                    code: code,
+                    text: formName,
+                    type: "text",
+                    value: dataValue ? (dataValue as string) : "",
+                    multiline: true,
+                };
+                return singleLineTextQ;
+            }
+
+            case "DATE": {
+                const dateQ: DateQuestion = {
+                    id: id,
+                    code: code,
+                    text: formName,
+                    type: "date",
+                    value: dataValue ? new Date(dataValue as string) : new Date(),
+                };
+                return dateQ;
+            }
+        }
     }
 
     saveFormData(
@@ -466,7 +432,9 @@ export class SurveyD2Repository implements SurveyRepository {
         programId: Id,
         eventId: string | undefined = undefined
     ): FutureData<D2TrackerEvent> {
-        const questions = questionnaire.sections.flatMap(section => section.questions);
+        const questions = questionnaire.stages.flatMap(stages =>
+            stages.sections.flatMap(section => section.questions)
+        );
 
         const dataValues = _(
             questions.map(q => {

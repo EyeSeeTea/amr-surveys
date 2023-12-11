@@ -22,7 +22,8 @@ export class GetSurveyUseCase {
         const programId = getProgramId(surveyFormType);
         if (parentPPSSurveyId) {
             return this.surveyReporsitory.getForm(programId, undefined).flatMap(questionnaire => {
-                const surveyIdSection = questionnaire.sections.find(
+                //PPS Questionnaires have only 1 stage
+                const surveyIdSection = questionnaire.stages[0]?.sections.find(
                     s =>
                         s.questions.find(
                             q =>
@@ -41,7 +42,8 @@ export class GetSurveyUseCase {
                     }
                 }
 
-                const wardIdSection = questionnaire.sections.find(
+                //PPS Questionnaires have only 1 stage
+                const wardIdSection = questionnaire.stages[0]?.sections.find(
                     s => s.questions.find(q => q.id === WARD_ID_DATAELEMENT_ID) !== undefined
                 );
                 if (wardIdSection) {

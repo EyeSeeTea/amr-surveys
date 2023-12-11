@@ -27,7 +27,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
 
     switch (type) {
         case "select": {
-            if (question.options.length > 20) {
+            if (question.options.length > 5) {
                 return (
                     <DropdownSelectWidget
                         value={question.value?.id}

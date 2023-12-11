@@ -13,6 +13,43 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const { currentPPSSurveyForm, currentHospitalForm, currentWardRegister } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
+    const addNew = (
+        stageCodeOfSectionToUpdate: string | undefined,
+        sortOrderOfSectionToUpdate: number
+    ) => {
+        setQuestionnaire(prevQuestionnaire => {
+            if (prevQuestionnaire) {
+                const stageToUpdate = prevQuestionnaire?.stages.find(
+                    stage => stage.code === stageCodeOfSectionToUpdate
+                );
+
+                const sectionToUpdate = stageToUpdate?.sections.find(
+                    section => section.sortOrder === sortOrderOfSectionToUpdate
+                );
+
+                return {
+                    ...prevQuestionnaire,
+                    stages: prevQuestionnaire.stages.map(stage => {
+                        if (stage.code !== stageToUpdate?.code) return stage;
+                        else {
+                            return {
+                                ...stage,
+                                sections: stage.sections.map(section => {
+                                    if (section.code !== sectionToUpdate?.code) return section;
+                                    else
+                                        return {
+                                            ...section,
+                                            isVisible: true,
+                                        };
+                                }),
+                            };
+                        }
+                    }),
+                };
+            }
+        });
+    };
+
     useEffect(() => {
         setLoading(true);
         if (!eventId) {
@@ -79,5 +116,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setCurrentOrgUnit,
         setLoading,
         error,
+        addNew,
     };
 }
