@@ -17,7 +17,7 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "./hook/useDeleteSurvey";
@@ -25,7 +25,7 @@ import { useDeleteSurvey } from "./hook/useDeleteSurvey";
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
-    refreshSurveys: any;
+    refreshSurveys: Dispatch<SetStateAction<{}>>;
     updateSelectedSurveyDetails: (
         survey: SurveyBase,
         orgUnitId: Id,
