@@ -63,7 +63,7 @@ export const PREVALANCE_PATIENT_AST_SUPRANATIONAL = "KQMBM3q32FC";
 
 //Data Elements to hide
 const hiddenFields = ["Add new antibiotic"];
-const programsWithRepeatableSections = [PREVALANCE_PATIENT_AST_SUPRANATIONAL];
+const programsWithRepeatableSections = [PREVALANCE_SUPRANATIONAL_REFERENCE_LAB];
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -82,25 +82,47 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 //If event specified,populate the form
                 if (eventId) {
+                    if (this.isTrackerProgram(programId)) {
+                        return this.getEventProgramById(eventId).flatMap(event => {
+                            if (resp.programs[0] && event) {
+                                return Future.success(
+                                    this.mapProgramToQuestionnaire(
+                                        resp.programs[0],
+                                        event,
+                                        programDataElements,
+                                        resp.dataElements,
+                                        resp.options,
+                                        resp.programStages,
+                                        resp.programStageSections,
+                                        resp.trackedEntityAttributes
+                                    )
+                                );
+                            } else {
+                                return Future.error(new Error("Tracker Program not found"));
+                            }
+                        });
+                    }
                     //Get event from eventId
-                    return this.getSurveyById(eventId).flatMap(event => {
-                        if (resp.programs[0] && event) {
-                            return Future.success(
-                                this.mapProgramToQuestionnaire(
-                                    resp.programs[0],
-                                    event,
-                                    programDataElements,
-                                    resp.dataElements,
-                                    resp.options,
-                                    resp.programStages,
-                                    resp.programStageSections,
-                                    resp.trackedEntityAttributes
-                                )
-                            );
-                        } else {
-                            return Future.error(new Error("Event Program not found"));
-                        }
-                    });
+                    else {
+                        return this.getEventProgramById(eventId).flatMap(event => {
+                            if (resp.programs[0] && event) {
+                                return Future.success(
+                                    this.mapProgramToQuestionnaire(
+                                        resp.programs[0],
+                                        event,
+                                        programDataElements,
+                                        resp.dataElements,
+                                        resp.options,
+                                        resp.programStages,
+                                        resp.programStageSections,
+                                        resp.trackedEntityAttributes
+                                    )
+                                );
+                            } else {
+                                return Future.error(new Error("Event Program not found"));
+                            }
+                        });
+                    }
                 }
                 //return empty form
                 else {
@@ -529,7 +551,7 @@ export class SurveyD2Repository implements SurveyRepository {
             .value();
 
         if (eventId) {
-            return this.getSurveyById(eventId).flatMap(event => {
+            return this.getEventProgramById(eventId).flatMap(event => {
                 if (event) {
                     const updatedEvent: D2TrackerEvent = {
                         ...event,
@@ -678,6 +700,56 @@ export class SurveyD2Repository implements SurveyRepository {
         programId: Id,
         orgUnitId: Id
     ): FutureData<Survey[]> {
+        return this.isTrackerProgram(programId)
+            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId)
+            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
+    }
+
+    getTrackerProgramSurveys(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id
+    ): FutureData<Survey[]> {
+        return apiToFuture(
+            this.api.tracker.trackedEntities.get({
+                fields: { $all: true },
+                program: programId,
+                orgUnit: orgUnitId,
+            })
+        ).flatMap(trackedEntities => {
+            const surveys = trackedEntities.instances.map(trackedEntity => {
+                const survey: Survey = {
+                    id: trackedEntity.trackedEntity ?? "",
+                    name: trackedEntity.trackedEntity ?? "",
+                    rootSurvey: {
+                        id: "",
+                        name: "",
+                        surveyType: "",
+                    },
+                    startDate: trackedEntity.createdAt
+                        ? new Date(trackedEntity.createdAt)
+                        : undefined,
+                    status: "ACTIVE",
+                    assignedOrgUnit: {
+                        id: trackedEntity.orgUnit ?? "",
+                        name: "",
+                    },
+                    surveyType: "",
+                    parentWardRegisterId: undefined,
+                    surveyFormType: surveyFormType,
+                };
+                return survey;
+            });
+
+            return Future.success(surveys);
+        });
+    }
+
+    getEventProgramSurveys(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id
+    ): FutureData<Survey[]> {
         const ouMode =
             orgUnitId !== "" &&
             (programId === PPS_WARD_REGISTER_ID ||
@@ -777,7 +849,7 @@ export class SurveyD2Repository implements SurveyRepository {
         return this.getForm(programId, eventId);
     }
 
-    getSurveyById(eventId: string): FutureData<D2TrackerEvent | void> {
+    getEventProgramById(eventId: Id): FutureData<D2TrackerEvent | void> {
         return apiToFuture(
             this.api.tracker.events.getById(eventId, {
                 fields: { $all: true },
@@ -788,9 +860,20 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
+    // getTrackerProgramById(trackedEntityId: Id): FutureData<TrackedEntity | void> {
+    //     return apiToFuture(
+    //         this.api.tracker.events.getById(eventId, {
+    //             fields: { $all: true },
+    //         })
+    //     ).flatMap(resp => {
+    //         if (resp) return Future.success(resp);
+    //         else return Future.success(undefined);
+    //     });
+    // }
+
     getSurveyNameFromId(id: Id): FutureData<string> {
         if (id !== "")
-            return this.getSurveyById(id)
+            return this.getEventProgramById(id)
                 .flatMap(survey => {
                     if (survey) {
                         const surveyName = survey.dataValues?.find(

@@ -19,6 +19,7 @@ import { useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
+import { useCurrentModule } from "../../contexts/current-module-context";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -49,6 +50,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
     const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
         useState<SortDirection>("asc");
+
+    const { currentModule } = useCurrentModule();
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
@@ -120,25 +123,27 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell
-                                        onClick={() => {
-                                            surveyNameSortDirection === "asc"
-                                                ? setSurveyNameSortDirection("desc")
-                                                : setSurveyNameSortDirection("asc");
-                                            sortByColumn("name", surveyNameSortDirection);
-                                        }}
-                                    >
-                                        <span>
-                                            <Typography variant="caption">
-                                                {i18n.t("PPS Survey Name")}
-                                            </Typography>
-                                            {surveyNameSortDirection === "asc" ? (
-                                                <ArrowUpward fontSize="small" />
-                                            ) : (
-                                                <ArrowDownward fontSize="small" />
-                                            )}
-                                        </span>
-                                    </TableCell>
+                                    {currentModule?.name === "PPS" && (
+                                        <TableCell
+                                            onClick={() => {
+                                                surveyNameSortDirection === "asc"
+                                                    ? setSurveyNameSortDirection("desc")
+                                                    : setSurveyNameSortDirection("asc");
+                                                sortByColumn("name", surveyNameSortDirection);
+                                            }}
+                                        >
+                                            <span>
+                                                <Typography variant="caption">
+                                                    {i18n.t("PPS Survey Name")}
+                                                </Typography>
+                                                {surveyNameSortDirection === "asc" ? (
+                                                    <ArrowUpward fontSize="small" />
+                                                ) : (
+                                                    <ArrowDownward fontSize="small" />
+                                                )}
+                                            </span>
+                                        </TableCell>
+                                    )}
                                     {surveyFormType === "PPSSurveyForm" && (
                                         <>
                                             <TableCell
@@ -296,11 +301,18 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     )}
 
                                     {surveyFormType === "PrevelancePlaceholder" && (
-                                        <TableCell>
-                                            <Typography variant="caption">
-                                                {i18n.t("Prevelance OrgUnit, Id")}
-                                            </Typography>
-                                        </TableCell>
+                                        <>
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Id")}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Org Unit")}
+                                                </Typography>
+                                            </TableCell>
+                                        </>
                                     )}
                                     <TableCell>
                                         <Typography variant="caption">
@@ -313,7 +325,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{survey.rootSurvey.name}</TableCell>
+                                            {currentModule?.name === "PPS" && (
+                                                <TableCell>{survey.rootSurvey.name}</TableCell>
+                                            )}
                                             {surveyFormType === "PPSSurveyForm" && (
                                                 <>
                                                     <TableCell>
@@ -337,10 +351,10 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
                                             {surveyFormType === "PrevelancePlaceholder" && (
-                                                <TableCell>
-                                                    {`${survey.assignedOrgUnit.name},
-                                                        ${survey.id} `}
-                                                </TableCell>
+                                                <>
+                                                    <TableCell>{`${survey.id} `}</TableCell>
+                                                    <TableCell>{`${survey.assignedOrgUnit.id}`}</TableCell>
+                                                </>
                                             )}
 
                                             <TableCell style={{ opacity: 0.5 }}>
