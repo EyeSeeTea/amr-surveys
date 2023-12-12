@@ -12,6 +12,8 @@ export function useDeleteSurvey(
     refreshSurveys: Dispatch<SetStateAction<{}>>
 ) {
     const { compositionRoot } = useAppContext();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>();
     const [deleteCompleteState, setDeleteCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm } = useCurrentSurveys();
 
@@ -25,15 +27,18 @@ export function useDeleteSurvey(
                     message: i18n.t("Survey deleted!"),
                 });
                 refreshSurveys({});
+                setLoading(false);
             },
             err => {
                 setDeleteCompleteState({
                     status: "error",
                     message: err ? err.message : i18n.t("Error deleting the survery"),
                 });
+                setError(err.message);
+                setLoading(false);
             }
         );
     };
 
-    return { deleteCompleteState, deleteSurvey };
+    return { deleteCompleteState, deleteSurvey, loading, setLoading, error };
 }
