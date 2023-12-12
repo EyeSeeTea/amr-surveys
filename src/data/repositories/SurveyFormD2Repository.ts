@@ -34,6 +34,7 @@ import {
     D2TrackerEnrollment,
     D2TrackerEnrollmentAttribute,
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
+import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -83,24 +84,28 @@ export class SurveyD2Repository implements SurveyRepository {
                 //If event specified,populate the form
                 if (eventId) {
                     if (this.isTrackerProgram(programId)) {
-                        return this.getEventProgramById(eventId).flatMap(event => {
-                            if (resp.programs[0] && event) {
-                                return Future.success(
-                                    this.mapProgramToQuestionnaire(
-                                        resp.programs[0],
-                                        event,
-                                        programDataElements,
-                                        resp.dataElements,
-                                        resp.options,
-                                        resp.programStages,
-                                        resp.programStageSections,
-                                        resp.trackedEntityAttributes
-                                    )
-                                );
-                            } else {
-                                return Future.error(new Error("Tracker Program not found"));
+                        //TO DO : Set proper org unit id for tracker program fetch
+                        return this.getTrackerProgramById(eventId, programId, GLOBAL_OU_ID).flatMap(
+                            trackedEntity => {
+                                if (resp.programs[0] && trackedEntity) {
+                                    return Future.success(
+                                        this.mapProgramToQuestionnaire(
+                                            resp.programs[0],
+                                            undefined,
+                                            trackedEntity,
+                                            programDataElements,
+                                            resp.dataElements,
+                                            resp.options,
+                                            resp.programStages,
+                                            resp.programStageSections,
+                                            resp.trackedEntityAttributes
+                                        )
+                                    );
+                                } else {
+                                    return Future.error(new Error("Tracker Program not found"));
+                                }
                             }
-                        });
+                        );
                     }
                     //Get event from eventId
                     else {
@@ -110,6 +115,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                     this.mapProgramToQuestionnaire(
                                         resp.programs[0],
                                         event,
+                                        undefined,
                                         programDataElements,
                                         resp.dataElements,
                                         resp.options,
@@ -130,6 +136,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         this.mapProgramToQuestionnaire(
                             resp.programs[0],
                             undefined,
+                            undefined,
                             programDataElements,
                             resp.dataElements,
                             resp.options,
@@ -148,6 +155,7 @@ export class SurveyD2Repository implements SurveyRepository {
     private mapProgramToQuestionnaire(
         program: Program,
         event: D2TrackerEvent | undefined,
+        trackedEntity: TrackedEntity | undefined,
         programDataElements: Ref[],
         dataElements: ProgramDataElement[],
         options: Option[],
@@ -162,7 +170,8 @@ export class SurveyD2Repository implements SurveyRepository {
                       section.dataElements,
                       dataElements,
                       options,
-                      event
+                      event,
+                      trackedEntity
                   );
 
                   return {
@@ -184,7 +193,8 @@ export class SurveyD2Repository implements SurveyRepository {
                           programDataElements,
                           dataElements,
                           options,
-                          event
+                          event,
+                          trackedEntity
                       ).questions,
                       isVisible: true,
                       stageId: "default",
@@ -265,7 +275,8 @@ export class SurveyD2Repository implements SurveyRepository {
         if (trackedEntityAttributes) {
             const profileQuestions: Question[] = this.mapTrackedAttributesToQuestions(
                 trackedEntityAttributes,
-                options
+                options,
+                trackedEntity
             );
 
             const profileSection: QuestionnaireEntity = {
@@ -284,7 +295,8 @@ export class SurveyD2Repository implements SurveyRepository {
         sectionDataElements: { id: string }[],
         dataElements: ProgramDataElement[],
         options: Option[],
-        event: D2TrackerEvent | undefined = undefined
+        event: D2TrackerEvent | undefined = undefined,
+        trackedEntity: TrackedEntity | undefined = undefined
     ): { questions: Question[]; sectionAddQuestion: string } {
         let sectionAddQuestion = "";
         const questions: Question[] = _(
@@ -293,9 +305,18 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 if (curDataEleemnt[0]) {
                     const dataElement = curDataEleemnt[0];
-                    const dataValue = event
+
+                    const eventDataValue = event
                         ? event.dataValues.find(dv => dv.dataElement === dataElement.id)
                         : undefined;
+
+                    const trackedEntityDataValue = trackedEntity?.enrollments?.flatMap(
+                        enrollment => {
+                            return enrollment.events.flatMap(e => {
+                                return e.dataValues.find(dv => dv.dataElement === dataElement.id);
+                            });
+                        }
+                    );
 
                     const currentQuestion = this.getQuestion(
                         dataElement.valueType,
@@ -304,7 +325,11 @@ export class SurveyD2Repository implements SurveyRepository {
                         dataElement.formName,
                         options,
                         dataElement.optionSet,
-                        dataValue?.value
+                        eventDataValue
+                            ? eventDataValue.value
+                            : trackedEntityDataValue
+                            ? trackedEntityDataValue[0]?.value
+                            : ""
                     );
 
                     ///Disable Id fields which are auto generated.
@@ -341,10 +366,15 @@ export class SurveyD2Repository implements SurveyRepository {
 
     private mapTrackedAttributesToQuestions(
         attributes: TrackedEntityAttibute[],
-        options: Option[]
+        options: Option[],
+        trackedEntity: TrackedEntity | undefined
     ): Question[] {
         const questions: Question[] = _(
             attributes.map(attribute => {
+                const attributeValue = trackedEntity?.attributes?.find(
+                    attr => attr.attribute === attribute.id
+                );
+
                 return this.getQuestion(
                     attribute.valueType,
                     attribute.id,
@@ -352,7 +382,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     attribute.formName,
                     options,
                     attribute.optionSet,
-                    attribute?.value
+                    attributeValue?.value
                 );
             })
         )
@@ -581,7 +611,7 @@ export class SurveyD2Repository implements SurveyRepository {
         questionnaire: Questionnaire,
         orgUnitId: string,
         programId: Id,
-        eventId: string | undefined = undefined
+        _eventId: string | undefined = undefined
     ): FutureData<{ trackedEntities: TrackedEntity[] }> {
         const eventsByStage: D2TrackerEvent[] = questionnaire.stages.map(stage => {
             const dataValuesByStage: { dataElement: string; value: string }[] =
@@ -860,16 +890,23 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    // getTrackerProgramById(trackedEntityId: Id): FutureData<TrackedEntity | void> {
-    //     return apiToFuture(
-    //         this.api.tracker.events.getById(eventId, {
-    //             fields: { $all: true },
-    //         })
-    //     ).flatMap(resp => {
-    //         if (resp) return Future.success(resp);
-    //         else return Future.success(undefined);
-    //     });
-    // }
+    getTrackerProgramById(
+        trackedEntityId: Id,
+        programId: Id,
+        orgUnitId: Id
+    ): FutureData<TrackedEntity | void> {
+        return apiToFuture(
+            this.api.tracker.trackedEntities.get({
+                orgUnit: orgUnitId,
+                fields: { attributes: true, enrollments: true, trackedEntity: true },
+                program: programId,
+                trackedEntity: trackedEntityId,
+            })
+        ).flatMap(resp => {
+            if (resp) return Future.success(resp.instances[0]);
+            else return Future.success(undefined);
+        });
+    }
 
     getSurveyNameFromId(id: Id): FutureData<string> {
         if (id !== "")
