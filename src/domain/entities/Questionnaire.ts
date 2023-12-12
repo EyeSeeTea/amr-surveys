@@ -47,6 +47,7 @@ export interface QuestionnaireSection {
     sortOrder: number;
     stageId: string;
     showAddnew?: boolean;
+    showAddQuestion?: Id;
 }
 
 export type Question =
@@ -61,6 +62,7 @@ export interface QuestionBase {
     code: Code;
     text: string;
     disabled?: boolean;
+    isVisible: boolean;
 }
 
 export interface SelectQuestion extends QuestionBase {

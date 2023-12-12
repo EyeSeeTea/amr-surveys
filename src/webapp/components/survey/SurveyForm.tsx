@@ -101,20 +101,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         setQuestionnaire(questionnaire => {
-            const stageToBeUpdated = questionnaire?.stages.filter(stages =>
-                stages.sections.filter(sec => sec.questions.find(q => q.id === question?.id))
+            const stageToBeUpdated = questionnaire?.stages.find(stage =>
+                stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
             );
             if (stageToBeUpdated) {
-                const sectionToBeUpdated = stageToBeUpdated[0]?.sections.filter(section =>
+                const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
                     section.questions.find(q => q.id === question?.id)
                 );
                 if (sectionToBeUpdated) {
-                    const questionToBeUpdated = sectionToBeUpdated[0]?.questions.filter(
+                    const questionToBeUpdated = sectionToBeUpdated.questions.find(
                         q => q.id === question.id
                     );
-                    if (questionToBeUpdated && questionToBeUpdated[0])
-                        questionToBeUpdated[0].value = question.value;
+                    if (questionToBeUpdated) questionToBeUpdated.value = question.value;
                 }
+            } else {
+                //Stage not found, entity could be updated.
+                const questionToBeUpdated = questionnaire?.entity?.questions.find(
+                    q => q.id === question.id
+                );
+                if (questionToBeUpdated) questionToBeUpdated.value = question.value;
             }
             return questionnaire;
         });
@@ -208,25 +213,30 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                             </TableHead>
 
                             <TableBody>
-                                {questionnaire.entity.questions.map(question => (
-                                    <DataTableRow key={question.id}>
-                                        <DataTableCell width="60%">
-                                            <span>{question.text}</span>
-                                        </DataTableCell>
+                                {questionnaire.entity.questions.map(question => {
+                                    if (!question.isVisible) return null;
+                                    return (
+                                        <DataTableRow key={question.id}>
+                                            <DataTableCell width="60%">
+                                                <span>{question.text}</span>
+                                            </DataTableCell>
 
-                                        <DataTableCell>
-                                            <div className={formClasses.valueWrapper}>
-                                                <div className={formClasses.valueInput}>
-                                                    <QuestionWidget
-                                                        onChange={updateQuestion}
-                                                        question={question}
-                                                        disabled={question.disabled ? true : false}
-                                                    />
+                                            <DataTableCell>
+                                                <div className={formClasses.valueWrapper}>
+                                                    <div className={formClasses.valueInput}>
+                                                        <QuestionWidget
+                                                            onChange={updateQuestion}
+                                                            question={question}
+                                                            disabled={
+                                                                question.disabled ? true : false
+                                                            }
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </DataTableCell>
-                                    </DataTableRow>
-                                ))}
+                                            </DataTableCell>
+                                        </DataTableRow>
+                                    );
+                                })}
                             </TableBody>
                         </DataTable>
                     </div>
@@ -255,44 +265,49 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                             </TableHead>
 
                                             <TableBody>
-                                                {section.questions.map(question => (
-                                                    <DataTableRow key={question.id}>
-                                                        <DataTableCell width="60%">
-                                                            <span>{question.text}</span>
-                                                        </DataTableCell>
+                                                {section.questions.map(question => {
+                                                    if (!question.isVisible) return null;
+                                                    return (
+                                                        <DataTableRow key={question.id}>
+                                                            <DataTableCell width="60%">
+                                                                <span>{question.text}</span>
+                                                            </DataTableCell>
 
-                                                        <DataTableCell>
-                                                            <div
-                                                                className={formClasses.valueWrapper}
-                                                            >
+                                                            <DataTableCell>
                                                                 <div
                                                                     className={
-                                                                        formClasses.valueInput
+                                                                        formClasses.valueWrapper
                                                                     }
                                                                 >
-                                                                    <QuestionWidget
-                                                                        onChange={updateQuestion}
-                                                                        question={question}
-                                                                        disabled={
-                                                                            question.disabled
-                                                                                ? true
-                                                                                : false
+                                                                    <div
+                                                                        className={
+                                                                            formClasses.valueInput
                                                                         }
-                                                                    />
+                                                                    >
+                                                                        <QuestionWidget
+                                                                            onChange={
+                                                                                updateQuestion
+                                                                            }
+                                                                            question={question}
+                                                                            disabled={
+                                                                                question.disabled
+                                                                                    ? true
+                                                                                    : false
+                                                                            }
+                                                                        />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </DataTableCell>
-                                                    </DataTableRow>
-                                                ))}
+                                                            </DataTableCell>
+                                                        </DataTableRow>
+                                                    );
+                                                })}
                                             </TableBody>
                                         </DataTable>
                                         {section.showAddnew && (
-                                            <StyledButton
-                                                onClick={() =>
-                                                    addNew(section.stageId, section.sortOrder + 1)
-                                                }
-                                            >
-                                                {i18n.t("Add new")}
+                                            <StyledButton onClick={() => addNew(section)}>
+                                                {section.questions.find(
+                                                    q => q.id === section.showAddQuestion
+                                                )?.text ?? i18n.t("Add new")}
                                             </StyledButton>
                                         )}
                                     </div>
