@@ -57,14 +57,25 @@ const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
 
 //Prevalance Program Ids
-export const PREVALANCE_SUPRANATIONAL_REFERENCE_LAB = "igEDINFwytu";
+export const PREVALENCE_SURVEY_FORM_ID = "WcSw803XiUk";
+export const PREVALENCE_FACILITY_LEVEL_FORM_ID = "m404pwBZ4YT";
+export const PREVALENCE_CASE_REPORT_FORM_ID = "i0msBbbQxYC";
+export const PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID = "ew0mOwKdcJp";
+export const PREVALENCE_CENTRAL_REF_LAB_FORM_ID = "aaAzYmn5vBG";
+export const PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID = "KActa6iTwIM";
+export const PREVALENCE_SUPRANATIONAL_REF_LAB_ID = "igEDINFwytu";
 
+//Prevalence Data element Ids
+const AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID = "o6oNnIbpPDH";
+const PREVALENCE_START_DATE_DATAELEMENT_ID = "xlvLBmg9Mkg";
+const PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID = "xiFcLr23IbW";
+const PREVELANCE_SURVEY_NAME_DATAELEMENT_ID = "HXnhZ8rsDts";
 ///Prevelance Tracked Entity Attribute types
 export const PREVALANCE_PATIENT_AST_SUPRANATIONAL = "KQMBM3q32FC";
 
 //Data Elements to hide
 const hiddenFields = ["Add new antibiotic"];
-const programsWithRepeatableSections = [PREVALANCE_SUPRANATIONAL_REFERENCE_LAB];
+const programsWithRepeatableSections = [PREVALENCE_SUPRANATIONAL_REF_LAB_ID];
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -238,7 +249,7 @@ export class SurveyD2Repository implements SurveyRepository {
                           title: stage.name,
                           code: stage.id,
                           sections: processedSections,
-                          isVisible: true, //TO DO : Can we get stage visibility from DHIS2?
+                          isVisible: true,
                       };
                   } else {
                       // no need for grouping and hiding logic
@@ -246,7 +257,7 @@ export class SurveyD2Repository implements SurveyRepository {
                           title: stage.name,
                           code: stage.id,
                           sections: currentProgramStageSections,
-                          isVisible: true, //TO DO : Can we get stage visibility from DHIS2?
+                          isVisible: true,
                       };
                   }
               })
@@ -338,7 +349,8 @@ export class SurveyD2Repository implements SurveyRepository {
                         (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||
                             currentQuestion.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
                             currentQuestion.id === WARD_ID_DATAELEMENT_ID ||
-                            currentQuestion.id === WARD2_ID_DATAELEMENT_ID)
+                            currentQuestion.id === WARD2_ID_DATAELEMENT_ID ||
+                            currentQuestion.id === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID)
                     ) {
                         currentQuestion.disabled = true;
                     }
@@ -501,7 +513,12 @@ export class SurveyD2Repository implements SurveyRepository {
 
     private isTrackerProgram(programId: Id) {
         switch (programId) {
-            case PREVALANCE_SUPRANATIONAL_REFERENCE_LAB:
+            case PREVALENCE_FACILITY_LEVEL_FORM_ID:
+            case PREVALENCE_CASE_REPORT_FORM_ID:
+            case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
+            case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
+            case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
+            case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
                 return true;
             default:
                 return false;
@@ -510,7 +527,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
     private getTrackedEntityAttributeType(programId: Id) {
         switch (programId) {
-            case PREVALANCE_SUPRANATIONAL_REFERENCE_LAB:
+            case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
                 return PREVALANCE_PATIENT_AST_SUPRANATIONAL;
             default:
                 return "";
@@ -567,6 +584,11 @@ export class SurveyD2Repository implements SurveyRepository {
                         return {
                             dataElement: q.id,
                             value: q.value.code,
+                        };
+                    } else if (q.type === "boolean" && q.storeFalse === false) {
+                        return {
+                            dataElement: q.id,
+                            value: q.value ? q.value : undefined,
                         };
                     } else {
                         return {
@@ -807,17 +829,34 @@ export class SurveyD2Repository implements SurveyRepository {
                     patientCode = "";
 
                 event.dataValues.forEach(dv => {
-                    if (dv.dataElement === START_DATE_DATAELEMENT_ID) startDateString = dv.value;
+                    if (
+                        dv.dataElement === START_DATE_DATAELEMENT_ID ||
+                        dv.dataElement === PREVALENCE_START_DATE_DATAELEMENT_ID
+                    )
+                        startDateString = dv.value;
+
                     if (dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID) surveyType = dv.value;
-                    if (dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID)
+
+                    if (
+                        dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID ||
+                        dv.dataElement === PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID
+                    )
                         surveyCompleted = dv.value;
+
                     if (
                         dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
-                        dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID
+                        dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
+                        dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID
                     )
                         parentPPSSurveyId = dv.value;
+
                     if (dv.dataElement === WARD_ID_DATAELEMENT_ID) parentWardRegisterId = dv.value;
-                    if (dv.dataElement === SURVEY_NAME_DATAELEMENT_ID) surveyName = dv.value;
+                    if (
+                        dv.dataElement === SURVEY_NAME_DATAELEMENT_ID ||
+                        dv.dataElement === PREVELANCE_SURVEY_NAME_DATAELEMENT_ID
+                    )
+                        surveyName = dv.value;
+
                     if (dv.dataElement === SURVEY_HOSPITAL_CODE_DATAELEMENT_ID)
                         hospitalCode = dv.value;
                     if (dv.dataElement === SURVEY_WARD_CODE_DATAELEMENT_ID) wardCode = dv.value;
@@ -846,18 +885,21 @@ export class SurveyD2Repository implements SurveyRepository {
                         }),
                         rootSurvey: {
                             id:
-                                surveyFormType !== "PPSSurveyForm"
+                                surveyFormType !== "PPSSurveyForm" &&
+                                surveyFormType !== "PrevalenceSurveyForm"
                                     ? parentPPSSurveyId
                                     : event.event,
                             name:
-                                surveyFormType !== "PPSSurveyForm"
+                                surveyFormType !== "PPSSurveyForm" &&
+                                surveyFormType !== "PrevalenceSurveyForm"
                                     ? parentppsSurveyName
                                     : surveyName,
                             surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
                         },
                         startDate: startDate,
                         status:
-                            programId === PPS_SURVEY_FORM_ID
+                            programId === PPS_SURVEY_FORM_ID ||
+                            programId === PREVALENCE_SURVEY_FORM_ID
                                 ? status
                                 : event.status === "COMPLETED"
                                 ? ("COMPLETED" as SURVEY_STATUSES)

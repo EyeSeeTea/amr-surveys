@@ -21,21 +21,14 @@ import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
 import { Question } from "../../../domain/entities/Questionnaire";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
-import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
-import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
-import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
-import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import {
-    getParentOUIdFromPath,
-    getSurveyDisplayName,
-} from "../../../domain/utils/PPSProgramsHelper";
-import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
+import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { muiTheme } from "../../pages/app/themes/dhis2.theme";
+import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -58,7 +51,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const classes = useStyles();
     const formClasses = useFormStyles();
     const snackbar = useSnackbar();
-    const { api, currentUser } = useAppContext();
 
     const {
         questionnaire,
@@ -76,8 +68,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit?.orgUnitId ?? "",
         props.currentSurveyId
     );
-
-    const { currentPPSSurveyForm, currentCountryQuestionnaire } = useCurrentSurveys();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -129,75 +119,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.hideForm();
     };
 
-    const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        if (props.currentSurveyId) {
-            alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
-            return;
-        }
-        if (orgUnitPaths[0]) {
-            const orgUnits = orgUnitPaths[0].split("/");
-
-            const selectedOU = orgUnits[orgUnits.length - 1];
-            if (selectedOU) {
-                if (props.formType === "PPSCountryQuestionnaire") {
-                    const currentCountry = currentUser.userCountriesAccess.find(
-                        ou => ou.orgUnitId === selectedOU
-                    );
-                    if (currentCountry) {
-                        setCurrentOrgUnit(currentCountry);
-                    }
-                } else if (props.formType === "PPSHospitalForm") {
-                    const currentHospital = currentUser.userHospitalsAccess.find(
-                        hospital => hospital.orgUnitId === selectedOU
-                    );
-                    if (currentHospital) {
-                        setCurrentOrgUnit(currentHospital);
-                    }
-                }
-            }
-        }
-    };
-
     return (
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
-
-                {(props.formType === "PPSCountryQuestionnaire" ||
-                    props.formType === "PPSHospitalForm") && (
-                    <OrgUnitsSelector
-                        api={api}
-                        fullWidth={false}
-                        selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
-                        initiallyExpanded={
-                            currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
-                        }
-                        onChange={onOrgUnitChange}
-                        singleSelection={true}
-                        typeInput={"radio"}
-                        hideMemberCount={false}
-                        selectableLevels={
-                            props.formType === "PPSCountryQuestionnaire"
-                                ? [COUNTRY_OU_LEVEL]
-                                : [HOSPITAL_OU_LEVEL]
-                        }
-                        controls={{
-                            filterByLevel: false,
-                            filterByGroup: false,
-                            filterByProgram: false,
-                            selectAll: false,
-                        }}
-                        rootIds={
-                            props.formType === "PPSHospitalForm"
-                                ? currentPPSSurveyForm?.surveyType === "HOSP" //For HOSP PPS surveys, show all hospitals across all OUs
-                                    ? [GLOBAL_OU_ID]
-                                    : currentCountryQuestionnaire?.orgUnitId
-                                    ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
-                                    : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
-                                : [GLOBAL_OU_ID]
-                        }
-                    />
-                )}
+                <SurveyFormOUSelector
+                    formType={props.formType}
+                    currentOrgUnit={currentOrgUnit}
+                    setCurrentOrgUnit={setCurrentOrgUnit}
+                    currentSurveyId={props.currentSurveyId}
+                />
 
                 {questionnaire?.entity && (
                     <div key={questionnaire.entity.title} className={classes.wrapper}>
@@ -241,7 +172,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         </DataTable>
                     </div>
                 )}
-
                 {questionnaire?.stages.map(stage => {
                     if (!stage.isVisible) return null;
 

@@ -45,7 +45,7 @@ export const getBaseSurveyFormType = (
                 );
         }
         case "Prevelance": {
-            return "PrevelancePlaceholder";
+            return "PrevalenceSurveyForm";
         }
         default:
             throw new Error("Unknown Module type");

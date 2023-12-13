@@ -6,7 +6,13 @@ export type SURVEY_FORM_TYPES =
     | "PPSHospitalForm"
     | "PPSPatientRegister"
     | "PPSWardRegister"
-    | "PrevelancePlaceholder";
+    | "PrevalenceSurveyForm"
+    | "PrevalenceFacilityLevelForm"
+    | "PrevalenceCaseReportForm"
+    | "PrevalenceSampleShipTrackForm"
+    | "PrevalenceCentralRefLabForm"
+    | "PrevalencePathogenIsolatesLog"
+    | "PrevalenceSupranationalRefLabForm";
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";

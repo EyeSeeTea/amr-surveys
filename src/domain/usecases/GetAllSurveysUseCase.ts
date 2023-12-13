@@ -18,17 +18,15 @@ export class GetAllSurveysUseCase {
     ): FutureData<Survey[]> {
         const programId = getProgramId(surveyFormType);
 
-        //All PPS Survey Forms are Global.
+        //All PPS  Survey Forms are Global.
         if (surveyFormType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
 
         return this.surveyReporsitory
             .getSurveys(surveyFormType, programId, orgUnitId)
             .flatMap(surveys => {
-                if (surveyFormType === "PrevelancePlaceholder") {
-                    return Future.success(surveys);
-                }
                 if (
                     surveyFormType === "PPSSurveyForm" ||
+                    surveyFormType === "PrevalenceSurveyForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)
                 ) {
                     return Future.success(surveys);
