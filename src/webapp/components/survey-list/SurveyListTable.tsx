@@ -56,6 +56,44 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
 
     const history = useHistory();
 
+    //wrappers to parse the params to hopefully improve readability
+    const edit = (survey: Survey) => {
+        editSurvey(
+            {
+                id: survey.id,
+                name: survey.name,
+                surveyType: survey.surveyType,
+            },
+            survey.assignedOrgUnit.id,
+            survey.rootSurvey
+        );
+    };
+    const assign = (survey: Survey) => {
+        assignChild(
+            {
+                id: survey.id,
+                name: survey.name,
+                surveyType: survey.surveyType,
+            },
+            survey.assignedOrgUnit.id,
+            survey.rootSurvey,
+            survey.surveyType
+        );
+    };
+
+    const list = (survey: Survey) => {
+        listChildren(
+            {
+                id: survey.id,
+                name: survey.name,
+                surveyType: survey.surveyType,
+            },
+            survey.assignedOrgUnit.id,
+            survey.rootSurvey,
+            survey.surveyType
+        );
+    };
+
     const editSurvey = (survey: SurveyBase, orgUnitId: Id, rootSurvey: SurveyBase) => {
         updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
         history.push({
@@ -347,155 +385,51 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                     optionClickHandler={[
                                                         {
                                                             option: "Edit",
-                                                            handler: () =>
-                                                                editSurvey(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                ),
+                                                            handler: () => edit(survey),
                                                         },
                                                         {
-                                                            option: "Add new Country",
-                                                            handler: () =>
-                                                                assignChild(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey,
-                                                                    survey.surveyType
-                                                                ),
+                                                            option: "Add New Country",
+                                                            handler: () => assign(survey),
                                                         },
                                                         {
                                                             option: "List Countries",
-
-                                                            handler: () => {
-                                                                listChildren(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                );
-                                                            },
+                                                            handler: () => list(survey),
                                                         },
                                                         {
-                                                            option: "Add new Hospital",
-                                                            handler: () =>
-                                                                assignChild(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey,
-                                                                    survey.surveyType
-                                                                ),
+                                                            option: "Add New Hospital",
+                                                            handler: () => assign(survey),
                                                         },
                                                         {
                                                             option: "List Hospitals",
-
-                                                            handler: () => {
-                                                                listChildren(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey,
-                                                                    survey.surveyType
-                                                                );
-                                                            },
+                                                            handler: () => list(survey),
                                                         },
                                                         {
-                                                            option: "Add new Ward",
-                                                            handler: () =>
-                                                                assignChild(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                ),
+                                                            option: "Add New Ward",
+                                                            handler: () => assign(survey),
                                                         },
                                                         {
                                                             option: "List Wards",
-                                                            handler: () => {
-                                                                listChildren(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                );
-                                                            },
+                                                            handler: () => list(survey),
                                                         },
                                                         {
                                                             option: "List Country",
-                                                            handler: () => {
-                                                                listChildren(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                );
-                                                            },
+                                                            handler: () => list(survey),
                                                         },
                                                         {
-                                                            option: "Add new Patient",
-                                                            handler: () => {
-                                                                assignChild(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                );
-                                                            },
+                                                            option: "Add New Patient",
+                                                            handler: () => assign(survey),
                                                         },
                                                         {
                                                             option: "List Patients",
-                                                            handler: () => {
-                                                                listChildren(
-                                                                    {
-                                                                        id: survey.id,
-                                                                        name: survey.name,
-                                                                        surveyType:
-                                                                            survey.surveyType,
-                                                                    },
-                                                                    survey.assignedOrgUnit.id,
-                                                                    survey.rootSurvey
-                                                                );
-                                                            },
+                                                            handler: () => list(survey),
+                                                        },
+                                                        {
+                                                            option: "Add New Facility",
+                                                            handler: () => assign(survey),
+                                                        },
+                                                        {
+                                                            option: "List Facilities",
+                                                            handler: () => list(survey),
                                                         },
                                                     ]}
                                                 />

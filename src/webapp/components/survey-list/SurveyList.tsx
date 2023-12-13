@@ -16,7 +16,7 @@ import { useCurrentModule } from "../../contexts/current-module-context";
 import { SurveyListTable } from "./SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
-import { useSurveyList } from "./hook/useSurveyList";
+import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -28,6 +28,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         changeCurrentCountryQuestionnaire,
         changeCurrentHospitalForm,
         changeCurrentWardRegister,
+        changeCurrentPrevalenceSurveyForm,
     } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
@@ -44,7 +45,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         surveyTypeFilter,
         setSurveyTypeFilter,
         filteredSurveys,
-    } = useSurveyList(surveyFormType, isAdmin, surveys);
+    } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,
@@ -60,6 +61,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
             }
             changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
         } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
+        else if (surveyFormType === "PrevalenceSurveyForm")
+            changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
     };
 
     return (

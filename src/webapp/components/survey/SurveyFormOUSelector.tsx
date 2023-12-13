@@ -1,4 +1,4 @@
-import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
+import { OrgUnitsSelector, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
@@ -22,8 +22,10 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
     currentSurveyId,
 }) => {
     const { api } = useAppContext();
-    const { currentPPSSurveyForm, currentCountryQuestionnaire } = useCurrentSurveys();
+    const { currentPPSSurveyForm, currentCountryQuestionnaire, currentPrevalenceSurveyForm } =
+        useCurrentSurveys();
     const { currentUser } = useAppContext();
+    const snackbar = useSnackbar();
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
         if (currentSurveyId) {
@@ -41,13 +43,20 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
                     );
                     if (currentCountry) {
                         setCurrentOrgUnit(currentCountry);
+                    } else {
+                        snackbar.error("You do not have access to this country.");
                     }
-                } else if (formType === "PPSHospitalForm") {
+                } else if (
+                    formType === "PPSHospitalForm" ||
+                    formType === "PrevalenceFacilityLevelForm"
+                ) {
                     const currentHospital = currentUser.userHospitalsAccess.find(
                         hospital => hospital.orgUnitId === selectedOU
                     );
                     if (currentHospital) {
                         setCurrentOrgUnit(currentHospital);
+                    } else {
+                        snackbar.error("You do not have access to this hospital.");
                     }
                 }
             }
@@ -58,7 +67,8 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         <>
             {(formType === "PPSCountryQuestionnaire" ||
                 formType === "PPSHospitalForm" ||
-                formType === "PrevalenceSurveyForm") && (
+                formType === "PrevalenceSurveyForm" ||
+                formType === "PrevalenceFacilityLevelForm") && (
                 <OrgUnitsSelector
                     api={api}
                     fullWidth={false}
@@ -89,6 +99,8 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
                                 : currentCountryQuestionnaire?.orgUnitId
                                 ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
                                 : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
+                            : formType === "PrevalenceFacilityLevelForm"
+                            ? [currentPrevalenceSurveyForm?.orgUnitId]
                             : [GLOBAL_OU_ID]
                     }
                 />

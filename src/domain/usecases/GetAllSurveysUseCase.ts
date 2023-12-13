@@ -27,6 +27,7 @@ export class GetAllSurveysUseCase {
                 if (
                     surveyFormType === "PPSSurveyForm" ||
                     surveyFormType === "PrevalenceSurveyForm" ||
+                    surveyFormType === "PrevalenceFacilityLevelForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)
                 ) {
                     return Future.success(surveys);

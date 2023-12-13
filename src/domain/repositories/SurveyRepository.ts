@@ -5,7 +5,11 @@ import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export interface SurveyRepository {
-    getForm(programId: Id, eventId: Id | undefined): FutureData<Questionnaire>;
+    getForm(
+        programId: Id,
+        eventId: Id | undefined,
+        orgUnitId: Id | undefined
+    ): FutureData<Questionnaire>;
     saveFormData(
         events: Questionnaire,
         action: ImportStrategy,
@@ -18,6 +22,10 @@ export interface SurveyRepository {
         programId: Id,
         orgUnitId: Id
     ): FutureData<Survey[]>;
-    getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
+    getPopulatedSurveyById(
+        eventId: Id,
+        programId: Id,
+        orgUnitId: Id | undefined
+    ): FutureData<Questionnaire>;
     getSurveyNameFromId(id: Id): FutureData<string | undefined>;
 }

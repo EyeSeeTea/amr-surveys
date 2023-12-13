@@ -7,7 +7,7 @@ import {
 } from "../../../../domain/entities/Survey";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
-export function useSurveyList(
+export function useFilteredSurveys(
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
     surveys: Survey[] | undefined

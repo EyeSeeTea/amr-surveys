@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-12-12T06:06:24.698Z\n"
-"PO-Revision-Date: 2023-12-12T06:06:24.698Z\n"
+"POT-Creation-Date: 2023-12-13T07:05:50.429Z\n"
+"PO-Revision-Date: 2023-12-13T07:05:50.429Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -76,7 +76,7 @@ msgstr ""
 msgid "HOSP"
 msgstr ""
 
-msgid "PPS Survey Name"
+msgid " Survey Name"
 msgstr ""
 
 msgid "Start Date"
@@ -98,12 +98,6 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
-msgstr ""
-
-msgid "Id"
-msgstr ""
-
-msgid "Org Unit"
 msgstr ""
 
 msgid "Action"
