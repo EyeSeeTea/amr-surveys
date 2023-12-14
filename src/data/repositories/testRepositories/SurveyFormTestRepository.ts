@@ -9,10 +9,6 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../SurveyFormD2Repository";
 
 export class SurveyTestRepository implements SurveyRepository {
-    getSurveyNameFromId(id: string): FutureData<string | undefined> {
-        console.debug(id);
-        throw new Error("Method not implemented.");
-    }
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");

@@ -812,34 +812,39 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(trackedEntities => {
             const surveys = trackedEntities.instances.map(trackedEntity => {
-                const parentPPSSurveyId = trackedEntity.attributes?.find(
-                    attribute => attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
-                )?.value;
+                const parentPrevalenceSurveyId =
+                    trackedEntity.attributes?.find(
+                        attribute => attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                    )?.value ?? "";
 
-                const survey: Survey = {
-                    id: trackedEntity.trackedEntity ?? "",
-                    name: trackedEntity.trackedEntity ?? "",
-                    rootSurvey: {
-                        id: parentPPSSurveyId ?? "",
-                        name: parentPPSSurveyId ?? "", //TO DO get name from DHIS
-                        surveyType: "",
-                    },
-                    startDate: trackedEntity.createdAt
-                        ? new Date(trackedEntity.createdAt)
-                        : undefined,
-                    status: "ACTIVE",
-                    assignedOrgUnit: {
-                        id: trackedEntity.orgUnit ?? "",
-                        name: "",
-                    },
-                    surveyType: "",
-                    parentWardRegisterId: undefined,
-                    surveyFormType: surveyFormType,
-                };
-                return survey;
+                return this.getSurveyNameFromId(parentPrevalenceSurveyId, "Prevalence").map(
+                    parentppsSurveyName => {
+                        const survey: Survey = {
+                            id: trackedEntity.trackedEntity ?? "",
+                            name: trackedEntity.trackedEntity ?? "",
+                            rootSurvey: {
+                                id: parentPrevalenceSurveyId ?? "",
+                                name: parentppsSurveyName,
+                                surveyType: "",
+                            },
+                            startDate: trackedEntity.createdAt
+                                ? new Date(trackedEntity.createdAt)
+                                : undefined,
+                            status: "ACTIVE",
+                            assignedOrgUnit: {
+                                id: trackedEntity.orgUnit ?? "",
+                                name: "",
+                            },
+                            surveyType: "",
+                            parentWardRegisterId: undefined,
+                            surveyFormType: surveyFormType,
+                        };
+                        return survey;
+                    }
+                );
             });
 
-            return Future.success(surveys);
+            return Future.sequential(surveys);
         });
     }
 
@@ -918,45 +923,47 @@ export class SurveyD2Repository implements SurveyRepository {
                             : "ACTIVE"
                         : "COMPLETED";
 
-                return this.getSurveyNameFromId(parentPPSSurveyId).map(parentppsSurveyName => {
-                    const survey: Survey = {
-                        id: event.event,
-                        name: this.getSurveyNameBySurveyFormType(surveyFormType, {
-                            eventId: event.event,
-                            surveyName,
-                            orgUnitName: event.orgUnitName,
-                            hospitalCode,
-                            wardCode,
-                            patientCode,
-                        }),
-                        rootSurvey: {
-                            id:
-                                surveyFormType !== "PPSSurveyForm" &&
-                                surveyFormType !== "PrevalenceSurveyForm"
-                                    ? parentPPSSurveyId
-                                    : event.event,
-                            name:
-                                surveyFormType !== "PPSSurveyForm" &&
-                                surveyFormType !== "PrevalenceSurveyForm"
-                                    ? parentppsSurveyName
-                                    : surveyName,
-                            surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
-                        },
-                        startDate: startDate,
-                        status:
-                            programId === PPS_SURVEY_FORM_ID ||
-                            programId === PREVALENCE_SURVEY_FORM_ID
-                                ? status
-                                : event.status === "COMPLETED"
-                                ? ("COMPLETED" as SURVEY_STATUSES)
-                                : ("ACTIVE" as SURVEY_STATUSES),
-                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: surveyType,
-                        parentWardRegisterId: parentWardRegisterId,
-                        surveyFormType: surveyFormType,
-                    };
-                    return survey;
-                });
+                return this.getSurveyNameFromId(parentPPSSurveyId, "PPS").map(
+                    parentppsSurveyName => {
+                        const survey: Survey = {
+                            id: event.event,
+                            name: this.getSurveyNameBySurveyFormType(surveyFormType, {
+                                eventId: event.event,
+                                surveyName,
+                                orgUnitName: event.orgUnitName,
+                                hospitalCode,
+                                wardCode,
+                                patientCode,
+                            }),
+                            rootSurvey: {
+                                id:
+                                    surveyFormType !== "PPSSurveyForm" &&
+                                    surveyFormType !== "PrevalenceSurveyForm"
+                                        ? parentPPSSurveyId
+                                        : event.event,
+                                name:
+                                    surveyFormType !== "PPSSurveyForm" &&
+                                    surveyFormType !== "PrevalenceSurveyForm"
+                                        ? parentppsSurveyName
+                                        : surveyName,
+                                surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
+                            },
+                            startDate: startDate,
+                            status:
+                                programId === PPS_SURVEY_FORM_ID ||
+                                programId === PREVALENCE_SURVEY_FORM_ID
+                                    ? status
+                                    : event.status === "COMPLETED"
+                                    ? ("COMPLETED" as SURVEY_STATUSES)
+                                    : ("ACTIVE" as SURVEY_STATUSES),
+                            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                            surveyType: surveyType,
+                            parentWardRegisterId: parentWardRegisterId,
+                            surveyFormType: surveyFormType,
+                        };
+                        return survey;
+                    }
+                );
             });
 
             return Future.sequential(surveys);
@@ -1003,16 +1010,22 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    getSurveyNameFromId(id: Id): FutureData<string> {
+    getSurveyNameFromId(id: Id, parentSurveyType: "PPS" | "Prevalence"): FutureData<string> {
         if (id !== "")
             return this.getEventProgramById(id)
                 .flatMap(survey => {
                     if (survey) {
-                        const surveyName = survey.dataValues?.find(
-                            dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
-                        )?.value;
-
-                        return Future.success(surveyName ?? "");
+                        if (parentSurveyType === "PPS") {
+                            const ppsSurveyName = survey.dataValues?.find(
+                                dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
+                            )?.value;
+                            return Future.success(ppsSurveyName ?? "");
+                        } else {
+                            const prevalenceSurveyName = survey.dataValues?.find(
+                                dv => dv.dataElement === PREVELANCE_SURVEY_NAME_DATAELEMENT_ID
+                            )?.value;
+                            return Future.success(prevalenceSurveyName ?? "");
+                        }
                     } else return Future.success("");
                 })
                 .flatMapError(_err => Future.success(""));

@@ -27,5 +27,4 @@ export interface SurveyRepository {
         programId: Id,
         orgUnitId: Id | undefined
     ): FutureData<Questionnaire>;
-    getSurveyNameFromId(id: Id): FutureData<string | undefined>;
 }
