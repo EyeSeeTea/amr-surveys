@@ -4,6 +4,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import {
     BooleanQuestion,
     DateQuestion,
+    DateTimeQuestion,
     NumberQuestion,
     Question,
     Questionnaire,
@@ -513,14 +514,27 @@ export class SurveyD2Repository implements SurveyRepository {
                 return singleLineTextQ;
             }
 
-            case "DATE":
-            case "DATETIME": {
+            case "DATE": {
                 const dateQ: DateQuestion = {
                     id: id,
                     code: code,
                     text: formName,
                     type: "date",
                     value: dataValue ? new Date(dataValue as string) : new Date(),
+                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                };
+                return dateQ;
+            }
+
+            case "DATETIME": {
+                const dateQ: DateTimeQuestion = {
+                    id: id,
+                    code: code,
+                    text: formName,
+                    type: "datetime",
+                    value: dataValue
+                        ? new Date(dataValue as string).toISOString()
+                        : new Date().toISOString(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                 };
                 return dateQ;
@@ -794,19 +808,16 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(trackedEntities => {
             const surveys = trackedEntities.instances.map(trackedEntity => {
-                let parentPPSSurveyId = "";
-
-                trackedEntity.attributes?.forEach(attribute => {
-                    if (attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID)
-                        parentPPSSurveyId = attribute.value;
-                });
+                const parentPPSSurveyId = trackedEntity.attributes?.find(
+                    attribute => attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                )?.value;
 
                 const survey: Survey = {
                     id: trackedEntity.trackedEntity ?? "",
                     name: trackedEntity.trackedEntity ?? "",
                     rootSurvey: {
-                        id: parentPPSSurveyId,
-                        name: parentPPSSurveyId, //TO DO get name from DHIS
+                        id: parentPPSSurveyId ?? "",
+                        name: parentPPSSurveyId ?? "", //TO DO get name from DHIS
                         surveyType: "",
                     },
                     startDate: trackedEntity.createdAt

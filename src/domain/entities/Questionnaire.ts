@@ -55,7 +55,8 @@ export type Question =
     | NumberQuestion
     | TextQuestion
     | BooleanQuestion
-    | DateQuestion;
+    | DateQuestion
+    | DateTimeQuestion;
 
 export interface QuestionBase {
     id: Id;
@@ -98,6 +99,11 @@ export interface BooleanQuestion extends QuestionBase {
 export interface DateQuestion extends QuestionBase {
     type: "date";
     value: Maybe<Date>;
+}
+
+export interface DateTimeQuestion extends QuestionBase {
+    type: "datetime";
+    value: Maybe<string>;
 }
 
 export interface QuestionOption extends NamedRef {

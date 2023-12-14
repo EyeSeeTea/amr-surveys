@@ -29,7 +29,10 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
         if (currentSurveyId) {
-            alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
+            snackbar.error(
+                "Cannot change the assigned country/hospital. Please delete the survey and create a new one."
+            );
+
             return;
         }
         if (orgUnitPaths[0]) {
