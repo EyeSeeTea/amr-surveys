@@ -13,7 +13,7 @@ export class GetAllSurveysUseCase {
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
         orgUnitId: Id,
-        parentPPSSurveyId: Id | undefined,
+        parentSurveyId: Id | undefined,
         parentWardRegisterId: Id | undefined
     ): FutureData<Survey[]> {
         const programId = getProgramId(surveyFormType);
@@ -27,8 +27,7 @@ export class GetAllSurveysUseCase {
                 if (
                     surveyFormType === "PPSSurveyForm" ||
                     surveyFormType === "PrevalenceSurveyForm" ||
-                    surveyFormType === "PrevalenceFacilityLevelForm" ||
-                    (surveyFormType === "PPSHospitalForm" && !parentPPSSurveyId)
+                    (surveyFormType === "PPSHospitalForm" && !parentSurveyId)
                 ) {
                     return Future.success(surveys);
                 } else {
@@ -45,10 +44,10 @@ export class GetAllSurveysUseCase {
 
                         return Future.success(filteredSurveys);
                     } else {
-                        //Filter Surveys by parentPPSSurveyId
+                        //Filter Surveys by parentSurveyId
                         const filteredSurveys = _(
                             surveys.map(survey => {
-                                if (survey.rootSurvey.id === parentPPSSurveyId) return survey;
+                                if (survey.rootSurvey.id === parentSurveyId) return survey;
                             })
                         )
                             .compact()

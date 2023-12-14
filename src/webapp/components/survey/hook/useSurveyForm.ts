@@ -103,7 +103,10 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                             if (currentOrgUnitAccess) {
                                 setCurrentOrgUnit(currentOrgUnitAccess);
                             }
-                        } else if (formType === "PPSHospitalForm") {
+                        } else if (
+                            formType === "PPSHospitalForm" ||
+                            formType === "PrevalenceFacilityLevelForm"
+                        ) {
                             const currentHospital = currentUser.userHospitalsAccess.find(
                                 hospital => hospital.orgUnitId === questionnaireWithData.orgUnit.id
                             );

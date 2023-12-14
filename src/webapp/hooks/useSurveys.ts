@@ -18,16 +18,22 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
     useEffect(() => {
         setLoading(true);
+
+        const parentSurveyId =
+            surveyFormType === "PrevalenceFacilityLevelForm"
+                ? currentPrevalenceSurveyForm?.id
+                : currentPPSSurveyForm?.id;
         let orgUnitId = "";
         if (surveyFormType === "PPSHospitalForm")
             orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
         else if (surveyFormType === "PPSWardRegister" || surveyFormType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
-        else if (surveyFormType === "PrevalenceFacilityLevelForm")
+        else if (surveyFormType === "PrevalenceFacilityLevelForm") {
             orgUnitId = currentPrevalenceSurveyForm?.orgUnitId ?? "";
+        }
 
         compositionRoot.surveys.getSurveys
-            .execute(surveyFormType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister?.id)
+            .execute(surveyFormType, orgUnitId, parentSurveyId, currentWardRegister?.id)
             .run(
                 surveys => {
                     setSurveys(surveys);

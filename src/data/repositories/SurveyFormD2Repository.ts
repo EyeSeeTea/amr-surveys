@@ -278,11 +278,15 @@ export class SurveyD2Repository implements SurveyRepository {
                   },
               ];
 
+        const orgUnitId = this.isTrackerProgram(program.id)
+            ? trackedEntity?.orgUnit ?? ""
+            : event?.orgUnit ?? "";
+
         const form: Questionnaire = {
             id: program.id,
             name: program.name,
             description: program.name,
-            orgUnit: { id: event?.orgUnit ?? "" },
+            orgUnit: { id: orgUnitId },
             year: "",
             isCompleted: false,
             isMandatory: false,
@@ -988,7 +992,7 @@ export class SurveyD2Repository implements SurveyRepository {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 orgUnit: orgUnitId,
-                fields: { attributes: true, enrollments: true, trackedEntity: true },
+                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
                 program: programId,
                 trackedEntity: trackedEntityId,
                 ouMode: "DESCENDANTS",
