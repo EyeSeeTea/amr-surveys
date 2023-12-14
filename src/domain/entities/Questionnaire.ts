@@ -23,6 +23,9 @@ export interface QuestionnaireSelector {
 export interface Questionnaire extends QuestionnaireBase {
     stages: QuestionnaireStage[];
     entity?: QuestionnaireEntity; //Equivalant to tracked entity instance of tracker program
+    subLevelDetails?: {
+        enrollmentId: Id;
+    };
 }
 
 export interface QuestionnaireEntity {
@@ -38,6 +41,7 @@ export interface QuestionnaireStage {
     sections: QuestionnaireSection[];
     isVisible: boolean;
     showNextStage?: boolean;
+    instanceId?: Id; //Corresponds to DHIS eventId
 }
 export interface QuestionnaireSection {
     title: string;

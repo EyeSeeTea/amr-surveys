@@ -185,6 +185,7 @@ export class SurveyD2Repository implements SurveyRepository {
         const sections: QuestionnaireSection[] = programStageSections
             ? programStageSections.map(section => {
                   const { questions, sectionAddQuestion } = this.mapProgramDataElementToQuestions(
+                      this.isTrackerProgram(program.id),
                       section.dataElements,
                       dataElements,
                       options,
@@ -208,6 +209,7 @@ export class SurveyD2Repository implements SurveyRepository {
                       title: "Survey Info",
                       code: "default",
                       questions: this.mapProgramDataElementToQuestions(
+                          this.isTrackerProgram(program.id),
                           programDataElements,
                           dataElements,
                           options,
@@ -257,6 +259,9 @@ export class SurveyD2Repository implements SurveyRepository {
                           code: stage.id,
                           sections: processedSections,
                           isVisible: true,
+                          instanceId: trackedEntity?.enrollments
+                              ?.at(0)
+                              ?.events.find(e => e.programStage === stage.id)?.event,
                       };
                   } else {
                       // no need for grouping and hiding logic
@@ -265,6 +270,9 @@ export class SurveyD2Repository implements SurveyRepository {
                           code: stage.id,
                           sections: currentProgramStageSections,
                           isVisible: true,
+                          instanceId: trackedEntity?.enrollments
+                              ?.at(0)
+                              ?.events.find(e => e.programStage === stage.id)?.event,
                       };
                   }
               })
@@ -292,6 +300,11 @@ export class SurveyD2Repository implements SurveyRepository {
             isMandatory: false,
             rules: [],
             stages: stages.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true })),
+            subLevelDetails: {
+                enrollmentId: trackedEntity
+                    ? trackedEntity.enrollments?.at(0)?.enrollment ?? ""
+                    : "",
+            },
         };
 
         if (trackedEntityAttributes) {
@@ -314,6 +327,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     private mapProgramDataElementToQuestions(
+        isTrackerProgram: boolean,
         sectionDataElements: { id: string }[],
         dataElements: ProgramDataElement[],
         options: Option[],
@@ -323,35 +337,45 @@ export class SurveyD2Repository implements SurveyRepository {
         let sectionAddQuestion = "";
         const questions: Question[] = _(
             sectionDataElements.map(dataElement => {
-                const curDataEleemnt = dataElements.filter(de => de.id === dataElement.id);
+                const curDataElement = dataElements.find(de => de.id === dataElement.id);
 
-                if (curDataEleemnt[0]) {
-                    const dataElement = curDataEleemnt[0];
+                if (curDataElement) {
+                    let dataValue: string | undefined;
+                    if (isTrackerProgram) {
+                        const dataValues = trackedEntity?.enrollments?.flatMap(enrollment => {
+                            return _(
+                                enrollment.events.map(e => {
+                                    return e.dataValues.find(
+                                        dv => dv.dataElement === curDataElement.id
+                                    );
+                                })
+                            )
+                                .compact()
+                                .value();
+                        });
 
-                    const eventDataValue = event
-                        ? event.dataValues.find(dv => dv.dataElement === dataElement.id)
-                        : undefined;
-
-                    const trackedEntityDataValue = trackedEntity?.enrollments?.flatMap(
-                        enrollment => {
-                            return enrollment.events.flatMap(e => {
-                                return e.dataValues.find(dv => dv.dataElement === dataElement.id);
-                            });
+                        if (dataValues && dataValues.length > 1) {
+                            console.debug(
+                                "ERROR : There should never be more than one instance of a dataelement in an event"
+                            );
                         }
-                    );
+
+                        dataValue = dataValues?.at(0)?.value;
+                    } else {
+                        dataValue = event
+                            ? event.dataValues.find(dv => dv.dataElement === curDataElement.id)
+                                  ?.value
+                            : undefined;
+                    }
 
                     const currentQuestion = this.getQuestion(
-                        dataElement.valueType,
-                        dataElement.id,
-                        dataElement.code,
-                        dataElement.formName,
+                        curDataElement.valueType,
+                        curDataElement.id,
+                        curDataElement.code,
+                        curDataElement.formName,
                         options,
-                        dataElement.optionSet,
-                        eventDataValue
-                            ? eventDataValue.value
-                            : trackedEntityDataValue
-                            ? trackedEntityDataValue[0]?.value
-                            : ""
+                        curDataElement.optionSet,
+                        dataValue ?? ""
                     );
 
                     ///Disable Id fields which are auto generated.
@@ -670,7 +694,7 @@ export class SurveyD2Repository implements SurveyRepository {
         questionnaire: Questionnaire,
         orgUnitId: string,
         programId: Id,
-        _eventId: string | undefined = undefined
+        teiId: string | undefined = undefined
     ): FutureData<{ trackedEntities: TrackedEntity[] }> {
         const eventsByStage: D2TrackerEvent[] = questionnaire.stages.map(stage => {
             const dataValuesByStage: { dataElement: string; value: string }[] =
@@ -692,7 +716,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
             return {
                 program: programId,
-                event: "",
+                event: stage.instanceId ?? "",
                 programStage: stage.code,
                 orgUnit: orgUnitId,
                 dataValues: dataValuesByStage,
@@ -726,7 +750,7 @@ export class SurveyD2Repository implements SurveyRepository {
             {
                 orgUnit: orgUnitId,
                 program: programId,
-                enrollment: "",
+                enrollment: questionnaire.subLevelDetails?.enrollmentId ?? "",
                 trackedEntityType: this.getTrackedEntityAttributeType(programId),
                 notes: [],
                 relationships: [],
@@ -748,7 +772,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
         const entity: TrackedEntity = {
             orgUnit: orgUnitId,
-            trackedEntity: "",
+            trackedEntity: teiId ?? "",
             trackedEntityType: this.getTrackedEntityAttributeType(programId),
             enrollments: enrollments,
         };
@@ -805,7 +829,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 : undefined;
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { $all: true },
+                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
@@ -998,8 +1022,8 @@ export class SurveyD2Repository implements SurveyRepository {
     ): FutureData<TrackedEntity | void> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                orgUnit: orgUnitId,
                 fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                orgUnit: orgUnitId,
                 program: programId,
                 trackedEntity: trackedEntityId,
                 ouMode: "DESCENDANTS",
