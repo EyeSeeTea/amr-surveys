@@ -68,13 +68,23 @@ export const PREVALENCE_SUPRANATIONAL_REF_LAB_ID = "igEDINFwytu";
 //Prevalence Data element Ids
 const AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID = "o6oNnIbpPDH";
 export const SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID = "Log2Y4uqBBo";
+export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF = "Wv5cTMAba6e";
+export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL = "b9dqKVYm4Xn";
+export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS = "w74wn7Wz2hV";
+export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL = "mcY57Zn7FFl";
+export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF = "tlRPoWumrSa";
+
 const PREVALENCE_START_DATE_DATAELEMENT_ID = "xlvLBmg9Mkg";
 const PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID = "xiFcLr23IbW";
 const PREVELANCE_SURVEY_NAME_DATAELEMENT_ID = "HXnhZ8rsDts";
 
 ///Prevelance Tracked Entity Attribute types
-export const PREVALANCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
-export const PREVALANCE_FACILITY_LEVEL_TET = "eY4BDBKXegX";
+const PREVALANCE_FACILITY_LEVEL_TET = "eY4BDBKXegX";
+const PREVALANCE_CASE_REPORT_TET = "hyR1eTHLX8B";
+const PREVALANCE_SAMPLE_SHIPMENT_TET = "ukqXKDH1cqP";
+const PREVALANCE_CENTRAL_REF_LAB_TET = "yqa88gKCdV8";
+const PREVALANCE_PATHOGEN_ISOLATES_TET = "aWIdBmjFWF0";
+const PREVALANCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
 
 //Data Elements to hide
 const hiddenFields = ["Add new antibiotic"];
@@ -433,7 +443,12 @@ export class SurveyD2Repository implements SurveyRepository {
                 );
                 if (
                     currentQuestion &&
-                    currentQuestion.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                    (currentQuestion.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
+                        currentQuestion?.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
+                        currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
+                        currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
+                        currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
+                        currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF)
                 ) {
                     currentQuestion.disabled = true;
                 }
@@ -586,10 +601,19 @@ export class SurveyD2Repository implements SurveyRepository {
 
     private getTrackedEntityAttributeType(programId: Id) {
         switch (programId) {
+            case PREVALENCE_CASE_REPORT_FORM_ID:
+                return PREVALANCE_CASE_REPORT_TET;
+            case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
+                return PREVALANCE_SAMPLE_SHIPMENT_TET;
+            case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
+                return PREVALANCE_CENTRAL_REF_LAB_TET;
+            case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
+                return PREVALANCE_PATHOGEN_ISOLATES_TET;
             case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
                 return PREVALANCE_SUPRANATIONAL_TET;
             case PREVALENCE_FACILITY_LEVEL_FORM_ID:
                 return PREVALANCE_FACILITY_LEVEL_TET;
+
             default:
                 return "";
         }
@@ -838,7 +862,13 @@ export class SurveyD2Repository implements SurveyRepository {
             const surveys = trackedEntities.instances.map(trackedEntity => {
                 const parentPrevalenceSurveyId =
                     trackedEntity.attributes?.find(
-                        attribute => attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                        attribute =>
+                            attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
+                            attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
+                            attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
+                            attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
+                            attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
+                            attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
                     )?.value ?? "";
 
                 return this.getSurveyNameFromId(parentPrevalenceSurveyId, "Prevalence").map(

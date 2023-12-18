@@ -13,11 +13,20 @@ export interface SaveState {
 export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, surveyId?: Id) {
     const { compositionRoot } = useAppContext();
     const [saveCompleteState, setSaveCompleteState] = useState<SaveState>();
-    const { currentHospitalForm } = useCurrentSurveys();
+    const { currentHospitalForm, currentFacilityLevelForm } = useCurrentSurveys();
 
     const saveSurvey = (questionnaire: Questionnaire) => {
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+
+        if (
+            formType === "PrevalenceCaseReportForm" ||
+            formType === "PrevalenceSampleShipTrackForm" ||
+            formType === "PrevalenceCentralRefLabForm" ||
+            formType === "PrevalencePathogenIsolatesLog" ||
+            formType === "PrevalenceSupranationalRefLabForm"
+        )
+            orgUnitId = currentFacilityLevelForm?.orgUnitId ?? "";
 
         compositionRoot.surveys.saveFormData
             .execute(formType, questionnaire, orgUnitId, surveyId)

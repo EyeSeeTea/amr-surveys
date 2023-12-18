@@ -14,6 +14,14 @@ import {
 } from "../../data/repositories/SurveyFormD2Repository";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
+export const PREVALENCE_PATIENT_OPTIONS = [
+    "Case Report",
+    "Sample Shipment",
+    "Central Reference Lab Result",
+    "Pathogen Isolates",
+    "Supranational Result",
+] as const;
+
 export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
     switch (surveyFormType) {
         //PPS Module
@@ -73,7 +81,7 @@ export const getChildSurveyType = (
         case "PrevalenceSurveyForm":
             return "PrevalenceFacilityLevelForm";
         case "PrevalenceFacilityLevelForm":
-            return "PrevalenceCaseReportForm"; //TO DO : Multiple children
+            return "PrevalencePatientForms";
         case "PPSPatientRegister":
         default:
             return undefined;
@@ -107,7 +115,7 @@ export const getSurveyOptions = (
             return ["Edit", "Add New Facility", "List Facilities"];
 
         case "PrevalenceFacilityLevelForm":
-            return ["Edit", "List Patients"];
+            return ["Edit", "List All Patient Surveys"];
 
         case "PrevalenceCaseReportForm":
         case "PrevalenceSampleShipTrackForm":
@@ -148,6 +156,8 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Pathogen Isolate";
         case "PrevalenceSupranationalRefLabForm":
             return "Supranational Result";
+        case "PrevalencePatientForms":
+            return "Patient";
         default:
             return "Survey";
     }
@@ -175,4 +185,28 @@ export const hideCreateNewButton = (
             surveys !== undefined &&
             surveys.length >= 1)
     );
+};
+
+export const getFormTypeFromOption = (
+    option:
+        | (typeof PREVALENCE_PATIENT_OPTIONS)[0]
+        | (typeof PREVALENCE_PATIENT_OPTIONS)[1]
+        | (typeof PREVALENCE_PATIENT_OPTIONS)[2]
+        | (typeof PREVALENCE_PATIENT_OPTIONS)[3]
+        | (typeof PREVALENCE_PATIENT_OPTIONS)[4]
+): SURVEY_FORM_TYPES | undefined => {
+    switch (option) {
+        case "Case Report":
+            return "PrevalenceCaseReportForm";
+        case "Sample Shipment":
+            return "PrevalenceSampleShipTrackForm";
+        case "Central Reference Lab Result":
+            return "PrevalenceCentralRefLabForm";
+        case "Pathogen Isolates":
+            return "PrevalencePathogenIsolatesLog";
+        case "Supranational Result":
+            return "PrevalenceSupranationalRefLabForm";
+        default:
+            return undefined;
+    }
 };

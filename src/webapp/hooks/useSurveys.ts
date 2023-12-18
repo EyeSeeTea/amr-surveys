@@ -14,15 +14,18 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentHospitalForm,
         currentWardRegister,
         currentPrevalenceSurveyForm,
+        currentFacilityLevelForm,
     } = useCurrentSurveys();
 
     useEffect(() => {
         setLoading(true);
 
         const parentSurveyId =
-            surveyFormType === "PrevalenceFacilityLevelForm"
+            surveyFormType === "PrevalenceFacilityLevelForm" ||
+            surveyFormType === "PrevalencePatientForms"
                 ? currentPrevalenceSurveyForm?.id
                 : currentPPSSurveyForm?.id;
+
         let orgUnitId = "";
         if (surveyFormType === "PPSHospitalForm")
             orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
@@ -30,6 +33,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
         else if (surveyFormType === "PrevalenceFacilityLevelForm") {
             orgUnitId = currentPrevalenceSurveyForm?.orgUnitId ?? "";
+        } else if (surveyFormType === "PrevalencePatientForms") {
+            orgUnitId = currentFacilityLevelForm?.orgUnitId ?? "";
         }
 
         compositionRoot.surveys.getSurveys
@@ -52,6 +57,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentHospitalForm?.orgUnitId,
         currentWardRegister,
         currentPrevalenceSurveyForm,
+        currentFacilityLevelForm,
     ]);
 
     return { surveys, loading, error };

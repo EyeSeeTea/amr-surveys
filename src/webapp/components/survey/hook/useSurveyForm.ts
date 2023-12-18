@@ -15,6 +15,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentHospitalForm,
         currentWardRegister,
         currentPrevalenceSurveyForm,
+        currentFacilityLevelForm,
     } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
@@ -84,6 +85,12 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
             const orgUnitId =
                 formType === "PrevalenceFacilityLevelForm"
                     ? currentPrevalenceSurveyForm?.orgUnitId
+                    : formType === "PrevalenceCaseReportForm" ||
+                      formType === "PrevalenceCentralRefLabForm" ||
+                      formType === "PrevalencePathogenIsolatesLog" ||
+                      formType === "PrevalenceSampleShipTrackForm" ||
+                      formType === "PrevalenceSupranationalRefLabForm"
+                    ? currentFacilityLevelForm?.orgUnitId
                     : undefined;
 
             //If Event Id has been specified, pre-populate event data in Questionnaire form
@@ -133,7 +140,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setError,
         currentHospitalForm,
         currentWardRegister,
-
+        currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
     ]);
 

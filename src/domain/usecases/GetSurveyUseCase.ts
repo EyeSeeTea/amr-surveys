@@ -1,5 +1,10 @@
 import { FutureData } from "../../data/api-futures";
 import {
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_DATAELEMENT_ID,
@@ -66,7 +71,13 @@ export class GetSurveyUseCase {
                 .flatMap(questionnaire => {
                     //The Survey Id is always part of Tracked Entity which is the Profile Section i.e questionnaire.entity
                     const surveyIdDataElement = questionnaire.entity?.questions.find(
-                        q => q.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                        q =>
+                            q.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
+                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
+                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
+                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
+                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
+                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
                     );
                     if (surveyIdDataElement) surveyIdDataElement.value = parentPrevalenceSurveyId;
 
