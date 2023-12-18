@@ -88,7 +88,11 @@ const PREVALANCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
 
 //Data Elements to hide
 const hiddenFields = ["Add new antibiotic"];
-const programsWithRepeatableSections = [PREVALENCE_SUPRANATIONAL_REF_LAB_ID];
+//To do : Move to datastore?
+const programsWithRepeatableSections = [
+    PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
+    PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+];
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
