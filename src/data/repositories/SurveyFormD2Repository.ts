@@ -420,6 +420,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                // Testing the API filter for now to see how the filtering performs
                 ...(surveyFormType === "PPSPatientRegister" && {
                     page: page + 1,
                     pageSize,
