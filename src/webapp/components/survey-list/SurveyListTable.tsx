@@ -9,6 +9,7 @@ import {
     TableCell,
     TableHead,
     Typography,
+    TablePagination,
 } from "@material-ui/core";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
@@ -16,7 +17,7 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { ChangeEvent, Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
 
@@ -28,6 +29,11 @@ interface SurveyListTableProps {
         orgUnitId: Id,
         rootSurvey: SurveyBase
     ) => void;
+    page: number;
+    setPage: Dispatch<SetStateAction<number>>;
+    pageSize: number;
+    setPageSize: Dispatch<SetStateAction<number>>;
+    total?: number;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -36,6 +42,11 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
@@ -110,6 +121,17 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                     .sortBy(x => x[columnName], { direction: sortDirection })
                     .value();
         });
+    };
+
+    const handleChangePage = (_event: MouseEvent | null, newPage: SetStateAction<number>) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (
+        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        setPageSize(parseInt(event.target.value, 10));
+        setPage(0);
     };
 
     return (
@@ -502,6 +524,17 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                             )}
                         </Table>
                     </TableContainer>
+                    {surveyFormType === "PPSPatientRegister" && (
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 15, 20]}
+                            component="div"
+                            count={total || 0}
+                            rowsPerPage={pageSize}
+                            page={page}
+                            onPageChange={(event, page) => handleChangePage(event, page)}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    )}
                 </TableContentWrapper>
             )}
         </>
