@@ -126,8 +126,6 @@ export class UserD2Repository implements UserRepository {
                         id: true,
                     },
                 },
-                userOnly: true,
-                userDataViewOnly: true,
                 paging: false,
             })
         ).flatMap(res => {
