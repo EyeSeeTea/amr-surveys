@@ -20,4 +20,5 @@ export interface SurveyRepository {
     ): FutureData<Survey[]>;
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
     getSurveyNameFromId(id: Id): FutureData<string | undefined>;
+    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<Survey[]>;
 }

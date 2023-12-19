@@ -1,5 +1,5 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+import { D2TrackerEvent, TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
 import {
     BooleanQuestion,
@@ -44,6 +44,8 @@ const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
 const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
+const PATIENT_ID = "eKUbBRlR684";
+const PATIENT_CODE = "yScrOW1eTvm";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -417,84 +419,8 @@ export class SurveyD2Repository implements SurveyRepository {
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
             })
-        ).flatMap(events => {
-            const surveys = events.instances.map(event => {
-                let startDateString,
-                    surveyType = "",
-                    surveyCompleted,
-                    parentPPSSurveyId = "",
-                    parentWardRegisterId = "",
-                    surveyName = "",
-                    hospitalCode = "",
-                    wardCode = "",
-                    patientCode = "";
-
-                event.dataValues.forEach(dv => {
-                    if (dv.dataElement === START_DATE_DATAELEMENT_ID) startDateString = dv.value;
-                    if (dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID) surveyType = dv.value;
-                    if (dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID)
-                        surveyCompleted = dv.value;
-                    if (
-                        dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
-                        dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID
-                    )
-                        parentPPSSurveyId = dv.value;
-                    if (dv.dataElement === WARD_ID_DATAELEMENT_ID) parentWardRegisterId = dv.value;
-                    if (dv.dataElement === SURVEY_NAME_DATAELEMENT_ID) surveyName = dv.value;
-                    if (dv.dataElement === SURVEY_HOSPITAL_CODE_DATAELEMENT_ID)
-                        hospitalCode = dv.value;
-                    if (dv.dataElement === SURVEY_WARD_CODE_DATAELEMENT_ID) wardCode = dv.value;
-                    if (dv.dataElement === SURVEY_PATIENT_CODE_DATAELEMENT_ID)
-                        patientCode = dv.value;
-                });
-
-                const startDate = startDateString ? new Date(startDateString) : undefined;
-                const status =
-                    surveyCompleted === "false" && startDate
-                        ? startDate > new Date()
-                            ? "FUTURE"
-                            : "ACTIVE"
-                        : "COMPLETED";
-
-                return this.getSurveyNameFromId(parentPPSSurveyId).map(parentppsSurveyName => {
-                    const survey: Survey = {
-                        id: event.event,
-                        name: this.getSurveyNameBySurveyFormType(surveyFormType, {
-                            eventId: event.event,
-                            surveyName,
-                            orgUnitName: event.orgUnitName,
-                            hospitalCode,
-                            wardCode,
-                            patientCode,
-                        }),
-                        rootSurvey: {
-                            id:
-                                surveyFormType !== "PPSSurveyForm"
-                                    ? parentPPSSurveyId
-                                    : event.event,
-                            name:
-                                surveyFormType !== "PPSSurveyForm"
-                                    ? parentppsSurveyName
-                                    : surveyName,
-                            surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
-                        },
-                        startDate: startDate,
-                        status:
-                            programId === PPS_SURVEY_FORM_ID
-                                ? status
-                                : event.status === "COMPLETED"
-                                ? ("COMPLETED" as SURVEY_STATUSES)
-                                : ("ACTIVE" as SURVEY_STATUSES),
-                        assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                        surveyType: surveyType,
-                        parentWardRegisterId: parentWardRegisterId,
-                        surveyFormType: surveyFormType,
-                    };
-                    return survey;
-                });
-            });
-
-            return Future.sequential(surveys);
+        ).flatMap(response => {
+            return this.buildSurveys(response.instances, surveyFormType, programId);
         });
     }
 
@@ -525,5 +451,99 @@ export class SurveyD2Repository implements SurveyRepository {
                 } else return Future.success("");
             });
         else return Future.success("");
+    }
+
+    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<Survey[]> {
+        return apiToFuture(
+            this.api.get<TrackerEventsResponse>(
+                `/tracker/events?${PATIENT_ID}:like:${keyword}&filter=${PATIENT_CODE}:like:${keyword}&rootJunction=OR`,
+                {
+                    fields: ":all",
+                    orgUnit: orgUnitId,
+                    program: PPS_PATIENT_REGISTER_ID,
+                }
+            )
+        ).flatMap(response => {
+            return this.buildSurveys(
+                response.instances,
+                "PPSPatientRegister",
+                PPS_PATIENT_REGISTER_ID
+            ).map(surveys => surveys);
+        });
+    }
+
+    private buildSurveys(
+        events: D2TrackerEvent[],
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id
+    ): FutureData<Survey[]> {
+        const surveys = events.map(event => {
+            let startDateString,
+                surveyType = "",
+                surveyCompleted,
+                parentPPSSurveyId = "",
+                parentWardRegisterId = "",
+                surveyName = "",
+                hospitalCode = "",
+                wardCode = "",
+                patientCode = "";
+
+            event.dataValues.forEach(dv => {
+                if (dv.dataElement === START_DATE_DATAELEMENT_ID) startDateString = dv.value;
+                if (dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID) surveyType = dv.value;
+                if (dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID) surveyCompleted = dv.value;
+                if (
+                    dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
+                    dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID
+                )
+                    parentPPSSurveyId = dv.value;
+                if (dv.dataElement === WARD_ID_DATAELEMENT_ID) parentWardRegisterId = dv.value;
+                if (dv.dataElement === SURVEY_NAME_DATAELEMENT_ID) surveyName = dv.value;
+                if (dv.dataElement === SURVEY_HOSPITAL_CODE_DATAELEMENT_ID) hospitalCode = dv.value;
+                if (dv.dataElement === SURVEY_WARD_CODE_DATAELEMENT_ID) wardCode = dv.value;
+                if (dv.dataElement === SURVEY_PATIENT_CODE_DATAELEMENT_ID) patientCode = dv.value;
+            });
+
+            const startDate = startDateString ? new Date(startDateString) : undefined;
+            const status =
+                surveyCompleted === "false" && startDate
+                    ? startDate > new Date()
+                        ? "FUTURE"
+                        : "ACTIVE"
+                    : "COMPLETED";
+
+            return this.getSurveyNameFromId(parentPPSSurveyId).map(parentppsSurveyName => {
+                const survey: Survey = {
+                    id: event.event,
+                    name: this.getSurveyNameBySurveyFormType(surveyFormType, {
+                        eventId: event.event,
+                        surveyName,
+                        orgUnitName: event.orgUnitName,
+                        hospitalCode,
+                        wardCode,
+                        patientCode,
+                    }),
+                    rootSurvey: {
+                        id: surveyFormType !== "PPSSurveyForm" ? parentPPSSurveyId : event.event,
+                        name: surveyFormType !== "PPSSurveyForm" ? parentppsSurveyName : surveyName,
+                        surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
+                    },
+                    startDate: startDate,
+                    status:
+                        programId === PPS_SURVEY_FORM_ID
+                            ? status
+                            : event.status === "COMPLETED"
+                            ? ("COMPLETED" as SURVEY_STATUSES)
+                            : ("ACTIVE" as SURVEY_STATUSES),
+                    assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                    surveyType: surveyType,
+                    parentWardRegisterId: parentWardRegisterId,
+                    surveyFormType: surveyFormType,
+                };
+                return survey;
+            });
+        });
+
+        return Future.sequential(surveys);
     }
 }

@@ -94,4 +94,29 @@ export class SurveyTestRepository implements SurveyRepository {
             return Future.error(new Error("Error in getSurveyById"));
         }
     }
+
+    getFilteredSurveys(keyword: string, orgUnitId: string): FutureData<Survey[]> {
+        return Future.success([
+            {
+                name: "TestSurvey1",
+                id: "1",
+                startDate: new Date(),
+                status: "ACTIVE",
+                assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                surveyType: "SUPRANATIONAL",
+                rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
+                surveyFormType: "PPSSurveyForm",
+            },
+            {
+                name: "TestSurvey2",
+                id: "2",
+                startDate: new Date(),
+                status: "COMPLETED",
+                assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                surveyType: "NATIONAL",
+                rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
+                surveyFormType: "PPSSurveyForm",
+            },
+        ]);
+    }
 }

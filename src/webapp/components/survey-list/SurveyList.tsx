@@ -1,11 +1,11 @@
 import i18n from "@eyeseetea/feedback-component/locales";
-import { Button, Typography } from "@material-ui/core";
+import { Backdrop, Button, CircularProgress, TextField, Typography } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { SurveyBase, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -17,6 +17,7 @@ import { SurveyListTable } from "./SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useSurveyList } from "./hook/useSurveyList";
+import { useSurveyFilters } from "./hook/useSurveyFilters";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -45,6 +46,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         setSurveyTypeFilter,
         filteredSurveys,
     } = useSurveyList(surveyFormType, isAdmin, surveys);
+    const { surveyList, patientFilterKeyword, setPatientFilterKeyword, handleKeyPress, isLoading } =
+        useSurveyFilters(filteredSurveys);
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,
@@ -74,6 +77,15 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         surveys
                     ) && (
                         <ButtonWrapper>
+                            {surveyFormType === "PPSPatientRegister" && (
+                                <TextField
+                                    label={i18n.t("Search Patient")}
+                                    helperText={i18n.t("Filter by patient id or code")}
+                                    value={patientFilterKeyword}
+                                    onChange={e => setPatientFilterKeyword(e.target.value)}
+                                    onKeyDown={handleKeyPress}
+                                />
+                            )}
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -99,12 +111,17 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         />
                     )}
                     <SurveyListTable
-                        surveys={filteredSurveys}
+                        surveys={surveyList}
                         surveyFormType={surveyFormType}
                         updateSelectedSurveyDetails={updateSelectedSurveyDetails}
                     />
                 </CustomCard>
             </ContentLoader>
+            {isLoading && (
+                <Backdrop open={true} style={{ color: "#fff", zIndex: 1 }}>
+                    <CircularProgress color="inherit" size={50} />
+                </Backdrop>
+            )}
         </ContentWrapper>
     );
 };
@@ -123,6 +140,7 @@ const ContentWrapper = styled.div`
 const ButtonWrapper = styled.div`
     margin: 20px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-around;
 `;
