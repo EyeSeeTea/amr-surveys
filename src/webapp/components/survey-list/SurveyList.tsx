@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { SurveyBase, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
+import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";

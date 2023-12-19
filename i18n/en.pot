@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-11-28T10:56:14.436Z\n"
-"PO-Revision-Date: 2023-11-28T10:56:14.436Z\n"
+"POT-Creation-Date: 2023-12-19T10:53:18.596Z\n"
+"PO-Revision-Date: 2023-12-19T10:53:18.596Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -47,6 +47,12 @@ msgstr ""
 msgid ""
 "Submission Failed! You do not have the necessary permissions, please "
 "contact your administrator"
+msgstr ""
+
+msgid "Search Patient"
+msgstr ""
+
+msgid "Filter by patient id or code"
 msgstr ""
 
 msgid "Country"
@@ -98,6 +104,9 @@ msgid "Hospital Code"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Error fetching surveys"
 msgstr ""
 
 msgid "Yes"
