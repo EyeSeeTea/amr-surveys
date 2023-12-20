@@ -24,6 +24,7 @@ import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
 import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
+import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -54,6 +55,7 @@ function getCompositionRoot(repositories: Repositories) {
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
+            deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
         },
     };
 }

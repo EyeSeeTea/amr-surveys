@@ -8,6 +8,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
+    const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
     const [page, setPage] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(5);
     const [total, setTotal] = useState<number>();
@@ -53,9 +54,10 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentCountryQuestionnaire?.orgUnitId,
         currentHospitalForm?.orgUnitId,
         currentWardRegister,
+        shouldRefreshSurveys,
         page,
         pageSize,
     ]);
 
-    return { surveys, loading, error, page, setPage, pageSize, setPageSize, total };
+    return { surveys, loading, error, setRefreshSurveys, page, setPage, pageSize, setPageSize, total };
 }

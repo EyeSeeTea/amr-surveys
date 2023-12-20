@@ -1,4 +1,5 @@
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
     TableBody,
@@ -20,10 +21,13 @@ import { useHistory } from "react-router-dom";
 import { ChangeEvent, Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
+import { useDeleteSurvey } from "./hook/useDeleteSurvey";
+import { ContentLoader } from "../content-loader/ContentLoader";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
+    refreshSurveys: Dispatch<SetStateAction<{}>>;
     updateSelectedSurveyDetails: (
         survey: SurveyBase,
         orgUnitId: Id,
@@ -42,6 +46,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
+    refreshSurveys,
     page,
     setPage,
     pageSize,
@@ -73,6 +78,27 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
             pathname: `/survey/${surveyFormType}/${survey.id}`,
         });
     };
+
+    const { deleteSurvey, loading, setLoading, error, deleteCompleteState } = useDeleteSurvey(
+        surveyFormType,
+        refreshSurveys
+    );
+
+    const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
+        setLoading(true);
+        deleteSurvey(surveyId, orgUnitId);
+    };
+
+    const snackbar = useSnackbar();
+
+    useEffect(() => {
+        if (deleteCompleteState?.status === "success") {
+            snackbar.success(deleteCompleteState.message);
+        }
+        if (deleteCompleteState?.status === "error") {
+            snackbar.error(deleteCompleteState.message);
+        }
+    }, [deleteCompleteState, snackbar]);
 
     const assignChild = (
         survey: SurveyBase,
@@ -135,7 +161,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     };
 
     return (
-        <>
+        <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
@@ -372,6 +398,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                 ),
                                                         },
                                                         {
+                                                            option: "Delete",
+                                                            handler: () =>
+                                                                deleteSelectedSurvey(
+                                                                    survey.id,
+                                                                    survey.assignedOrgUnit.id
+                                                                ),
+                                                        },
+                                                        {
                                                             option: "Add new Country",
                                                             handler: () =>
                                                                 assignChild(
@@ -537,7 +571,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                     )}
                 </TableContentWrapper>
             )}
-        </>
+        </ContentLoader>
     );
 };
 
