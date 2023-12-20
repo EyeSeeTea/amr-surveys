@@ -24,6 +24,7 @@ import {
 } from "../../domain/entities/EventProgram";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
+import { PaginatedReponse } from "../../domain/entities/TablePagination";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -401,8 +402,11 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
-    ): FutureData<Survey[]> {
+        orgUnitId: Id,
+        parentWardRegisterId: Id | undefined,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode =
             orgUnitId !== "" &&
             (programId === PPS_WARD_REGISTER_ID ||
@@ -416,9 +420,18 @@ export class SurveyD2Repository implements SurveyRepository {
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                // Testing the API filter for now to see how the filtering performs
+                ...(surveyFormType === "PPSPatientRegister" && {
+                    page: page + 1,
+                    pageSize,
+                    totalPages: true,
+                    filter: `${WARD_ID_DATAELEMENT_ID}:eq:${parentWardRegisterId}`,
+                }),
             })
-        ).flatMap(events => {
-            const surveys = events.instances.map(event => {
+        ).flatMap(response => {
+            const events = response.instances;
+
+            const surveys = events.map(event => {
                 let startDateString,
                     surveyType = "",
                     surveyCompleted,
@@ -494,7 +507,16 @@ export class SurveyD2Repository implements SurveyRepository {
                 });
             });
 
-            return Future.sequential(surveys);
+            return Future.sequential(surveys).map(surveys => {
+                return {
+                    pager: {
+                        page: response.page,
+                        pageSize: response.pageSize,
+                        total: response.total,
+                    },
+                    objects: surveys,
+                };
+            });
         });
     }
 
