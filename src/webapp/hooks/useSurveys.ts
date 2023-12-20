@@ -8,6 +8,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
+    const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -42,7 +43,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentCountryQuestionnaire?.orgUnitId,
         currentHospitalForm?.orgUnitId,
         currentWardRegister,
+        shouldRefreshSurveys,
     ]);
 
-    return { surveys, loading, error };
+    return { surveys, loading, error, setRefreshSurveys };
 }

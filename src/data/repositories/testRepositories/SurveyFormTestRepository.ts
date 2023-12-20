@@ -94,4 +94,9 @@ export class SurveyTestRepository implements SurveyRepository {
             return Future.error(new Error("Error in getSurveyById"));
         }
     }
+
+    deleteSurvey(orgUnitId: Id, eventId: Id, programId: Id): FutureData<void> {
+        if (orgUnitId && eventId && programId) return Future.success(undefined);
+        else return Future.error(new Error("An error occured while deleting the survey"));
+    }
 }
