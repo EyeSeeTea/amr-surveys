@@ -7,7 +7,7 @@ import _ from "../../domain/entities/generic/Collection";
 import { OrgUnit } from "../../domain/entities/OrgUnit";
 import { NamedRef } from "../../domain/entities/Ref";
 
-const NA_OU_ID = "zXAaAXzwt4M";
+export const NA_OU_ID = "zXAaAXzwt4M";
 export const COUNTRY_OU_LEVEL = 3;
 export const HOSPITAL_OU_LEVEL = 7;
 export class UserD2Repository implements UserRepository {
