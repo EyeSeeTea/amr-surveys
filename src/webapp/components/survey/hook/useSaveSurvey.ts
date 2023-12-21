@@ -6,14 +6,11 @@ import { useState } from "react";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
+import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 
-export interface SaveState {
-    status: "success" | "error";
-    message: string;
-}
 export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, surveyId?: Id) {
     const { compositionRoot } = useAppContext();
-    const [saveCompleteState, setSaveCompleteState] = useState<SaveState>();
+    const [saveCompleteState, setSaveCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm } = useCurrentSurveys();
 
     const saveSurvey = (questionnaire: Questionnaire) => {

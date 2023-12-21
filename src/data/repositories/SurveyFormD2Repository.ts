@@ -35,6 +35,7 @@ import {
     D2TrackerEnrollmentAttribute,
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
+import { PaginatedReponse } from "../../domain/entities/TablePagination";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -421,7 +422,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     text: formName, //formName
                     type: "boolean",
                     storeFalse: false,
-                    value: dataValue ? (dataValue === "true" ? true : false) : false,
+                    value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                 };
                 return boolQ;
@@ -728,18 +729,28 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
-    ): FutureData<Survey[]> {
+        orgUnitId: Id,
+        parentWardRegisterId: Id | undefined,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
         return this.isTrackerProgram(programId)
             ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId)
-            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
+            : this.getEventProgramSurveys(
+                  surveyFormType,
+                  programId,
+                  orgUnitId,
+                  parentWardRegisterId,
+                  page,
+                  pageSize
+              );
     }
 
     getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id
-    ): FutureData<Survey[]> {
+    ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: { $all: true },
@@ -771,15 +782,25 @@ export class SurveyD2Repository implements SurveyRepository {
                 return survey;
             });
 
-            return Future.success(surveys);
+            return Future.success({
+                pager: {
+                    page: -1,
+                    pageSize: -1,
+                    total: -1,
+                },
+                objects: surveys,
+            });
         });
     }
 
     getEventProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
-    ): FutureData<Survey[]> {
+        orgUnitId: Id,
+        parentWardRegisterId: Id | undefined,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode =
             orgUnitId !== "" &&
             (programId === PPS_WARD_REGISTER_ID ||
@@ -793,9 +814,18 @@ export class SurveyD2Repository implements SurveyRepository {
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                // Testing the API filter for now to see how the filtering performs
+                ...(surveyFormType === "PPSPatientRegister" && {
+                    page: page + 1,
+                    pageSize,
+                    totalPages: true,
+                    filter: `${WARD_ID_DATAELEMENT_ID}:eq:${parentWardRegisterId}`,
+                }),
             })
-        ).flatMap(events => {
-            const surveys = events.instances.map(event => {
+        ).flatMap(response => {
+            const events = response.instances;
+
+            const surveys = events.map(event => {
                 let startDateString,
                     surveyType = "",
                     surveyCompleted,
@@ -871,7 +901,16 @@ export class SurveyD2Repository implements SurveyRepository {
                 });
             });
 
-            return Future.sequential(surveys);
+            return Future.sequential(surveys).map(surveys => {
+                return {
+                    pager: {
+                        page: response.page,
+                        pageSize: response.pageSize,
+                        total: response.total,
+                    },
+                    objects: surveys,
+                };
+            });
         });
     }
 
@@ -922,5 +961,35 @@ export class SurveyD2Repository implements SurveyRepository {
                 })
                 .flatMapError(_err => Future.success(""));
         else return Future.success("");
+    }
+
+    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
+        const event: D2TrackerEvent = {
+            event: eventId,
+            orgUnit: orgUnitId,
+            program: programId,
+            // status doesn't play a part in deleting but is required
+            status: "ACTIVE",
+            occurredAt: "",
+            dataValues: [],
+        };
+        return apiToFuture(
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+        ).flatMap(response => {
+            return apiToFuture(
+                // eslint-disable-next-line testing-library/await-async-utils
+                this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+            ).flatMap(result => {
+                if (result && result.status !== "ERROR") {
+                    return Future.success(undefined);
+                } else {
+                    return Future.error(
+                        new Error(
+                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
+                        )
+                    );
+                }
+            });
+        });
     }
 }

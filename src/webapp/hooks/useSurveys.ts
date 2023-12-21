@@ -9,6 +9,10 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
+    const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
+    const [page, setPage] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(5);
+    const [total, setTotal] = useState<number>();
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -27,10 +31,18 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         else if (surveyFormType === "PrevelancePlaceholder") orgUnitId = GLOBAL_OU_ID;
 
         compositionRoot.surveys.getSurveys
-            .execute(surveyFormType, orgUnitId, currentPPSSurveyForm?.id, currentWardRegister?.id)
+            .execute(
+                surveyFormType,
+                orgUnitId,
+                currentPPSSurveyForm?.id,
+                currentWardRegister?.id,
+                page,
+                pageSize
+            )
             .run(
-                surveys => {
+                ({ pager: { total }, objects: surveys }) => {
                     setSurveys(surveys);
+                    setTotal(total);
                     setLoading(false);
                 },
                 err => {
@@ -45,7 +57,10 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentCountryQuestionnaire?.orgUnitId,
         currentHospitalForm?.orgUnitId,
         currentWardRegister,
+        shouldRefreshSurveys,
+        page,
+        pageSize,
     ]);
 
-    return { surveys, loading, error };
+    return { surveys, loading, error, setRefreshSurveys, page, setPage, pageSize, setPageSize, total };
 }

@@ -63,23 +63,23 @@ export const getSurveyOptions = (
         case "PPSSurveyForm": {
             switch (ppsSurveyType) {
                 case "NATIONAL":
-                    return ["Edit", "Add new Country", "List Country"];
+                    return ["Edit", "Add new Country", "List Country", "Delete"];
                 case "HOSP":
-                    return ["Edit", "Add new Hospital", "List Hospitals"];
+                    return ["Edit", "Add new Hospital", "List Hospitals", "Delete"];
                 case "SUPRANATIONAL":
                 default:
-                    return ["Edit", "Add new Country", "List Countries"];
+                    return ["Edit", "Add new Country", "List Countries", "Delete"];
             }
         }
         case "PPSCountryQuestionnaire":
-            return ["Edit", "Add new Hospital", "List Hospitals"];
+            return ["Edit", "Add new Hospital", "List Hospitals", "Delete"];
         case "PPSHospitalForm":
-            return ["Edit", "Add new Ward", "List Wards"];
+            return ["Edit", "Add new Ward", "List Wards", "Delete"];
         case "PPSWardRegister":
-            return ["Edit", "Add new Patient", "List Patients"];
+            return ["Edit", "Add new Patient", "List Patients", "Delete"];
         case "PPSPatientRegister":
         default:
-            return ["Edit"];
+            return ["Edit", "Delete"];
     }
 };
 
