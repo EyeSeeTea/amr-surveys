@@ -4,7 +4,7 @@ import { Feedback } from "@eyeseetea/feedback-component";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 //@ts-ignore
 import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { appConfig } from "../../../app-config";
 import { CompositionRoot } from "../../../CompositionRoot";
 import Share from "../../components/share/Share";
@@ -31,6 +31,11 @@ function App(props: AppProps) {
             const isShareButtonVisible = appConfig.appearance.showShareButton;
             const currentUser = await compositionRoot.users.getCurrent.execute().toPromise();
             if (!currentUser) throw new Error("User not logged in");
+
+            const orgUnits: Worker = useMemo(
+                () => new Worker(new URL("../workers/orgUnitWorker.ts", import.meta.url)),
+                []
+            );
 
             setAppContext({ currentUser, compositionRoot, api });
             setShowShareButton(isShareButtonVisible);
