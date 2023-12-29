@@ -24,7 +24,7 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                     labelId="status-label"
                     value={status}
                     onChange={e => {
-                        if (e.target.value === "NONE") setStatus(undefined);
+                        if (e.target.value === "ALL") setStatus(undefined);
                         else setStatus(e.target.value as SURVEY_STATUSES);
                     }}
                     label="STATUS"
@@ -38,8 +38,8 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                     <MenuItem key="FUTURE" value="FUTURE">
                         {i18n.t("FUTURE")}
                     </MenuItem>
-                    <MenuItem key="NONE-Status" value="NONE">
-                        {i18n.t("NONE")}
+                    <MenuItem key="ALL-Status" value="ALL">
+                        {i18n.t("ALL")}
                     </MenuItem>
                 </Select>
             </FormControl>
@@ -49,7 +49,7 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                 <Select
                     value={surveyType}
                     onChange={e => {
-                        if (e.target.value === "NONE") setSurveyType(undefined);
+                        if (e.target.value === "ALL") setSurveyType(undefined);
                         else setSurveyType(e.target.value as SURVEY_TYPES);
                     }}
                 >
@@ -62,8 +62,8 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                     <MenuItem key="HOSP" value="HOSP">
                         {i18n.t("HOSP")}
                     </MenuItem>
-                    <MenuItem key="NONE-SurveyType" value="NONE">
-                        {i18n.t("NONE")}
+                    <MenuItem key="ALL-SurveyType" value="ALL">
+                        {i18n.t("ALL")}
                     </MenuItem>
                 </Select>
             </FormControl>

@@ -64,7 +64,7 @@ msgstr ""
 msgid "FUTURE"
 msgstr ""
 
-msgid "NONE"
+msgid "ALL"
 msgstr ""
 
 msgid "SUPRANATIONAL"
@@ -104,6 +104,12 @@ msgid "Hospital Code"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Survey deleted!"
+msgstr ""
+
+msgid "Error deleting the survery"
 msgstr ""
 
 msgid "Yes"

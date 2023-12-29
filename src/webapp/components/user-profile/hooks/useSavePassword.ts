@@ -1,13 +1,13 @@
 import { useAppContext } from "../../../contexts/app-context";
 import { useState } from "react";
-import { SaveState } from "../../survey/hook/useSaveSurvey";
+import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 import i18n from "@eyeseetea/feedback-component/locales";
 
 export function useSavePassword() {
     const { compositionRoot } = useAppContext();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [savePasswordStatus, setSavePasswordStatus] = useState<SaveState>();
+    const [savePasswordStatus, setSavePasswordStatus] = useState<ActionOutcome>();
 
     const savePassword = (password: string) => {
         compositionRoot.users.savePassword.execute(password).run(

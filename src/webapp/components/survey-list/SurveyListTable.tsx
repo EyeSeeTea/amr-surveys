@@ -1,4 +1,5 @@
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
     TableBody,
@@ -9,6 +10,7 @@ import {
     TableCell,
     TableHead,
     Typography,
+    TablePagination,
 } from "@material-ui/core";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
@@ -16,18 +18,26 @@ import { palette } from "../../pages/app/themes/dhis2.theme";
 import { Id } from "../../../domain/entities/Ref";
 import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
 import { useHistory } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { ChangeEvent, Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../domain/entities/generic/Collection";
+import { useDeleteSurvey } from "./hook/useDeleteSurvey";
+import { ContentLoader } from "../content-loader/ContentLoader";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
+    refreshSurveys: Dispatch<SetStateAction<{}>>;
     updateSelectedSurveyDetails: (
         survey: SurveyBase,
         orgUnitId: Id,
         rootSurvey: SurveyBase
     ) => void;
+    page: number;
+    setPage: Dispatch<SetStateAction<number>>;
+    pageSize: number;
+    setPageSize: Dispatch<SetStateAction<number>>;
+    total?: number;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -36,6 +46,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
+    refreshSurveys,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
 }) => {
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
@@ -101,6 +117,27 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         });
     };
 
+    const { deleteSurvey, loading, setLoading, error, deleteCompleteState } = useDeleteSurvey(
+        surveyFormType,
+        refreshSurveys
+    );
+
+    const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
+        setLoading(true);
+        deleteSurvey(surveyId, orgUnitId);
+    };
+
+    const snackbar = useSnackbar();
+
+    useEffect(() => {
+        if (deleteCompleteState?.status === "success") {
+            snackbar.success(deleteCompleteState.message);
+        }
+        if (deleteCompleteState?.status === "error") {
+            snackbar.error(deleteCompleteState.message);
+        }
+    }, [deleteCompleteState, snackbar]);
+
     const assignChild = (
         survey: SurveyBase,
         orgUnitId: Id,
@@ -150,8 +187,19 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         });
     };
 
+    const handleChangePage = (_event: MouseEvent | null, newPage: SetStateAction<number>) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (
+        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        setPageSize(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
     return (
-        <>
+        <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
@@ -399,6 +447,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             handler: () => edit(survey),
                                                         },
                                                         {
+                                                            option: "Delete",
+                                                            handler: () =>
+                                                                deleteSelectedSurvey(
+                                                                    survey.id,
+                                                                    survey.assignedOrgUnit.id
+                                                                ),
+                                                        },
+                                                        {
                                                             option: "Add New Country",
                                                             handler: () => assign(survey),
                                                         },
@@ -461,9 +517,20 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                             )}
                         </Table>
                     </TableContainer>
+                    {surveyFormType === "PPSPatientRegister" && (
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 15, 20]}
+                            component="div"
+                            count={total || 0}
+                            rowsPerPage={pageSize}
+                            page={page}
+                            onPageChange={(event, page) => handleChangePage(event, page)}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    )}
                 </TableContentWrapper>
             )}
-        </>
+        </ContentLoader>
     );
 };
 

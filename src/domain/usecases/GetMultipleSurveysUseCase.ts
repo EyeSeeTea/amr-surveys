@@ -24,31 +24,45 @@ export class GetMultipleSurveysUseCase {
             caseReportSurveys: this.surveyReporsitory.getSurveys(
                 surveyFormType,
                 PREVALENCE_CASE_REPORT_FORM_ID,
-                orgUnitId
+                orgUnitId,
+                undefined,
+                -1,
+                -1
             ),
-
             sampleShipmentSurveys: this.surveyReporsitory.getSurveys(
                 surveyFormType,
                 PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
-                orgUnitId
+                orgUnitId,
+                undefined,
+                -1,
+                -1
             ),
 
             centralRefLabSurveys: this.surveyReporsitory.getSurveys(
                 surveyFormType,
                 PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
-                orgUnitId
+                orgUnitId,
+                undefined,
+                -1,
+                -1
             ),
 
             pathogenIsolatesSurveys: this.surveyReporsitory.getSurveys(
                 surveyFormType,
                 PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
-                orgUnitId
+                orgUnitId,
+                undefined,
+                -1,
+                -1
             ),
 
             supranationalRefSurveys: this.surveyReporsitory.getSurveys(
                 surveyFormType,
                 PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-                orgUnitId
+                orgUnitId,
+                undefined,
+                -1,
+                -1
             ),
         }).map(
             ({
@@ -59,11 +73,11 @@ export class GetMultipleSurveysUseCase {
                 supranationalRefSurveys,
             }) => {
                 return [
-                    ...caseReportSurveys,
-                    ...sampleShipmentSurveys,
-                    ...centralRefLabSurveys,
-                    ...pathogenIsolatesSurveys,
-                    ...supranationalRefSurveys,
+                    ...caseReportSurveys.objects,
+                    ...sampleShipmentSurveys.objects,
+                    ...centralRefLabSurveys.objects,
+                    ...pathogenIsolatesSurveys.objects,
+                    ...supranationalRefSurveys.objects,
                 ].filter(survey => survey.rootSurvey.id === rootSurveyId);
             }
         );
