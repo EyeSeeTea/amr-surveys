@@ -10,7 +10,6 @@ import { PPS_SURVEY_FORM_ID } from "../SurveyFormD2Repository";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 
 export class SurveyTestRepository implements SurveyRepository {
-   
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");

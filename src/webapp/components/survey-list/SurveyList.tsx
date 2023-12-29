@@ -44,7 +44,17 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     if (currentModule)
         isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
 
-    const { surveys, loading, error, page, setPage, pageSize, setPageSize, total, setRefreshSurveys } = useSurveys(surveyFormType);
+    const {
+        surveys,
+        loading,
+        error,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        total,
+        setRefreshSurveys,
+    } = useSurveys(surveyFormType);
 
     const {
         statusFilter,
