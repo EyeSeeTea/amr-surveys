@@ -3,14 +3,15 @@ import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 
+const PAGE_SIZE = 5;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string>();
+    const [loadingSurveys, setLoadingSurveys] = useState(false);
+    const [errorSurveys, setErrorSurveys] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
     const [page, setPage] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(5);
+    const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
     const [total, setTotal] = useState<number>();
     const {
         currentPPSSurveyForm,
@@ -22,7 +23,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     } = useCurrentSurveys();
 
     useEffect(() => {
-        setLoading(true);
+        setLoadingSurveys(true);
 
         const parentSurveyId =
             surveyFormType === "PrevalenceFacilityLevelForm" ||
@@ -41,27 +42,47 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             orgUnitId = currentFacilityLevelForm?.orgUnitId ?? "";
         }
 
-        compositionRoot.surveys.getSurveys
-            .execute(
-                surveyFormType,
-                orgUnitId,
-                parentSurveyId,
-                currentWardRegister?.id,
-                page,
-                pageSize
-            )
-            .run(
-                ({ pager: { total }, objects: surveys }) => {
-                    setSurveys(surveys);
-                    setTotal(total);
-                    setLoading(false);
-                },
-                err => {
-                    setError(err.message);
-                    setLoading(false);
-                }
-            );
+        if (
+            surveyFormType === "PPSPatientRegister" ||
+            surveyFormType === "PrevalencePatientForms"
+        ) {
+            compositionRoot.surveys.getPaginatedSurveys
+                .execute(
+                    surveyFormType,
+                    orgUnitId,
+                    parentSurveyId,
+                    currentWardRegister?.id,
+                    page,
+                    PAGE_SIZE
+                )
+                .run(
+                    paginatedSurveys => {
+                        setSurveys(paginatedSurveys.objects);
+                        setTotal(paginatedSurveys.pager.total);
+                        setPageSize(paginatedSurveys.pager.pageSize);
+                        setLoadingSurveys(false);
+                    },
+                    err => {
+                        setErrorSurveys(err.message);
+                        setLoadingSurveys(false);
+                    }
+                );
+        } else {
+            compositionRoot.surveys.getSurveys
+                .execute(surveyFormType, orgUnitId, parentSurveyId)
+                .run(
+                    surveys => {
+                        setSurveys(surveys);
+                        setLoadingSurveys(false);
+                    },
+                    err => {
+                        setErrorSurveys(err.message);
+                        setLoadingSurveys(false);
+                    }
+                );
+        }
     }, [
+        compositionRoot.surveys.getPaginatedSurveys,
         compositionRoot.surveys.getSurveys,
         surveyFormType,
         currentPPSSurveyForm,
@@ -72,13 +93,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentFacilityLevelForm,
         shouldRefreshSurveys,
         page,
-        pageSize,
     ]);
 
     return {
         surveys,
-        loading,
-        error,
+        loadingSurveys,
+        errorSurveys,
         setRefreshSurveys,
         page,
         setPage,

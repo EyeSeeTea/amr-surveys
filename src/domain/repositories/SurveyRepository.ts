@@ -3,7 +3,6 @@ import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
-import { PaginatedReponse } from "../entities/TablePagination";
 
 export interface SurveyRepository {
     getForm(
@@ -21,11 +20,8 @@ export interface SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id,
-        parentWardRegisterId: Id | undefined,
-        page: number,
-        pageSize: number
-    ): FutureData<PaginatedReponse<Survey[]>>;
+        orgUnitId: Id
+    ): FutureData<Survey[]>;
     getPopulatedSurveyById(
         eventId: Id,
         programId: Id,

@@ -18,11 +18,12 @@ import {
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
-import { SurveyListTable } from "./SurveyListTable";
+import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { SplitButton } from "../split-button/SplitButton";
+import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -40,14 +41,14 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
 
-    let isAdmin = false;
-    if (currentModule)
-        isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
+    const isAdmin = currentModule
+        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
+        : false;
 
     const {
         surveys,
-        loading,
-        error,
+        loadingSurveys,
+        errorSurveys,
         page,
         setPage,
         pageSize,
@@ -102,7 +103,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
 
     return (
         <ContentWrapper>
-            <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+            <ContentLoader loading={loadingSurveys} error={errorSurveys} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
                     {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
 
@@ -153,17 +154,28 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             setSurveyType={setSurveyTypeFilter}
                         />
                     )}
-                    <SurveyListTable
-                        surveys={filteredSurveys}
-                        surveyFormType={surveyFormType}
-                        updateSelectedSurveyDetails={updateSelectedSurveyDetails}
-                        page={page}
-                        setPage={setPage}
-                        pageSize={pageSize}
-                        setPageSize={setPageSize}
-                        total={total}
-                        refreshSurveys={setRefreshSurveys}
-                    />
+
+                    {surveyFormType === "PPSPatientRegister" ||
+                    surveyFormType === "PrevalencePatientForms" ? (
+                        <PaginatedSurveyListTable
+                            surveys={filteredSurveys}
+                            surveyFormType={surveyFormType}
+                            updateSelectedSurveyDetails={updateSelectedSurveyDetails}
+                            page={page}
+                            setPage={setPage}
+                            pageSize={pageSize}
+                            setPageSize={setPageSize}
+                            total={total}
+                            refreshSurveys={setRefreshSurveys}
+                        />
+                    ) : (
+                        <SurveyListTable
+                            surveys={filteredSurveys}
+                            surveyFormType={surveyFormType}
+                            updateSelectedSurveyDetails={updateSelectedSurveyDetails}
+                            refreshSurveys={setRefreshSurveys}
+                        />
+                    )}
                 </CustomCard>
             </ContentLoader>
         </ContentWrapper>

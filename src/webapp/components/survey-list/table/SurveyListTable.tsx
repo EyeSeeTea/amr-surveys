@@ -1,4 +1,4 @@
-import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -10,19 +10,17 @@ import {
     TableCell,
     TableHead,
     Typography,
-    TablePagination,
 } from "@material-ui/core";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { ActionMenuButton } from "../action-menu-button/ActionMenuButton";
-import { palette } from "../../pages/app/themes/dhis2.theme";
-import { Id } from "../../../domain/entities/Ref";
-import { getChildSurveyType, getSurveyOptions } from "../../../domain/utils/PPSProgramsHelper";
-import { useHistory } from "react-router-dom";
-import { ChangeEvent, Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
+import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
+import { palette } from "../../../pages/app/themes/dhis2.theme";
+import { Id } from "../../../../domain/entities/Ref";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
-import _ from "../../../domain/entities/generic/Collection";
-import { useDeleteSurvey } from "./hook/useDeleteSurvey";
-import { ContentLoader } from "../content-loader/ContentLoader";
+import _ from "../../../../domain/entities/generic/Collection";
+import { useDeleteSurvey } from "../hook/useDeleteSurvey";
+import { ContentLoader } from "../../content-loader/ContentLoader";
+import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -33,170 +31,56 @@ interface SurveyListTableProps {
         orgUnitId: Id,
         rootSurvey: SurveyBase
     ) => void;
-    page: number;
-    setPage: Dispatch<SetStateAction<number>>;
-    pageSize: number;
-    setPageSize: Dispatch<SetStateAction<number>>;
-    total?: number;
 }
 
-export type SortDirection = "asc" | "desc";
 export type SurveyColumns = keyof Survey;
 export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
     updateSelectedSurveyDetails,
     refreshSurveys,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
-    total,
 }) => {
-    const [options, setOptions] = useState<string[]>([]);
-    const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
+    const snackbar = useSnackbar();
+
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
     const [statusSortDirection, setStatusSortDirection] = useState<SortDirection>("asc");
     const [surveyTypeSortDirection, setSurveyTypeSortDirection] = useState<SortDirection>("asc");
-    const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
-    const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
     const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
     const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
         useState<SortDirection>("asc");
-
-    useEffect(() => {
-        if (surveys) setSortedSurveys(surveys);
-    }, [surveys]);
-
-    const history = useHistory();
-
-    //wrappers to parse the params to hopefully improve readability
-    const edit = (survey: Survey) => {
-        editSurvey(
-            {
-                id: survey.id,
-                name: survey.name,
-                surveyType: survey.surveyType,
-            },
-            survey.assignedOrgUnit.id,
-            survey.rootSurvey
-        );
-    };
-    const assign = (survey: Survey) => {
-        assignChild(
-            {
-                id: survey.id,
-                name: survey.name,
-                surveyType: survey.surveyType,
-            },
-            survey.assignedOrgUnit.id,
-            survey.rootSurvey,
-            survey.surveyType
-        );
-    };
-
-    const list = (survey: Survey) => {
-        listChildren(
-            {
-                id: survey.id,
-                name: survey.name,
-                surveyType: survey.surveyType,
-            },
-            survey.assignedOrgUnit.id,
-            survey.rootSurvey,
-            survey.surveyType
-        );
-    };
-
-    const editSurvey = (survey: SurveyBase, orgUnitId: Id, rootSurvey: SurveyBase) => {
-        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
-        history.push({
-            pathname: `/survey/${surveyFormType}/${survey.id}`,
-        });
-    };
 
     const { deleteSurvey, loading, setLoading, error, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
+    const {
+        options,
+        sortedSurveys,
+        setSortedSurveys,
+        editSurvey,
+        assignChild,
+        listChildren,
+        actionClick,
+        sortByColumn,
+    } = useSurveyListActions(surveyFormType, updateSelectedSurveyDetails);
 
     const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
         setLoading(true);
         deleteSurvey(surveyId, orgUnitId);
     };
 
-    const snackbar = useSnackbar();
-
     useEffect(() => {
+        if (surveys) setSortedSurveys(surveys);
+
         if (deleteCompleteState?.status === "success") {
             snackbar.success(deleteCompleteState.message);
         }
         if (deleteCompleteState?.status === "error") {
             snackbar.error(deleteCompleteState.message);
         }
-    }, [deleteCompleteState, snackbar]);
-
-    const assignChild = (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase,
-        ppsSurveyType?: string
-    ) => {
-        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
-        const childSurveyType = getChildSurveyType(surveyFormType, ppsSurveyType);
-        if (childSurveyType) {
-            history.push({
-                pathname: `/new-survey/${childSurveyType}`,
-            });
-        } else {
-            console.debug("An error occured, unknown survey type");
-        }
-    };
-
-    const listChildren = (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase,
-        ppsSurveyType?: string
-    ) => {
-        updateSelectedSurveyDetails(survey, orgUnitId, rootSurvey);
-
-        const childSurveyType = getChildSurveyType(surveyFormType, ppsSurveyType);
-        if (childSurveyType)
-            history.replace({
-                pathname: `/surveys/${childSurveyType}`,
-            });
-        else {
-            console.debug("An error occured, unknown survey type");
-        }
-    };
-
-    const actionClick = (ppsSurveyType: string) => {
-        const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
-        setOptions(currentOptions);
-    };
-
-    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-        setSortedSurveys(surveys => {
-            if (surveys)
-                return _(surveys)
-                    .sortBy(x => x[columnName], { direction: sortDirection })
-                    .value();
-        });
-    };
-
-    const handleChangePage = (_event: MouseEvent | null, newPage: SetStateAction<number>) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (
-        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        setPageSize(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+    }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
 
     return (
         <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
@@ -307,7 +191,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </>
                                     )}
 
-                                    {surveyFormType === "PPSPatientRegister" && (
+                                    {/* {surveyFormType === "PPSPatientRegister" && (
                                         <>
                                             <TableCell
                                                 onClick={() => {
@@ -348,7 +232,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 </span>
                                             </TableCell>
                                         </>
-                                    )}
+                                    )} */}
                                     {surveyFormType === "PPSWardRegister" && (
                                         <TableCell
                                             onClick={() => {
@@ -422,12 +306,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 </>
                                             )}
 
-                                            {surveyFormType === "PPSPatientRegister" && (
+                                            {/* {surveyFormType === "PPSPatientRegister" && (
                                                 <>
                                                     <TableCell>{survey.id}</TableCell>
                                                     <TableCell>{survey.name}</TableCell>
                                                 </>
-                                            )}
+                                            )} */}
                                             {surveyFormType === "PPSWardRegister" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
@@ -444,7 +328,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                     optionClickHandler={[
                                                         {
                                                             option: "Edit",
-                                                            handler: () => edit(survey),
+                                                            handler: () => editSurvey(survey),
                                                         },
                                                         {
                                                             option: "Delete",
@@ -456,51 +340,51 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                         },
                                                         {
                                                             option: "Add New Country",
-                                                            handler: () => assign(survey),
+                                                            handler: () => assignChild(survey),
                                                         },
                                                         {
                                                             option: "List Countries",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "Add New Hospital",
-                                                            handler: () => assign(survey),
+                                                            handler: () => assignChild(survey),
                                                         },
                                                         {
                                                             option: "List Hospitals",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "Add New Ward",
-                                                            handler: () => assign(survey),
+                                                            handler: () => assignChild(survey),
                                                         },
                                                         {
                                                             option: "List Wards",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "List Country",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "Add New Patient",
-                                                            handler: () => assign(survey),
+                                                            handler: () => assignChild(survey),
                                                         },
                                                         {
                                                             option: "List Patients",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "Add New Facility",
-                                                            handler: () => assign(survey),
+                                                            handler: () => assignChild(survey),
                                                         },
                                                         {
                                                             option: "List Facilities",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "List All Patient Surveys",
-                                                            handler: () => list(survey),
+                                                            handler: () => listChildren(survey),
                                                         },
                                                     ]}
                                                 />
@@ -517,7 +401,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                             )}
                         </Table>
                     </TableContainer>
-                    {surveyFormType === "PPSPatientRegister" && (
+                    {/* {surveyFormType === "PPSPatientRegister" && (
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 15, 20]}
                             component="div"
@@ -527,7 +411,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                             onPageChange={(event, page) => handleChangePage(event, page)}
                             onRowsPerPageChange={handleChangeRowsPerPage}
                         />
-                    )}
+                    )} */}
                 </TableContentWrapper>
             )}
         </ContentLoader>
