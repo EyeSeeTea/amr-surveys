@@ -14,7 +14,7 @@ import {
     getParentDataElementForProgram,
     getSurveyNameBySurveyFormType,
     isTrackerProgram,
-} from "../utils/programHelper";
+} from "../utils/surveyProgramHelper";
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,

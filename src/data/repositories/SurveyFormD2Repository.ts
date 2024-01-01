@@ -35,7 +35,7 @@ import {
     D2TrackerEnrollment,
     D2TrackerEnrollmentAttribute,
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
-import { getSurveyNameBySurveyFormType, isTrackerProgram } from "../utils/programHelper";
+import { getSurveyNameBySurveyFormType, isTrackerProgram } from "../utils/surveyProgramHelper";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -93,6 +93,50 @@ const hiddenFields = ["Add new antibiotic"];
 const programsWithRepeatableSections = [
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+];
+
+type SURVEY_DATA_ELEMENT_KEYS =
+    | "startDate"
+    | "surveyType"
+    | "surveyCompleted"
+    | "parentPPSSurveyId"
+    | "surveyName"
+    | "hospitalCode"
+    | "wardCode"
+    | "patientCode"
+    | "parentWardRegisterId";
+
+interface SurveyKeyDataElementMapType {
+    key: SURVEY_DATA_ELEMENT_KEYS;
+    dataElements: Id[];
+}
+
+const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
+    {
+        key: "startDate",
+        dataElements: [START_DATE_DATAELEMENT_ID, PREVALENCE_START_DATE_DATAELEMENT_ID],
+    },
+    { key: "surveyType", dataElements: [SURVEY_TYPE_DATAELEMENT_ID] },
+    {
+        key: "surveyCompleted",
+        dataElements: [SURVEY_COMPLETED_DATAELEMENT_ID, PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID],
+    },
+    {
+        key: "parentPPSSurveyId",
+        dataElements: [
+            SURVEY_ID_DATAELEMENT_ID,
+            SURVEY_ID_PATIENT_DATAELEMENT_ID,
+            AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
+        ],
+    },
+    {
+        key: "surveyName",
+        dataElements: [SURVEY_NAME_DATAELEMENT_ID, PREVELANCE_SURVEY_NAME_DATAELEMENT_ID],
+    },
+    { key: "hospitalCode", dataElements: [SURVEY_HOSPITAL_CODE_DATAELEMENT_ID] },
+    { key: "wardCode", dataElements: [SURVEY_WARD_CODE_DATAELEMENT_ID] },
+    { key: "patientCode", dataElements: [SURVEY_PATIENT_CODE_DATAELEMENT_ID] },
+    { key: "parentWardRegisterId", dataElements: [WARD_ID_DATAELEMENT_ID] },
 ];
 
 export class SurveyD2Repository implements SurveyRepository {
@@ -887,53 +931,27 @@ export class SurveyD2Repository implements SurveyRepository {
             const events = response.instances;
 
             const surveys = events.map(event => {
-                let startDateString,
-                    surveyType = "",
-                    surveyCompleted,
-                    parentPPSSurveyId = "",
-                    parentWardRegisterId = "",
-                    surveyName = "",
-                    hospitalCode = "",
-                    wardCode = "",
-                    patientCode = "";
+                const surveyProperties = new Map(
+                    keyToDataElementMap.map(({ key, dataElements }) => {
+                        const value =
+                            event.dataValues.find(dv => dataElements.includes(dv.dataElement))
+                                ?.value ?? "";
 
-                event.dataValues.forEach(dv => {
-                    if (
-                        dv.dataElement === START_DATE_DATAELEMENT_ID ||
-                        dv.dataElement === PREVALENCE_START_DATE_DATAELEMENT_ID
-                    )
-                        startDateString = dv.value;
+                        return [key, value] as const;
+                    })
+                );
 
-                    if (dv.dataElement === SURVEY_TYPE_DATAELEMENT_ID) surveyType = dv.value;
+                const startDateStr = surveyProperties.get("startDate");
+                const startDate = startDateStr ? new Date(startDateStr) : undefined;
+                const surveyName = surveyProperties.get("surveyName") ?? "";
+                const surveyCompleted = surveyProperties.get("surveyCompleted") ?? "";
+                const hospitalCode = surveyProperties.get("hospitalCode") ?? "";
+                const wardCode = surveyProperties.get("wardCode") ?? "";
+                const patientCode = surveyProperties.get("patientCode") ?? "";
+                const parentPPSSurveyId = surveyProperties.get("parentPPSSurveyId") ?? "";
+                const surveyType = surveyProperties.get("surveyType") ?? "";
+                const parentWardRegisterId = surveyProperties.get("parentWardRegisterId") ?? "";
 
-                    if (
-                        dv.dataElement === SURVEY_COMPLETED_DATAELEMENT_ID ||
-                        dv.dataElement === PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID
-                    )
-                        surveyCompleted = dv.value;
-
-                    if (
-                        dv.dataElement === SURVEY_ID_DATAELEMENT_ID ||
-                        dv.dataElement === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
-                        dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID
-                    )
-                        parentPPSSurveyId = dv.value;
-
-                    if (dv.dataElement === WARD_ID_DATAELEMENT_ID) parentWardRegisterId = dv.value;
-                    if (
-                        dv.dataElement === SURVEY_NAME_DATAELEMENT_ID ||
-                        dv.dataElement === PREVELANCE_SURVEY_NAME_DATAELEMENT_ID
-                    )
-                        surveyName = dv.value;
-
-                    if (dv.dataElement === SURVEY_HOSPITAL_CODE_DATAELEMENT_ID)
-                        hospitalCode = dv.value;
-                    if (dv.dataElement === SURVEY_WARD_CODE_DATAELEMENT_ID) wardCode = dv.value;
-                    if (dv.dataElement === SURVEY_PATIENT_CODE_DATAELEMENT_ID)
-                        patientCode = dv.value;
-                });
-
-                const startDate = startDateString ? new Date(startDateString) : undefined;
                 const status =
                     surveyCompleted === "false" && startDate
                         ? startDate > new Date()
