@@ -9,7 +9,7 @@ import {
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+} from "../../data/entities/D2Survey";
 import { Future } from "../entities/generic/Future";
 import {
     Question,

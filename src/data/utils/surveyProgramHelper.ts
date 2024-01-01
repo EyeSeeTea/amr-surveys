@@ -6,13 +6,19 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
+    PREVALANCE_CASE_REPORT_TET,
+    PREVALANCE_CENTRAL_REF_LAB_TET,
+    PREVALANCE_FACILITY_LEVEL_TET,
+    PREVALANCE_PATHOGEN_ISOLATES_TET,
+    PREVALANCE_SAMPLE_SHIPMENT_TET,
+    PREVALANCE_SUPRANATIONAL_TET,
     PREVALENCE_CASE_REPORT_FORM_ID,
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-} from "../repositories/SurveyFormD2Repository";
+} from "../entities/D2Survey";
 
 export const isTrackerProgram = (programId: Id) => {
     switch (programId) {
@@ -25,6 +31,26 @@ export const isTrackerProgram = (programId: Id) => {
             return true;
         default:
             return false;
+    }
+};
+
+export const getTrackedEntityAttributeType = (programId: Id) => {
+    switch (programId) {
+        case PREVALENCE_CASE_REPORT_FORM_ID:
+            return PREVALANCE_CASE_REPORT_TET;
+        case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
+            return PREVALANCE_SAMPLE_SHIPMENT_TET;
+        case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
+            return PREVALANCE_CENTRAL_REF_LAB_TET;
+        case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
+            return PREVALANCE_PATHOGEN_ISOLATES_TET;
+        case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
+            return PREVALANCE_SUPRANATIONAL_TET;
+        case PREVALENCE_FACILITY_LEVEL_FORM_ID:
+            return PREVALANCE_FACILITY_LEVEL_TET;
+
+        default:
+            return "";
     }
 };
 

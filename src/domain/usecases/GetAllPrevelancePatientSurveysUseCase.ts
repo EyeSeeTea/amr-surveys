@@ -9,7 +9,7 @@ import {
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+} from "../../data/entities/D2Survey";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 

@@ -6,7 +6,7 @@ import { Id } from "../../../domain/entities/Ref";
 import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
-import { PPS_SURVEY_FORM_ID } from "../SurveyFormD2Repository";
+import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {

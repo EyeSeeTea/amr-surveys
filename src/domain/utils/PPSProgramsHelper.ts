@@ -11,7 +11,7 @@ import {
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
     PREVALENCE_SURVEY_FORM_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+} from "../../data/entities/D2Survey";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export const PREVALENCE_PATIENT_OPTIONS = [

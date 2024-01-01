@@ -21,7 +21,7 @@ export function useSurveyFormOUSelector(
             );
             return;
         }
-        
+
         if (orgUnitPaths[0]) {
             const orgUnits = orgUnitPaths[0].split("/");
 
