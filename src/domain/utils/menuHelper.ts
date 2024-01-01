@@ -6,22 +6,15 @@ export const getUserAccess = (module: AMRSurveyModule, currentUserGroups: NamedR
     const hasReadAccess =
         currentUserGroups.filter(cug =>
             module.userGroups.readAccess?.some(raug => raug.id === cug.id)
-        ).length > 0
-            ? true
-            : false;
+        ).length > 0;
     const hasCaptureAccess =
         currentUserGroups.filter(cug =>
             module.userGroups.captureAccess?.some(caug => caug.id === cug.id)
-        ).length > 0
-            ? true
-            : false;
+        ).length > 0;
     const hasAdminAccess =
         currentUserGroups.filter(cug =>
             module.userGroups.adminAccess?.some(aaug => aaug.id === cug.id)
-        ).length > 0
-            ? true
-            : false;
-
+        ).length > 0;
     return { hasReadAccess, hasCaptureAccess, hasAdminAccess };
 };
 

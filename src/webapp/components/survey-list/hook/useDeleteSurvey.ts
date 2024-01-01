@@ -18,6 +18,8 @@ export function useDeleteSurvey(
     const { currentHospitalForm } = useCurrentSurveys();
 
     const deleteSurvey = (surveyId: Id, orgUnitId: Id) => {
+        setLoading(true);
+
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
         compositionRoot.surveys.deleteSurvey.execute(formType, orgUnitId, surveyId).run(

@@ -19,12 +19,13 @@ export class SaveFormDataUseCase {
         const programId = getProgramId(surveyFormType);
 
         //All PPS Survey Forms are Global.
-        if (surveyFormType === "PPSSurveyForm" && orgUnitId === "") orgUnitId = GLOBAL_OU_ID;
+        const ouId =
+            surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
         return this.surveyReporsitory.saveFormData(
             questionnaire,
             "CREATE_AND_UPDATE",
-            orgUnitId,
+            ouId,
             eventId,
             programId
         );

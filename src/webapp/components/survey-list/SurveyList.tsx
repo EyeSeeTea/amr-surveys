@@ -1,16 +1,14 @@
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, Typography } from "@material-ui/core";
-import { NavLink, useHistory } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import {
-    getFormTypeFromOption,
     getSurveyDisplayName,
     hideCreateNewButton,
     PREVALENCE_PATIENT_OPTIONS,
@@ -24,20 +22,13 @@ import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { SplitButton } from "../split-button/SplitButton";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
+import { useSurveyListActions } from "./hook/useSurveyListActions";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
-    const {
-        currentPPSSurveyForm,
-        changeCurrentPPSSurveyForm,
-        changeCurrentCountryQuestionnaire,
-        changeCurrentHospitalForm,
-        changeCurrentWardRegister,
-        changeCurrentPrevalenceSurveyForm,
-        changeCurrentFacilityLevelForm,
-    } = useCurrentSurveys();
+    const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
 
@@ -52,7 +43,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         page,
         setPage,
         pageSize,
-        setPageSize,
         total,
         setRefreshSurveys,
     } = useSurveys(surveyFormType);
@@ -64,42 +54,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         setSurveyTypeFilter,
         filteredSurveys,
     } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
-    const history = useHistory();
 
-    const updateSelectedSurveyDetails = (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase
-    ) => {
-        if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
-        else if (surveyFormType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PPSHospitalForm") {
-            if (!isAdmin) {
-                changeCurrentPPSSurveyForm(rootSurvey);
-            }
-            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
-        } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
-        else if (surveyFormType === "PrevalenceSurveyForm")
-            changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PrevalenceFacilityLevelForm")
-            changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
-    };
-
-    const handleSplitButtonClick = (
-        option:
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[0]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[1]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[2]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[3]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[4]
-    ) => {
-        const formType = getFormTypeFromOption(option);
-        if (formType)
-            history.push({
-                pathname: `/new-survey/${formType}`,
-            });
-    };
+    const { handleSplitButtonClick } = useSurveyListActions(surveyFormType);
 
     return (
         <ContentWrapper>
@@ -160,11 +116,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         <PaginatedSurveyListTable
                             surveys={filteredSurveys}
                             surveyFormType={surveyFormType}
-                            updateSelectedSurveyDetails={updateSelectedSurveyDetails}
                             page={page}
                             setPage={setPage}
                             pageSize={pageSize}
-                            setPageSize={setPageSize}
                             total={total}
                             refreshSurveys={setRefreshSurveys}
                         />
@@ -172,7 +126,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         <SurveyListTable
                             surveys={filteredSurveys}
                             surveyFormType={surveyFormType}
-                            updateSelectedSurveyDetails={updateSelectedSurveyDetails}
                             refreshSurveys={setRefreshSurveys}
                         />
                     )}

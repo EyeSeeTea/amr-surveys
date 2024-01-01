@@ -1,4 +1,4 @@
-import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -14,7 +14,6 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Id } from "../../../../domain/entities/Ref";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../../domain/entities/generic/Collection";
@@ -26,18 +25,12 @@ interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
     refreshSurveys: Dispatch<SetStateAction<{}>>;
-    updateSelectedSurveyDetails: (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase
-    ) => void;
 }
 
 export type SurveyColumns = keyof Survey;
 export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveys,
     surveyFormType,
-    updateSelectedSurveyDetails,
     refreshSurveys,
 }) => {
     const snackbar = useSnackbar();
@@ -51,7 +44,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
         useState<SortDirection>("asc");
 
-    const { deleteSurvey, loading, setLoading, error, deleteCompleteState } = useDeleteSurvey(
+    const { deleteSurvey, loading, error, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
@@ -64,12 +57,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         listChildren,
         actionClick,
         sortByColumn,
-    } = useSurveyListActions(surveyFormType, updateSelectedSurveyDetails);
-
-    const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
-        setLoading(true);
-        deleteSurvey(surveyId, orgUnitId);
-    };
+    } = useSurveyListActions(surveyFormType);
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
@@ -190,49 +178,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             )}
                                         </>
                                     )}
-
-                                    {/* {surveyFormType === "PPSPatientRegister" && (
-                                        <>
-                                            <TableCell
-                                                onClick={() => {
-                                                    patientIdSortDirection === "asc"
-                                                        ? setPatientIdSortDirection("desc")
-                                                        : setPatientIdSortDirection("asc");
-                                                    sortByColumn("id", patientIdSortDirection);
-                                                }}
-                                            >
-                                                <span>
-                                                    <Typography variant="caption">
-                                                        {i18n.t("Patient Id")}
-                                                    </Typography>
-                                                    {patientIdSortDirection === "asc" ? (
-                                                        <ArrowUpward fontSize="small" />
-                                                    ) : (
-                                                        <ArrowDownward fontSize="small" />
-                                                    )}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell
-                                                onClick={() => {
-                                                    patientNameSortDirection === "asc"
-                                                        ? setPatientNameSortDirection("desc")
-                                                        : setPatientNameSortDirection("asc");
-                                                    sortByColumn("name", patientNameSortDirection);
-                                                }}
-                                            >
-                                                <span>
-                                                    <Typography variant="caption">
-                                                        {i18n.t("Patient Name")}
-                                                    </Typography>
-                                                    {patientNameSortDirection === "asc" ? (
-                                                        <ArrowUpward fontSize="small" />
-                                                    ) : (
-                                                        <ArrowDownward fontSize="small" />
-                                                    )}
-                                                </span>
-                                            </TableCell>
-                                        </>
-                                    )} */}
                                     {surveyFormType === "PPSWardRegister" && (
                                         <TableCell
                                             onClick={() => {
@@ -306,12 +251,6 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 </>
                                             )}
 
-                                            {/* {surveyFormType === "PPSPatientRegister" && (
-                                                <>
-                                                    <TableCell>{survey.id}</TableCell>
-                                                    <TableCell>{survey.name}</TableCell>
-                                                </>
-                                            )} */}
                                             {surveyFormType === "PPSWardRegister" && (
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
@@ -333,7 +272,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                         {
                                                             option: "Delete",
                                                             handler: () =>
-                                                                deleteSelectedSurvey(
+                                                                deleteSurvey(
                                                                     survey.id,
                                                                     survey.assignedOrgUnit.id
                                                                 ),
@@ -395,23 +334,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                             ) : (
                                 <StyledTableBody>
                                     <TableRow>
-                                        <TableCell>No data found...</TableCell>
+                                        <TableCell>{i18n.t("No data found...")} </TableCell>
                                     </TableRow>
                                 </StyledTableBody>
                             )}
                         </Table>
                     </TableContainer>
-                    {/* {surveyFormType === "PPSPatientRegister" && (
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 15, 20]}
-                            component="div"
-                            count={total || 0}
-                            rowsPerPage={pageSize}
-                            page={page}
-                            onPageChange={(event, page) => handleChangePage(event, page)}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                        />
-                    )} */}
                 </TableContentWrapper>
             )}
         </ContentLoader>

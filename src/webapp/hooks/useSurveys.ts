@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loadingSurveys, setLoadingSurveys] = useState(false);
-    const [errorSurveys, setErrorSurveys] = useState<string>();
+    const [surveysError, setSurveysError] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
     const [page, setPage] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
@@ -22,6 +22,29 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentFacilityLevelForm,
     } = useCurrentSurveys();
 
+    const getOrgUnitByFormType = useCallback(() => {
+        switch (surveyFormType) {
+            case "PPSHospitalForm":
+                return currentCountryQuestionnaire?.orgUnitId ?? "";
+            case "PPSWardRegister":
+            case "PPSPatientRegister":
+                return currentHospitalForm?.orgUnitId ?? "";
+
+            case "PrevalenceFacilityLevelForm":
+                return currentPrevalenceSurveyForm?.orgUnitId ?? "";
+            case "PrevalencePatientForms":
+                return currentFacilityLevelForm?.orgUnitId ?? "";
+            default:
+                return "";
+        }
+    }, [
+        currentCountryQuestionnaire?.orgUnitId,
+        currentFacilityLevelForm?.orgUnitId,
+        currentHospitalForm?.orgUnitId,
+        currentPrevalenceSurveyForm?.orgUnitId,
+        surveyFormType,
+    ]);
+
     useEffect(() => {
         setLoadingSurveys(true);
 
@@ -31,17 +54,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                 ? currentPrevalenceSurveyForm?.id
                 : currentPPSSurveyForm?.id;
 
-        let orgUnitId = "";
-        if (surveyFormType === "PPSHospitalForm")
-            orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
-        else if (surveyFormType === "PPSWardRegister" || surveyFormType === "PPSPatientRegister")
-            orgUnitId = currentHospitalForm?.orgUnitId ?? "";
-        else if (surveyFormType === "PrevalenceFacilityLevelForm") {
-            orgUnitId = currentPrevalenceSurveyForm?.orgUnitId ?? "";
-        } else if (surveyFormType === "PrevalencePatientForms") {
-            orgUnitId = currentFacilityLevelForm?.orgUnitId ?? "";
-        }
+        const orgUnitId = getOrgUnitByFormType();
 
+        //Only Patient Forms are paginated.
         if (
             surveyFormType === "PPSPatientRegister" ||
             surveyFormType === "PrevalencePatientForms"
@@ -63,11 +78,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                         setLoadingSurveys(false);
                     },
                     err => {
-                        setErrorSurveys(err.message);
+                        setSurveysError(err.message);
                         setLoadingSurveys(false);
                     }
                 );
         } else {
+            //Other forms are not paginated.
             compositionRoot.surveys.getSurveys
                 .execute(surveyFormType, orgUnitId, parentSurveyId)
                 .run(
@@ -76,7 +92,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                         setLoadingSurveys(false);
                     },
                     err => {
-                        setErrorSurveys(err.message);
+                        setSurveysError(err.message);
                         setLoadingSurveys(false);
                     }
                 );
@@ -86,19 +102,17 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         compositionRoot.surveys.getSurveys,
         surveyFormType,
         currentPPSSurveyForm,
-        currentCountryQuestionnaire?.orgUnitId,
-        currentHospitalForm?.orgUnitId,
+        currentPrevalenceSurveyForm?.id,
         currentWardRegister,
-        currentPrevalenceSurveyForm,
-        currentFacilityLevelForm,
         shouldRefreshSurveys,
         page,
+        getOrgUnitByFormType,
     ]);
 
     return {
         surveys,
         loadingSurveys,
-        errorSurveys,
+        errorSurveys: surveysError,
         setRefreshSurveys,
         page,
         setPage,

@@ -1,4 +1,4 @@
-import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -15,8 +15,7 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Id } from "../../../../domain/entities/Ref";
-import { ChangeEvent, Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
@@ -27,15 +26,9 @@ interface PaginatedSurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
     refreshSurveys: Dispatch<SetStateAction<{}>>;
-    updateSelectedSurveyDetails: (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase
-    ) => void;
     page: number;
     setPage: Dispatch<SetStateAction<number>>;
     pageSize: number;
-    setPageSize: Dispatch<SetStateAction<number>>;
     total?: number;
 }
 
@@ -44,12 +37,10 @@ export type SurveyColumns = keyof Survey;
 export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> = ({
     surveys,
     surveyFormType,
-    updateSelectedSurveyDetails,
     refreshSurveys,
     page,
     setPage,
     pageSize,
-    setPageSize,
     total,
 }) => {
     const snackbar = useSnackbar();
@@ -58,17 +49,12 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
     const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
 
-    const { deleteSurvey, loading, setLoading, error, deleteCompleteState } = useDeleteSurvey(
+    const { deleteSurvey, loading, error, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
     const { options, sortedSurveys, setSortedSurveys, editSurvey, actionClick, sortByColumn } =
-        useSurveyListActions(surveyFormType, updateSelectedSurveyDetails);
-
-    const deleteSelectedSurvey = (surveyId: Id, orgUnitId: Id) => {
-        setLoading(true);
-        deleteSurvey(surveyId, orgUnitId);
-    };
+        useSurveyListActions(surveyFormType);
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
@@ -80,17 +66,6 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
             snackbar.error(deleteCompleteState.message);
         }
     }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
-
-    const handleChangePage = (_event: MouseEvent | null, newPage: SetStateAction<number>) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (
-        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        setPageSize(parseInt(event.target.value, 10));
-        setPage(0);
-    };
 
     return (
         <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
@@ -193,7 +168,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         {
                                                             option: "Delete",
                                                             handler: () =>
-                                                                deleteSelectedSurvey(
+                                                                deleteSurvey(
                                                                     survey.id,
                                                                     survey.assignedOrgUnit.id
                                                                 ),
@@ -207,7 +182,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                             ) : (
                                 <StyledTableBody>
                                     <TableRow>
-                                        <TableCell>No data found...</TableCell>
+                                        <TableCell> {i18n.t("No data found...")}</TableCell>
                                     </TableRow>
                                 </StyledTableBody>
                             )}
@@ -220,8 +195,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                         count={total || 0}
                         rowsPerPage={pageSize}
                         page={page}
-                        onPageChange={(event, page) => handleChangePage(event, page)}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
+                        onPageChange={(_e, page) => setPage(page)}
                     />
                 </TableContentWrapper>
             )}

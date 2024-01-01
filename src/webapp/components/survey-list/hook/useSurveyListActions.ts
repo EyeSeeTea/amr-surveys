@@ -2,17 +2,37 @@ import { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Id } from "../../../../domain/entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
-import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
+import {
+    getChildSurveyType,
+    getFormTypeFromOption,
+    getSurveyOptions,
+    PREVALENCE_PATIENT_OPTIONS,
+} from "../../../../domain/utils/PPSProgramsHelper";
 import _ from "../../../../domain/entities/generic/Collection";
+import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
+import { useCurrentModule } from "../../../contexts/current-module-context";
+import { getUserAccess } from "../../../../domain/utils/menuHelper";
+import { useAppContext } from "../../../contexts/app-context";
 
 export type SortDirection = "asc" | "desc";
-export function useSurveyListActions(
-    surveyFormType: SURVEY_FORM_TYPES,
-    updateSelectedSurveyDetails: (survey: SurveyBase, orgUnitId: Id, rootSurvey: SurveyBase) => void
-) {
+export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const history = useHistory();
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
+    const {
+        changeCurrentPPSSurveyForm,
+        changeCurrentCountryQuestionnaire,
+        changeCurrentHospitalForm,
+        changeCurrentWardRegister,
+        changeCurrentPrevalenceSurveyForm,
+        changeCurrentFacilityLevelForm,
+    } = useCurrentSurveys();
+    const { currentModule } = useCurrentModule();
+    const { currentUser } = useAppContext();
+
+    const isAdmin = currentModule
+        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
+        : false;
 
     const editSurvey = (survey: Survey) => {
         updateSelectedSurveyDetails(
@@ -83,6 +103,41 @@ export function useSurveyListActions(
         });
     };
 
+    const updateSelectedSurveyDetails = (
+        survey: SurveyBase,
+        orgUnitId: Id,
+        rootSurvey: SurveyBase
+    ) => {
+        if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
+        else if (surveyFormType === "PPSCountryQuestionnaire")
+            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
+        else if (surveyFormType === "PPSHospitalForm") {
+            if (!isAdmin) {
+                changeCurrentPPSSurveyForm(rootSurvey);
+            }
+            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
+        } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
+        else if (surveyFormType === "PrevalenceSurveyForm")
+            changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
+        else if (surveyFormType === "PrevalenceFacilityLevelForm")
+            changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
+    };
+
+    const handleSplitButtonClick = (
+        option:
+            | (typeof PREVALENCE_PATIENT_OPTIONS)[0]
+            | (typeof PREVALENCE_PATIENT_OPTIONS)[1]
+            | (typeof PREVALENCE_PATIENT_OPTIONS)[2]
+            | (typeof PREVALENCE_PATIENT_OPTIONS)[3]
+            | (typeof PREVALENCE_PATIENT_OPTIONS)[4]
+    ) => {
+        const formType = getFormTypeFromOption(option);
+        if (formType)
+            history.push({
+                pathname: `/new-survey/${formType}`,
+            });
+    };
+
     return {
         options,
         sortedSurveys,
@@ -92,5 +147,6 @@ export function useSurveyListActions(
         listChildren,
         actionClick,
         sortByColumn,
+        handleSplitButtonClick,
     };
 }

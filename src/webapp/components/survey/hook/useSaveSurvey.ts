@@ -12,21 +12,27 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
     const [saveCompleteState, setSaveCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm, currentFacilityLevelForm } = useCurrentSurveys();
 
-    const saveSurvey = (questionnaire: Questionnaire) => {
-        if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
-            orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+    const getOrgUnitByFormType = (originalOrgUnitId: Id) => {
+        switch (formType) {
+            case "PPSWardRegister":
+            case "PPSPatientRegister":
+                return (orgUnitId = currentHospitalForm?.orgUnitId ?? "");
+            case "PrevalenceCaseReportForm":
+            case "PrevalenceSampleShipTrackForm":
+            case "PrevalenceCentralRefLabForm":
+            case "PrevalencePathogenIsolatesLog":
+            case "PrevalenceSupranationalRefLabForm":
+                return currentFacilityLevelForm?.orgUnitId ?? "";
+            default:
+                return originalOrgUnitId;
+        }
+    };
 
-        if (
-            formType === "PrevalenceCaseReportForm" ||
-            formType === "PrevalenceSampleShipTrackForm" ||
-            formType === "PrevalenceCentralRefLabForm" ||
-            formType === "PrevalencePathogenIsolatesLog" ||
-            formType === "PrevalenceSupranationalRefLabForm"
-        )
-            orgUnitId = currentFacilityLevelForm?.orgUnitId ?? "";
+    const saveSurvey = (questionnaire: Questionnaire) => {
+        const orgUnitByFormType = getOrgUnitByFormType(orgUnitId);
 
         compositionRoot.surveys.saveFormData
-            .execute(formType, questionnaire, orgUnitId, surveyId)
+            .execute(formType, questionnaire, orgUnitByFormType, surveyId)
             .run(
                 () => {
                     setSaveCompleteState({
