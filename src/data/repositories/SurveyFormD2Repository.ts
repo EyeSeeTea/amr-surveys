@@ -24,6 +24,7 @@ import {
 } from "../../domain/entities/EventProgram";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
+import { PaginatedReponse } from "../../domain/entities/TablePagination";
 
 //PPS Program Ids
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
@@ -402,8 +403,11 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
-    ): FutureData<Survey[]> {
+        orgUnitId: Id,
+        parentWardRegisterId: Id | undefined,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode =
             orgUnitId !== "" &&
             (programId === PPS_WARD_REGISTER_ID ||
@@ -417,9 +421,16 @@ export class SurveyD2Repository implements SurveyRepository {
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                // Testing the API filter for now to see how the filtering performs
+                ...(surveyFormType === "PPSPatientRegister" && {
+                    page: page + 1,
+                    pageSize,
+                    totalPages: true,
+                    filter: `${WARD_ID_DATAELEMENT_ID}:eq:${parentWardRegisterId}`,
+                }),
             })
         ).flatMap(response => {
-            return this.buildSurveys(response.instances, surveyFormType, programId);
+            return this.buildSurveys(response, surveyFormType, programId);
         });
     }
 
@@ -452,7 +463,7 @@ export class SurveyD2Repository implements SurveyRepository {
         else return Future.success("");
     }
 
-    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<Survey[]> {
+    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.get<TrackerEventsResponse>(
                 `/tracker/events?${PATIENT_ID}:like:${keyword}&filter=${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}&rootJunction=OR`,
@@ -463,19 +474,18 @@ export class SurveyD2Repository implements SurveyRepository {
                 }
             )
         ).flatMap(response => {
-            return this.buildSurveys(
-                response.instances,
-                "PPSPatientRegister",
-                PPS_PATIENT_REGISTER_ID
-            ).map(surveys => surveys);
+            return this.buildSurveys(response, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID).map(
+                surveys => surveys
+            );
         });
     }
 
     private buildSurveys(
-        events: D2TrackerEvent[],
+        response: TrackerEventsResponse,
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id
-    ): FutureData<Survey[]> {
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        const events: D2TrackerEvent[] = response.instances;
         const surveys = events.map(event => {
             let startDateString,
                 surveyType = "",
@@ -543,6 +553,45 @@ export class SurveyD2Repository implements SurveyRepository {
             });
         });
 
-        return Future.sequential(surveys);
+        return Future.sequential(surveys).map(surveys => {
+            return {
+                pager: {
+                    page: response.page,
+                    pageSize: response.pageSize,
+                    total: response.total,
+                },
+                objects: surveys,
+            };
+        });
+    }
+
+    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
+        const event: D2TrackerEvent = {
+            event: eventId,
+            orgUnit: orgUnitId,
+            program: programId,
+            // status doesn't play a part in deleting but is required
+            status: "ACTIVE",
+            occurredAt: "",
+            dataValues: [],
+        };
+        return apiToFuture(
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+        ).flatMap(response => {
+            return apiToFuture(
+                // eslint-disable-next-line testing-library/await-async-utils
+                this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+            ).flatMap(result => {
+                if (result && result.status !== "ERROR") {
+                    return Future.success(undefined);
+                } else {
+                    return Future.error(
+                        new Error(
+                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
+                        )
+                    );
+                }
+            });
+        });
     }
 }
