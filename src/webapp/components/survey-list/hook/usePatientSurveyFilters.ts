@@ -39,8 +39,8 @@ export const usePatientSurveyFilters = (
             compositionRoot.surveys.getFilteredPatients
                 .execute(patientFilterKeyword, currentHospitalForm?.orgUnitId ?? "")
                 .run(
-                    surveys => {
-                        setSurveyList(surveys);
+                    response => {
+                        setSurveyList(response.objects);
                         setIsLoading(false);
                     },
                     () => {

@@ -24,6 +24,6 @@ export interface SurveyRepository {
     ): FutureData<PaginatedReponse<Survey[]>>;
     getPopulatedSurveyById(eventId: Id, programId: Id): FutureData<Questionnaire>;
     getSurveyNameFromId(id: Id): FutureData<string | undefined>;
-    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<Survey[]>;
+    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<PaginatedReponse<Survey[]>>;
     deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 }
