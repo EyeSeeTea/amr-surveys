@@ -55,52 +55,41 @@ export class UserD2Repository implements UserRepository {
             dataViewOrganisationUnits,
             COUNTRY_OU_LEVEL
         );
-
-        const hospitals$ = this.getAllOrgUnitsByLevel(
-            organisationUnits,
-            dataViewOrganisationUnits,
-            HOSPITAL_OU_LEVEL
-        );
-
         return countries$.flatMap(countries => {
-            return hospitals$.flatMap(hospitals => {
-                return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
-                    userSettings => {
-                        const user = new User({
-                            id: d2User.id,
-                            name: d2User.displayName,
-                            userGroups: d2User.userGroups,
-                            ...d2User.userCredentials,
-                            email: d2User.email,
-                            phoneNumber: d2User.phoneNumber,
-                            introduction: d2User.introduction,
-                            birthday: d2User.birthday,
-                            nationality: d2User.nationality,
-                            employer: d2User.employer,
-                            jobTitle: d2User.jobTitle,
-                            education: d2User.education,
-                            interests: d2User.interests,
-                            languages: d2User.languages,
-                            userCountriesAccess: this.mapUserOrgUnitsAccess(
-                                countries.userOrgUnits,
-                                countries.userDataViewOrgUnits
-                            ),
-                            userHospitalsAccess: this.mapUserOrgUnitsAccess(
-                                hospitals.userOrgUnits,
-                                hospitals.userDataViewOrgUnits
-                            ),
-                            settings: {
-                                keyUiLocale: userSettings.keyUiLocale,
-                                keyDbLocale: userSettings.keyDbLocale,
-                                keyMessageEmailNotification:
-                                    userSettings.keyMessageEmailNotification,
-                                keyMessageSmsNotification: userSettings.keyMessageSmsNotification,
-                            },
-                        });
-                        return Future.success(user);
-                    }
-                );
-            });
+            return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
+                userSettings => {
+                    const user = new User({
+                        id: d2User.id,
+                        name: d2User.displayName,
+                        userGroups: d2User.userGroups,
+                        ...d2User.userCredentials,
+                        email: d2User.email,
+                        phoneNumber: d2User.phoneNumber,
+                        introduction: d2User.introduction,
+                        birthday: d2User.birthday,
+                        nationality: d2User.nationality,
+                        employer: d2User.employer,
+                        jobTitle: d2User.jobTitle,
+                        education: d2User.education,
+                        interests: d2User.interests,
+                        languages: d2User.languages,
+                        userCountriesAccess: this.mapUserOrgUnitsAccess(
+                            countries.userOrgUnits,
+                            countries.userDataViewOrgUnits
+                        ),
+                        userHospitalsAccess: [], //This is a time consuming fetch, fetched in hospital web worker.
+                        settings: {
+                            keyUiLocale: userSettings.keyUiLocale,
+                            keyDbLocale: userSettings.keyDbLocale,
+                            keyMessageEmailNotification: userSettings.keyMessageEmailNotification,
+                            keyMessageSmsNotification: userSettings.keyMessageSmsNotification,
+                        },
+                        organisationUnits,
+                        dataViewOrganisationUnits,
+                    });
+                    return Future.success(user);
+                }
+            );
         });
     }
 

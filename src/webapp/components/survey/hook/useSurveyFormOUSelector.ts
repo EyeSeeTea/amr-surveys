@@ -10,15 +10,15 @@ export function useSurveyFormOUSelector(
     currentSurveyId: Id | undefined
 ) {
     const [ouSelectorErrMsg, setOUSelectorErrMsg] = useState<string>();
+    const [shouldRefresh, setShouldRefresh] = useState({});
     const { currentUser } = useAppContext();
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        setOUSelectorErrMsg(undefined);
-
         if (currentSurveyId) {
             setOUSelectorErrMsg(
                 "Cannot change the assigned country/hospital. Please delete the survey and create a new one."
             );
+            setShouldRefresh({});
             return;
         }
 
@@ -34,7 +34,8 @@ export function useSurveyFormOUSelector(
                     if (currentCountry) {
                         setCurrentOrgUnit(currentCountry);
                     } else {
-                        setOUSelectorErrMsg("You do not have access to this country.");
+                        setOUSelectorErrMsg(`You do not have access to this country.`);
+                        setShouldRefresh({});
                     }
                 } else if (
                     formType === "PPSHospitalForm" ||
@@ -47,11 +48,12 @@ export function useSurveyFormOUSelector(
                         setCurrentOrgUnit(currentHospital);
                     } else {
                         setOUSelectorErrMsg("You do not have access to this hospital.");
+                        setShouldRefresh({});
                     }
                 }
             }
         }
     };
 
-    return { onOrgUnitChange, ouSelectorErrMsg };
+    return { onOrgUnitChange, ouSelectorErrMsg, shouldRefresh };
 }

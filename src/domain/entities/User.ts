@@ -46,6 +46,8 @@ export interface UserAttrs {
     interests: string;
     languages: string;
     settings: UserSettings;
+    organisationUnits: NamedRef[];
+    dataViewOrganisationUnits: NamedRef[];
 }
 
 export interface UserRole extends NamedRef {

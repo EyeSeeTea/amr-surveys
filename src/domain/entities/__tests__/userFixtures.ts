@@ -36,6 +36,8 @@ export function createUserWithGroups(userGroups: NamedRef[] = []): User {
             keyMessageEmailNotification: true,
             keyMessageSmsNotification: true,
         },
+        organisationUnits: [],
+        dataViewOrganisationUnits: [],
     });
 }
 function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
@@ -63,5 +65,7 @@ function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
             keyMessageEmailNotification: true,
             keyMessageSmsNotification: true,
         },
+        organisationUnits: [],
+        dataViewOrganisationUnits: [],
     });
 }
