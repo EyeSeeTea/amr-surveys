@@ -17,7 +17,7 @@ import { SurveyListTable } from "./SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useSurveyList } from "./hook/useSurveyList";
-import { useSurveyFilters } from "./hook/useSurveyFilters";
+import { usePatientSurveyFilters as usePatientSurveyFilters } from "./hook/usePatientSurveyFilters";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -46,8 +46,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         setSurveyTypeFilter,
         filteredSurveys,
     } = useSurveyList(surveyFormType, isAdmin, surveys);
+
     const { surveyList, patientFilterKeyword, setPatientFilterKeyword, handleKeyPress, isLoading } =
-        useSurveyFilters(filteredSurveys);
+        usePatientSurveyFilters(filteredSurveys, surveyFormType);
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,

@@ -45,7 +45,6 @@ const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
 const PATIENT_ID = "eKUbBRlR684";
-const PATIENT_CODE = "yScrOW1eTvm";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -456,7 +455,7 @@ export class SurveyD2Repository implements SurveyRepository {
     getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<Survey[]> {
         return apiToFuture(
             this.api.get<TrackerEventsResponse>(
-                `/tracker/events?${PATIENT_ID}:like:${keyword}&filter=${PATIENT_CODE}:like:${keyword}&rootJunction=OR`,
+                `/tracker/events?${PATIENT_ID}:like:${keyword}&filter=${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}&rootJunction=OR`,
                 {
                     fields: ":all",
                     orgUnit: orgUnitId,
