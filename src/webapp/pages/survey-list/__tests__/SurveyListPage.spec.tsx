@@ -2,6 +2,7 @@ import { render } from "@testing-library/react";
 import { getAdminTestContext } from "../../../../utils/tests";
 import { Provider } from "@dhis2/app-runtime";
 import App from "../../app/App";
+import { Worker } from "../../app/__tests__/workerMock";
 
 describe("Survey List Page", () => {
     beforeAll(async () => {
@@ -16,7 +17,7 @@ describe("Survey List Page", () => {
                     removeListener: function () {},
                 };
             };
-
+        window.Worker = window.Worker || new Worker("");
         //navigate to survey list page
         const view = getView();
         const ppsSurveysButton = await view.findByRole("button", {
