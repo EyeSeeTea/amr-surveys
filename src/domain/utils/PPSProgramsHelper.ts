@@ -4,6 +4,7 @@ import {
     PPS_PATIENT_REGISTER_ID,
     PPS_SURVEY_FORM_ID,
     PPS_WARD_REGISTER_ID,
+    PREVALANCE_SUPRANATIONAL_REFERENCE_LAB,
 } from "../../data/repositories/SurveyFormD2Repository";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
@@ -19,6 +20,8 @@ export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
             return PPS_PATIENT_REGISTER_ID;
         case "PPSWardRegister":
             return PPS_WARD_REGISTER_ID;
+        case "PrevelancePlaceholder":
+            return PREVALANCE_SUPRANATIONAL_REFERENCE_LAB;
         default:
             throw new Error("Unknown Survey Type");
     }

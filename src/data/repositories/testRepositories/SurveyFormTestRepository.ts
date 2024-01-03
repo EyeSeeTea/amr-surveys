@@ -1,5 +1,5 @@
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
-import { ImportStrategy } from "../../../domain/entities/EventProgram";
+import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
@@ -23,14 +23,24 @@ export class SurveyTestRepository implements SurveyRepository {
             id: programId,
             name: "Test Questionnaire",
             description: "Test Questionnaire",
-            sections: [
+            stages: [
                 {
-                    code: "s1",
                     isVisible: true,
-                    title: "Section1",
-                    questions: [],
+                    code: "S1",
+                    title: "Stage1",
+                    sections: [
+                        {
+                            code: "s1",
+                            isVisible: true,
+                            title: "Section1",
+                            questions: [],
+                            stageId: "S1",
+                            sortOrder: 1,
+                        },
+                    ],
                 },
             ],
+
             orgUnit: { id: "OU1" },
             isCompleted: false,
             isMandatory: false,

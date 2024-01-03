@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 
@@ -26,6 +27,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             orgUnitId = currentCountryQuestionnaire?.orgUnitId ?? "";
         else if (surveyFormType === "PPSWardRegister" || surveyFormType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+        //TO DO : Temporarily setting Prevelance OU to Global
+        else if (surveyFormType === "PrevelancePlaceholder") orgUnitId = GLOBAL_OU_ID;
 
         compositionRoot.surveys.getSurveys
             .execute(

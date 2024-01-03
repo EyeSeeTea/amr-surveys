@@ -35,6 +35,7 @@ import {
     getSurveyDisplayName,
 } from "../../../domain/utils/PPSProgramsHelper";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
+import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -67,6 +68,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
+        addNew,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -99,15 +101,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         setQuestionnaire(questionnaire => {
-            const sectionToBeUpdated = questionnaire?.sections.filter(sec =>
-                sec.questions.find(q => q.id === question?.id)
+            const stageToBeUpdated = questionnaire?.stages.find(stage =>
+                stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
             );
-            if (sectionToBeUpdated) {
-                const questionToBeUpdated = sectionToBeUpdated[0]?.questions.filter(
+            if (stageToBeUpdated) {
+                const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
+                    section.questions.find(q => q.id === question?.id)
+                );
+                if (sectionToBeUpdated) {
+                    const questionToBeUpdated = sectionToBeUpdated.questions.find(
+                        q => q.id === question.id
+                    );
+                    if (questionToBeUpdated) questionToBeUpdated.value = question.value;
+                }
+            } else {
+                //Stage not found, entity could be updated.
+                const questionToBeUpdated = questionnaire?.entity?.questions.find(
                     q => q.id === question.id
                 );
-                if (questionToBeUpdated && questionToBeUpdated[0])
-                    questionToBeUpdated[0].value = question.value;
+                if (questionToBeUpdated) questionToBeUpdated.value = question.value;
             }
             return questionnaire;
         });
@@ -187,22 +199,23 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     />
                 )}
 
-                {questionnaire?.sections.map(section => {
-                    if (!section.isVisible) return null;
+                {questionnaire?.entity && (
+                    <div key={questionnaire.entity.title} className={classes.wrapper}>
+                        <DataTable>
+                            <TableHead>
+                                <DataTableRow>
+                                    <DataTableColumnHeader colSpan="2">
+                                        <span className={classes.header}>
+                                            {questionnaire.entity.title}
+                                        </span>
+                                    </DataTableColumnHeader>
+                                </DataTableRow>
+                            </TableHead>
 
-                    return (
-                        <div key={section.title} className={classes.wrapper}>
-                            <DataTable>
-                                <TableHead>
-                                    <DataTableRow>
-                                        <DataTableColumnHeader colSpan="2">
-                                            <span className={classes.header}>{section.title}</span>
-                                        </DataTableColumnHeader>
-                                    </DataTableRow>
-                                </TableHead>
-
-                                <TableBody>
-                                    {section.questions.map(question => (
+                            <TableBody>
+                                {questionnaire.entity.questions.map(question => {
+                                    if (!question.isVisible) return null;
+                                    return (
                                         <DataTableRow key={question.id}>
                                             <DataTableCell width="60%">
                                                 <span>{question.text}</span>
@@ -222,9 +235,84 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                 </div>
                                             </DataTableCell>
                                         </DataTableRow>
-                                    ))}
-                                </TableBody>
-                            </DataTable>
+                                    );
+                                })}
+                            </TableBody>
+                        </DataTable>
+                    </div>
+                )}
+
+                {questionnaire?.stages.map(stage => {
+                    if (!stage.isVisible) return null;
+
+                    return (
+                        <div key={stage.code}>
+                            <p> {`Stage : ${stage.title}`}</p>
+                            {stage.sections.map(section => {
+                                if (!section.isVisible) return null;
+
+                                return (
+                                    <div key={section.title} className={classes.wrapper}>
+                                        <DataTable>
+                                            <TableHead>
+                                                <DataTableRow>
+                                                    <DataTableColumnHeader colSpan="2">
+                                                        <span className={classes.header}>
+                                                            {section.title}
+                                                        </span>
+                                                    </DataTableColumnHeader>
+                                                </DataTableRow>
+                                            </TableHead>
+
+                                            <TableBody>
+                                                {section.questions.map(question => {
+                                                    if (!question.isVisible) return null;
+                                                    return (
+                                                        <DataTableRow key={question.id}>
+                                                            <DataTableCell width="60%">
+                                                                <span>{question.text}</span>
+                                                            </DataTableCell>
+
+                                                            <DataTableCell>
+                                                                <div
+                                                                    className={
+                                                                        formClasses.valueWrapper
+                                                                    }
+                                                                >
+                                                                    <div
+                                                                        className={
+                                                                            formClasses.valueInput
+                                                                        }
+                                                                    >
+                                                                        <QuestionWidget
+                                                                            onChange={
+                                                                                updateQuestion
+                                                                            }
+                                                                            question={question}
+                                                                            disabled={
+                                                                                question.disabled
+                                                                                    ? true
+                                                                                    : false
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </DataTableCell>
+                                                        </DataTableRow>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </DataTable>
+                                        {section.showAddnew && (
+                                            <StyledButton onClick={() => addNew(section)}>
+                                                {section.questions.find(
+                                                    q => q.id === section.showAddQuestion
+                                                )?.text ?? i18n.t("Add new")}
+                                            </StyledButton>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     );
                 })}
@@ -252,6 +340,17 @@ export const useStyles = makeStyles({
     header: { fontWeight: "bold" as const },
     center: { display: "table", margin: "0 auto" },
 });
+const StyledButton = styled(Button)`
+    color: white;
+    background-color: ${muiTheme.palette.primary.main};
+    margin: 10px 5px 10px 0px;
+    text-transform: none;
+    float: right;
+    &:hover {
+        background-color: ${muiTheme.palette.primary.main};
+        opacity: 0.7;
+    }
+`;
 
 const PageFooter = styled.div`
     display: flex;

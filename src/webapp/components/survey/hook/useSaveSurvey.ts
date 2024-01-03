@@ -5,6 +5,7 @@ import { Id } from "../../../../domain/entities/Ref";
 import { useState } from "react";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
+import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 
 export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, surveyId?: Id) {
@@ -15,6 +16,8 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
     const saveSurvey = (questionnaire: Questionnaire) => {
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+        //TO DO : TEMPORARILY saving all prevelance events to global OU
+        else if (formType === "PrevelancePlaceholder") orgUnitId = GLOBAL_OU_ID;
         compositionRoot.surveys.saveFormData
             .execute(formType, questionnaire, orgUnitId, surveyId)
             .run(

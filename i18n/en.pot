@@ -17,6 +17,9 @@ msgstr ""
 msgid "Log Out"
 msgstr ""
 
+msgid "Add new"
+msgstr ""
+
 msgid "Cancel"
 msgstr ""
 
@@ -95,6 +98,12 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "Org Unit"
 msgstr ""
 
 msgid "Action"

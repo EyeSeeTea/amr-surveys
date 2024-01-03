@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
-import { Questionnaire } from "../../../../domain/entities/Questionnaire";
+import { Questionnaire, QuestionnaireSection } from "../../../../domain/entities/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
@@ -12,6 +12,47 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
     const { currentPPSSurveyForm, currentHospitalForm, currentWardRegister } = useCurrentSurveys();
     const [error, setError] = useState<string>();
+
+    const addNew = (prevSection: QuestionnaireSection) => {
+        setQuestionnaire(prevQuestionnaire => {
+            if (prevQuestionnaire) {
+                const stageToUpdate = prevQuestionnaire?.stages.find(
+                    stage => stage.code === prevSection.stageId
+                );
+
+                const sectionToUpdate = stageToUpdate?.sections.find(
+                    section => section.sortOrder === prevSection.sortOrder + 1
+                );
+
+                return {
+                    ...prevQuestionnaire,
+                    stages: prevQuestionnaire.stages.map(stage => {
+                        if (stage.code !== stageToUpdate?.code) return stage;
+                        else {
+                            return {
+                                ...stage,
+                                sections: stage.sections.map(section => {
+                                    if (section.code !== sectionToUpdate?.code) return section;
+                                    else {
+                                        return {
+                                            ...section,
+                                            isVisible: true,
+                                            questions: section.questions.map(q => {
+                                                if (q.id === section.showAddQuestion) {
+                                                    q.value = true;
+                                                    return q;
+                                                } else return q;
+                                            }),
+                                        };
+                                    }
+                                }),
+                            };
+                        }
+                    }),
+                };
+            }
+        });
+    };
 
     useEffect(() => {
         setLoading(true);
@@ -79,5 +120,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setCurrentOrgUnit,
         setLoading,
         error,
+        addNew,
     };
 }

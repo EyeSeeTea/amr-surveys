@@ -21,14 +21,33 @@ export interface QuestionnaireSelector {
 }
 
 export interface Questionnaire extends QuestionnaireBase {
-    sections: QuestionnaireSection[];
+    stages: QuestionnaireStage[];
+    entity?: QuestionnaireEntity; //Equivalant to tracked entity instance of tracker program
 }
 
+export interface QuestionnaireEntity {
+    title: string;
+    code: string;
+    questions: Question[];
+    isVisible: boolean;
+    stageId: string;
+}
+export interface QuestionnaireStage {
+    title: string;
+    code: Code;
+    sections: QuestionnaireSection[];
+    isVisible: boolean;
+    showNextStage?: boolean;
+}
 export interface QuestionnaireSection {
     title: string;
     code: Code;
     questions: Question[];
     isVisible: boolean;
+    sortOrder: number;
+    stageId: string;
+    showAddnew?: boolean;
+    showAddQuestion?: Id;
 }
 
 export type Question =
@@ -43,6 +62,7 @@ export interface QuestionBase {
     code: Code;
     text: string;
     disabled?: boolean;
+    isVisible: boolean;
 }
 
 export interface SelectQuestion extends QuestionBase {
@@ -100,9 +120,13 @@ export class QuestionnarieM {
     static updateQuestion(questionnaire: Questionnaire, questionUpdated: Question): Questionnaire {
         return {
             ...questionnaire,
-            sections: questionnaire.sections.map(section => ({
-                ...section,
-                questions: updateCollection(section.questions, questionUpdated),
+
+            stages: questionnaire.stages.map(stage => ({
+                ...stage,
+                sections: stage.sections.map(section => ({
+                    ...section,
+                    questions: updateCollection(section.questions, questionUpdated),
+                })),
             })),
         };
     }
