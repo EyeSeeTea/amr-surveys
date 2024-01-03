@@ -19,7 +19,7 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
     return (
         <FilterContainer>
             <FormControl fullWidth>
-                <InputLabel id="status-label">Filter by Status</InputLabel>
+                <InputLabel id="status-label">{i18n.t("Filter by Status")}</InputLabel>
                 <Select
                     labelId="status-label"
                     value={status}
@@ -45,7 +45,7 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
             </FormControl>
 
             <FormControl fullWidth>
-                <InputLabel id="status-label">Filter by Survey Type</InputLabel>
+                <InputLabel id="status-label">{i18n.t("Filter by Survey Type")}</InputLabel>
                 <Select
                     value={surveyType}
                     onChange={e => {

@@ -1,30 +1,25 @@
 import { PropsWithChildren, useState } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { SurveyBase } from "../../domain/entities/Survey";
+import { OrgUnitNamedRef, SurveyBase } from "../../domain/entities/Survey";
 import { CurrentSurveysContext } from "./current-surveys-context";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<{
-        id: Id;
-        name: string;
-        surveyType: string;
-    }>();
-    const [currentCountryQuestionnaire, setCurrentCountryQuestionnaire] = useState<{
-        id: string;
-        name: string;
-        orgUnitId: string;
-    }>();
-    const [currentHospitalForm, setCurrentHospitalForm] = useState<{
-        id: string;
-        name: string;
-        orgUnitId: string;
-    }>();
+    //PPS Module states
+    const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<SurveyBase>();
+    const [currentCountryQuestionnaire, setCurrentCountryQuestionnaire] =
+        useState<OrgUnitNamedRef>();
+    const [currentHospitalForm, setCurrentHospitalForm] = useState<OrgUnitNamedRef>();
     const [currentWardRegister, setCurrentWardRegister] = useState<NamedRef>();
 
     const changeCurrentPPSSurveyForm = (survey: SurveyBase | undefined) => {
         setCurrentPPSSurveyForm(survey);
     };
+    //Prevalenc Module states
+    const [currentPrevalenceSurveyForm, setCurrentPrevalenceSurveyForm] =
+        useState<OrgUnitNamedRef>();
+    const [currentFacilityLevelForm, setCurrentFacilityLevelForm] = useState<OrgUnitNamedRef>();
 
+    //PPS Module functions.
     const resetCurrentPPSSurveyForm = () => {
         setCurrentPPSSurveyForm(undefined);
         resetCurrentCountryQuestionnaire();
@@ -59,6 +54,23 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
         setCurrentWardRegister(undefined);
     };
 
+    //Prevalence Module functions.
+    const changeCurrentPrevalenceSurveyForm = (id: Id, name: string, orgUnitId: Id) => {
+        setCurrentPrevalenceSurveyForm({ id: id, name: name, orgUnitId: orgUnitId });
+    };
+
+    const resetCurrentPrevalenceSurveyForm = () => {
+        setCurrentPrevalenceSurveyForm(undefined);
+        resetCurrentFacilityLevelForm();
+    };
+
+    const changeCurrentFacilityLevelForm = (id: Id, name: string, orgUnitId: Id) => {
+        setCurrentFacilityLevelForm({ id: id, name: name, orgUnitId: orgUnitId });
+    };
+
+    const resetCurrentFacilityLevelForm = () => {
+        setCurrentFacilityLevelForm(undefined);
+    };
     return (
         <CurrentSurveysContext.Provider
             value={{
@@ -74,6 +86,13 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
                 currentWardRegister,
                 changeCurrentWardRegister,
                 resetCurrentWardRegister,
+
+                currentPrevalenceSurveyForm,
+                changeCurrentPrevalenceSurveyForm,
+                resetCurrentPrevalenceSurveyForm,
+                currentFacilityLevelForm,
+                changeCurrentFacilityLevelForm,
+                resetCurrentFacilityLevelForm,
             }}
         >
             {children}

@@ -13,6 +13,7 @@ import YesNoWidget from "./widgets/YesNoWidget";
 import DatePickerWidget from "./widgets/DatePickerWidget";
 import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "./widgets/DropdownSelectWidget";
+import DateTimePickerWidget from "./widgets/DateTimePickerWidget";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
@@ -82,6 +83,15 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
         case "date":
             return (
                 <DatePickerWidget
+                    name={question.id}
+                    value={question.value}
+                    onChange={value => onChange(update(question, value))}
+                    disabled={disabled}
+                />
+            );
+        case "datetime":
+            return (
+                <DateTimePickerWidget
                     name={question.id}
                     value={question.value}
                     onChange={value => onChange(update(question, value))}

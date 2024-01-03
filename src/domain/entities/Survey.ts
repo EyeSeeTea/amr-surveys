@@ -6,13 +6,24 @@ export type SURVEY_FORM_TYPES =
     | "PPSHospitalForm"
     | "PPSPatientRegister"
     | "PPSWardRegister"
-    | "PrevelancePlaceholder";
+    | "PrevalenceSurveyForm"
+    | "PrevalenceFacilityLevelForm"
+    | "PrevalencePatientForms" //This is not a real program, it is a placeholder of all prevalence patient programs
+    | "PrevalenceCaseReportForm"
+    | "PrevalenceSampleShipTrackForm"
+    | "PrevalenceCentralRefLabForm"
+    | "PrevalencePathogenIsolatesLog"
+    | "PrevalenceSupranationalRefLabForm";
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
 
 export interface SurveyBase extends NamedRef {
     surveyType: string;
+}
+
+export interface OrgUnitNamedRef extends NamedRef {
+    orgUnitId: Id;
 }
 
 export interface Survey extends SurveyBase {

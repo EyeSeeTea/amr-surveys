@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2023-12-12T09:57:09.880Z\n"
-"PO-Revision-Date: 2023-12-12T09:57:09.881Z\n"
+"POT-Creation-Date: 2024-01-01T15:15:58.433Z\n"
+"PO-Revision-Date: 2024-01-01T15:15:58.433Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -15,9 +15,6 @@ msgid "HOME"
 msgstr ""
 
 msgid "Log Out"
-msgstr ""
-
-msgid "Add new"
 msgstr ""
 
 msgid "Cancel"
@@ -44,6 +41,9 @@ msgstr ""
 msgid "Patients"
 msgstr ""
 
+msgid "Add new"
+msgstr ""
+
 msgid "Submission Success!"
 msgstr ""
 
@@ -53,6 +53,9 @@ msgid ""
 msgstr ""
 
 msgid "Country"
+msgstr ""
+
+msgid "Filter by Status"
 msgstr ""
 
 msgid "COMPLETED"
@@ -67,6 +70,9 @@ msgstr ""
 msgid "ALL"
 msgstr ""
 
+msgid "Filter by Survey Type"
+msgstr ""
+
 msgid "SUPRANATIONAL"
 msgstr ""
 
@@ -76,7 +82,28 @@ msgstr ""
 msgid "HOSP"
 msgstr ""
 
-msgid "PPS Survey Name"
+msgid "Survey deleted!"
+msgstr ""
+
+msgid "Error deleting the survery"
+msgstr ""
+
+msgid "Root Survey Name"
+msgstr ""
+
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Name"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "No data found..."
+msgstr ""
+
+msgid "Org Unit"
 msgstr ""
 
 msgid "Start Date"
@@ -88,31 +115,10 @@ msgstr ""
 msgid "Survey Type"
 msgstr ""
 
-msgid "Patient Id"
-msgstr ""
-
-msgid "Patient Name"
-msgstr ""
-
 msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
-msgstr ""
-
-msgid "Id"
-msgstr ""
-
-msgid "Org Unit"
-msgstr ""
-
-msgid "Action"
-msgstr ""
-
-msgid "Survey deleted!"
-msgstr ""
-
-msgid "Error deleting the survery"
 msgstr ""
 
 msgid "Yes"

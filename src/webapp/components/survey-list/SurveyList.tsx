@@ -2,41 +2,50 @@ import i18n from "@eyeseetea/feedback-component/locales";
 import { Button, Typography } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { Id } from "../../../domain/entities/Ref";
 import { useSurveys } from "../../hooks/useSurveys";
 import { palette } from "../../pages/app/themes/dhis2.theme";
-import { SurveyBase, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
+import {
+    getSurveyDisplayName,
+    hideCreateNewButton,
+    PREVALENCE_PATIENT_OPTIONS,
+} from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
-import { SurveyListTable } from "./SurveyListTable";
+import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
-import { useSurveyList } from "./hook/useSurveyList";
+import { useFilteredSurveys } from "./hook/useFilteredSurveys";
+import { SplitButton } from "../split-button/SplitButton";
+import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
+import { useSurveyListActions } from "./hook/useSurveyListActions";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
-    const {
-        currentPPSSurveyForm,
-        changeCurrentPPSSurveyForm,
-        changeCurrentCountryQuestionnaire,
-        changeCurrentHospitalForm,
-        changeCurrentWardRegister,
-    } = useCurrentSurveys();
+    const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
 
-    let isAdmin = false;
-    if (currentModule)
-        isAdmin = getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess;
+    const isAdmin = currentModule
+        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
+        : false;
 
-    const { surveys, loading, error, page, setPage, pageSize, setPageSize, total, setRefreshSurveys } = useSurveys(surveyFormType);
+    const {
+        surveys,
+        loadingSurveys,
+        errorSurveys,
+        page,
+        setPage,
+        pageSize,
+        total,
+        setRefreshSurveys,
+    } = useSurveys(surveyFormType);
 
     const {
         statusFilter,
@@ -44,49 +53,52 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         surveyTypeFilter,
         setSurveyTypeFilter,
         filteredSurveys,
-    } = useSurveyList(surveyFormType, isAdmin, surveys);
+    } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
 
-    const updateSelectedSurveyDetails = (
-        survey: SurveyBase,
-        orgUnitId: Id,
-        rootSurvey: SurveyBase
-    ) => {
-        if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
-        else if (surveyFormType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PPSHospitalForm") {
-            if (!isAdmin) {
-                changeCurrentPPSSurveyForm(rootSurvey);
-            }
-            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
-        } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
-    };
+    const { handleSplitButtonClick } = useSurveyListActions(surveyFormType);
 
     return (
         <ContentWrapper>
-            <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+            <ContentLoader loading={loadingSurveys} error={errorSurveys} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
                     {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
-                    {!hideCreateNewButton(
-                        surveyFormType,
-                        isAdmin,
-                        currentPPSSurveyForm?.surveyType ? currentPPSSurveyForm?.surveyType : "",
-                        surveys
-                    ) && (
+
+                    {surveyFormType === "PrevalencePatientForms" ? (
                         <ButtonWrapper>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                component={NavLink}
-                                to={{
-                                    pathname: `/new-survey/${surveyFormType}`,
-                                }}
-                                exact={true}
-                            >
-                                {i18n.t(`Create New ${getSurveyDisplayName(surveyFormType)}`)}
-                            </Button>
+                            <SplitButton
+                                options={PREVALENCE_PATIENT_OPTIONS}
+                                handleSplitButtonClick={handleSplitButtonClick}
+                            />
                         </ButtonWrapper>
+                    ) : (
+                        <>
+                            {!hideCreateNewButton(
+                                surveyFormType,
+                                isAdmin,
+                                currentPPSSurveyForm?.surveyType
+                                    ? currentPPSSurveyForm?.surveyType
+                                    : "",
+                                surveys
+                            ) && (
+                                <ButtonWrapper>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        component={NavLink}
+                                        to={{
+                                            pathname: `/new-survey/${surveyFormType}`,
+                                        }}
+                                        exact={true}
+                                    >
+                                        {i18n.t(
+                                            `Create New ${getSurveyDisplayName(surveyFormType)}`
+                                        )}
+                                    </Button>
+                                </ButtonWrapper>
+                            )}
+                        </>
                     )}
+
                     <Typography variant="h3">
                         {i18n.t(`${getSurveyDisplayName(surveyFormType)} List`)}
                     </Typography>
@@ -98,17 +110,25 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             setSurveyType={setSurveyTypeFilter}
                         />
                     )}
-                    <SurveyListTable
-                        surveys={filteredSurveys}
-                        surveyFormType={surveyFormType}
-                        updateSelectedSurveyDetails={updateSelectedSurveyDetails}
-                        page={page}
-                        setPage={setPage}
-                        pageSize={pageSize}
-                        setPageSize={setPageSize}
-                        total={total}
-                        refreshSurveys={setRefreshSurveys}
-                    />
+
+                    {surveyFormType === "PPSPatientRegister" ||
+                    surveyFormType === "PrevalencePatientForms" ? (
+                        <PaginatedSurveyListTable
+                            surveys={filteredSurveys}
+                            surveyFormType={surveyFormType}
+                            page={page}
+                            setPage={setPage}
+                            pageSize={pageSize}
+                            total={total}
+                            refreshSurveys={setRefreshSurveys}
+                        />
+                    ) : (
+                        <SurveyListTable
+                            surveys={filteredSurveys}
+                            surveyFormType={surveyFormType}
+                            refreshSurveys={setRefreshSurveys}
+                        />
+                    )}
                 </CustomCard>
             </ContentLoader>
         </ContentWrapper>

@@ -9,12 +9,16 @@ import { useCurrentModule } from "../../contexts/current-module-context";
 
 export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
-    const { changeCurrentPPSSurveyForm } = useCurrentSurveys();
+    const { resetCurrentPPSSurveyForm, resetCurrentPrevalenceSurveyForm } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
 
+    //reset all current survey context when root form of either module is listed.
     useEffect(() => {
-        if (formType === "PPSSurveyForm") changeCurrentPPSSurveyForm(undefined);
-    }, [formType, changeCurrentPPSSurveyForm]);
+        if (formType === "PPSSurveyForm" || formType === "PrevalenceSurveyForm") {
+            resetCurrentPPSSurveyForm();
+            resetCurrentPrevalenceSurveyForm();
+        }
+    }, [formType, resetCurrentPPSSurveyForm, resetCurrentPrevalenceSurveyForm]);
 
     return (
         <ContentWrapper>
