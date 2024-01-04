@@ -10,7 +10,7 @@ export class UserTestRepository implements UserRepository {
         _organisationUnits: NamedRef[],
         _dataViewOrganisationUnits: NamedRef[]
     ): FutureData<OrgUnitAccess[]> {
-        throw new Error("Method not implemented.");
+        return Future.success([]);
     }
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {
         if (locale) return Future.success(undefined);
