@@ -33,4 +33,5 @@ export interface Survey extends SurveyBase {
     assignedOrgUnit: NamedRef;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
+    childCount?: number;
 }

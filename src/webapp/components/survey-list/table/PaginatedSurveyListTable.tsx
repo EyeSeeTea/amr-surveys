@@ -147,7 +147,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{survey.rootSurvey.name}</TableCell>
+                                            <TableCell>{`${survey.rootSurvey.name} : ${survey.childCount}`}</TableCell>
 
                                             <>
                                                 <TableCell>{survey.id}</TableCell>

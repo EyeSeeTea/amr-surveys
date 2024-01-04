@@ -21,7 +21,7 @@ import { UserD2Repository } from "./data/repositories/UserD2Repository";
 import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
 import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
-import { GetPaginatedSurveysUseCase } from "./domain/usecases/GetPaginatedSurveysUseCase";
+import { GetPaginatedPatientSurveysUseCase } from "./domain/usecases/GetPaginatedPatientSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
@@ -60,8 +60,9 @@ function getCompositionRoot(repositories: Repositories) {
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
-            getPaginatedSurveys: new GetPaginatedSurveysUseCase(
-                repositories.paginatedSurveyRepository
+            getPaginatedSurveys: new GetPaginatedPatientSurveysUseCase(
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
             ),
             deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
         },

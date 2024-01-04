@@ -39,6 +39,8 @@ import {
     D2TrackerEnrollmentAttribute,
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import {
+    getChildProgramId,
+    getParentDataElementForProgram,
     getSurveyNameBySurveyFormType,
     getTrackedEntityAttributeType,
     isTrackerProgram,
@@ -66,6 +68,7 @@ import {
     PREVALENCE_SURVEY_FORM_ID,
     SURVEY_NAME_DATAELEMENT_ID,
     PREVELANCE_SURVEY_NAME_DATAELEMENT_ID,
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
 
 export class SurveyD2Repository implements SurveyRepository {
@@ -777,7 +780,7 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
             const surveys = this.mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
-            return Future.sequential(surveys);
+            return Future.success(surveys);
         });
     }
 
@@ -797,31 +800,26 @@ export class SurveyD2Repository implements SurveyRepository {
                         attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
                 )?.value ?? "";
 
-            return this.getSurveyNameFromId(parentPrevalenceSurveyId, "Prevalence").map(
-                parentppsSurveyName => {
-                    const survey: Survey = {
-                        id: trackedEntity.trackedEntity ?? "",
-                        name: trackedEntity.trackedEntity ?? "",
-                        rootSurvey: {
-                            id: parentPrevalenceSurveyId ?? "",
-                            name: parentppsSurveyName,
-                            surveyType: "",
-                        },
-                        startDate: trackedEntity.createdAt
-                            ? new Date(trackedEntity.createdAt)
-                            : undefined,
-                        status: "ACTIVE",
-                        assignedOrgUnit: {
-                            id: trackedEntity.orgUnit ?? "",
-                            name: "",
-                        },
-                        surveyType: "",
-                        parentWardRegisterId: undefined,
-                        surveyFormType: surveyFormType,
-                    };
-                    return survey;
-                }
-            );
+            const survey: Survey = {
+                id: trackedEntity.trackedEntity ?? "",
+                name: trackedEntity.trackedEntity ?? "",
+                rootSurvey: {
+                    id: parentPrevalenceSurveyId ?? "",
+                    name: "",
+                    surveyType: "",
+                },
+                startDate: trackedEntity.createdAt ? new Date(trackedEntity.createdAt) : undefined,
+                status: "ACTIVE",
+                assignedOrgUnit: {
+                    id: trackedEntity.orgUnit ?? "",
+                    name: "",
+                },
+                surveyType: "",
+                parentWardRegisterId: undefined,
+                surveyFormType: surveyFormType,
+                childCount: undefined,
+            };
+            return survey;
         });
     }
 
@@ -846,13 +844,16 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(response => {
             const events = response.instances;
-
             const surveys = this.mapEventToSurvey(events, surveyFormType, programId);
-            return Future.sequential(surveys);
+            return Future.success(surveys);
         });
     }
 
-    mapEventToSurvey(events: D2TrackerEvent[], surveyFormType: SURVEY_FORM_TYPES, programId: Id) {
+    mapEventToSurvey(
+        events: D2TrackerEvent[],
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id
+    ): Survey[] {
         return events.map((event: D2TrackerEvent) => {
             const surveyProperties = new Map(
                 keyToDataElementMap.map(({ key, dataElements }) => {
@@ -882,44 +883,43 @@ export class SurveyD2Repository implements SurveyRepository {
                         : "ACTIVE"
                     : "COMPLETED";
 
-            return this.getSurveyNameFromId(parentPPSSurveyId, "PPS").map(parentppsSurveyName => {
-                const survey: Survey = {
-                    id: event.event,
-                    name: getSurveyNameBySurveyFormType(surveyFormType, {
-                        eventId: event.event,
-                        surveyName,
-                        orgUnitName: event.orgUnitName,
-                        hospitalCode,
-                        wardCode,
-                        patientCode,
-                    }),
-                    rootSurvey: {
-                        id:
-                            surveyFormType !== "PPSSurveyForm" &&
-                            surveyFormType !== "PrevalenceSurveyForm"
-                                ? parentPPSSurveyId
-                                : event.event,
-                        name:
-                            surveyFormType !== "PPSSurveyForm" &&
-                            surveyFormType !== "PrevalenceSurveyForm"
-                                ? parentppsSurveyName
-                                : surveyName,
-                        surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
-                    },
-                    startDate: startDate,
-                    status:
-                        programId === PPS_SURVEY_FORM_ID || programId === PREVALENCE_SURVEY_FORM_ID
-                            ? status
-                            : event.status === "COMPLETED"
-                            ? ("COMPLETED" as SURVEY_STATUSES)
-                            : ("ACTIVE" as SURVEY_STATUSES),
-                    assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
-                    surveyType: surveyType,
-                    parentWardRegisterId: parentWardRegisterId,
-                    surveyFormType: surveyFormType,
-                };
-                return survey;
-            });
+            const survey: Survey = {
+                id: event.event,
+                name: getSurveyNameBySurveyFormType(surveyFormType, {
+                    eventId: event.event,
+                    surveyName,
+                    orgUnitName: event.orgUnitName,
+                    hospitalCode,
+                    wardCode,
+                    patientCode,
+                }),
+                rootSurvey: {
+                    id:
+                        surveyFormType !== "PPSSurveyForm" &&
+                        surveyFormType !== "PrevalenceSurveyForm"
+                            ? parentPPSSurveyId
+                            : event.event,
+                    name:
+                        surveyFormType !== "PPSSurveyForm" &&
+                        surveyFormType !== "PrevalenceSurveyForm"
+                            ? ""
+                            : surveyName,
+                    surveyType: surveyFormType === "PPSSurveyForm" ? surveyType : "",
+                },
+                startDate: startDate,
+                status:
+                    programId === PPS_SURVEY_FORM_ID || programId === PREVALENCE_SURVEY_FORM_ID
+                        ? status
+                        : event.status === "COMPLETED"
+                        ? ("COMPLETED" as SURVEY_STATUSES)
+                        : ("ACTIVE" as SURVEY_STATUSES),
+                assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+                surveyType: surveyType,
+                parentWardRegisterId: parentWardRegisterId,
+                surveyFormType: surveyFormType,
+                childCount: undefined,
+            };
+            return survey;
         });
     }
 
@@ -963,10 +963,7 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    private getSurveyNameFromId(
-        id: Id,
-        parentSurveyType: "PPS" | "Prevalence"
-    ): FutureData<string> {
+    getSurveyNameFromId(id: Id, parentSurveyType: "PPS" | "Prevalence"): FutureData<string> {
         if (id !== "")
             return this.getEventProgramById(id)
                 .flatMap(survey => {
@@ -986,6 +983,99 @@ export class SurveyD2Repository implements SurveyRepository {
                 })
                 .flatMapError(_err => Future.success(""));
         else return Future.success("");
+    }
+
+    getSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ): FutureData<number> {
+        const childIds = getChildProgramId(parentProgram);
+
+        if (childIds && childIds[0]) {
+            //As of now, all child programs for a given program are of the same type,
+            //so we will check only the first child
+            const isTracker = isTrackerProgram(childIds[0]);
+
+            if (isTracker) {
+                const eventCounts = childIds.map(id => {
+                    return this.getTrackerSurveyCount(id, orgUnitId, parentSurveyId);
+                });
+
+                return Future.sequential(eventCounts).map(counts => {
+                    const total = counts.reduce((agg, count) => agg + count, 0);
+                    return total;
+                });
+            } else {
+                const eventCounts = childIds.map(id => {
+                    return this.getEventSurveyCount(
+                        id,
+                        orgUnitId,
+                        parentSurveyId,
+                        secondaryparentId
+                    );
+                });
+
+                return Future.sequential(eventCounts).map(counts => {
+                    const total = counts.reduce((agg, count) => agg + count, 0);
+                    return total;
+                });
+            }
+        } else return Future.success(0);
+    }
+
+    private getEventSurveyCount(
+        programId: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryParentId: Id | undefined
+    ): FutureData<number> {
+        const ouId = programId === PPS_COUNTRY_QUESTIONNAIRE_ID ? "" : orgUnitId;
+        const ouMode = programId === PPS_HOSPITAL_FORM_ID ? "DESCENDANTS" : undefined;
+        const filterParentDEId = getParentDataElementForProgram(programId);
+
+        const filterStr =
+            secondaryParentId === ""
+                ? `${filterParentDEId}:eq:${parentSurveyId}`
+                : `${filterParentDEId}:eq:${secondaryParentId} `;
+
+        return apiToFuture(
+            this.api.tracker.events.get({
+                fields: { event: true },
+                program: programId,
+                orgUnit: ouId,
+                ouMode: ouMode,
+                filter: filterStr,
+            })
+        ).flatMap(response => {
+            return Future.success(response.instances.length);
+        });
+    }
+
+    private getTrackerSurveyCount(
+        programId: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id
+    ): FutureData<number> {
+        const filterParentDEId = getParentDataElementForProgram(programId);
+
+        const ouMode =
+            orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID
+                ? "DESCENDANTS"
+                : undefined;
+
+        return apiToFuture(
+            this.api.tracker.trackedEntities.get({
+                fields: { trackedEntity: true },
+                program: programId,
+                orgUnit: orgUnitId,
+                ouMode: ouMode,
+                filter: `${filterParentDEId}:eq:${parentSurveyId}`,
+            })
+        ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
+            return Future.success(trackedEntities.instances.length);
+        });
     }
 
     deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {

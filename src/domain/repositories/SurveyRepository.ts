@@ -29,4 +29,11 @@ export interface SurveyRepository {
     ): FutureData<Questionnaire>;
 
     deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
+    getSurveyNameFromId(id: Id, parentSurveyType: "PPS" | "Prevalence"): FutureData<string>;
+    getSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ): FutureData<number>;
 }

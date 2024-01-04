@@ -9,6 +9,17 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
+    getSurveyNameFromId(_id: string, _parentSurveyType: "PPS" | "Prevalence"): FutureData<string> {
+        throw new Error("Method not implemented.");
+    }
+    getSurveyChildCount(
+        _parentProgram: string,
+        _orgUnitId: string,
+        _parentSurveyId: string,
+        _secondaryparentId: string | undefined
+    ): FutureData<number> {
+        throw new Error("Method not implemented.");
+    }
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");
@@ -68,6 +79,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "SUPRANATIONAL",
                     rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
+                    childCount: 0,
                 },
                 {
                     name: "TestSurvey2",
@@ -78,6 +90,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "NATIONAL",
                     rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
+                    childCount: 0,
                 },
             ]);
         else return Future.success([]);

@@ -1,7 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
-import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
@@ -23,24 +23,54 @@ export class GetAllSurveysUseCase {
         return this.surveyReporsitory
             .getSurveys(surveyFormType, programId, ouId)
             .flatMap(surveys => {
-                if (
+                const filteredSurveys =
                     surveyFormType === "PPSSurveyForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentSurveyId) ||
                     surveyFormType === "PrevalenceSurveyForm"
-                ) {
-                    return Future.success(surveys);
-                } else {
-                    //Filter Surveys by parentPPSSurveyId
-                    const filteredSurveys = _(
-                        surveys.map(survey => {
-                            if (survey.rootSurvey.id === parentSurveyId) return survey;
-                        })
-                    )
-                        .compact()
-                        .value();
+                        ? surveys
+                        : _(
+                              surveys.map(survey => {
+                                  if (survey.rootSurvey.id === parentSurveyId) return survey;
+                              })
+                          )
+                              .compact()
+                              .value();
 
-                    return Future.success(filteredSurveys);
-                }
+                const surveysWithNameAndCount = filteredSurveys.map(survey => {
+                    return Future.joinObj({
+                        parentSurveyName: this.surveyReporsitory.getSurveyNameFromId(
+                            survey.rootSurvey.id,
+                            surveyFormType === "PrevalenceSurveyForm" ||
+                                surveyFormType === "PrevalenceFacilityLevelForm"
+                                ? "Prevalence"
+                                : "PPS"
+                        ),
+                        childCount: this.surveyReporsitory.getSurveyChildCount(
+                            programId,
+                            survey.assignedOrgUnit.id,
+                            survey.rootSurvey.id,
+                            surveyFormType === "PPSWardRegister" ? survey.id : ""
+                        ),
+                    }).map(({ parentSurveyName, childCount }): Survey => {
+                        const newRootSurvey: SurveyBase = {
+                            surveyType: survey.rootSurvey.surveyType,
+                            id: survey.rootSurvey.id,
+                            name:
+                                survey.rootSurvey.name === ""
+                                    ? parentSurveyName
+                                    : survey.rootSurvey.name,
+                        };
+
+                        const updatedSurvey: Survey = {
+                            ...survey,
+                            rootSurvey: newRootSurvey,
+                            childCount: childCount,
+                        };
+                        return updatedSurvey;
+                    });
+                });
+
+                return Future.sequential(surveysWithNameAndCount);
             });
     }
 }

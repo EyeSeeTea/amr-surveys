@@ -233,7 +233,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{survey.rootSurvey.name}</TableCell>
+                                            <TableCell>{`${survey.rootSurvey.name} :${survey.childCount} `}</TableCell>
                                             {surveyFormType === "PrevalenceFacilityLevelForm" && (
                                                 <TableCell>{survey.assignedOrgUnit.id}</TableCell>
                                             )}
