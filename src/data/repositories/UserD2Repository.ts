@@ -24,6 +24,26 @@ export class UserD2Repository implements UserRepository {
         });
     }
 
+    public getCurrentOUByLevel(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        const hospital$ = this.getAllOrgUnitsByLevel(
+            organisationUnits,
+            dataViewOrganisationUnits,
+            HOSPITAL_OU_LEVEL
+        );
+
+        return hospital$.flatMap(hospitals => {
+            const currentAccessibleHospitals = this.mapUserOrgUnitsAccess(
+                hospitals.userOrgUnits,
+                hospitals.userDataViewOrgUnits
+            );
+
+            return Future.success(currentAccessibleHospitals);
+        });
+    }
+
     public savePassword(password: string): FutureData<string> {
         return apiToFuture(
             this.api.currentUser.get({
@@ -77,7 +97,7 @@ export class UserD2Repository implements UserRepository {
                             countries.userOrgUnits,
                             countries.userDataViewOrgUnits
                         ),
-                        userHospitalsAccess: [], //This is a time consuming fetch, fetched in hospital web worker.
+
                         settings: {
                             keyUiLocale: userSettings.keyUiLocale,
                             keyDbLocale: userSettings.keyDbLocale,

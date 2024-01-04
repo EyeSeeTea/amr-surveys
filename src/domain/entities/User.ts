@@ -34,7 +34,7 @@ export interface UserAttrs {
     userRoles: UserRole[];
     userGroups: NamedRef[];
     userCountriesAccess: OrgUnitAccess[];
-    userHospitalsAccess: OrgUnitAccess[];
+
     email: string;
     phoneNumber: string;
     introduction: string;

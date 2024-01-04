@@ -29,6 +29,7 @@ import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurveyRepository";
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
+import { GetUserAccessibleOUByLevel } from "./domain/usecases/GetUserAccessibleOUByLevel";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -51,6 +52,7 @@ function getCompositionRoot(repositories: Repositories) {
         },
         users: {
             getCurrent: new GetCurrentUserUseCase(repositories.usersRepository),
+            getAccessibleOUByLevel: new GetUserAccessibleOUByLevel(repositories.usersRepository),
             savePassword: new SavePasswordUseCase(repositories.usersRepository),
             saveKeyUiLocale: new SaveKeyUiLocaleUseCase(repositories.usersRepository),
             saveKeyDbLocale: new SaveKeyDbLocaleUseCase(repositories.usersRepository),

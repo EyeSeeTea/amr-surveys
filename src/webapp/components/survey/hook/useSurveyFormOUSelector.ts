@@ -3,6 +3,7 @@ import { Id } from "../../../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useAppContext } from "../../../contexts/app-context";
+import { useHospitalContext } from "../../../contexts/hospital-context";
 
 export function useSurveyFormOUSelector(
     formType: SURVEY_FORM_TYPES,
@@ -12,6 +13,7 @@ export function useSurveyFormOUSelector(
     const [ouSelectorErrMsg, setOUSelectorErrMsg] = useState<string>();
     const [shouldRefresh, setShouldRefresh] = useState({});
     const { currentUser } = useAppContext();
+    const { userHospitalsAccess } = useHospitalContext();
 
     const onOrgUnitChange = (orgUnitPaths: string[]) => {
         if (currentSurveyId) {
@@ -41,7 +43,7 @@ export function useSurveyFormOUSelector(
                     formType === "PPSHospitalForm" ||
                     formType === "PrevalenceFacilityLevelForm"
                 ) {
-                    const currentHospital = currentUser.userHospitalsAccess.find(
+                    const currentHospital = userHospitalsAccess.find(
                         hospital => hospital.orgUnitId === selectedOU
                     );
                     if (currentHospital) {

@@ -19,7 +19,7 @@ export function createUserWithGroups(userGroups: NamedRef[] = []): User {
         userRoles: [],
         userGroups,
         userCountriesAccess: [],
-        userHospitalsAccess: [],
+
         email: "johntraore@johntraore.com",
         phoneNumber: "1234567890",
         introduction: "",
@@ -48,7 +48,6 @@ function createUser(userRoles: UserRole[], userGroups: NamedRef[] = []): User {
         userRoles,
         userGroups,
         userCountriesAccess: [],
-        userHospitalsAccess: [],
         email: "johntraore@johntraore.com",
         phoneNumber: "1234567890",
         introduction: "",

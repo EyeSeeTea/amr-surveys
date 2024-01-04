@@ -4,7 +4,7 @@ import { Feedback } from "@eyeseetea/feedback-component";
 import { MuiThemeProvider } from "@material-ui/core/styles";
 //@ts-ignore
 import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { appConfig } from "../../../app-config";
 import { CompositionRoot } from "../../../CompositionRoot";
 import Share from "../../components/share/Share";
@@ -14,7 +14,7 @@ import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
-import { User } from "../../../domain/entities/User";
+import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
@@ -26,11 +26,7 @@ function App(props: AppProps) {
     const [showShareButton, setShowShareButton] = useState(false);
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
-
-    const hospitalWorker: Worker = useMemo(
-        () => new Worker(new URL("../../../workers/getHospitalWorker", import.meta.url)),
-        []
-    );
+    const [hospitalContext, setHospitalContext] = useState<HospitalContextState | null>(null);
 
     useEffect(() => {
         async function setup() {
@@ -41,28 +37,22 @@ function App(props: AppProps) {
             setAppContext({ currentUser, compositionRoot, api });
             setShowShareButton(isShareButtonVisible);
 
-            const userOrgUnits = currentUser.organisationUnits;
-            const userDataViewOrgUnits = currentUser.dataViewOrganisationUnits;
-            if (api && userOrgUnits && userDataViewOrgUnits) {
-                const dataForHospitalWorker = { api, userOrgUnits, userDataViewOrgUnits };
-                hospitalWorker.postMessage(dataForHospitalWorker);
-            }
-
-            hospitalWorker.onmessage = e => {
-                if (e.data) {
-                    const updatedCurrentUser: User = new User({
-                        ...currentUser,
-                        userHospitalsAccess: e.data.hospitalOrgUnitAccess,
-                    });
-                    setAppContext({ currentUser: updatedCurrentUser, compositionRoot, api });
-                    console.debug("Hospital worker completed, hospital data set");
-                } else console.debug("An error occured : No data fetched by hospital worker");
-            };
+            compositionRoot.users.getAccessibleOUByLevel
+                .execute(currentUser.organisationUnits, currentUser.dataViewOrganisationUnits)
+                .run(
+                    hospitalData => {
+                        setHospitalContext({ userHospitalsAccess: hospitalData });
+                        console.debug("Hospital data fetched successfully, hospital data set");
+                    },
+                    err => {
+                        console.debug(` No hospital data could be fetched : ${err}`);
+                    }
+                );
 
             setLoading(false);
         }
         setup();
-    }, [compositionRoot, api, hospitalWorker]);
+    }, [compositionRoot, api]);
 
     if (loading) return null;
 
@@ -79,9 +69,11 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <CurrentModuleContextProvider>
-                                <Router />
-                            </CurrentModuleContextProvider>
+                            <HospitalContext.Provider value={hospitalContext}>
+                                <CurrentModuleContextProvider>
+                                    <Router />
+                                </CurrentModuleContextProvider>
+                            </HospitalContext.Provider>
                         </AppContext.Provider>
                     </div>
 
