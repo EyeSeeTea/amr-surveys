@@ -16,9 +16,12 @@ import { useAppContext } from "../../../contexts/app-context";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
+    const { compositionRoot } = useAppContext();
     const history = useHistory();
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
+    const [optionLoading, setOptionLoading] = useState<boolean>(false);
+
     const {
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
@@ -89,9 +92,42 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const actionClick = (ppsSurveyType: string) => {
+    const actionClick = (ppsSurveyType: string, survey?: Survey) => {
+        setOptionLoading(true);
         const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
-        setOptions(currentOptions);
+
+        if (!survey) {
+            setOptions(currentOptions);
+            setOptionLoading(false);
+            return;
+        }
+
+        compositionRoot.surveys.getChildCount
+            .execute(
+                surveyFormType,
+                survey.assignedOrgUnit.id,
+                survey.rootSurvey.id,
+                surveyFormType === "PPSWardRegister" ? survey.id : ""
+            )
+            .run(
+                childCount => {
+                    const optionsWithChildCount = currentOptions.map(option => {
+                        if (option.startsWith("List")) {
+                            const updatedOption = `${option} (${childCount})`;
+                            return updatedOption;
+                        }
+                        return option;
+                    });
+                    if (survey) survey.childCount = childCount;
+                    setOptions(optionsWithChildCount);
+                    setOptionLoading(false);
+                },
+                err => {
+                    console.debug(`Could not get child count, error : ${err}`);
+                    setOptions(currentOptions);
+                    setOptionLoading(false);
+                }
+            );
     };
 
     const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
@@ -141,6 +177,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     return {
         options,
         sortedSurveys,
+        optionLoading,
         setSortedSurveys,
         editSurvey,
         assignChild,

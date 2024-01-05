@@ -49,7 +49,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
     const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
 
-    const { deleteSurvey, loading, error, deleteCompleteState } = useDeleteSurvey(
+    const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
@@ -68,7 +68,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
 
     return (
-        <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+        <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
@@ -147,7 +147,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{`${survey.rootSurvey.name} : ${survey.childCount}`}</TableCell>
+                                            <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
 
                                             <>
                                                 <TableCell>{survey.id}</TableCell>

@@ -30,6 +30,7 @@ import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurvey
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
 import { GetUserAccessibleOUByLevel } from "./domain/usecases/GetUserAccessibleOUByLevel";
+import { GetChildCountUseCase } from "./domain/usecases/GetChildCountUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -67,6 +68,7 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.surveyFormRepository
             ),
             deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
+            getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
         },
     };
 }

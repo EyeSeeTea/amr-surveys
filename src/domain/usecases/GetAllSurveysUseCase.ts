@@ -45,12 +45,7 @@ export class GetAllSurveysUseCase {
                                 ? "Prevalence"
                                 : "PPS"
                         ),
-                        childCount: this.surveyReporsitory.getSurveyChildCount(
-                            programId,
-                            survey.assignedOrgUnit.id,
-                            survey.rootSurvey.id,
-                            surveyFormType === "PPSWardRegister" ? survey.id : ""
-                        ),
+                        childCount: Future.success(0),
                     }).map(({ parentSurveyName, childCount }): Survey => {
                         const newRootSurvey: SurveyBase = {
                             surveyType: survey.rootSurvey.surveyType,

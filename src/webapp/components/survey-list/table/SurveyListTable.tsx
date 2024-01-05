@@ -44,12 +44,13 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
         useState<SortDirection>("asc");
 
-    const { deleteSurvey, loading, error, deleteCompleteState } = useDeleteSurvey(
+    const { loading, deleteCompleteState, showDeleteErrorMsg } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
     const {
         options,
+        optionLoading,
         sortedSurveys,
         setSortedSurveys,
         editSurvey,
@@ -71,7 +72,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
 
     return (
-        <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+        <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
@@ -233,7 +234,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{`${survey.rootSurvey.name} :${survey.childCount} `}</TableCell>
+                                            <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
                                             {surveyFormType === "PrevalenceFacilityLevelForm" && (
                                                 <TableCell>{survey.assignedOrgUnit.id}</TableCell>
                                             )}
@@ -259,74 +260,43 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             )}
 
                                             <TableCell style={{ opacity: 0.5 }}>
-                                                <ActionMenuButton
-                                                    onClickHandler={() =>
-                                                        actionClick(survey.surveyType)
-                                                    }
-                                                    options={options}
-                                                    optionClickHandler={[
-                                                        {
-                                                            option: "Edit",
-                                                            handler: () => editSurvey(survey),
-                                                        },
-                                                        {
-                                                            option: "Delete",
-                                                            handler: () =>
-                                                                deleteSurvey(
-                                                                    survey.id,
-                                                                    survey.assignedOrgUnit.id
-                                                                ),
-                                                        },
-                                                        {
-                                                            option: "Add New Country",
-                                                            handler: () => assignChild(survey),
-                                                        },
-                                                        {
-                                                            option: "List Countries",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "Add New Hospital",
-                                                            handler: () => assignChild(survey),
-                                                        },
-                                                        {
-                                                            option: "List Hospitals",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "Add New Ward",
-                                                            handler: () => assignChild(survey),
-                                                        },
-                                                        {
-                                                            option: "List Wards",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "List Country",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "Add New Patient",
-                                                            handler: () => assignChild(survey),
-                                                        },
-                                                        {
-                                                            option: "List Patients",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "Add New Facility",
-                                                            handler: () => assignChild(survey),
-                                                        },
-                                                        {
-                                                            option: "List Facilities",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                        {
-                                                            option: "List All Patient Surveys",
-                                                            handler: () => listChildren(survey),
-                                                        },
-                                                    ]}
-                                                />
+                                                {
+                                                    <ActionMenuButton
+                                                        onClickHandler={() =>
+                                                            actionClick(survey.surveyType, survey)
+                                                        }
+                                                        options={
+                                                            optionLoading
+                                                                ? [i18n.t("Loading...")]
+                                                                : options
+                                                        }
+                                                        optionClickHandler={[
+                                                            {
+                                                                option: "Edit",
+                                                                handler: () => editSurvey(survey),
+                                                            },
+                                                            {
+                                                                option: "Delete",
+                                                                handler: () =>
+                                                                    showDeleteErrorMsg(survey),
+                                                            },
+                                                            {
+                                                                option:
+                                                                    options.find(option =>
+                                                                        option.startsWith("Add")
+                                                                    ) || "",
+                                                                handler: () => assignChild(survey),
+                                                            },
+                                                            {
+                                                                option:
+                                                                    options.find(option =>
+                                                                        option.startsWith("List")
+                                                                    ) || "",
+                                                                handler: () => listChildren(survey),
+                                                            },
+                                                        ]}
+                                                    />
+                                                }
                                             </TableCell>
                                         </TableRow>
                                     ))}

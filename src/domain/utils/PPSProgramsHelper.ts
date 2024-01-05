@@ -112,10 +112,10 @@ export const getSurveyOptions = (
             return ["Edit", "Add New Patient", "List Patients", "Delete"];
 
         case "PrevalenceSurveyForm":
-            return ["Edit", "Add New Facility", "List Facilities"];
+            return ["Edit", "Add New Facility", "List Facilities", "Delete"];
 
         case "PrevalenceFacilityLevelForm":
-            return ["Edit", "List All Patient Surveys"];
+            return ["Edit", "List All Patient Surveys", "Delete"];
 
         case "PrevalenceCaseReportForm":
         case "PrevalenceSampleShipTrackForm":

@@ -70,17 +70,10 @@ export class GetPaginatedPatientSurveysUseCase {
             const programId = getProgramId(surveyFormType);
 
             //All PPS Survey Forms are Global.
-            if (surveyFormType === "PPSSurveyForm") orgUnitId = GLOBAL_OU_ID;
+            const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
             return this.paginatedSurveyRepo
-                .getSurveys(
-                    surveyFormType,
-                    programId,
-                    orgUnitId,
-                    parentWardRegisterId,
-                    page,
-                    pageSize
-                )
+                .getSurveys(surveyFormType, programId, ouId, parentWardRegisterId, page, pageSize)
                 .flatMap(surveys => {
                     const surveysWithNameAndCount = surveys.objects.map(survey => {
                         return Future.joinObj({
