@@ -126,14 +126,9 @@ export class UserD2Repository implements UserRepository {
                 },
                 fields: {
                     id: true,
-                    name: true,
                     shortName: true,
-                    code: true,
                     path: true,
                     level: true,
-                    parent: {
-                        id: true,
-                    },
                 },
                 paging: false,
             })
@@ -142,10 +137,9 @@ export class UserD2Repository implements UserRepository {
                 res.objects.map(ou => {
                     if (!ou.path.includes(NA_OU_ID))
                         return {
-                            name: ou.name,
                             id: ou.id,
                             shortName: ou.shortName,
-                            code: ou.code,
+
                             path: ou.path,
                         };
                 })
@@ -162,6 +156,7 @@ export class UserD2Repository implements UserRepository {
             const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
                 dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
             );
+
             return Future.success({ userOrgUnits, userDataViewOrgUnits });
         });
     };
@@ -170,34 +165,26 @@ export class UserD2Repository implements UserRepository {
         organisationUnits: OrgUnit[],
         dataViewOrganisationUnits: OrgUnit[]
     ): OrgUnitAccess[] => {
-        let orgUnitsAccess = organisationUnits.map(ou => ({
+        const orgUnitsAccess: OrgUnitAccess[] = organisationUnits.map(ou => ({
             orgUnitId: ou.id,
-            orgUnitName: ou.name,
             orgUnitShortName: ou.shortName,
-            orgUnitCode: ou.code,
             orgUnitPath: ou.path,
-            readAccess: dataViewOrganisationUnits.some(dvou => dvou.id === ou.id),
+            readAccess: dataViewOrganisationUnits.includes(ou),
             captureAccess: true,
         }));
 
         //Setting view access for org units that are present in dataViewOrganisationUnits and not organisationUnits
-        const readOnlyAccessOrgUnits = dataViewOrganisationUnits
-            .filter(dvou => orgUnitsAccess.every(oua => oua.orgUnitId !== dvou.id))
+        const readOnlyAccessOrgUnits: OrgUnitAccess[] = dataViewOrganisationUnits
+            .filter(dvou => !organisationUnits.includes(dvou))
             .map(raou => ({
                 orgUnitId: raou.id,
-                orgUnitName: raou.name,
                 orgUnitShortName: raou.shortName,
-                orgUnitCode: raou.code,
                 orgUnitPath: raou.path,
                 readAccess: true,
                 captureAccess: false, //orgUnits in dataViewOrganisationUnits dont have capture access
             }));
-
-        orgUnitsAccess = [...orgUnitsAccess, ...readOnlyAccessOrgUnits].sort((a, b) =>
-            a.orgUnitShortName.localeCompare(b.orgUnitShortName)
-        );
-
-        return orgUnitsAccess;
+        const newOrgUnitsAccess: OrgUnitAccess[] = [...orgUnitsAccess, ...readOnlyAccessOrgUnits];
+        return newOrgUnitsAccess;
     };
 
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {

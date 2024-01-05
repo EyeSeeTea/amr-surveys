@@ -155,7 +155,7 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
                                         <StyledChip
                                             size="small"
                                             key={orgUnits.orgUnitId}
-                                            label={orgUnits.orgUnitName}
+                                            label={orgUnits.orgUnitShortName}
                                             color="primary"
                                         />
                                     )

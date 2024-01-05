@@ -10,6 +10,9 @@ export class GetUserAccessibleOUByLevel {
         organisationUnits: NamedRef[],
         dataViewOrganisationUnits: NamedRef[]
     ): FutureData<OrgUnitAccess[]> {
+
+
+        
         return this.usersRepository.getCurrentOUByLevel(
             organisationUnits,
             dataViewOrganisationUnits
