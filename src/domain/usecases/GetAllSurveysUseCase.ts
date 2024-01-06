@@ -40,10 +40,7 @@ export class GetAllSurveysUseCase {
                     return Future.joinObj({
                         parentSurveyName: this.surveyReporsitory.getSurveyNameFromId(
                             survey.rootSurvey.id,
-                            surveyFormType === "PrevalenceSurveyForm" ||
-                                surveyFormType === "PrevalenceFacilityLevelForm"
-                                ? "Prevalence"
-                                : "PPS"
+                            survey.surveyFormType
                         ),
                         childCount: Future.success(0),
                     }).map(({ parentSurveyName, childCount }): Survey => {

@@ -1,4 +1,5 @@
 import { FutureData } from "../../data/api-futures";
+import { ProgramCountMap } from "../../data/repositories/SurveyFormD2Repository";
 import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
@@ -29,11 +30,13 @@ export interface SurveyRepository {
     ): FutureData<Questionnaire>;
 
     deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
-    getSurveyNameFromId(id: Id, parentSurveyType: "PPS" | "Prevalence"): FutureData<string>;
+
+    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string>;
+
     getSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): FutureData<number>;
+    ): FutureData<number | ProgramCountMap>;
 }

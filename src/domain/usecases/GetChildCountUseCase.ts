@@ -4,6 +4,7 @@ import { Id } from "../entities/Ref";
 
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
+import { ProgramCountMap } from "../../data/repositories/SurveyFormD2Repository";
 
 export class GetChildCountUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
@@ -13,7 +14,7 @@ export class GetChildCountUseCase {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId?: Id
-    ): FutureData<number> {
+    ): FutureData<number | ProgramCountMap> {
         const programId = getProgramId(surveyFormType);
         return this.surveyReporsitory.getSurveyChildCount(
             programId,

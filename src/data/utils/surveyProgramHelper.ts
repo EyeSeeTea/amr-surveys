@@ -118,22 +118,23 @@ export const getParentDataElementForProgram = (programId: Id): Id => {
     }
 };
 
-export const getChildProgramId = (programId: Id): Id[] => {
+export const getChildProgramId = (programId: Id): Id | Id[] => {
     switch (programId) {
         case PPS_SURVEY_FORM_ID:
-            return [PPS_COUNTRY_QUESTIONNAIRE_ID];
+            return PPS_COUNTRY_QUESTIONNAIRE_ID;
         case PPS_COUNTRY_QUESTIONNAIRE_ID:
-            return [PPS_HOSPITAL_FORM_ID];
+            return PPS_HOSPITAL_FORM_ID;
         case PPS_HOSPITAL_FORM_ID:
-            return [PPS_WARD_REGISTER_ID];
+            return PPS_WARD_REGISTER_ID;
         case PPS_WARD_REGISTER_ID:
-            return [PPS_PATIENT_REGISTER_ID];
+            return PPS_PATIENT_REGISTER_ID;
 
         case PREVALENCE_SURVEY_FORM_ID:
-            return [PREVALENCE_FACILITY_LEVEL_FORM_ID];
+            return PREVALENCE_FACILITY_LEVEL_FORM_ID;
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
+            return PREVALENCE_CASE_REPORT_FORM_ID;
+        case PREVALENCE_CASE_REPORT_FORM_ID:
             return [
-                PREVALENCE_CASE_REPORT_FORM_ID,
                 PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
                 PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
                 PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
@@ -142,5 +143,25 @@ export const getChildProgramId = (programId: Id): Id[] => {
 
         default:
             return [];
+    }
+};
+
+export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Prevelance" => {
+    switch (surveyFormType) {
+        case "PPSSurveyForm":
+        case "PPSCountryQuestionnaire":
+        case "PPSHospitalForm":
+        case "PPSWardRegister":
+        case "PPSPatientRegister":
+            return "PPS";
+        case "PrevalenceSurveyForm":
+        case "PrevalenceFacilityLevelForm":
+        case "PrevalenceCaseReportForm":
+        case "PrevalenceSampleShipTrackForm":
+        case "PrevalenceCentralRefLabForm":
+        case "PrevalencePathogenIsolatesLog":
+        case "PrevalenceSupranationalRefLabForm":
+        default:
+            return "Prevelance";
     }
 };

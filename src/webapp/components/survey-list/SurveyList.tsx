@@ -8,11 +8,7 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import {
-    getSurveyDisplayName,
-    hideCreateNewButton,
-    PREVALENCE_PATIENT_OPTIONS,
-} from "../../../domain/utils/PPSProgramsHelper";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
@@ -20,9 +16,7 @@ import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
-import { SplitButton } from "../split-button/SplitButton";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
-import { useSurveyListActions } from "./hook/useSurveyListActions";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -55,49 +49,34 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         filteredSurveys,
     } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
 
-    const { handleSplitButtonClick } = useSurveyListActions(surveyFormType);
-
     return (
         <ContentWrapper>
             <ContentLoader loading={loadingSurveys} error={errorSurveys} showErrorAsSnackbar={true}>
                 <CustomCard padding="20px 30px 20px">
-                    {/* Hospital data entry users cannot create new hospital surveys. They can only view the hospital survey list */}
-
-                    {surveyFormType === "PrevalencePatientForms" ? (
-                        <ButtonWrapper>
-                            <SplitButton
-                                options={PREVALENCE_PATIENT_OPTIONS}
-                                handleSplitButtonClick={handleSplitButtonClick}
-                            />
-                        </ButtonWrapper>
-                    ) : (
-                        <>
-                            {!hideCreateNewButton(
-                                surveyFormType,
-                                isAdmin,
-                                currentPPSSurveyForm?.surveyType
-                                    ? currentPPSSurveyForm?.surveyType
-                                    : "",
-                                surveys
-                            ) && (
-                                <ButtonWrapper>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        component={NavLink}
-                                        to={{
-                                            pathname: `/new-survey/${surveyFormType}`,
-                                        }}
-                                        exact={true}
-                                    >
-                                        {i18n.t(
-                                            `Create New ${getSurveyDisplayName(surveyFormType)}`
-                                        )}
-                                    </Button>
-                                </ButtonWrapper>
-                            )}
-                        </>
-                    )}
+                    <>
+                        {!hideCreateNewButton(
+                            surveyFormType,
+                            isAdmin,
+                            currentPPSSurveyForm?.surveyType
+                                ? currentPPSSurveyForm?.surveyType
+                                : "",
+                            surveys
+                        ) && (
+                            <ButtonWrapper>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    component={NavLink}
+                                    to={{
+                                        pathname: `/new-survey/${surveyFormType}`,
+                                    }}
+                                    exact={true}
+                                >
+                                    {i18n.t(`Create New ${getSurveyDisplayName(surveyFormType)}`)}
+                                </Button>
+                            </ButtonWrapper>
+                        )}
+                    </>
 
                     <Typography variant="h3">
                         {i18n.t(`${getSurveyDisplayName(surveyFormType)} List`)}
@@ -112,7 +91,11 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                     )}
 
                     {surveyFormType === "PPSPatientRegister" ||
-                    surveyFormType === "PrevalencePatientForms" ? (
+                    surveyFormType === "PrevalenceCaseReportForm" ||
+                    surveyFormType === "PrevalenceCentralRefLabForm" ||
+                    surveyFormType === "PrevalencePathogenIsolatesLog" ||
+                    surveyFormType === "PrevalenceSampleShipTrackForm" ||
+                    surveyFormType === "PrevalenceSupranationalRefLabForm" ? (
                         <PaginatedSurveyListTable
                             surveys={filteredSurveys}
                             surveyFormType={surveyFormType}

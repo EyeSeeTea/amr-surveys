@@ -8,7 +8,6 @@ export type SURVEY_FORM_TYPES =
     | "PPSWardRegister"
     | "PrevalenceSurveyForm"
     | "PrevalenceFacilityLevelForm"
-    | "PrevalencePatientForms" //This is not a real program, it is a placeholder of all prevalence patient programs
     | "PrevalenceCaseReportForm"
     | "PrevalenceSampleShipTrackForm"
     | "PrevalenceCentralRefLabForm"

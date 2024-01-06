@@ -13,6 +13,11 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
+import {
+    PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+    PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
+    PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
+} from "../../../../data/entities/D2Survey";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -29,6 +34,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         changeCurrentWardRegister,
         changeCurrentPrevalenceSurveyForm,
         changeCurrentFacilityLevelForm,
+        changeCurrentCaseReportForm,
     } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
     const { currentUser } = useAppContext();
@@ -52,7 +58,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         });
     };
 
-    const assignChild = (survey: Survey) => {
+    const assignChild = (survey: Survey, option?: string) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -62,7 +68,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             survey.assignedOrgUnit.id,
             survey.rootSurvey
         );
-        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
         if (childSurveyType) {
             history.push({
                 pathname: `/new-survey/${childSurveyType}`,
@@ -72,7 +78,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const listChildren = (survey: Survey) => {
+    const listChildren = (survey: Survey, option?: string) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -82,7 +88,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             survey.assignedOrgUnit.id,
             survey.rootSurvey
         );
-        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
         if (childSurveyType)
             history.replace({
                 pathname: `/surveys/${childSurveyType}`,
@@ -111,16 +117,53 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             )
             .run(
                 childCount => {
-                    const optionsWithChildCount = currentOptions.map(option => {
-                        if (option.startsWith("List")) {
-                            const updatedOption = `${option} (${childCount})`;
-                            return updatedOption;
-                        }
-                        return option;
-                    });
-                    if (survey) survey.childCount = childCount;
-                    setOptions(optionsWithChildCount);
-                    setOptionLoading(false);
+                    if (typeof childCount === "number") {
+                        const optionsWithChildCount = currentOptions.map(option => {
+                            if (option.startsWith("List")) {
+                                const updatedOption = `${option} (${childCount})`;
+                                return updatedOption;
+                            }
+                            return option;
+                        });
+                        if (survey) survey.childCount = childCount;
+                        setOptions(optionsWithChildCount);
+                        setOptionLoading(false);
+                    } else {
+                        const optionsWithChildCount = currentOptions.map(option => {
+                            if (option === "List Sample Shipments") {
+                                const currentChildCount = childCount.find(
+                                    cc => cc.programId === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID
+                                )?.count;
+                                const updatedOption = `${option} (${currentChildCount})`;
+                                return updatedOption;
+                            } else if (option === "List Central Ref Labs") {
+                                const currentChildCount = childCount.find(
+                                    cc => cc.programId === PREVALENCE_CENTRAL_REF_LAB_FORM_ID
+                                )?.count;
+                                const updatedOption = `${option} (${currentChildCount})`;
+                                return updatedOption;
+                            } else if (option === "List Pathogen Isolates Logs") {
+                                const currentChildCount = childCount.find(
+                                    cc => cc.programId === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID
+                                )?.count;
+                                const updatedOption = `${option} (${currentChildCount})`;
+                                return updatedOption;
+                            } else if (option === "List Pathogen Supranational Refs") {
+                                const currentChildCount = childCount.find(
+                                    cc => cc.programId === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID
+                                )?.count;
+                                const updatedOption = `${option} (${currentChildCount})`;
+                                return updatedOption;
+                            } else return option;
+                        });
+                        if (survey)
+                            survey.childCount = childCount.reduce((agg, childCount) => {
+                                return agg + childCount.count;
+                            }, 0);
+
+                        setOptions(optionsWithChildCount);
+                        setOptionLoading(false);
+                    }
                 },
                 err => {
                     console.debug(`Could not get child count, error : ${err}`);
@@ -157,6 +200,8 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
         else if (surveyFormType === "PrevalenceFacilityLevelForm")
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
+        else if (surveyFormType === "PrevalenceCaseReportForm")
+            changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
     };
 
     const handleSplitButtonClick = (

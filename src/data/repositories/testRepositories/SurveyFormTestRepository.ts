@@ -9,7 +9,7 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
-    getSurveyNameFromId(_id: string, _parentSurveyType: "PPS" | "Prevalence"): FutureData<string> {
+    getSurveyNameFromId(_id: string): FutureData<string> {
         throw new Error("Method not implemented.");
     }
     getSurveyChildCount(
