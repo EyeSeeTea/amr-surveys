@@ -59,7 +59,8 @@ export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
 
 export const getChildSurveyType = (
     surveyFormType: SURVEY_FORM_TYPES,
-    ppsSurveyType?: string
+    ppsSurveyType?: string,
+    option?: string
 ): SURVEY_FORM_TYPES | undefined => {
     switch (surveyFormType) {
         case "PPSSurveyForm": {
@@ -81,7 +82,28 @@ export const getChildSurveyType = (
         case "PrevalenceSurveyForm":
             return "PrevalenceFacilityLevelForm";
         case "PrevalenceFacilityLevelForm":
-            return "PrevalencePatientForms";
+            return "PrevalenceCaseReportForm";
+        case "PrevalenceCaseReportForm": {
+            switch (true) {
+                case option === "Add New Sample Shipment":
+                case option?.startsWith("List Sample Shipments"):
+                    return "PrevalenceSampleShipTrackForm";
+
+                case option === "Add New Central Ref Lab":
+                case option?.startsWith("List Central Ref Labs"):
+                    return "PrevalenceCentralRefLabForm";
+
+                case option === "Add New Pathogen Isolates Log":
+                case option?.startsWith("List Pathogen Isolates Logs"):
+                    return "PrevalencePathogenIsolatesLog";
+
+                case option === "Add New Supranational Ref":
+                case option?.startsWith("List Supranational Refs"):
+                    return "PrevalenceSupranationalRefLabForm";
+                default:
+                    return undefined;
+            }
+        }
         case "PPSPatientRegister":
         default:
             return undefined;
@@ -112,12 +134,24 @@ export const getSurveyOptions = (
             return ["Edit", "Add New Patient", "List Patients", "Delete"];
 
         case "PrevalenceSurveyForm":
-            return ["Edit", "Add New Facility", "List Facilities"];
+            return ["Edit", "Add New Facility", "List Facilities", "Delete"];
 
         case "PrevalenceFacilityLevelForm":
-            return ["Edit", "List All Patient Surveys"];
+            return ["Edit", "Add New Patient", "List Patients", "Delete"];
 
         case "PrevalenceCaseReportForm":
+            return [
+                "Edit",
+                "Add New Sample Shipment",
+                "List Sample Shipments",
+                "Add New Central Ref Lab",
+                "List Central Ref Labs",
+                "Add New Pathogen Isolates Log",
+                "List Pathogen Isolates Logs",
+                "Add New Supranational Ref",
+                "List Supranational Refs",
+                "Delete",
+            ];
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceCentralRefLabForm":
         case "PrevalencePathogenIsolatesLog":
@@ -156,8 +190,6 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Pathogen Isolate";
         case "PrevalenceSupranationalRefLabForm":
             return "Supranational Result";
-        case "PrevalencePatientForms":
-            return "Patient";
         default:
             return "Survey";
     }

@@ -26,7 +26,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
     const { api } = useAppContext();
     const { currentPPSSurveyForm, currentCountryQuestionnaire, currentPrevalenceSurveyForm } =
         useCurrentSurveys();
-    const { onOrgUnitChange, ouSelectorErrMsg } = useSurveyFormOUSelector(
+    const { onOrgUnitChange, ouSelectorErrMsg, shouldRefresh } = useSurveyFormOUSelector(
         formType,
         setCurrentOrgUnit,
         currentSurveyId
@@ -37,7 +37,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         if (ouSelectorErrMsg) {
             snackbar.error(ouSelectorErrMsg);
         }
-    }, [ouSelectorErrMsg, snackbar]);
+    }, [ouSelectorErrMsg, snackbar, shouldRefresh]);
 
     return (
         <>

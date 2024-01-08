@@ -3,9 +3,7 @@ import { Id, NamedRef } from "./Ref";
 
 export interface OrgUnitAccess {
     orgUnitId: Id;
-    orgUnitName: string;
     orgUnitShortName: string;
-    orgUnitCode: string;
     orgUnitPath: string;
     readAccess: boolean;
     captureAccess: boolean;
@@ -34,7 +32,7 @@ export interface UserAttrs {
     userRoles: UserRole[];
     userGroups: NamedRef[];
     userCountriesAccess: OrgUnitAccess[];
-    userHospitalsAccess: OrgUnitAccess[];
+
     email: string;
     phoneNumber: string;
     introduction: string;
@@ -46,6 +44,8 @@ export interface UserAttrs {
     interests: string;
     languages: string;
     settings: UserSettings;
+    organisationUnits: NamedRef[];
+    dataViewOrganisationUnits: NamedRef[];
 }
 
 export interface UserRole extends NamedRef {

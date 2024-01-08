@@ -1,10 +1,17 @@
-import { User } from "../../../domain/entities/User";
+import { OrgUnitAccess, User } from "../../../domain/entities/User";
 import { createAdminUser } from "../../../domain/entities/__tests__/userFixtures";
 import { Future } from "../../../domain/entities/generic/Future";
 import { UserRepository } from "../../../domain/repositories/UserRepository";
 import { FutureData } from "../../api-futures";
+import { NamedRef } from "../../../domain/entities/Ref";
 
 export class UserTestRepository implements UserRepository {
+    getCurrentOUByLevel(
+        _organisationUnits: NamedRef[],
+        _dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        return Future.success([]);
+    }
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {
         if (locale) return Future.success(undefined);
         else

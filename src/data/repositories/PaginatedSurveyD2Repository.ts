@@ -1,18 +1,13 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-
 import { Future } from "../../domain/entities/generic/Future";
-
 import { Id } from "../../domain/entities/Ref";
-
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSurveyRepository";
 import { PaginatedReponse } from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
 import { WARD_ID_DATAELEMENT_ID } from "../entities/D2Survey";
-
 import { SurveyD2Repository } from "./SurveyFormD2Repository";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
@@ -75,16 +70,16 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 surveyFormType
             );
 
-            return Future.sequential(surveys).map(surveys => {
-                return {
-                    pager: {
-                        page: trackedEntities.page,
-                        pageSize: trackedEntities.pageSize,
-                        total: trackedEntities.total,
-                    },
-                    objects: surveys,
-                };
-            });
+            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                pager: {
+                    page: trackedEntities.page,
+                    pageSize: trackedEntities.pageSize,
+                    total: trackedEntities.total,
+                },
+                objects: surveys,
+            };
+
+            return Future.success(paginatedSurveys);
         });
     }
 
@@ -117,16 +112,16 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 programId
             );
 
-            return Future.sequential(surveys).map(surveys => {
-                return {
-                    pager: {
-                        page: response.page,
-                        pageSize: response.pageSize,
-                        total: response.total,
-                    },
-                    objects: surveys,
-                };
-            });
+            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                pager: {
+                    page: response.page,
+                    pageSize: response.pageSize,
+                    total: response.total,
+                },
+                objects: surveys,
+            };
+
+            return Future.success(paginatedSurveys);
         });
     }
 }

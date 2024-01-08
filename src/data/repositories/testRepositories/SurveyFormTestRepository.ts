@@ -9,6 +9,20 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
+    deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
+        throw new Error("Method not implemented.");
+    }
+    getSurveyNameFromId(_id: string): FutureData<string> {
+        throw new Error("Method not implemented.");
+    }
+    getSurveyChildCount(
+        _parentProgram: string,
+        _orgUnitId: string,
+        _parentSurveyId: string,
+        _secondaryparentId: string | undefined
+    ): FutureData<number> {
+        throw new Error("Method not implemented.");
+    }
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");
@@ -68,6 +82,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "SUPRANATIONAL",
                     rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
+                    childCount: 0,
                 },
                 {
                     name: "TestSurvey2",
@@ -78,6 +93,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "NATIONAL",
                     rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
+                    childCount: 0,
                 },
             ]);
         else return Future.success([]);
@@ -99,10 +115,5 @@ export class SurveyTestRepository implements SurveyRepository {
         } else {
             return Future.error(new Error("Error in getSurveyById"));
         }
-    }
-
-    deleteSurvey(orgUnitId: Id, eventId: Id, programId: Id): FutureData<void> {
-        if (orgUnitId && eventId && programId) return Future.success(undefined);
-        else return Future.error(new Error("An error occured while deleting the survey"));
     }
 }

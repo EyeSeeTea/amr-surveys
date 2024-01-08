@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 interface ActionMenuProps {
     options: string[];
-    optionClickHandler: { option: string; handler: () => void }[];
+    optionClickHandler: { option: string; handler: (option?: string) => void }[];
     onClickHandler: () => void;
 }
 
@@ -24,7 +24,7 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({
     };
 
     const menuItemClick = (option: string) => {
-        optionClickHandler.find(optionClick => optionClick.option === option)?.handler();
+        optionClickHandler.find(optionClick => optionClick.option === option)?.handler(option);
         handleClose();
     };
 

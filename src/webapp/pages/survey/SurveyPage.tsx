@@ -13,15 +13,7 @@ export const SurveyPage: React.FC = () => {
     const history = useHistory();
 
     const hideForm = () => {
-        if (
-            formType === "PrevalenceCaseReportForm" ||
-            formType === "PrevalenceCentralRefLabForm" ||
-            formType === "PrevalencePathogenIsolatesLog" ||
-            formType === "PrevalenceSampleShipTrackForm" ||
-            formType === "PrevalenceSupranationalRefLabForm"
-        ) {
-            history.push(`/surveys/PrevalencePatientForms`);
-        } else history.push(`/surveys/${formType}`);
+        history.push(`/surveys/${formType}`);
     };
 
     return (

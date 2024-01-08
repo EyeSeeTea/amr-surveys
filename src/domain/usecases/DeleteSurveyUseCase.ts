@@ -8,12 +8,8 @@ import { getProgramId } from "../utils/PPSProgramsHelper";
 export class DeleteSurveyUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
-    public execute(
-        surveyFormType: SURVEY_FORM_TYPES,
-        orgUnitId: Id,
-        eventId: Id
-    ): FutureData<void> {
+    public execute(surveyFormType: SURVEY_FORM_TYPES, orgUnitId: Id, id: Id): FutureData<void> {
         const programId = getProgramId(surveyFormType);
-        return this.surveyReporsitory.deleteSurvey(eventId, orgUnitId, programId);
+        return this.surveyReporsitory.deleteSurvey(id, orgUnitId, programId);
     }
 }

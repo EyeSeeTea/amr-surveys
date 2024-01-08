@@ -2,41 +2,36 @@ import { FutureData } from "../../data/api-futures";
 import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
-import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
-import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
+import { PaginatedReponse } from "../entities/TablePagination";
+import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
+import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
 
-export class GetAllSurveysUseCase {
-    constructor(private surveyReporsitory: SurveyRepository) {}
+//This use case fetched only patient surveys for both Prevelance and PPS modules
+export class GetPaginatedPatientSurveysUseCase {
+    constructor(
+        private paginatedSurveyRepo: PaginatedSurveyRepository,
+        private surveyReporsitory: SurveyRepository
+    ) {}
 
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
         orgUnitId: Id,
-        parentSurveyId: Id | undefined
-    ): FutureData<Survey[]> {
+        parentSurveyId: Id | undefined,
+        parentWardRegisterId: Id | undefined,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
         const programId = getProgramId(surveyFormType);
 
-        //All PPS Survey Forms are Global.
-        const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
+        const parentId =
+            surveyFormType === "PPSPatientRegister" ? parentWardRegisterId : parentSurveyId;
 
-        return this.surveyReporsitory
-            .getSurveys(surveyFormType, programId, ouId)
+        return this.paginatedSurveyRepo
+            .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
             .flatMap(surveys => {
-                const filteredSurveys =
-                    surveyFormType === "PPSSurveyForm" ||
-                    (surveyFormType === "PPSHospitalForm" && !parentSurveyId) ||
-                    surveyFormType === "PrevalenceSurveyForm"
-                        ? surveys
-                        : _(
-                              surveys.map(survey => {
-                                  if (survey.rootSurvey.id === parentSurveyId) return survey;
-                              })
-                          )
-                              .compact()
-                              .value();
-
-                const surveysWithName = filteredSurveys.map(survey => {
+                const surveysWithName = surveys.objects.map(survey => {
                     return this.surveyReporsitory
                         .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
                         .map((parentSurveyName): Survey => {
@@ -57,7 +52,13 @@ export class GetAllSurveysUseCase {
                         });
                 });
 
-                return Future.sequential(surveysWithName);
+                return Future.sequential(surveysWithName).map(updatedSurveys => {
+                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        pager: surveys.pager,
+                        objects: updatedSurveys,
+                    };
+                    return paginatedSurveys;
+                });
             });
     }
 }

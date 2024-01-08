@@ -8,7 +8,6 @@ export type SURVEY_FORM_TYPES =
     | "PPSWardRegister"
     | "PrevalenceSurveyForm"
     | "PrevalenceFacilityLevelForm"
-    | "PrevalencePatientForms" //This is not a real program, it is a placeholder of all prevalence patient programs
     | "PrevalenceCaseReportForm"
     | "PrevalenceSampleShipTrackForm"
     | "PrevalenceCentralRefLabForm"
@@ -33,4 +32,5 @@ export interface Survey extends SurveyBase {
     assignedOrgUnit: NamedRef;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
+    childCount?: number;
 }

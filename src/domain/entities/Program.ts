@@ -66,3 +66,13 @@ export interface ProgramMetadata {
     trackedEntityAttributes?: TrackedEntityAttibute[];
     programStages: ProgramStage[];
 }
+
+export type ProgramCountMap = {
+    id: string;
+    count: number;
+}[];
+
+export type ProgramOptionCountMap = {
+    option: string;
+    count: number;
+}[];
