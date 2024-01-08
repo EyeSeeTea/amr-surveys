@@ -7,7 +7,7 @@ import {
 } from "../../../../domain/entities/Survey";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
-export function useSurveyList(
+export function useFilteredSurveys(
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
     surveys: Survey[] | undefined
@@ -21,27 +21,32 @@ export function useSurveyList(
         resetCurrentCountryQuestionnaire,
         resetCurrentHospitalForm,
         resetCurrentWardRegister,
+        resetCurrentFacilityLevelForm,
     } = useCurrentSurveys();
 
     useEffect(() => {
+        //filters apply only to PPSSurveyForm
+        if (surveyFormType !== "PPSSurveyForm") {
+            setStatusFilter(undefined);
+            setSurveyTypeFilter(undefined);
+        }
+
+        //For non-admin user, reset context for any corner cases.
         if (surveyFormType === "PPSHospitalForm" && !isAdmin) {
             resetCurrentPPSSurveyForm();
         }
 
+        //reset child contexts, if parent is reset
         if (surveyFormType === "PPSSurveyForm") {
             resetCurrentCountryQuestionnaire();
         } else if (surveyFormType === "PPSCountryQuestionnaire") {
             resetCurrentCountryQuestionnaire();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
         } else if (surveyFormType === "PPSHospitalForm") {
             resetCurrentHospitalForm();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
         } else if (surveyFormType === "PPSWardRegister") {
             resetCurrentWardRegister();
-            setStatusFilter(undefined);
-            setSurveyTypeFilter(undefined);
+        } else if (surveyFormType === "PrevalenceSurveyForm") {
+            resetCurrentFacilityLevelForm();
         }
 
         if (statusFilter && surveyTypeFilter && surveys) {
@@ -72,6 +77,7 @@ export function useSurveyList(
         surveys,
         statusFilter,
         surveyTypeFilter,
+        resetCurrentFacilityLevelForm,
     ]);
 
     return {

@@ -22,10 +22,14 @@ import { UserD2Repository } from "./data/repositories/UserD2Repository";
 import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
 import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
-import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
+import { GetPaginatedSurveysUseCase } from "./domain/usecases/GetPaginatedSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
+import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
+import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurveyRepository";
+import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
+import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -34,6 +38,7 @@ type Repositories = {
     localeRepository: LocalesRepository;
     moduleRepository: ModuleRepository;
     surveyFormRepository: SurveyRepository;
+    paginatedSurveyRepository: PaginatedSurveyRepository;
 };
 
 function getCompositionRoot(repositories: Repositories) {
@@ -57,6 +62,9 @@ function getCompositionRoot(repositories: Repositories) {
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
             getFilteredPatients: new GetFilteredPatientsUseCase(repositories.surveyFormRepository),
+            getPaginatedSurveys: new GetPaginatedSurveysUseCase(
+                repositories.paginatedSurveyRepository
+            ),
             deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
         },
     };
@@ -69,6 +77,10 @@ export function getWebappCompositionRoot(api: D2Api) {
         localeRepository: new LocalesD2Repository(api),
         moduleRepository: new ModuleD2Repository(dataStoreClient, api),
         surveyFormRepository: new SurveyD2Repository(api),
+        paginatedSurveyRepository: new PaginatedSurveyD2Repository(
+            api,
+            new SurveyD2Repository(api)
+        ),
     };
 
     return getCompositionRoot(repositories);
@@ -80,6 +92,7 @@ export function getTestCompositionRoot(nonAdminUser?: boolean) {
         localeRepository: new LocalesTestRepository(),
         moduleRepository: new ModulesTestRepository(),
         surveyFormRepository: new SurveyTestRepository(),
+        paginatedSurveyRepository: new PaginatedSurveyTestRepository(),
     };
 
     return getCompositionRoot(repositories);

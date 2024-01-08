@@ -1,40 +1,18 @@
 import React, { useEffect } from "react";
-import { Button, makeStyles, Typography, withStyles } from "@material-ui/core";
-// @ts-ignore
-import {
-    // @ts-ignore
-    DataTable,
-    // @ts-ignore
-    TableHead,
-    // @ts-ignore
-    DataTableRow,
-    // @ts-ignore
-    DataTableColumnHeader,
-    // @ts-ignore
-    DataTableCell,
-    // @ts-ignore
-    TableBody,
-} from "@dhis2/ui";
+import { Button, Typography, withStyles } from "@material-ui/core";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
 import { Question } from "../../../domain/entities/Questionnaire";
-import { QuestionWidget } from "../survey-questions/QuestionWidget";
-import { useAppContext } from "../../contexts/app-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
-import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
-import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
-import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import {
-    getParentOUIdFromPath,
-    getSurveyDisplayName,
-} from "../../../domain/utils/PPSProgramsHelper";
-import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
+import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
+import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
+import { SurveySection } from "./SurveySection";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -54,10 +32,7 @@ const CancelButton = withStyles(() => ({
 }))(Button);
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
-    const classes = useStyles();
-    const formClasses = useFormStyles();
     const snackbar = useSnackbar();
-    const { api, currentUser } = useAppContext();
 
     const {
         questionnaire,
@@ -67,6 +42,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
+        addNew,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -74,8 +50,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit?.orgUnitId ?? "",
         props.currentSurveyId
     );
-
-    const { currentPPSSurveyForm, currentCountryQuestionnaire } = useCurrentSurveys();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -99,15 +73,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         setQuestionnaire(questionnaire => {
-            const sectionToBeUpdated = questionnaire?.sections.filter(sec =>
-                sec.questions.find(q => q.id === question?.id)
+            const stageToBeUpdated = questionnaire?.stages.find(stage =>
+                stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
             );
-            if (sectionToBeUpdated) {
-                const questionToBeUpdated = sectionToBeUpdated[0]?.questions.filter(
+            if (stageToBeUpdated) {
+                const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
+                    section.questions.find(q => q.id === question?.id)
+                );
+                if (sectionToBeUpdated) {
+                    const questionToBeUpdated = sectionToBeUpdated.questions.find(
+                        q => q.id === question.id
+                    );
+                    if (questionToBeUpdated) questionToBeUpdated.value = question.value;
+                }
+            } else {
+                //Stage not found, entity could be updated.
+                const questionToBeUpdated = questionnaire?.entity?.questions.find(
                     q => q.id === question.id
                 );
-                if (questionToBeUpdated && questionToBeUpdated[0])
-                    questionToBeUpdated[0].value = question.value;
+                if (questionToBeUpdated) questionToBeUpdated.value = question.value;
             }
             return questionnaire;
         });
@@ -117,114 +101,45 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.hideForm();
     };
 
-    const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        if (props.currentSurveyId) {
-            alert("Delete the Survey and create new one? Yes/No"); //TO DO : Replace with dialog after behaviour confirmation
-            return;
-        }
-        if (orgUnitPaths[0]) {
-            const orgUnits = orgUnitPaths[0].split("/");
-
-            const selectedOU = orgUnits[orgUnits.length - 1];
-            if (selectedOU) {
-                if (props.formType === "PPSCountryQuestionnaire") {
-                    const currentCountry = currentUser.userCountriesAccess.find(
-                        ou => ou.orgUnitId === selectedOU
-                    );
-                    if (currentCountry) {
-                        setCurrentOrgUnit(currentCountry);
-                    }
-                } else if (props.formType === "PPSHospitalForm") {
-                    const currentHospital = currentUser.userHospitalsAccess.find(
-                        hospital => hospital.orgUnitId === selectedOU
-                    );
-                    if (currentHospital) {
-                        setCurrentOrgUnit(currentHospital);
-                    }
-                }
-            }
-        }
-    };
-
     return (
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
+                <SurveyFormOUSelector
+                    formType={props.formType}
+                    currentOrgUnit={currentOrgUnit}
+                    setCurrentOrgUnit={setCurrentOrgUnit}
+                    currentSurveyId={props.currentSurveyId}
+                />
 
-                {(props.formType === "PPSCountryQuestionnaire" ||
-                    props.formType === "PPSHospitalForm") && (
-                    <OrgUnitsSelector
-                        api={api}
-                        fullWidth={false}
-                        selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
-                        initiallyExpanded={
-                            currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
-                        }
-                        onChange={onOrgUnitChange}
-                        singleSelection={true}
-                        typeInput={"radio"}
-                        hideMemberCount={false}
-                        selectableLevels={
-                            props.formType === "PPSCountryQuestionnaire"
-                                ? [COUNTRY_OU_LEVEL]
-                                : [HOSPITAL_OU_LEVEL]
-                        }
-                        controls={{
-                            filterByLevel: false,
-                            filterByGroup: false,
-                            filterByProgram: false,
-                            selectAll: false,
-                        }}
-                        rootIds={
-                            props.formType === "PPSHospitalForm"
-                                ? currentPPSSurveyForm?.surveyType === "HOSP" //For HOSP PPS surveys, show all hospitals across all OUs
-                                    ? [GLOBAL_OU_ID]
-                                    : currentCountryQuestionnaire?.orgUnitId
-                                    ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
-                                    : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
-                                : [GLOBAL_OU_ID]
-                        }
+                {questionnaire?.entity && (
+                    <SurveySection
+                        title={questionnaire.entity.title}
+                        updateQuestion={updateQuestion}
+                        questions={questionnaire.entity.questions}
                     />
                 )}
 
-                {questionnaire?.sections.map(section => {
-                    if (!section.isVisible) return null;
+                {questionnaire?.stages.map(stage => {
+                    if (!stage.isVisible) return null;
 
                     return (
-                        <div key={section.title} className={classes.wrapper}>
-                            <DataTable>
-                                <TableHead>
-                                    <DataTableRow>
-                                        <DataTableColumnHeader colSpan="2">
-                                            <span className={classes.header}>{section.title}</span>
-                                        </DataTableColumnHeader>
-                                    </DataTableRow>
-                                </TableHead>
+                        <div key={stage.code}>
+                            <p> {`Stage : ${stage.title}`}</p>
+                            {stage.sections.map(section => {
+                                if (!section.isVisible) return null;
 
-                                <TableBody>
-                                    {section.questions.map(question => (
-                                        <DataTableRow key={question.id}>
-                                            <DataTableCell width="60%">
-                                                <span>{question.text}</span>
-                                            </DataTableCell>
-
-                                            <DataTableCell>
-                                                <div className={formClasses.valueWrapper}>
-                                                    <div className={formClasses.valueInput}>
-                                                        <QuestionWidget
-                                                            onChange={updateQuestion}
-                                                            question={question}
-                                                            disabled={
-                                                                question.disabled ? true : false
-                                                            }
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </DataTableCell>
-                                        </DataTableRow>
-                                    ))}
-                                </TableBody>
-                            </DataTable>
+                                return (
+                                    <SurveySection
+                                        key={section.code}
+                                        title={section.title}
+                                        updateQuestion={updateQuestion}
+                                        questions={section.questions}
+                                        showAddnew={section.showAddnew}
+                                        addNewClick={() => addNew(section)}
+                                    />
+                                );
+                            })}
                         </div>
                     );
                 })}
@@ -241,17 +156,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         </div>
     );
 };
-
-const useFormStyles = makeStyles({
-    valueInput: { flexGrow: 1 },
-    valueWrapper: { display: "flex" },
-});
-
-export const useStyles = makeStyles({
-    wrapper: { margin: 10 },
-    header: { fontWeight: "bold" as const },
-    center: { display: "table", margin: "0 auto" },
-});
 
 const PageFooter = styled.div`
     display: flex;

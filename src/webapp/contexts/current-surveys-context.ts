@@ -1,23 +1,33 @@
 import { useContext, createContext } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { SurveyBase } from "../../domain/entities/Survey";
+import { OrgUnitNamedRef, SurveyBase } from "../../domain/entities/Survey";
 
 export interface CurrentSurveysContextProps {
+    //PPS Module
     currentPPSSurveyForm: SurveyBase | undefined;
     changeCurrentPPSSurveyForm: (survey: SurveyBase | undefined) => void;
     resetCurrentPPSSurveyForm: () => void;
 
-    currentCountryQuestionnaire: { id: Id; name: string; orgUnitId: Id } | undefined;
+    currentCountryQuestionnaire: OrgUnitNamedRef | undefined;
     changeCurrentCountryQuestionnaire: (id: Id, name: string, orgUnitId: Id) => void;
     resetCurrentCountryQuestionnaire: () => void;
 
-    currentHospitalForm: { id: Id; name: string; orgUnitId: Id } | undefined;
+    currentHospitalForm: OrgUnitNamedRef | undefined;
     changeCurrentHospitalForm: (id: Id, name: string, orgUnitId: Id) => void;
     resetCurrentHospitalForm: () => void;
 
     currentWardRegister: NamedRef | undefined;
     changeCurrentWardRegister: (ward: NamedRef | undefined) => void;
     resetCurrentWardRegister: () => void;
+
+    //Prevalence
+    currentPrevalenceSurveyForm: OrgUnitNamedRef | undefined;
+    changeCurrentPrevalenceSurveyForm: (id: Id, name: string, orgUnitId: Id) => void;
+    resetCurrentPrevalenceSurveyForm: () => void;
+
+    currentFacilityLevelForm: OrgUnitNamedRef | undefined;
+    changeCurrentFacilityLevelForm: (id: Id, name: string, orgUnitId: Id) => void;
+    resetCurrentFacilityLevelForm: () => void;
 }
 
 export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
@@ -36,6 +46,14 @@ export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
     currentWardRegister: undefined,
     changeCurrentWardRegister: () => {},
     resetCurrentWardRegister: () => {},
+
+    currentPrevalenceSurveyForm: undefined,
+    changeCurrentPrevalenceSurveyForm: () => {},
+    resetCurrentPrevalenceSurveyForm: () => {},
+
+    currentFacilityLevelForm: undefined,
+    changeCurrentFacilityLevelForm: () => {},
+    resetCurrentFacilityLevelForm: () => {},
 });
 
 export function useCurrentSurveys() {

@@ -21,14 +21,37 @@ export interface QuestionnaireSelector {
 }
 
 export interface Questionnaire extends QuestionnaireBase {
-    sections: QuestionnaireSection[];
+    stages: QuestionnaireStage[];
+    entity?: QuestionnaireEntity; //Equivalant to tracked entity instance of tracker program
+    subLevelDetails?: {
+        enrollmentId: Id;
+    };
 }
 
+export interface QuestionnaireEntity {
+    title: string;
+    code: string;
+    questions: Question[];
+    isVisible: boolean;
+    stageId: string;
+}
+export interface QuestionnaireStage {
+    title: string;
+    code: Code;
+    sections: QuestionnaireSection[];
+    isVisible: boolean;
+    showNextStage?: boolean;
+    instanceId?: Id; //Corresponds to DHIS eventId
+}
 export interface QuestionnaireSection {
     title: string;
     code: Code;
     questions: Question[];
     isVisible: boolean;
+    sortOrder: number;
+    stageId: string;
+    showAddnew?: boolean;
+    showAddQuestion?: Id;
 }
 
 export type Question =
@@ -36,13 +59,15 @@ export type Question =
     | NumberQuestion
     | TextQuestion
     | BooleanQuestion
-    | DateQuestion;
+    | DateQuestion
+    | DateTimeQuestion;
 
 export interface QuestionBase {
     id: Id;
     code: Code;
     text: string;
     disabled?: boolean;
+    isVisible: boolean;
 }
 
 export interface SelectQuestion extends QuestionBase {
@@ -80,6 +105,11 @@ export interface DateQuestion extends QuestionBase {
     value: Maybe<Date>;
 }
 
+export interface DateTimeQuestion extends QuestionBase {
+    type: "datetime";
+    value: Maybe<string>;
+}
+
 export interface QuestionOption extends NamedRef {
     code?: string;
 }
@@ -100,9 +130,13 @@ export class QuestionnarieM {
     static updateQuestion(questionnaire: Questionnaire, questionUpdated: Question): Questionnaire {
         return {
             ...questionnaire,
-            sections: questionnaire.sections.map(section => ({
-                ...section,
-                questions: updateCollection(section.questions, questionUpdated),
+
+            stages: questionnaire.stages.map(stage => ({
+                ...stage,
+                sections: stage.sections.map(section => ({
+                    ...section,
+                    questions: updateCollection(section.questions, questionUpdated),
+                })),
             })),
         };
     }

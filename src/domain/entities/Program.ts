@@ -1,6 +1,6 @@
 export type ImportStrategy = "CREATE" | "UPDATE" | "CREATE_AND_UPDATE" | "DELETE";
 
-export interface EventProgram {
+export interface Program {
     code: string;
     id: string;
     name: string;
@@ -14,10 +14,18 @@ export interface ProgramStageDataElement {
 export interface ProgramStageSection {
     id: string;
     name: string;
+    sortOrder: number;
     dataElements: { id: string }[];
+    programStage: { id: string };
 }
 
-export interface EventProgramDataElement {
+export interface ProgramStage {
+    id: string;
+    name: string;
+    ProgramStageSection: ProgramStageSection[];
+}
+
+export interface ProgramDataElement {
     code: string;
     id: string;
     formName: string;
@@ -38,11 +46,23 @@ export interface Option {
     optionSet: { id: string };
 }
 
-export interface EventProgramMetadata {
-    programs: EventProgram[];
+export interface TrackedEntityAttibute {
+    id: string;
+    code: string;
+    name: string;
+    formName: string;
+    valueType: string;
+    optionSet?: { id: string };
+    value?: string;
+}
+
+export interface ProgramMetadata {
+    programs: Program[];
     programStageDataElements: ProgramStageDataElement[];
     programStageSections?: ProgramStageSection[];
-    dataElements: EventProgramDataElement[];
+    dataElements: ProgramDataElement[];
     optionSets: OptionSet[];
     options: Option[];
+    trackedEntityAttributes?: TrackedEntityAttibute[];
+    programStages: ProgramStage[];
 }
