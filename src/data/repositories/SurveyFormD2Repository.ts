@@ -1,5 +1,5 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+import { D2TrackerEvent, TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
 import {
     BooleanQuestion,
@@ -66,7 +66,10 @@ import {
     PREVALENCE_SURVEY_FORM_ID,
     SURVEY_NAME_DATAELEMENT_ID,
     PREVELANCE_SURVEY_NAME_DATAELEMENT_ID,
+    SURVEY_PATIENT_ID_DATAELEMENT_ID,
+    SURVEY_PATIENT_CODE_DATAELEMENT_ID,
 } from "../entities/D2Survey";
+import { PaginatedReponse } from "../../domain/entities/TablePagination";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -986,6 +989,44 @@ export class SurveyD2Repository implements SurveyRepository {
                 })
                 .flatMapError(_err => Future.success(""));
         else return Future.success("");
+    }
+
+    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<PaginatedReponse<Survey[]>> {
+        return apiToFuture(
+            this.api.get<TrackerEventsResponse>(
+                `/tracker/events?filter=${SURVEY_PATIENT_ID_DATAELEMENT_ID}:like:${keyword}&filter=${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}&rootJunction=OR`,
+                {
+                    fields: ":all",
+                    orgUnit: orgUnitId,
+                    program: PPS_PATIENT_REGISTER_ID,
+                }
+            )
+        ).flatMap(response => {
+            return this.buildFilteredSurveys(
+                response,
+                "PPSPatientRegister",
+                PPS_PATIENT_REGISTER_ID
+            ).map(surveys => surveys);
+        });
+    }
+
+    private buildFilteredSurveys(
+        response: TrackerEventsResponse,
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        const surveys = this.mapEventToSurvey(response.instances, surveyFormType, programId);
+
+        return Future.sequential(surveys).map(surveys => {
+            return {
+                pager: {
+                    page: response.page,
+                    pageSize: response.pageSize,
+                    total: response.total,
+                },
+                objects: surveys,
+            };
+        });
     }
 
     deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
