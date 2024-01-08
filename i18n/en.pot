@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-01-05T16:06:58.231Z\n"
-"PO-Revision-Date: 2024-01-05T16:06:58.231Z\n"
+"POT-Creation-Date: 2024-01-08T04:07:10.455Z\n"
+"PO-Revision-Date: 2024-01-08T04:07:10.455Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -105,6 +105,9 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
 msgid "No data found..."
 msgstr ""
 
@@ -124,9 +127,6 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "Yes"

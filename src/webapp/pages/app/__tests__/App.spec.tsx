@@ -4,7 +4,6 @@ import { getAdminTestContext, getHospitalDataEntryTestContext } from "../../../.
 import { Provider } from "@dhis2/app-runtime";
 import { CurrentModuleContext } from "../../../contexts/current-module-context";
 import { createModuleList } from "../../../../domain/entities/__tests__/moduleFixtures";
-import { Worker } from "./workerMock";
 
 describe("App", () => {
     beforeAll(() => {
@@ -18,8 +17,6 @@ describe("App", () => {
                     removeListener: function () {},
                 };
             };
-
-        window.Worker = window.Worker || new Worker("");
     });
 
     it("renders the feedback component", async () => {

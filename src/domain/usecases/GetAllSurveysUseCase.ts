@@ -36,33 +36,28 @@ export class GetAllSurveysUseCase {
                               .compact()
                               .value();
 
-                const surveysWithNameAndCount = filteredSurveys.map(survey => {
-                    return Future.joinObj({
-                        parentSurveyName: this.surveyReporsitory.getSurveyNameFromId(
-                            survey.rootSurvey.id,
-                            survey.surveyFormType
-                        ),
-                        childCount: Future.success(0),
-                    }).map(({ parentSurveyName, childCount }): Survey => {
-                        const newRootSurvey: SurveyBase = {
-                            surveyType: survey.rootSurvey.surveyType,
-                            id: survey.rootSurvey.id,
-                            name:
-                                survey.rootSurvey.name === ""
-                                    ? parentSurveyName
-                                    : survey.rootSurvey.name,
-                        };
+                const surveysWithName = filteredSurveys.map(survey => {
+                    return this.surveyReporsitory
+                        .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
+                        .map((parentSurveyName): Survey => {
+                            const newRootSurvey: SurveyBase = {
+                                surveyType: survey.rootSurvey.surveyType,
+                                id: survey.rootSurvey.id,
+                                name:
+                                    survey.rootSurvey.name === ""
+                                        ? parentSurveyName
+                                        : survey.rootSurvey.name,
+                            };
 
-                        const updatedSurvey: Survey = {
-                            ...survey,
-                            rootSurvey: newRootSurvey,
-                            childCount: childCount,
-                        };
-                        return updatedSurvey;
-                    });
+                            const updatedSurvey: Survey = {
+                                ...survey,
+                                rootSurvey: newRootSurvey,
+                            };
+                            return updatedSurvey;
+                        });
                 });
 
-                return Future.sequential(surveysWithNameAndCount);
+                return Future.sequential(surveysWithName);
             });
     }
 }

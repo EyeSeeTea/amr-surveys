@@ -98,7 +98,7 @@ export const getChildSurveyType = (
                     return "PrevalencePathogenIsolatesLog";
 
                 case option === "Add New Supranational Ref":
-                case option?.startsWith("List Pathogen Supranational Refs"):
+                case option?.startsWith("List Supranational Refs"):
                     return "PrevalenceSupranationalRefLabForm";
                 default:
                     return undefined;
@@ -149,7 +149,7 @@ export const getSurveyOptions = (
                 "Add New Pathogen Isolates Log",
                 "List Pathogen Isolates Logs",
                 "Add New Supranational Ref",
-                "List Pathogen Supranational Refs",
+                "List Supranational Refs",
                 "Delete",
             ];
         case "PrevalenceSampleShipTrackForm":

@@ -261,7 +261,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             option:
                                                                 options.find(op =>
                                                                     op.startsWith(
-                                                                        "List Pathogen Supranational Refs"
+                                                                        "List Supranational Refs"
                                                                     )
                                                                 ) ?? "",
                                                             handler: option =>

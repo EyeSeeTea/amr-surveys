@@ -27,6 +27,7 @@ import {
     ProgramStageSection,
     TrackedEntityAttibute,
     ProgramStage,
+    ProgramCountMap,
 } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
@@ -72,10 +73,6 @@ import {
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
 
-export type ProgramCountMap = {
-    programId: string;
-    count: number;
-}[];
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
@@ -604,6 +601,40 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
+    private mapQuestionsToDataValues(questions: Question[]): DataValue[] {
+        const dataValues = _(
+            questions.map(question => {
+                if (question) {
+                    if (question.type === "select" && question.value) {
+                        return {
+                            dataElement: question.id,
+                            value: question.value.code,
+                        };
+                    } else if (question.type === "date" && question.value) {
+                        return {
+                            dataElement: question.id,
+                            value: question.value.toISOString().split("T")?.at(0) || "",
+                        };
+                    } else if (question.type === "boolean" && question.storeFalse === false) {
+                        return {
+                            dataElement: question.id,
+                            value: question.value ? question.value : undefined,
+                        };
+                    } else {
+                        return {
+                            dataElement: question.id,
+                            value: question.value,
+                        };
+                    }
+                }
+            })
+        )
+            .compact()
+            .value();
+
+        return dataValues as DataValue[];
+    }
+
     private mapQuestionnaireToEvent(
         questionnaire: Questionnaire,
         orgUnitId: string,
@@ -614,30 +645,7 @@ export class SurveyD2Repository implements SurveyRepository {
             stages.sections.flatMap(section => section.questions)
         );
 
-        const dataValues = _(
-            questions.map(q => {
-                if (q) {
-                    if (q.type === "select" && q.value) {
-                        return {
-                            dataElement: q.id,
-                            value: q.value.code,
-                        };
-                    } else if (q.type === "boolean" && q.storeFalse === false) {
-                        return {
-                            dataElement: q.id,
-                            value: q.value ? q.value : undefined,
-                        };
-                    } else {
-                        return {
-                            dataElement: q.id,
-                            value: q.value,
-                        };
-                    }
-                }
-            })
-        )
-            .compact()
-            .value();
+        const dataValues = this.mapQuestionsToDataValues(questions);
 
         if (eventId) {
             return this.getEventProgramById(eventId).flatMap(event => {
@@ -674,29 +682,7 @@ export class SurveyD2Repository implements SurveyRepository {
     ): FutureData<{ trackedEntities: TrackedEntity[] }> {
         const eventsByStage: D2TrackerEvent[] = questionnaire.stages.map(stage => {
             const dataValuesByStage = stage.sections.flatMap(section => {
-                return section.questions.map(question => {
-                    if (question.type === "select" && question.value) {
-                        return {
-                            dataElement: question.id,
-                            value: question.value.code ? question.value.code : "",
-                        };
-                    } else if (question.type === "date" && question.value) {
-                        return {
-                            dataElement: question.id,
-                            value: question.value.toISOString().split("T")?.at(0) || "",
-                        };
-                    } else if (question.type === "boolean" && question.storeFalse === false) {
-                        return {
-                            dataElement: question.id,
-                            value: question.value ? question.value : undefined,
-                        };
-                    } else {
-                        return {
-                            dataElement: question.id,
-                            value: question.value ? question.value.toString() : "",
-                        };
-                    }
-                });
+                return this.mapQuestionsToDataValues(section.questions);
             });
 
             return {
@@ -1027,7 +1013,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     const eventCounts = childIds.map(id => {
                         return this.getTrackerSurveyCount(id, orgUnitId, parentSurveyId).map(
                             count => {
-                                return { programId: id, count: count };
+                                return { id: id, count: count };
                             }
                         );
                     });

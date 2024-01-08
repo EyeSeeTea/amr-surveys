@@ -13,11 +13,6 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
-import {
-    PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
-    PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
-    PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
-} from "../../../../data/entities/D2Survey";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -116,48 +111,31 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 surveyFormType === "PPSWardRegister" ? survey.id : ""
             )
             .run(
-                childCount => {
-                    if (typeof childCount === "number") {
+                childCountMap => {
+                    if (typeof childCountMap === "number") {
                         const optionsWithChildCount = currentOptions.map(option => {
                             if (option.startsWith("List")) {
-                                const updatedOption = `${option} (${childCount})`;
+                                const updatedOption = `${option} (${childCountMap})`;
                                 return updatedOption;
                             }
                             return option;
                         });
-                        if (survey) survey.childCount = childCount;
+                        if (survey) survey.childCount = childCountMap;
                         setOptions(optionsWithChildCount);
                         setOptionLoading(false);
                     } else {
                         const optionsWithChildCount = currentOptions.map(option => {
-                            if (option === "List Sample Shipments") {
-                                const currentChildCount = childCount.find(
-                                    cc => cc.programId === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID
-                                )?.count;
-                                const updatedOption = `${option} (${currentChildCount})`;
-                                return updatedOption;
-                            } else if (option === "List Central Ref Labs") {
-                                const currentChildCount = childCount.find(
-                                    cc => cc.programId === PREVALENCE_CENTRAL_REF_LAB_FORM_ID
-                                )?.count;
-                                const updatedOption = `${option} (${currentChildCount})`;
-                                return updatedOption;
-                            } else if (option === "List Pathogen Isolates Logs") {
-                                const currentChildCount = childCount.find(
-                                    cc => cc.programId === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID
-                                )?.count;
-                                const updatedOption = `${option} (${currentChildCount})`;
-                                return updatedOption;
-                            } else if (option === "List Pathogen Supranational Refs") {
-                                const currentChildCount = childCount.find(
-                                    cc => cc.programId === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID
-                                )?.count;
-                                const updatedOption = `${option} (${currentChildCount})`;
-                                return updatedOption;
-                            } else return option;
+                            const updatedChilsOptionMap = childCountMap.find(childMap =>
+                                childMap.option.startsWith(option)
+                            );
+                            if (updatedChilsOptionMap) {
+                                return updatedChilsOptionMap.option;
+                            } else {
+                                return option;
+                            }
                         });
                         if (survey)
-                            survey.childCount = childCount.reduce((agg, childCount) => {
+                            survey.childCount = childCountMap.reduce((agg, childCount) => {
                                 return agg + childCount.count;
                             }, 0);
 

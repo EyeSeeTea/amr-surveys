@@ -1,6 +1,5 @@
 import { FutureData } from "../../data/api-futures";
-import { ProgramCountMap } from "../../data/repositories/SurveyFormD2Repository";
-import { ImportStrategy } from "../entities/Program";
+import { ImportStrategy, ProgramCountMap } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";

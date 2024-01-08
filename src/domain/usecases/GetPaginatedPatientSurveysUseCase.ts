@@ -31,33 +31,28 @@ export class GetPaginatedPatientSurveysUseCase {
         return this.paginatedSurveyRepo
             .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
             .flatMap(surveys => {
-                const surveysWithNameAndCount = surveys.objects.map(survey => {
-                    return Future.joinObj({
-                        parentSurveyName: this.surveyReporsitory.getSurveyNameFromId(
-                            survey.rootSurvey.id,
-                            survey.surveyFormType
-                        ),
-                        childCount: Future.success(undefined),
-                    }).map(({ parentSurveyName, childCount }): Survey => {
-                        const newRootSurvey: SurveyBase = {
-                            surveyType: survey.rootSurvey.surveyType,
-                            id: survey.rootSurvey.id,
-                            name:
-                                survey.rootSurvey.name === ""
-                                    ? parentSurveyName
-                                    : survey.rootSurvey.name,
-                        };
+                const surveysWithName = surveys.objects.map(survey => {
+                    return this.surveyReporsitory
+                        .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
+                        .map((parentSurveyName): Survey => {
+                            const newRootSurvey: SurveyBase = {
+                                surveyType: survey.rootSurvey.surveyType,
+                                id: survey.rootSurvey.id,
+                                name:
+                                    survey.rootSurvey.name === ""
+                                        ? parentSurveyName
+                                        : survey.rootSurvey.name,
+                            };
 
-                        const updatedSurvey: Survey = {
-                            ...survey,
-                            rootSurvey: newRootSurvey,
-                            childCount: childCount,
-                        };
-                        return updatedSurvey;
-                    });
+                            const updatedSurvey: Survey = {
+                                ...survey,
+                                rootSurvey: newRootSurvey,
+                            };
+                            return updatedSurvey;
+                        });
                 });
 
-                return Future.sequential(surveysWithNameAndCount).map(updatedSurveys => {
+                return Future.sequential(surveysWithName).map(updatedSurveys => {
                     const paginatedSurveys: PaginatedReponse<Survey[]> = {
                         pager: surveys.pager,
                         objects: updatedSurveys,
