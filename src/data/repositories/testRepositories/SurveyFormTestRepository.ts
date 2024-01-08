@@ -9,6 +9,9 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
+    deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
+        throw new Error("Method not implemented.");
+    }
     getSurveyNameFromId(_id: string): FutureData<string> {
         throw new Error("Method not implemented.");
     }
@@ -112,10 +115,5 @@ export class SurveyTestRepository implements SurveyRepository {
         } else {
             return Future.error(new Error("Error in getSurveyById"));
         }
-    }
-
-    deleteSurvey(orgUnitId: Id, eventId: Id, programId: Id): FutureData<void> {
-        if (orgUnitId && eventId && programId) return Future.success(undefined);
-        else return Future.error(new Error("An error occured while deleting the survey"));
     }
 }

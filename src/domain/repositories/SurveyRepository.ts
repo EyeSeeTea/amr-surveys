@@ -28,7 +28,7 @@ export interface SurveyRepository {
         orgUnitId: Id | undefined
     ): FutureData<Questionnaire>;
 
-    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
+    deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 
     getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string>;
 

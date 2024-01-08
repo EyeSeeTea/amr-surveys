@@ -32,6 +32,7 @@ import {
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 import {
+    D2TrackerTrackedEntity,
     D2TrackerTrackedEntity as TrackedEntity,
     TrackedEntitiesGetResponse,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
@@ -1094,7 +1095,13 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
+    deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void> {
+        if (isTrackerProgram(programId)) {
+            return this.deleteTrackerProgramSurvey(id, orgUnitId, programId);
+        } else return this.deleteEventSurvey(id, orgUnitId, programId);
+    }
+
+    deleteEventSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
         const event: D2TrackerEvent = {
             event: eventId,
             orgUnit: orgUnitId,
@@ -1106,6 +1113,36 @@ export class SurveyD2Repository implements SurveyRepository {
         };
         return apiToFuture(
             this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+        ).flatMap(response => {
+            return apiToFuture(
+                // eslint-disable-next-line testing-library/await-async-utils
+                this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
+            ).flatMap(result => {
+                if (result && result.status !== "ERROR") {
+                    return Future.success(undefined);
+                } else {
+                    return Future.error(
+                        new Error(
+                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
+                        )
+                    );
+                }
+            });
+        });
+    }
+
+    deleteTrackerProgramSurvey(teiId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
+        const trackedEntity: D2TrackerTrackedEntity = {
+            orgUnit: orgUnitId,
+            trackedEntity: teiId,
+            trackedEntityType: getTrackedEntityAttributeType(programId),
+        };
+
+        return apiToFuture(
+            this.api.tracker.postAsync(
+                { importStrategy: "DELETE" },
+                { trackedEntities: [trackedEntity] }
+            )
         ).flatMap(response => {
             return apiToFuture(
                 // eslint-disable-next-line testing-library/await-async-utils
