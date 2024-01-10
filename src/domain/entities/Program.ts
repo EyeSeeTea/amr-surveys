@@ -1,4 +1,18 @@
+import { Id } from "@eyeseetea/d2-api";
+
 export type ImportStrategy = "CREATE" | "UPDATE" | "CREATE_AND_UPDATE" | "DELETE";
+export type ProgramRuleActionType =
+    | "DISPLAYTEXT"
+    | "DISPLAYKEYVALUEPAIR"
+    | "HIDEFIELD"
+    | "HIDESECTION"
+    | "ASSIGN"
+    | "SHOWWARNING"
+    | "SHOWERROR"
+    | "WARNINGONCOMPLETINON"
+    | "ERRORONCOMPLETION"
+    | "CREATEEVENT"
+    | "SETMANDATORYFIELD";
 
 export interface Program {
     code: string;
@@ -65,4 +79,45 @@ export interface ProgramMetadata {
     options: Option[];
     trackedEntityAttributes?: TrackedEntityAttibute[];
     programStages: ProgramStage[];
+    programRules: D2ProgramRule[];
+    programRuleVariables: D2ProgramRuleVariable[];
+    programRuleActions: D2ProgramRuleAction[];
+}
+
+export interface ProgramRule {
+    id: Id;
+    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
+    dataElementId: Id; // from ProgramRuleVariable
+    programRuleActions: D2ProgramRuleAction[];
+}
+export interface D2ProgramRule {
+    id: Id;
+    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
+    programRuleActions: {
+        id: Id;
+    }[];
+}
+
+export interface D2ProgramRuleVariable {
+    id: Id;
+    name: string;
+    dataElement: {
+        id: Id;
+    };
+}
+
+export interface D2ProgramRuleAction {
+    id: Id;
+    programRuleActionType: ProgramRuleActionType;
+    dataElement?: {
+        id: Id | undefined; // to hide
+    };
+    data?: string; // to assign
+    programStageSection?: {
+        id: Id | undefined; // to hide/show
+    };
+    programStage?: {
+        id: Id | undefined; // to hide/show
+    };
+    content?: string; // message content to show
 }

@@ -29,6 +29,7 @@ import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
+import { assignProgramRules } from "../../../utils/assignProgramRules";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -89,30 +90,50 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
-    const updateQuestion = (question: Question) => {
-        setQuestionnaire(questionnaire => {
-            const stageToBeUpdated = questionnaire?.stages.find(stage =>
-                stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
+    useEffect(() => {
+        if (!loading) {
+            const newQuestionnaire = Object.assign({}, questionnaire);
+
+            newQuestionnaire?.stages?.map(stage =>
+                stage.sections?.map(section => {
+                    section.questions?.map(question => {
+                        assignProgramRules(newQuestionnaire, question, section);
+                    });
+                })
             );
-            if (stageToBeUpdated) {
-                const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
-                    section.questions.find(q => q.id === question?.id)
-                );
-                if (sectionToBeUpdated) {
-                    const questionToBeUpdated = sectionToBeUpdated.questions.find(
-                        q => q.id === question.id
-                    );
-                    if (questionToBeUpdated) questionToBeUpdated.value = question.value;
-                }
-            } else {
-                //Stage not found, entity could be updated.
-                const questionToBeUpdated = questionnaire?.entity?.questions.find(
+            setQuestionnaire(newQuestionnaire);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading]);
+
+    const updateQuestion = (question: Question) => {
+        const newQuestionnaire = Object.assign({}, questionnaire);
+
+        const stageToBeUpdated = newQuestionnaire?.stages.find(stage =>
+            stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
+        );
+        if (stageToBeUpdated) {
+            const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
+                section.questions.find(q => q.id === question?.id)
+            );
+            if (sectionToBeUpdated) {
+                const questionToBeUpdated = sectionToBeUpdated.questions.find(
                     q => q.id === question.id
                 );
-                if (questionToBeUpdated) questionToBeUpdated.value = question.value;
+                if (questionToBeUpdated) {
+                    questionToBeUpdated.value = question.value;
+                    assignProgramRules(newQuestionnaire, questionToBeUpdated, sectionToBeUpdated);
+                }
             }
-            return questionnaire;
-        });
+        } else {
+            //Stage not found, entity could be updated.
+            const questionToBeUpdated = newQuestionnaire?.entity?.questions.find(
+                q => q.id === question.id
+            );
+            if (questionToBeUpdated) questionToBeUpdated.value = question.value;
+        }
+
+        setQuestionnaire(newQuestionnaire);
     };
 
     const onCancel = () => {
@@ -172,7 +193,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         </DataTable>
                     </div>
                 )}
-                {questionnaire?.stages.map(stage => {
+                {questionnaire?.stages?.map(stage => {
                     if (!stage.isVisible) return null;
 
                     return (

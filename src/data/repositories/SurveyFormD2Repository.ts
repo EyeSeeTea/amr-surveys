@@ -27,6 +27,10 @@ import {
     ProgramStageSection,
     TrackedEntityAttibute,
     ProgramStage,
+    ProgramRule,
+    D2ProgramRuleVariable,
+    D2ProgramRule,
+    D2ProgramRuleAction,
 } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
@@ -105,7 +109,7 @@ export class SurveyD2Repository implements SurveyRepository {
         return apiToFuture(
             this.api.request<ProgramMetadata>({
                 method: "get",
-                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages`,
+                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
@@ -130,7 +134,10 @@ export class SurveyD2Repository implements SurveyRepository {
                                             resp.options,
                                             resp.programStages,
                                             resp.programStageSections,
-                                            resp.trackedEntityAttributes
+                                            resp.trackedEntityAttributes,
+                                            resp.programRules,
+                                            resp.programRuleVariables,
+                                            resp.programRuleActions
                                         )
                                     );
                                 } else {
@@ -153,7 +160,10 @@ export class SurveyD2Repository implements SurveyRepository {
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
-                                        resp.trackedEntityAttributes
+                                        resp.trackedEntityAttributes,
+                                        resp.programRules,
+                                        resp.programRuleVariables,
+                                        resp.programRuleActions
                                     )
                                 );
                             } else {
@@ -174,7 +184,10 @@ export class SurveyD2Repository implements SurveyRepository {
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
-                            resp.trackedEntityAttributes
+                            resp.trackedEntityAttributes,
+                            resp.programRules,
+                            resp.programRuleVariables,
+                            resp.programRuleActions
                         )
                     );
                 }
@@ -193,7 +206,10 @@ export class SurveyD2Repository implements SurveyRepository {
         options: Option[],
         programStages?: ProgramStage[],
         programStageSections?: ProgramStageSection[],
-        trackedEntityAttributes?: TrackedEntityAttibute[]
+        trackedEntityAttributes?: TrackedEntityAttibute[],
+        programRules?: D2ProgramRule[],
+        programRuleVariables?: D2ProgramRuleVariable[],
+        programRuleActions?: D2ProgramRuleAction[]
     ): Questionnaire {
         //If the Program has sections, fetch and use programStageSections
         const sections: QuestionnaireSection[] = programStageSections
@@ -304,6 +320,12 @@ export class SurveyD2Repository implements SurveyRepository {
             ? trackedEntity?.orgUnit ?? ""
             : event?.orgUnit ?? "";
 
+        const progRules: ProgramRule[] = this.getProgramRules(
+            programRules,
+            programRuleVariables,
+            programRuleActions
+        );
+
         const form: Questionnaire = {
             id: program.id,
             name: program.name,
@@ -319,6 +341,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     ? trackedEntity.enrollments?.at(0)?.enrollment ?? ""
                     : "",
             },
+            programRules: progRules,
         };
 
         if (trackedEntityAttributes) {
@@ -1088,5 +1111,56 @@ export class SurveyD2Repository implements SurveyRepository {
                 })
                 .flatMapError(_err => Future.success(""));
         else return Future.success("");
+    }
+
+    private getProgramRules(
+        programRulesResponse: D2ProgramRule[] | undefined,
+        programRuleVariables: D2ProgramRuleVariable[] | undefined,
+        programRuleActionsResponse: D2ProgramRuleAction[] | undefined
+    ): ProgramRule[] {
+        return (
+            programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
+                const programRuleVariableName = condition.substring(
+                    condition.indexOf("{") + 1,
+                    condition.indexOf("}")
+                );
+
+                // dataElement associated with ProgramRuleVariable: the one to compare in the condition
+                const dataElementId =
+                    programRuleVariables?.find(
+                        programRuleVariable => programRuleVariable.name === programRuleVariableName
+                    )?.dataElement?.id || "";
+
+                const programRuleActionIds: string[] = actions.map(action => action.id);
+
+                const programRuleActions: D2ProgramRuleAction[] | undefined =
+                    programRuleActionsResponse
+                        ?.filter(programRuleAction =>
+                            programRuleActionIds.includes(programRuleAction.id)
+                        )
+                        .map(programRuleAction => {
+                            return {
+                                id: programRuleAction.id,
+                                programRuleActionType: programRuleAction.programRuleActionType,
+                                data: programRuleAction.data,
+                                dataElement: programRuleAction.dataElement,
+                                programStageSection: {
+                                    id: programRuleAction.programStageSection?.id,
+                                },
+                                programStage: {
+                                    id: programRuleAction.programStage?.id,
+                                },
+                                content: programRuleAction.content,
+                            };
+                        });
+
+                return {
+                    id: id,
+                    condition: condition,
+                    dataElementId: dataElementId || "",
+                    programRuleActions: programRuleActions || [],
+                };
+            }) || []
+        );
     }
 }

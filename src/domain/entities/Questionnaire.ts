@@ -1,6 +1,7 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
 import { Id, NamedRef, Ref, updateCollection } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
+import { ProgramRule } from "./Program";
 
 export type Code = string;
 export interface QuestionnaireBase {
@@ -26,6 +27,7 @@ export interface Questionnaire extends QuestionnaireBase {
     subLevelDetails?: {
         enrollmentId: Id;
     };
+    programRules?: ProgramRule[];
 }
 
 export interface QuestionnaireEntity {
