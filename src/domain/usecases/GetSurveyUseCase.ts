@@ -9,9 +9,15 @@ import {
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+} from "../../data/entities/D2Survey";
 import { Future } from "../entities/generic/Future";
-import { Questionnaire } from "../entities/Questionnaire";
+import {
+    Question,
+    Questionnaire,
+    QuestionnaireEntity,
+    QuestionnaireSection,
+    QuestionnaireStage,
+} from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 
@@ -31,57 +37,110 @@ export class GetSurveyUseCase {
             return this.surveyReporsitory
                 .getForm(programId, undefined, undefined)
                 .flatMap(questionnaire => {
-                    //PPS Questionnaires have only 1 stage
-                    const surveyIdSection = questionnaire.stages[0]?.sections.find(
-                        s =>
-                            s.questions.find(
-                                q =>
-                                    q.id === SURVEY_ID_DATAELEMENT_ID ||
-                                    q.id === SURVEY_ID_PATIENT_DATAELEMENT_ID
-                            ) !== undefined
-                    );
-                    if (surveyIdSection) {
-                        const surveyIdDataElement = surveyIdSection.questions.find(
-                            q =>
-                                q.id === SURVEY_ID_DATAELEMENT_ID ||
-                                q.id === SURVEY_ID_PATIENT_DATAELEMENT_ID
-                        );
-                        if (surveyIdDataElement) {
-                            surveyIdDataElement.value = parentPPSSurveyId;
-                        }
-                    }
+                    if (questionnaire.stages && questionnaire.stages[0]) {
+                        const updatedSections: QuestionnaireSection[] =
+                            questionnaire.stages[0].sections.map(section => {
+                                //PPS Questionnaires have only 1 stage
+                                const isSurveyIdOrWardIdSection =
+                                    section.questions.find(
+                                        question =>
+                                            question.id === SURVEY_ID_DATAELEMENT_ID ||
+                                            question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
+                                            question.id === WARD_ID_DATAELEMENT_ID
+                                    ) !== undefined;
 
-                    //PPS Questionnaires have only 1 stage
-                    const wardIdSection = questionnaire.stages[0]?.sections.find(
-                        s => s.questions.find(q => q.id === WARD_ID_DATAELEMENT_ID) !== undefined
-                    );
-                    if (wardIdSection) {
-                        const wardIdDataElement = wardIdSection.questions.find(
-                            q => q.id === WARD_ID_DATAELEMENT_ID
-                        );
-                        if (wardIdDataElement) {
-                            wardIdDataElement.value = parentWardRegisterId;
-                        }
+                                if (isSurveyIdOrWardIdSection) {
+                                    const updatedQuestions: Question[] = section.questions.map(
+                                        question => {
+                                            const isSurveyIdQuestion =
+                                                question.id === SURVEY_ID_DATAELEMENT_ID ||
+                                                question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID;
+                                            const isWardIdQuestion =
+                                                question.id === WARD_ID_DATAELEMENT_ID;
+
+                                            if (isSurveyIdQuestion && question.type === "text") {
+                                                //Survey Id Question, pre-populate value to parent survey id
+                                                const updatedSurveyIdQuestion: Question = {
+                                                    ...question,
+                                                    value: parentPPSSurveyId,
+                                                };
+                                                return updatedSurveyIdQuestion;
+                                            } else if (
+                                                isWardIdQuestion &&
+                                                question.type === "text"
+                                            ) {
+                                                //Survey Id Question, pre-populate value to parent survey id
+                                                const updatedWardIdQuestion: Question = {
+                                                    ...question,
+                                                    value: parentWardRegisterId,
+                                                };
+                                                return updatedWardIdQuestion;
+                                            } else {
+                                                //Not survey id question, return without any update
+                                                return question;
+                                            }
+                                        }
+                                    );
+
+                                    return {
+                                        ...section,
+                                        questions: updatedQuestions,
+                                    };
+                                }
+
+                                //Not survey id section, return without any update
+                                return section;
+                            });
+
+                        const updatedStage: QuestionnaireStage = {
+                            ...questionnaire.stages[0],
+                            sections: updatedSections,
+                        };
+
+                        return Future.success({ ...questionnaire, stages: [updatedStage] });
+                    } else {
+                        return Future.success(questionnaire);
                     }
-                    return Future.success(questionnaire);
                 });
         } else if (parentPrevalenceSurveyId) {
             return this.surveyReporsitory
                 .getForm(programId, undefined, undefined)
                 .flatMap(questionnaire => {
                     //The Survey Id is always part of Tracked Entity which is the Profile Section i.e questionnaire.entity
-                    const surveyIdDataElement = questionnaire.entity?.questions.find(
-                        q =>
-                            q.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
-                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
-                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
-                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
-                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                            q.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
-                    );
-                    if (surveyIdDataElement) surveyIdDataElement.value = parentPrevalenceSurveyId;
 
-                    return Future.success(questionnaire);
+                    if (!questionnaire.entity) {
+                        return Future.success(questionnaire);
+                    }
+                    const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
+                        question => {
+                            const isSurveyIdQuestion =
+                                question.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
+                                question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
+                                question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
+                                question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
+                                question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
+                                question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF;
+
+                            if (isSurveyIdQuestion && question.type === "text") {
+                                return {
+                                    ...question,
+                                    value: parentPrevalenceSurveyId,
+                                };
+                            } else {
+                                return question;
+                            }
+                        }
+                    );
+
+                    const updatedEntity: QuestionnaireEntity = {
+                        ...questionnaire.entity,
+                        questions: updatedEntityQuestions,
+                    };
+
+                    return Future.success({
+                        ...questionnaire,
+                        entity: updatedEntity,
+                    });
                 });
         } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
     }

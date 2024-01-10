@@ -1,4 +1,3 @@
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useCallback, useEffect, useState } from "react";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
@@ -31,7 +30,6 @@ export function useMenu() {
     const [menu, setMenu] = useState<Menu[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
-    const snackbar = useSnackbar();
 
     const mapModuleToMenu = useCallback(
         (modules: AMRSurveyModule[]): Menu[] => {
@@ -69,7 +67,7 @@ export function useMenu() {
                 setLoading(false);
             }
         );
-    }, [compositionRoot.modules.getAllAccessible, userGroups, snackbar, mapModuleToMenu]);
+    }, [compositionRoot.modules.getAllAccessible, userGroups, mapModuleToMenu]);
 
     return { menu, loading, error };
 }

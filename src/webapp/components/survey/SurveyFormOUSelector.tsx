@@ -1,4 +1,5 @@
 import { OrgUnitsSelector, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { useEffect } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
@@ -7,6 +8,7 @@ import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { useSurveyFormOUSelector } from "./hook/useSurveyFormOUSelector";
 
 export interface SurveyFormOUSelectorProps {
     formType: SURVEY_FORM_TYPES;
@@ -24,47 +26,18 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
     const { api } = useAppContext();
     const { currentPPSSurveyForm, currentCountryQuestionnaire, currentPrevalenceSurveyForm } =
         useCurrentSurveys();
-    const { currentUser } = useAppContext();
+    const { onOrgUnitChange, ouSelectorErrMsg } = useSurveyFormOUSelector(
+        formType,
+        setCurrentOrgUnit,
+        currentSurveyId
+    );
     const snackbar = useSnackbar();
 
-    const onOrgUnitChange = (orgUnitPaths: string[]) => {
-        if (currentSurveyId) {
-            snackbar.error(
-                "Cannot change the assigned country/hospital. Please delete the survey and create a new one."
-            );
-
-            return;
+    useEffect(() => {
+        if (ouSelectorErrMsg) {
+            snackbar.error(ouSelectorErrMsg);
         }
-        if (orgUnitPaths[0]) {
-            const orgUnits = orgUnitPaths[0].split("/");
-
-            const selectedOU = orgUnits[orgUnits.length - 1];
-            if (selectedOU) {
-                if (formType === "PPSCountryQuestionnaire" || formType === "PrevalenceSurveyForm") {
-                    const currentCountry = currentUser.userCountriesAccess.find(
-                        ou => ou.orgUnitId === selectedOU
-                    );
-                    if (currentCountry) {
-                        setCurrentOrgUnit(currentCountry);
-                    } else {
-                        snackbar.error("You do not have access to this country.");
-                    }
-                } else if (
-                    formType === "PPSHospitalForm" ||
-                    formType === "PrevalenceFacilityLevelForm"
-                ) {
-                    const currentHospital = currentUser.userHospitalsAccess.find(
-                        hospital => hospital.orgUnitId === selectedOU
-                    );
-                    if (currentHospital) {
-                        setCurrentOrgUnit(currentHospital);
-                    } else {
-                        snackbar.error("You do not have access to this hospital.");
-                    }
-                }
-            }
-        }
-    };
+    }, [ouSelectorErrMsg, snackbar]);
 
     return (
         <>

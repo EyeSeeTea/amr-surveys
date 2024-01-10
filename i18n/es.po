@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2023-12-18T07:38:38.697Z\n"
+"POT-Creation-Date: 2023-12-12T09:57:09.880Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -52,6 +52,12 @@ msgid ""
 "your administrator"
 msgstr ""
 
+msgid "Search Patient"
+msgstr ""
+
+msgid "Filter by patient id or code"
+msgstr ""
+
 msgid "Country"
 msgstr ""
 
@@ -64,7 +70,7 @@ msgstr ""
 msgid "FUTURE"
 msgstr ""
 
-msgid "NONE"
+msgid "ALL"
 msgstr ""
 
 msgid "SUPRANATIONAL"
@@ -104,6 +110,12 @@ msgid "Hospital Code"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Survey deleted!"
+msgstr ""
+
+msgid "Error deleting the survery"
 msgstr ""
 
 msgid "Yes"

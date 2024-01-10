@@ -11,7 +11,7 @@ import {
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
     PREVALENCE_SURVEY_FORM_ID,
-} from "../../data/repositories/SurveyFormD2Repository";
+} from "../../data/entities/D2Survey";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export const PREVALENCE_PATIENT_OPTIONS = [
@@ -96,20 +96,20 @@ export const getSurveyOptions = (
         case "PPSSurveyForm": {
             switch (ppsSurveyType) {
                 case "NATIONAL":
-                    return ["Edit", "Add New Country", "List Country"];
+                    return ["Edit", "Add New Country", "List Country", "Delete"];
                 case "HOSP":
-                    return ["Edit", "Add New Hospital", "List Hospitals"];
+                    return ["Edit", "Add New Hospital", "List Hospitals", "Delete"];
                 case "SUPRANATIONAL":
                 default:
-                    return ["Edit", "Add New Country", "List Countries"];
+                    return ["Edit", "Add New Country", "List Countries", "Delete"];
             }
         }
         case "PPSCountryQuestionnaire":
-            return ["Edit", "Add New Hospital", "List Hospitals"];
+            return ["Edit", "Add New Hospital", "List Hospitals", "Delete"];
         case "PPSHospitalForm":
-            return ["Edit", "Add New Ward", "List Wards"];
+            return ["Edit", "Add New Ward", "List Wards", "Delete"];
         case "PPSWardRegister":
-            return ["Edit", "Add New Patient", "List Patients"];
+            return ["Edit", "Add New Patient", "List Patients", "Delete"];
 
         case "PrevalenceSurveyForm":
             return ["Edit", "Add New Facility", "List Facilities"];
@@ -124,7 +124,7 @@ export const getSurveyOptions = (
         case "PrevalenceSupranationalRefLabForm":
         case "PPSPatientRegister":
         default:
-            return ["Edit"];
+            return ["Edit", "Delete"];
     }
 };
 
