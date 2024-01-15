@@ -22,7 +22,7 @@ import { UserD2Repository } from "./data/repositories/UserD2Repository";
 import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
 import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
-import { GetPaginatedSurveysUseCase } from "./domain/usecases/GetPaginatedSurveysUseCase";
+import { GetPaginatedPatientSurveysUseCase } from "./domain/usecases/GetPaginatedPatientSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
@@ -30,6 +30,8 @@ import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurveyRepository";
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
+import { GetUserAccessibleOUByLevel } from "./domain/usecases/GetUserAccessibleOUByLevel";
+import { GetChildCountUseCase } from "./domain/usecases/GetChildCountUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -52,6 +54,7 @@ function getCompositionRoot(repositories: Repositories) {
         },
         users: {
             getCurrent: new GetCurrentUserUseCase(repositories.usersRepository),
+            getAccessibleOUByLevel: new GetUserAccessibleOUByLevel(repositories.usersRepository),
             savePassword: new SavePasswordUseCase(repositories.usersRepository),
             saveKeyUiLocale: new SaveKeyUiLocaleUseCase(repositories.usersRepository),
             saveKeyDbLocale: new SaveKeyDbLocaleUseCase(repositories.usersRepository),
@@ -61,11 +64,15 @@ function getCompositionRoot(repositories: Repositories) {
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
-            getFilteredPatients: new GetFilteredPatientsUseCase(repositories.surveyFormRepository),
-            getPaginatedSurveys: new GetPaginatedSurveysUseCase(
+            getFilteredPatients: new GetFilteredPatientsUseCase(
                 repositories.paginatedSurveyRepository
             ),
+            getPaginatedSurveys: new GetPaginatedPatientSurveysUseCase(
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
+            ),
             deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
+            getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
         },
     };
 }

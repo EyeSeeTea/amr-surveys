@@ -49,12 +49,21 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
     const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
 
-    const { deleteSurvey, loading, error, deleteCompleteState } = useDeleteSurvey(
+    const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
-    const { options, sortedSurveys, setSortedSurveys, editSurvey, actionClick, sortByColumn } =
-        useSurveyListActions(surveyFormType);
+    const {
+        options,
+        optionLoading,
+        sortedSurveys,
+        setSortedSurveys,
+        editSurvey,
+        assignChild,
+        listChildren,
+        actionClick,
+        sortByColumn,
+    } = useSurveyListActions(surveyFormType);
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
@@ -68,7 +77,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
 
     return (
-        <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+        <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
@@ -147,7 +156,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                 <StyledTableBody>
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
-                                            <TableCell>{survey.rootSurvey.name}</TableCell>
+                                            <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
 
                                             <>
                                                 <TableCell>{survey.id}</TableCell>
@@ -157,9 +166,13 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>
-                                                        actionClick(survey.surveyType)
+                                                        actionClick(survey.surveyType, survey)
                                                     }
-                                                    options={options}
+                                                    options={
+                                                        optionLoading
+                                                            ? [i18n.t("Loading...")]
+                                                            : options
+                                                    }
                                                     optionClickHandler={[
                                                         {
                                                             option: "Edit",
@@ -172,6 +185,87 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                     survey.id,
                                                                     survey.assignedOrgUnit.id
                                                                 ),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "Add New Sample Shipment"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "List Sample Shipments"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "Add New Central Ref Lab"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "List Central Ref Labs"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "Add New Pathogen Isolates Log"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "List Pathogen Isolates Logs"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "Add New Supranational Ref"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(op =>
+                                                                    op.startsWith(
+                                                                        "List Supranational Refs"
+                                                                    )
+                                                                ) ?? "",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
                                                         },
                                                     ]}
                                                 />

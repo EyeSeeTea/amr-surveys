@@ -4,9 +4,11 @@ import { Questionnaire, QuestionnaireSection } from "../../../../domain/entities
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
+import { useHospitalContext } from "../../../contexts/hospital-context";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
+    const { userHospitalsAccess } = useHospitalContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
@@ -114,7 +116,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                             formType === "PPSHospitalForm" ||
                             formType === "PrevalenceFacilityLevelForm"
                         ) {
-                            const currentHospital = currentUser.userHospitalsAccess.find(
+                            const currentHospital = userHospitalsAccess.find(
                                 hospital => hospital.orgUnitId === questionnaireWithData.orgUnit.id
                             );
                             if (currentHospital) {
@@ -136,7 +138,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         formType,
         currentPPSSurveyForm,
         currentUser.userCountriesAccess,
-        currentUser.userHospitalsAccess,
+        userHospitalsAccess,
         setError,
         currentHospitalForm,
         currentWardRegister,

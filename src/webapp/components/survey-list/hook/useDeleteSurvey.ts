@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
 import { useAppContext } from "../../../contexts/app-context";
@@ -13,9 +13,21 @@ export function useDeleteSurvey(
 ) {
     const { compositionRoot } = useAppContext();
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>();
     const [deleteCompleteState, setDeleteCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm } = useCurrentSurveys();
+
+    const showDeleteErrorMsg = (survey: Survey) => {
+        if (survey.childCount && survey.childCount > 0) {
+            setDeleteCompleteState({
+                status: "error",
+                message: i18n.t(
+                    "This survey has other surveys associated with it.\n Please delete all associated surveys, before you can delete this one."
+                ),
+            });
+        } else {
+            deleteSurvey(survey.id, survey.assignedOrgUnit.id);
+        }
+    };
 
     const deleteSurvey = (surveyId: Id, orgUnitId: Id) => {
         setLoading(true);
@@ -36,11 +48,17 @@ export function useDeleteSurvey(
                     status: "error",
                     message: err ? err.message : i18n.t("Error deleting the survery"),
                 });
-                setError(err.message);
+
                 setLoading(false);
             }
         );
     };
 
-    return { deleteCompleteState, deleteSurvey, loading, setLoading, error };
+    return {
+        deleteCompleteState,
+        deleteSurvey,
+        loading,
+        setLoading,
+        showDeleteErrorMsg,
+    };
 }

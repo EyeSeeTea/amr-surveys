@@ -24,6 +24,26 @@ export class UserD2Repository implements UserRepository {
         });
     }
 
+    public getCurrentOUByLevel(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        const hospital$ = this.getAllOrgUnitsByLevel(
+            organisationUnits,
+            dataViewOrganisationUnits,
+            HOSPITAL_OU_LEVEL
+        );
+
+        return hospital$.flatMap(hospitals => {
+            const currentAccessibleHospitals = this.mapUserOrgUnitsAccess(
+                hospitals.userOrgUnits,
+                hospitals.userDataViewOrgUnits
+            );
+
+            return Future.success(currentAccessibleHospitals);
+        });
+    }
+
     public savePassword(password: string): FutureData<string> {
         return apiToFuture(
             this.api.currentUser.get({
@@ -55,52 +75,41 @@ export class UserD2Repository implements UserRepository {
             dataViewOrganisationUnits,
             COUNTRY_OU_LEVEL
         );
-
-        const hospitals$ = this.getAllOrgUnitsByLevel(
-            organisationUnits,
-            dataViewOrganisationUnits,
-            HOSPITAL_OU_LEVEL
-        );
-
         return countries$.flatMap(countries => {
-            return hospitals$.flatMap(hospitals => {
-                return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
-                    userSettings => {
-                        const user = new User({
-                            id: d2User.id,
-                            name: d2User.displayName,
-                            userGroups: d2User.userGroups,
-                            ...d2User.userCredentials,
-                            email: d2User.email,
-                            phoneNumber: d2User.phoneNumber,
-                            introduction: d2User.introduction,
-                            birthday: d2User.birthday,
-                            nationality: d2User.nationality,
-                            employer: d2User.employer,
-                            jobTitle: d2User.jobTitle,
-                            education: d2User.education,
-                            interests: d2User.interests,
-                            languages: d2User.languages,
-                            userCountriesAccess: this.mapUserOrgUnitsAccess(
-                                countries.userOrgUnits,
-                                countries.userDataViewOrgUnits
-                            ),
-                            userHospitalsAccess: this.mapUserOrgUnitsAccess(
-                                hospitals.userOrgUnits,
-                                hospitals.userDataViewOrgUnits
-                            ),
-                            settings: {
-                                keyUiLocale: userSettings.keyUiLocale,
-                                keyDbLocale: userSettings.keyDbLocale,
-                                keyMessageEmailNotification:
-                                    userSettings.keyMessageEmailNotification,
-                                keyMessageSmsNotification: userSettings.keyMessageSmsNotification,
-                            },
-                        });
-                        return Future.success(user);
-                    }
-                );
-            });
+            return apiToFuture(this.api.get<D2UserSettings>(`userSettings`)).flatMap(
+                userSettings => {
+                    const user = new User({
+                        id: d2User.id,
+                        name: d2User.displayName,
+                        userGroups: d2User.userGroups,
+                        ...d2User.userCredentials,
+                        email: d2User.email,
+                        phoneNumber: d2User.phoneNumber,
+                        introduction: d2User.introduction,
+                        birthday: d2User.birthday,
+                        nationality: d2User.nationality,
+                        employer: d2User.employer,
+                        jobTitle: d2User.jobTitle,
+                        education: d2User.education,
+                        interests: d2User.interests,
+                        languages: d2User.languages,
+                        userCountriesAccess: this.mapUserOrgUnitsAccess(
+                            countries.userOrgUnits,
+                            countries.userDataViewOrgUnits
+                        ),
+
+                        settings: {
+                            keyUiLocale: userSettings.keyUiLocale,
+                            keyDbLocale: userSettings.keyDbLocale,
+                            keyMessageEmailNotification: userSettings.keyMessageEmailNotification,
+                            keyMessageSmsNotification: userSettings.keyMessageSmsNotification,
+                        },
+                        organisationUnits,
+                        dataViewOrganisationUnits,
+                    });
+                    return Future.success(user);
+                }
+            );
         });
     }
 
@@ -117,14 +126,9 @@ export class UserD2Repository implements UserRepository {
                 },
                 fields: {
                     id: true,
-                    name: true,
                     shortName: true,
-                    code: true,
                     path: true,
                     level: true,
-                    parent: {
-                        id: true,
-                    },
                 },
                 paging: false,
             })
@@ -133,10 +137,9 @@ export class UserD2Repository implements UserRepository {
                 res.objects.map(ou => {
                     if (!ou.path.includes(NA_OU_ID))
                         return {
-                            name: ou.name,
                             id: ou.id,
                             shortName: ou.shortName,
-                            code: ou.code,
+
                             path: ou.path,
                         };
                 })
@@ -153,6 +156,7 @@ export class UserD2Repository implements UserRepository {
             const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
                 dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
             );
+
             return Future.success({ userOrgUnits, userDataViewOrgUnits });
         });
     };
@@ -161,34 +165,26 @@ export class UserD2Repository implements UserRepository {
         organisationUnits: OrgUnit[],
         dataViewOrganisationUnits: OrgUnit[]
     ): OrgUnitAccess[] => {
-        let orgUnitsAccess = organisationUnits.map(ou => ({
+        const orgUnitsAccess: OrgUnitAccess[] = organisationUnits.map(ou => ({
             orgUnitId: ou.id,
-            orgUnitName: ou.name,
             orgUnitShortName: ou.shortName,
-            orgUnitCode: ou.code,
             orgUnitPath: ou.path,
-            readAccess: dataViewOrganisationUnits.some(dvou => dvou.id === ou.id),
+            readAccess: dataViewOrganisationUnits.includes(ou),
             captureAccess: true,
         }));
 
         //Setting view access for org units that are present in dataViewOrganisationUnits and not organisationUnits
-        const readOnlyAccessOrgUnits = dataViewOrganisationUnits
-            .filter(dvou => orgUnitsAccess.every(oua => oua.orgUnitId !== dvou.id))
+        const readOnlyAccessOrgUnits: OrgUnitAccess[] = dataViewOrganisationUnits
+            .filter(dvou => !organisationUnits.includes(dvou))
             .map(raou => ({
                 orgUnitId: raou.id,
-                orgUnitName: raou.name,
                 orgUnitShortName: raou.shortName,
-                orgUnitCode: raou.code,
                 orgUnitPath: raou.path,
                 readAccess: true,
                 captureAccess: false, //orgUnits in dataViewOrganisationUnits dont have capture access
             }));
-
-        orgUnitsAccess = [...orgUnitsAccess, ...readOnlyAccessOrgUnits].sort((a, b) =>
-            a.orgUnitShortName.localeCompare(b.orgUnitShortName)
-        );
-
-        return orgUnitsAccess;
+        const newOrgUnitsAccess: OrgUnitAccess[] = [...orgUnitsAccess, ...readOnlyAccessOrgUnits];
+        return newOrgUnitsAccess;
     };
 
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {

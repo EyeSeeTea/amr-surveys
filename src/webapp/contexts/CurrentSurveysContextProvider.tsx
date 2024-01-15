@@ -11,15 +11,16 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     const [currentHospitalForm, setCurrentHospitalForm] = useState<OrgUnitNamedRef>();
     const [currentWardRegister, setCurrentWardRegister] = useState<NamedRef>();
 
-    const changeCurrentPPSSurveyForm = (survey: SurveyBase | undefined) => {
-        setCurrentPPSSurveyForm(survey);
-    };
-    //Prevalenc Module states
+    //Prevalence Module states
     const [currentPrevalenceSurveyForm, setCurrentPrevalenceSurveyForm] =
         useState<OrgUnitNamedRef>();
     const [currentFacilityLevelForm, setCurrentFacilityLevelForm] = useState<OrgUnitNamedRef>();
+    const [currentCaseReportForm, setCurrentCaseReportForm] = useState<NamedRef>();
 
     //PPS Module functions.
+    const changeCurrentPPSSurveyForm = (survey: SurveyBase | undefined) => {
+        setCurrentPPSSurveyForm(survey);
+    };
     const resetCurrentPPSSurveyForm = () => {
         setCurrentPPSSurveyForm(undefined);
         resetCurrentCountryQuestionnaire();
@@ -62,6 +63,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     const resetCurrentPrevalenceSurveyForm = () => {
         setCurrentPrevalenceSurveyForm(undefined);
         resetCurrentFacilityLevelForm();
+        resetCurrentCaseReportForm();
     };
 
     const changeCurrentFacilityLevelForm = (id: Id, name: string, orgUnitId: Id) => {
@@ -70,7 +72,17 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
 
     const resetCurrentFacilityLevelForm = () => {
         setCurrentFacilityLevelForm(undefined);
+        resetCurrentCaseReportForm();
     };
+
+    const changeCurrentCaseReportForm = (caseReport: NamedRef | undefined) => {
+        setCurrentCaseReportForm(caseReport);
+    };
+
+    const resetCurrentCaseReportForm = () => {
+        setCurrentCaseReportForm(undefined);
+    };
+
     return (
         <CurrentSurveysContext.Provider
             value={{
@@ -93,6 +105,9 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
                 currentFacilityLevelForm,
                 changeCurrentFacilityLevelForm,
                 resetCurrentFacilityLevelForm,
+                currentCaseReportForm,
+                changeCurrentCaseReportForm,
+                resetCurrentCaseReportForm,
             }}
         >
             {children}

@@ -16,9 +16,12 @@ import { useAppContext } from "../../../contexts/app-context";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
+    const { compositionRoot } = useAppContext();
     const history = useHistory();
     const [options, setOptions] = useState<string[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
+    const [optionLoading, setOptionLoading] = useState<boolean>(false);
+
     const {
         changeCurrentPPSSurveyForm,
         changeCurrentCountryQuestionnaire,
@@ -26,6 +29,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         changeCurrentWardRegister,
         changeCurrentPrevalenceSurveyForm,
         changeCurrentFacilityLevelForm,
+        changeCurrentCaseReportForm,
     } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
     const { currentUser } = useAppContext();
@@ -49,7 +53,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         });
     };
 
-    const assignChild = (survey: Survey) => {
+    const assignChild = (survey: Survey, option?: string) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -59,7 +63,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             survey.assignedOrgUnit.id,
             survey.rootSurvey
         );
-        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
         if (childSurveyType) {
             history.push({
                 pathname: `/new-survey/${childSurveyType}`,
@@ -69,7 +73,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const listChildren = (survey: Survey) => {
+    const listChildren = (survey: Survey, option?: string) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -79,7 +83,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             survey.assignedOrgUnit.id,
             survey.rootSurvey
         );
-        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType);
+        const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
         if (childSurveyType)
             history.replace({
                 pathname: `/surveys/${childSurveyType}`,
@@ -89,9 +93,62 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const actionClick = (ppsSurveyType: string) => {
+    const actionClick = (ppsSurveyType: string, survey?: Survey) => {
+        setOptionLoading(true);
         const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
-        setOptions(currentOptions);
+
+        if (!survey) {
+            setOptions(currentOptions);
+            setOptionLoading(false);
+            return;
+        }
+
+        compositionRoot.surveys.getChildCount
+            .execute(
+                surveyFormType,
+                survey.assignedOrgUnit.id,
+                survey.rootSurvey.id,
+                surveyFormType === "PPSWardRegister" ? survey.id : ""
+            )
+            .run(
+                childCountMap => {
+                    if (typeof childCountMap === "number") {
+                        const optionsWithChildCount = currentOptions.map(option => {
+                            if (option.startsWith("List")) {
+                                const updatedOption = `${option} (${childCountMap})`;
+                                return updatedOption;
+                            }
+                            return option;
+                        });
+                        if (survey) survey.childCount = childCountMap;
+                        setOptions(optionsWithChildCount);
+                        setOptionLoading(false);
+                    } else {
+                        const optionsWithChildCount = currentOptions.map(option => {
+                            const updatedChilsOptionMap = childCountMap.find(childMap =>
+                                childMap.option.startsWith(option)
+                            );
+                            if (updatedChilsOptionMap) {
+                                return updatedChilsOptionMap.option;
+                            } else {
+                                return option;
+                            }
+                        });
+                        if (survey)
+                            survey.childCount = childCountMap.reduce((agg, childCount) => {
+                                return agg + childCount.count;
+                            }, 0);
+
+                        setOptions(optionsWithChildCount);
+                        setOptionLoading(false);
+                    }
+                },
+                err => {
+                    console.debug(`Could not get child count, error : ${err}`);
+                    setOptions(currentOptions);
+                    setOptionLoading(false);
+                }
+            );
     };
 
     const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
@@ -121,6 +178,8 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
         else if (surveyFormType === "PrevalenceFacilityLevelForm")
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
+        else if (surveyFormType === "PrevalenceCaseReportForm")
+            changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
     };
 
     const handleSplitButtonClick = (
@@ -141,6 +200,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     return {
         options,
         sortedSurveys,
+        optionLoading,
         setSortedSurveys,
         editSurvey,
         assignChild,
