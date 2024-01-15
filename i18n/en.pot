@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-01-10T09:57:59.737Z\n"
-"PO-Revision-Date: 2024-01-10T09:57:59.737Z\n"
+"POT-Creation-Date: 2024-01-15T12:42:39.990Z\n"
+"PO-Revision-Date: 2024-01-15T12:42:39.990Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -88,6 +88,11 @@ msgstr ""
 msgid "HOSP"
 msgstr ""
 
+msgid ""
+"This survey has other surveys associated with it.\n"
+" Please delete all associated surveys, before you can delete this one."
+msgstr ""
+
 msgid "Survey deleted!"
 msgstr ""
 
@@ -107,6 +112,9 @@ msgid "Patient Name"
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Loading..."
 msgstr ""
 
 msgid "No data found..."

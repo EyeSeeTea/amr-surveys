@@ -121,3 +121,13 @@ export interface D2ProgramRuleAction {
     };
     content?: string; // message content to show
 }
+
+export type ProgramCountMap = {
+    id: string;
+    count: number;
+}[];
+
+export type ProgramOptionCountMap = {
+    option: string;
+    count: number;
+}[];

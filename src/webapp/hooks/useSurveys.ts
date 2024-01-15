@@ -32,7 +32,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
             case "PrevalenceFacilityLevelForm":
                 return currentPrevalenceSurveyForm?.orgUnitId ?? "";
-            case "PrevalencePatientForms":
+            case "PrevalenceCaseReportForm":
+            case "PrevalenceCentralRefLabForm":
+            case "PrevalencePathogenIsolatesLog":
+            case "PrevalenceSampleShipTrackForm":
+            case "PrevalenceSupranationalRefLabForm":
                 return currentFacilityLevelForm?.orgUnitId ?? "";
             default:
                 return "";
@@ -50,7 +54,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
         const parentSurveyId =
             surveyFormType === "PrevalenceFacilityLevelForm" ||
-            surveyFormType === "PrevalencePatientForms"
+            surveyFormType === "PrevalenceCaseReportForm" ||
+            surveyFormType === "PrevalenceCentralRefLabForm" ||
+            surveyFormType === "PrevalencePathogenIsolatesLog" ||
+            surveyFormType === "PrevalenceSampleShipTrackForm" ||
+            surveyFormType === "PrevalenceSupranationalRefLabForm"
                 ? currentPrevalenceSurveyForm?.id
                 : currentPPSSurveyForm?.id;
 
@@ -59,7 +67,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         //Only Patient Forms are paginated.
         if (
             surveyFormType === "PPSPatientRegister" ||
-            surveyFormType === "PrevalencePatientForms"
+            surveyFormType === "PrevalenceCaseReportForm" ||
+            surveyFormType === "PrevalenceCentralRefLabForm" ||
+            surveyFormType === "PrevalencePathogenIsolatesLog" ||
+            surveyFormType === "PrevalenceSampleShipTrackForm" ||
+            surveyFormType === "PrevalenceSupranationalRefLabForm"
         ) {
             compositionRoot.surveys.getPaginatedSurveys
                 .execute(

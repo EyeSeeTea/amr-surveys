@@ -14,6 +14,7 @@ import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
+import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
@@ -25,6 +26,7 @@ function App(props: AppProps) {
     const [showShareButton, setShowShareButton] = useState(false);
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
+    const [hospitalContext, setHospitalContext] = useState<HospitalContextState | null>(null);
 
     useEffect(() => {
         async function setup() {
@@ -34,6 +36,19 @@ function App(props: AppProps) {
 
             setAppContext({ currentUser, compositionRoot, api });
             setShowShareButton(isShareButtonVisible);
+
+            compositionRoot.users.getAccessibleOUByLevel
+                .execute(currentUser.organisationUnits, currentUser.dataViewOrganisationUnits)
+                .run(
+                    hospitalData => {
+                        setHospitalContext({ userHospitalsAccess: hospitalData });
+                        console.debug("Hospital data fetched successfully, hospital data set");
+                    },
+                    err => {
+                        console.debug(` No hospital data could be fetched : ${err}`);
+                    }
+                );
+
             setLoading(false);
         }
         setup();
@@ -54,9 +69,11 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <CurrentModuleContextProvider>
-                                <Router />
-                            </CurrentModuleContextProvider>
+                            <HospitalContext.Provider value={hospitalContext}>
+                                <CurrentModuleContextProvider>
+                                    <Router />
+                                </CurrentModuleContextProvider>
+                            </HospitalContext.Provider>
                         </AppContext.Provider>
                     </div>
 

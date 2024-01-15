@@ -16,7 +16,6 @@ describe("Survey List Page", () => {
                     removeListener: function () {},
                 };
             };
-
         //navigate to survey list page
         const view = getView();
         const ppsSurveysButton = await view.findByRole("button", {
