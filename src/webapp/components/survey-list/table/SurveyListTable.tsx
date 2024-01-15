@@ -99,7 +99,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </span>
                                     </TableCell>
 
-                                    {surveyFormType === "PrevalenceFacilityLevelForm" && (
+                                    {(surveyFormType === "PrevalenceFacilityLevelForm" ||
+                                        surveyFormType === "PPSCountryQuestionnaire") && (
                                         <TableCell>
                                             <Typography variant="caption">
                                                 {i18n.t("Org Unit")}
@@ -235,8 +236,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
                                             <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
-                                            {surveyFormType === "PrevalenceFacilityLevelForm" && (
-                                                <TableCell>{survey.assignedOrgUnit.id}</TableCell>
+                                            {(surveyFormType === "PrevalenceFacilityLevelForm" ||
+                                                surveyFormType === "PPSCountryQuestionnaire") && (
+                                                <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                             )}
 
                                             {(surveyFormType === "PPSSurveyForm" ||
