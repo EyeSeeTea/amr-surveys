@@ -6,6 +6,11 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    PPS_HOSPITAL_FORM_ID,
+    PPS_PATIENT_REGISTER_ID,
+    PPS_SURVEY_FORM_ID,
+    PPS_WARD_REGISTER_ID,
     PREVALANCE_CASE_REPORT_TET,
     PREVALANCE_CENTRAL_REF_LAB_TET,
     PREVALANCE_FACILITY_LEVEL_TET,
@@ -18,6 +23,10 @@ import {
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
+    PREVALENCE_SURVEY_FORM_ID,
+    SURVEY_ID_DATAELEMENT_ID,
+    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
+    WARD_ID_DATAELEMENT_ID,
 } from "../entities/D2Survey";
 
 export const isTrackerProgram = (programId: Id) => {
@@ -85,18 +94,74 @@ export const getSurveyNameBySurveyFormType = (
 
 export const getParentDataElementForProgram = (programId: Id): Id => {
     switch (programId) {
+        case PREVALENCE_FACILITY_LEVEL_FORM_ID:
+            return SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID;
         case PREVALENCE_CASE_REPORT_FORM_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF;
         case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF;
         case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL;
-
         case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS;
         case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL;
+        case PPS_COUNTRY_QUESTIONNAIRE_ID:
+        case PPS_HOSPITAL_FORM_ID:
+        case PPS_WARD_REGISTER_ID:
+            return SURVEY_ID_DATAELEMENT_ID;
+        case PPS_PATIENT_REGISTER_ID:
+            return WARD_ID_DATAELEMENT_ID;
+
         default:
             return "";
+    }
+};
+
+export const getChildProgramId = (programId: Id): Id | Id[] => {
+    switch (programId) {
+        case PPS_SURVEY_FORM_ID:
+            return PPS_COUNTRY_QUESTIONNAIRE_ID;
+        case PPS_COUNTRY_QUESTIONNAIRE_ID:
+            return PPS_HOSPITAL_FORM_ID;
+        case PPS_HOSPITAL_FORM_ID:
+            return PPS_WARD_REGISTER_ID;
+        case PPS_WARD_REGISTER_ID:
+            return PPS_PATIENT_REGISTER_ID;
+
+        case PREVALENCE_SURVEY_FORM_ID:
+            return PREVALENCE_FACILITY_LEVEL_FORM_ID;
+        case PREVALENCE_FACILITY_LEVEL_FORM_ID:
+            return PREVALENCE_CASE_REPORT_FORM_ID;
+        case PREVALENCE_CASE_REPORT_FORM_ID:
+            return [
+                PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
+                PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+                PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
+                PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
+            ];
+
+        default:
+            return [];
+    }
+};
+
+export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Prevelance" => {
+    switch (surveyFormType) {
+        case "PPSSurveyForm":
+        case "PPSCountryQuestionnaire":
+        case "PPSHospitalForm":
+        case "PPSWardRegister":
+        case "PPSPatientRegister":
+            return "PPS";
+        case "PrevalenceSurveyForm":
+        case "PrevalenceFacilityLevelForm":
+        case "PrevalenceCaseReportForm":
+        case "PrevalenceSampleShipTrackForm":
+        case "PrevalenceCentralRefLabForm":
+        case "PrevalencePathogenIsolatesLog":
+        case "PrevalenceSupranationalRefLabForm":
+        default:
+            return "Prevelance";
     }
 };

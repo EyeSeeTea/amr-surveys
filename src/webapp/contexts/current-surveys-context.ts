@@ -28,6 +28,10 @@ export interface CurrentSurveysContextProps {
     currentFacilityLevelForm: OrgUnitNamedRef | undefined;
     changeCurrentFacilityLevelForm: (id: Id, name: string, orgUnitId: Id) => void;
     resetCurrentFacilityLevelForm: () => void;
+
+    currentCaseReportForm: NamedRef | undefined;
+    changeCurrentCaseReportForm: (caseReport: NamedRef | undefined) => void;
+    resetCurrentCaseReportForm: () => void;
 }
 
 export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
@@ -54,6 +58,10 @@ export const CurrentSurveysContext = createContext<CurrentSurveysContextProps>({
     currentFacilityLevelForm: undefined,
     changeCurrentFacilityLevelForm: () => {},
     resetCurrentFacilityLevelForm: () => {},
+
+    currentCaseReportForm: undefined,
+    changeCurrentCaseReportForm: () => {},
+    resetCurrentCaseReportForm: () => {},
 });
 
 export function useCurrentSurveys() {

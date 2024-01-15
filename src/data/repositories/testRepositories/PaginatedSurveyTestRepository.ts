@@ -5,6 +5,12 @@ import { PaginatedSurveyRepository } from "../../../domain/repositories/Paginate
 import { FutureData } from "../../api-futures";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
+    getFilteredPPSPatientSurveys(
+        keyword: string,
+        orgUnitId: string
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        throw new Error("Method not implemented.");
+    }
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: string,

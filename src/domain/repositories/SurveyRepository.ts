@@ -1,9 +1,8 @@
 import { FutureData } from "../../data/api-futures";
-import { ImportStrategy } from "../entities/Program";
+import { ImportStrategy, ProgramCountMap } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
-import { PaginatedReponse } from "../entities/TablePagination";
 
 export interface SurveyRepository {
     getForm(
@@ -28,6 +27,15 @@ export interface SurveyRepository {
         programId: Id,
         orgUnitId: Id | undefined
     ): FutureData<Questionnaire>;
-    getFilteredSurveys(keyword: string, orgUnitId: Id): FutureData<PaginatedReponse<Survey[]>>;
-    deleteSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
+
+    deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void>;
+
+    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string>;
+
+    getSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ): FutureData<number | ProgramCountMap>;
 }
