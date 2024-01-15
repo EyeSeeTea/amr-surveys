@@ -20,6 +20,7 @@ export const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
 export const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 export const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 export const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
+export const SURVEY_PATIENT_ID_DATAELEMENT_ID = "eKUbBRlR684";
 //Prevalance Program Ids
 
 export const PREVALENCE_SURVEY_FORM_ID = "WcSw803XiUk";

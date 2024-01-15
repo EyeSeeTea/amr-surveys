@@ -16,6 +16,7 @@ import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
 import { ModulesTestRepository } from "./data/repositories/testRepositories/ModuleTestRepository";
 import { GetSurveyUseCase } from "./domain/usecases/GetSurveyUseCase";
+import { GetFilteredPatientsUseCase } from "./domain/usecases/GetFilteredPatientsUseCase";
 import { SurveyRepository } from "./domain/repositories/SurveyRepository";
 import { UserD2Repository } from "./data/repositories/UserD2Repository";
 import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
@@ -63,6 +64,9 @@ function getCompositionRoot(repositories: Repositories) {
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
+            getFilteredPatients: new GetFilteredPatientsUseCase(
+                repositories.paginatedSurveyRepository
+            ),
             getPaginatedSurveys: new GetPaginatedPatientSurveysUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository

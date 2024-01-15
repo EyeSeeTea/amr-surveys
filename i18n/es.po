@@ -49,6 +49,12 @@ msgid ""
 "your administrator"
 msgstr ""
 
+msgid "Search Patient"
+msgstr ""
+
+msgid "Filter by patient id or code"
+msgstr ""
+
 msgid "Country"
 msgstr ""
 

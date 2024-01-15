@@ -12,4 +12,8 @@ export interface PaginatedSurveyRepository {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>>;
+    getFilteredPPSPatientSurveys(
+        keyword: string,
+        orgUnitId: Id
+    ): FutureData<PaginatedReponse<Survey[]>>;
 }
