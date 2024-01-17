@@ -4,7 +4,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { Question } from "../../../domain/entities/Questionnaire";
+import { Question, QuestionnarieM } from "../../../domain/entities/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -12,7 +12,6 @@ import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
-import { assignProgramRules } from "../../../utils/assignProgramRules";
 import { SurveySection } from "./SurveySection";
 
 export interface SurveyFormProps {
@@ -72,50 +71,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
-    useEffect(() => {
-        if (!loading) {
-            const newQuestionnaire = Object.assign({}, questionnaire);
-
-            newQuestionnaire?.stages?.map(stage =>
-                stage.sections?.map(section => {
-                    section.questions?.map(question => {
-                        assignProgramRules(newQuestionnaire, question, section);
-                    });
-                })
-            );
-            setQuestionnaire(newQuestionnaire);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loading]);
-
     const updateQuestion = (question: Question) => {
-        const newQuestionnaire = Object.assign({}, questionnaire);
-
-        const stageToBeUpdated = newQuestionnaire?.stages.find(stage =>
-            stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
-        );
-        if (stageToBeUpdated) {
-            const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
-                section.questions.find(q => q.id === question?.id)
-            );
-            if (sectionToBeUpdated) {
-                const questionToBeUpdated = sectionToBeUpdated.questions.find(
-                    q => q.id === question.id
-                );
-                if (questionToBeUpdated) {
-                    questionToBeUpdated.value = question.value;
-                    assignProgramRules(newQuestionnaire, questionToBeUpdated, sectionToBeUpdated);
-                }
-            }
-        } else {
-            //Stage not found, entity could be updated.
-            const questionToBeUpdated = newQuestionnaire?.entity?.questions.find(
-                q => q.id === question.id
-            );
-            if (questionToBeUpdated) questionToBeUpdated.value = question.value;
+        if (questionnaire) {
+            const updatedQuestionnaire = QuestionnarieM.updateQuestion(questionnaire, question);
+            setQuestionnaire(updatedQuestionnaire);
         }
-
-        setQuestionnaire(newQuestionnaire);
     };
 
     const onCancel = () => {

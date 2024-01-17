@@ -23,6 +23,7 @@ export interface Program {
 export interface ProgramStageDataElement {
     id: string;
     dataElement: { id: string };
+    sortOrder: number | undefined;
 }
 
 export interface ProgramStageSection {
@@ -45,6 +46,7 @@ export interface ProgramDataElement {
     formName: string;
     valueType: string;
     optionSet?: { id: string };
+    sortOrder: number | undefined;
 }
 
 export interface OptionSet {
@@ -65,6 +67,7 @@ export interface TrackedEntityAttibute {
     code: string;
     name: string;
     formName: string;
+    sortOrder: number;
     valueType: string;
     optionSet?: { id: string };
     value?: string;

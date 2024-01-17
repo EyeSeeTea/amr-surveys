@@ -97,6 +97,17 @@ export class SurveyD2Repository implements SurveyRepository {
                     psde => psde.dataElement
                 );
 
+                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
+                    de => {
+                        return {
+                            ...de,
+                            sortOrder: resp.programStageDataElements.find(
+                                psde => psde.dataElement.id === de.id
+                            )?.sortOrder,
+                        };
+                    }
+                );
+
                 //If event specified,populate the form
                 if (eventId) {
                     if (isTrackerProgram(programId)) {
@@ -110,7 +121,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                             undefined,
                                             trackedEntity,
                                             programDataElements,
-                                            resp.dataElements,
+                                            dataElementsWithSortOrder,
                                             resp.options,
                                             resp.programStages,
                                             resp.programStageSections,
@@ -136,7 +147,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                         event,
                                         undefined,
                                         programDataElements,
-                                        resp.dataElements,
+                                        dataElementsWithSortOrder,
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
@@ -160,7 +171,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             undefined,
                             undefined,
                             programDataElements,
-                            resp.dataElements,
+                            dataElementsWithSortOrder,
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
@@ -390,6 +401,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         curDataElement.id,
                         curDataElement.code,
                         curDataElement.formName,
+                        curDataElement.sortOrder,
                         options,
                         curDataElement.optionSet,
                         dataValue ?? ""
@@ -423,6 +435,7 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         )
             .compact()
+            .sortBy(q => q.sortOrder)
             .value();
 
         return { questions, sectionAddQuestion: sectionAddQuestion };
@@ -444,6 +457,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     attribute.id,
                     attribute.code,
                     attribute.formName,
+                    attribute.sortOrder,
                     options,
                     attribute.optionSet,
                     attributeValue?.value
@@ -463,6 +477,7 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         )
             .compact()
+            .sortBy(q => q.sortOrder)
             .value();
 
         return questions;
@@ -473,6 +488,7 @@ export class SurveyD2Repository implements SurveyRepository {
         id: Id,
         code: string,
         formName: string,
+        sortOrder: number | undefined,
         options: Option[],
         optionSet?: { id: string },
         dataValue?: string
@@ -487,6 +503,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     storeFalse: true,
                     value: dataValue ? (dataValue === "true" ? true : false) : true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return boolQ;
             }
@@ -499,6 +516,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     storeFalse: false,
                     value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return boolQ;
             }
@@ -513,6 +531,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     numberType: "INTEGER",
                     value: dataValue ? dataValue : "",
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return intQ;
             }
@@ -535,6 +554,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         options: selectOptions,
                         value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        sortOrder: sortOrder,
                     };
                     return selectQ;
                 } else {
@@ -546,6 +566,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         value: dataValue ? (dataValue as string) : "",
                         multiline: false,
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        sortOrder: sortOrder,
                     };
                     return singleLineText;
                 }
@@ -560,6 +581,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? (dataValue as string) : "",
                     multiline: true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return singleLineTextQ;
             }
@@ -572,6 +594,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "date",
                     value: dataValue ? new Date(dataValue as string) : new Date(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return dateQ;
             }
@@ -586,6 +609,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         ? new Date(dataValue as string).toISOString()
                         : new Date().toISOString(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return dateQ;
             }

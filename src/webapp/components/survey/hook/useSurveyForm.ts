@@ -75,7 +75,18 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 )
                 .run(
                     questionnaireForm => {
-                        setQuestionnaire(questionnaireForm);
+                        //apply rules, if any
+                        if (
+                            questionnaireForm.programRules &&
+                            questionnaireForm.programRules?.length > 0
+                        ) {
+                            const processedQuestionnaire =
+                                compositionRoot.surveys.applyInitialRules.execute(
+                                    questionnaireForm
+                                );
+                            setQuestionnaire(processedQuestionnaire);
+                        } else setQuestionnaire(questionnaireForm);
+
                         setLoading(false);
                     },
                     err => {
@@ -100,7 +111,17 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 .execute(eventId, formType, orgUnitId)
                 .run(
                     questionnaireWithData => {
-                        setQuestionnaire(questionnaireWithData);
+                        //apply rules, if any
+                        if (
+                            questionnaireWithData.programRules &&
+                            questionnaireWithData.programRules?.length > 0
+                        ) {
+                            const processedQuestionnaire =
+                                compositionRoot.surveys.applyInitialRules.execute(
+                                    questionnaireWithData
+                                );
+                            setQuestionnaire(processedQuestionnaire);
+                        } else setQuestionnaire(questionnaireWithData);
 
                         if (
                             formType === "PPSCountryQuestionnaire" ||
