@@ -125,7 +125,7 @@ interface RuleToggleSectionsVisibility {
     sectionCodes: Code[];
 }
 
-const D2_FUNCTIONS = ["d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
+const D2_FUNCTIONS = ["!d2:hasValue", "d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
 const D2_OPERATORS = [
     ">" as const,
     ">=" as const,
@@ -143,18 +143,16 @@ export class QuestionnarieM {
     static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
         if (!questionnaire.programRules || questionnaire.programRules.length === 0)
             return questionnaire;
-        const updatedStageQuestionnaire: Questionnaire = {
-            ...questionnaire,
-            stages: questionnaire.stages.map(stage => ({
-                ...stage,
-                sections: stage.sections.map(section => ({
-                    ...section,
-                    questions: questionRuleReducer(section.questions, questionnaire.programRules),
-                })),
-            })),
-        };
 
-        return updatedStageQuestionnaire;
+        questionnaire.stages.forEach(stage => {
+            return stage.sections.forEach(section => {
+                return section.questions.forEach(question => {
+                    questionnaire = this.updateQuestion(questionnaire, question);
+                });
+            });
+        });
+
+        return questionnaire;
     }
 
     static updateQuestion(questionnaire: Questionnaire, questionUpdated: Question): Questionnaire {
@@ -163,36 +161,47 @@ export class QuestionnarieM {
 
             stages: questionnaire.stages.map(stage => ({
                 ...stage,
-                sections: stage.sections.map(section => ({
-                    ...section,
-                    questions: updateQuestionAndApplyRules(
-                        section.questions,
+                sections: stage.sections.map(section => {
+                    const isSectionVisible = applyRulesAndUpdateEffectedSection(
+                        section,
                         questionUpdated,
                         questionnaire.programRules
-                    ),
-                })),
+                    ).isVisible;
+                    return {
+                        ...section,
+                        questions: updateQuestionAndApplyRules(
+                            section.questions,
+                            questionUpdated,
+                            questionnaire.programRules
+                        ),
+                        isVisible: isSectionVisible,
+                    };
+                }),
             })),
         };
     }
 }
 
-function questionRuleReducer(
-    questions: Question[],
-    programRules: ProgramRule[] | undefined
-): Question[] {
-    const allUpdatedQuestions = questions.map((question, index, updatedArray) => {
-        const intermediateUpdates = applyRulesAndUpdatedEffectedQuestions(
-            updatedArray,
-            question,
-            programRules
-        );
-        if (index === questions.length - 1) {
-            return intermediateUpdates;
-        } else return undefined;
-    });
+// function questionRuleReducer(
+//     questions: Question[],
+//     programRules: ProgramRule[] | undefined
+// ): Question[] {
+//     const allUpdatedQuestions = questions.map((question, index, updatedArray) => {
+//         const intermediateUpdates = applyRulesAndUpdatedEffectedQuestions(
+//             updatedArray,
+//             question,
+//             programRules
+//         );
 
-    return _(allUpdatedQuestions).compact().flatten().value();
-}
+//         if (index === questions.length - 1) {
+//             return intermediateUpdates;
+//         } else return undefined;
+//     });
+
+//     const uniqueUpdateQuestions = _(allUpdatedQuestions).compact().flatten().value();
+
+//     return uniqueUpdateQuestions;
+// }
 
 function updateQuestionAndApplyRules(
     questions: Question[],
@@ -235,11 +244,10 @@ function applyRulesAndUpdatedEffectedQuestions(
                                 q => q.id === action.dataElement?.id
                             );
                             //TO DO : do not update in place. Problem is the order needs to be maintained.
-                            if (questionToBeManipulated)
-                                questionToBeManipulated.isVisible = !parseCondition(
-                                    rule.condition,
-                                    updatedQuestion
-                                );
+                            if (questionToBeManipulated) {
+                                const isVisible = !parseCondition(rule.condition, updatedQuestion);
+                                questionToBeManipulated.isVisible = isVisible;
+                            }
                         }
                         break;
                 }
@@ -250,6 +258,33 @@ function applyRulesAndUpdatedEffectedQuestions(
     } else {
         return questions;
     }
+}
+
+function applyRulesAndUpdateEffectedSection(
+    section: QuestionnaireSection,
+    updatedQuestion: Question,
+    programRules: ProgramRule[] | undefined
+): QuestionnaireSection {
+    const filteredProgramRules = programRules?.filter(
+        programRule => programRule.dataElementId === updatedQuestion.id
+    );
+
+    if (!filteredProgramRules || filteredProgramRules.length === 0) return section;
+
+    filteredProgramRules.map(rule => {
+        rule.programRuleActions.map(action => {
+            switch (action.programRuleActionType) {
+                case "HIDESECTION": {
+                    //TO DO : do not update in place. Problem is the order needs to be maintained.
+                    if (section.code === action.programStageSection?.id)
+                        section.isVisible = !parseCondition(rule.condition, updatedQuestion);
+
+                    break;
+                }
+            }
+        });
+    });
+    return section;
 }
 
 const parseCondition = (condition: string, updatedQuestion: Question): boolean => {
@@ -263,7 +298,7 @@ const parseCondition = (condition: string, updatedQuestion: Question): boolean =
         //If the condition is one of the d2Functions, handle them
         if (D2_FUNCTIONS.some(d2Function => condition.includes(d2Function))) {
             switch (true) {
-                case condition.includes("d2:hasValue"): {
+                case condition.includes("!d2:hasValue"): {
                     const leftOperand =
                         updatedQuestion.type === "select"
                             ? updatedQuestion.value?.code
@@ -271,8 +306,26 @@ const parseCondition = (condition: string, updatedQuestion: Question): boolean =
                     if (
                         leftOperand === undefined ||
                         (updatedQuestion.type === "select" && leftOperand === "")
-                    )
+                    ) {
+                        console.debug(true);
                         values.push(true);
+                    }
+
+                    break;
+                }
+
+                case condition.includes("d2:hasValue"): {
+                    const leftOperand =
+                        updatedQuestion.type === "select"
+                            ? updatedQuestion.value?.code
+                            : updatedQuestion.value;
+                    if (
+                        leftOperand !== undefined ||
+                        (updatedQuestion.type === "select" && leftOperand !== "")
+                    ) {
+                        console.debug(true);
+                        values.push(true);
+                    }
 
                     break;
                 }

@@ -278,7 +278,9 @@ export class SurveyD2Repository implements SurveyRepository {
                       return {
                           title: stage.name,
                           code: stage.id,
-                          sections: processedSections,
+                          sections: _(processedSections)
+                              .sortBy(section => section.sortOrder)
+                              .value(),
                           isVisible: true,
                           instanceId: trackedEntity?.enrollments
                               ?.at(0)
@@ -289,7 +291,9 @@ export class SurveyD2Repository implements SurveyRepository {
                       return {
                           title: stage.name,
                           code: stage.id,
-                          sections: currentProgramStageSections,
+                          sections: _(currentProgramStageSections)
+                              .sortBy(section => section.sortOrder)
+                              .value(),
                           isVisible: true,
                           instanceId: trackedEntity?.enrollments
                               ?.at(0)
@@ -302,7 +306,9 @@ export class SurveyD2Repository implements SurveyRepository {
                   {
                       title: "STAGE",
                       code: "STAGE",
-                      sections: sections,
+                      sections: _(sections)
+                          .sortBy(section => section.sortOrder)
+                          .value(),
                       isVisible: true,
                   },
               ];
