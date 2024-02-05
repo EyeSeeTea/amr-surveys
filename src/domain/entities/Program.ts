@@ -87,12 +87,6 @@ export interface ProgramMetadata {
     programRuleActions: D2ProgramRuleAction[];
 }
 
-export interface ProgramRule {
-    id: Id;
-    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
-    dataElementId: Id; // from ProgramRuleVariable
-    programRuleActions: D2ProgramRuleAction[];
-}
 export interface D2ProgramRule {
     id: Id;
     condition: string; // eg: "${AMR-Sample 2} != 'NO'"

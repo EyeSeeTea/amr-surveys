@@ -76,10 +76,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 .run(
                     questionnaireForm => {
                         //apply rules, if any
-                        if (
-                            questionnaireForm.programRules &&
-                            questionnaireForm.programRules?.length > 0
-                        ) {
+                        if (questionnaireForm.rules && questionnaireForm.rules?.length > 0) {
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(
                                     questionnaireForm
@@ -113,8 +110,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     questionnaireWithData => {
                         //apply rules, if any
                         if (
-                            questionnaireWithData.programRules &&
-                            questionnaireWithData.programRules?.length > 0
+                            questionnaireWithData.rules &&
+                            questionnaireWithData.rules?.length > 0
                         ) {
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(

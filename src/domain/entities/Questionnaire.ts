@@ -1,7 +1,7 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
 import { Id, NamedRef, Ref } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
-import { ProgramRule } from "./Program";
+import { D2ProgramRuleAction } from "./Program";
 
 export type Code = string;
 export interface QuestionnaireBase {
@@ -12,13 +12,18 @@ export interface QuestionnaireBase {
     year: string;
     isCompleted: boolean;
     isMandatory: boolean;
-    rules: QuestionnaireRule[];
 }
 
 export interface QuestionnaireSelector {
     id: Id;
     orgUnitId: Id;
     year: string;
+}
+export interface QuestionnaireRule {
+    id: Id;
+    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
+    dataElementId: Id; // from ProgramRuleVariable
+    programRuleActions: D2ProgramRuleAction[];
 }
 
 export interface Questionnaire extends QuestionnaireBase {
@@ -27,7 +32,7 @@ export interface Questionnaire extends QuestionnaireBase {
     subLevelDetails?: {
         enrollmentId: Id;
     };
-    programRules?: ProgramRule[];
+    rules: QuestionnaireRule[];
 }
 
 export interface QuestionnaireEntity {
@@ -117,14 +122,6 @@ export interface QuestionOption extends NamedRef {
     code?: string;
 }
 
-export type QuestionnaireRule = RuleToggleSectionsVisibility;
-
-interface RuleToggleSectionsVisibility {
-    type: "setSectionsVisibility";
-    dataElementCode: Code;
-    sectionCodes: Code[];
-}
-
 const D2_FUNCTIONS = ["!d2:hasValue", "d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
 const D2_OPERATORS = [
     ">" as const,
@@ -141,40 +138,47 @@ export class QuestionnarieM {
     }
 
     static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
-        if (!questionnaire.programRules || questionnaire.programRules.length === 0)
-            return questionnaire;
+        try {
+            if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
 
-        questionnaire.stages.forEach(stage => {
-            return stage.sections.forEach(section => {
-                return section.questions.forEach(question => {
-                    questionnaire = this.updateQuestion(questionnaire, question);
+            const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
+                return stage.sections.flatMap(section => {
+                    return section.questions.flatMap(question => question);
                 });
             });
-        });
 
-        return questionnaire;
+            allQsInQuestionnaire.forEach(question => {
+                questionnaire = this.updateQuestion(questionnaire, question);
+            });
+
+            return questionnaire;
+        } catch (err) {
+            //An error occured qhile parsing rules, return questionnaire as is.
+            console.debug(err);
+            return questionnaire;
+        }
     }
 
-    static updateQuestion(questionnaire: Questionnaire, questionUpdated: Question): Questionnaire {
+    static updateQuestion(questionnaire: Questionnaire, updatedQuestion: Question): Questionnaire {
+        console.debug(`processing question : ${updatedQuestion.id} - ${updatedQuestion.code}`);
         return {
             ...questionnaire,
-
             stages: questionnaire.stages.map(stage => ({
                 ...stage,
                 sections: stage.sections.map(section => {
-                    const isSectionVisible = applyRulesAndUpdateEffectedSection(
-                        section,
-                        questionUpdated,
-                        questionnaire.programRules
-                    ).isVisible;
                     return {
                         ...section,
-                        questions: updateQuestionAndApplyRules(
-                            section.questions,
-                            questionUpdated,
-                            questionnaire.programRules
-                        ),
-                        isVisible: isSectionVisible,
+                        questions: section.questions.map(question => {
+                            return {
+                                ...question,
+                                isVisible: isQuestionVisible(
+                                    question,
+                                    updatedQuestion,
+                                    questionnaire.rules
+                                ),
+                            };
+                        }),
+                        isVisible: isSectionVisible(section, updatedQuestion, questionnaire.rules),
                     };
                 }),
             })),
@@ -182,110 +186,63 @@ export class QuestionnarieM {
     }
 }
 
-// function questionRuleReducer(
-//     questions: Question[],
-//     programRules: ProgramRule[] | undefined
-// ): Question[] {
-//     const allUpdatedQuestions = questions.map((question, index, updatedArray) => {
-//         const intermediateUpdates = applyRulesAndUpdatedEffectedQuestions(
-//             updatedArray,
-//             question,
-//             programRules
-//         );
-
-//         if (index === questions.length - 1) {
-//             return intermediateUpdates;
-//         } else return undefined;
-//     });
-
-//     const uniqueUpdateQuestions = _(allUpdatedQuestions).compact().flatten().value();
-
-//     return uniqueUpdateQuestions;
-// }
-
-function updateQuestionAndApplyRules(
-    questions: Question[],
+const isQuestionVisible = (
+    question: Question,
     updatedQuestion: Question,
-    programRules: ProgramRule[] | undefined
-) {
-    const updatedSectionQuestions = questions.map(question => {
-        if (question.id === updatedQuestion.id) {
-            return updatedQuestion;
-        } else return question;
-    });
+    questionnaireRules: QuestionnaireRule[]
+): boolean => {
+    const applicableRules = questionnaireRules.filter(
+        rule =>
+            rule.dataElementId === updatedQuestion.id &&
+            rule.programRuleActions.filter(
+                action =>
+                    action.programRuleActionType === "HIDEFIELD" &&
+                    action.dataElement &&
+                    action.dataElement.id === question.id
+            ).length > 0
+    );
+    if (!applicableRules || applicableRules.length === 0) return question.isVisible;
 
-    if (programRules && programRules.length > 0)
-        return applyRulesAndUpdatedEffectedQuestions(
-            updatedSectionQuestions,
-            updatedQuestion,
-            programRules
-        );
-    return updatedSectionQuestions;
-}
-
-function applyRulesAndUpdatedEffectedQuestions(
-    questions: Question[],
-    updatedQuestion: Question,
-    programRules: ProgramRule[] | undefined
-): Question[] {
-    if (questions.some(question => question.id === updatedQuestion.id)) {
-        const filteredProgramRules = programRules?.filter(
-            programRule => programRule.dataElementId === updatedQuestion.id
-        );
-
-        if (!filteredProgramRules || filteredProgramRules.length === 0) return questions;
-
-        filteredProgramRules.map(rule => {
-            rule.programRuleActions.map(action => {
-                switch (action.programRuleActionType) {
-                    case "HIDEFIELD":
-                        {
-                            const questionToBeManipulated = questions.find(
-                                q => q.id === action.dataElement?.id
-                            );
-                            //TO DO : do not update in place. Problem is the order needs to be maintained.
-                            if (questionToBeManipulated) {
-                                const isVisible = !parseCondition(rule.condition, updatedQuestion);
-                                questionToBeManipulated.isVisible = isVisible;
-                            }
-                        }
-                        break;
-                }
-            });
+    const updatedQuestionVisibility = applicableRules.flatMap(rule => {
+        return rule.programRuleActions.flatMap(action => {
+            if (action.programRuleActionType === "HIDEFIELD") {
+                const hideSection = parseCondition(rule.condition, updatedQuestion);
+                return !hideSection;
+            } else return question.isVisible;
         });
+    });
+    return updatedQuestionVisibility.every(Boolean);
+};
 
-        return questions;
-    } else {
-        return questions;
-    }
-}
-
-function applyRulesAndUpdateEffectedSection(
+const isSectionVisible = (
     section: QuestionnaireSection,
     updatedQuestion: Question,
-    programRules: ProgramRule[] | undefined
-): QuestionnaireSection {
-    const filteredProgramRules = programRules?.filter(
-        programRule => programRule.dataElementId === updatedQuestion.id
+    questionnaireRules: QuestionnaireRule[]
+): boolean => {
+    //Check of there are any rules applicable to the current updated question
+    //with hide section action
+    const applicableRules = questionnaireRules.filter(
+        rule =>
+            rule.dataElementId === updatedQuestion.id &&
+            rule.programRuleActions.filter(
+                action =>
+                    action.programRuleActionType === "HIDESECTION" &&
+                    action.programStageSection &&
+                    action.programStageSection.id === section.code
+            ).length > 0
     );
+    if (!applicableRules || applicableRules.length === 0) return section.isVisible;
 
-    if (!filteredProgramRules || filteredProgramRules.length === 0) return section;
-
-    filteredProgramRules.map(rule => {
-        rule.programRuleActions.map(action => {
-            switch (action.programRuleActionType) {
-                case "HIDESECTION": {
-                    //TO DO : do not update in place. Problem is the order needs to be maintained.
-                    if (section.code === action.programStageSection?.id)
-                        section.isVisible = !parseCondition(rule.condition, updatedQuestion);
-
-                    break;
-                }
-            }
+    const updatedSectionVisibility = applicableRules.flatMap(rule => {
+        return rule.programRuleActions.flatMap(action => {
+            if (action.programRuleActionType === "HIDESECTION") {
+                const hideSection = parseCondition(rule.condition, updatedQuestion);
+                return !hideSection;
+            } else return section.isVisible;
         });
     });
-    return section;
-}
+    return updatedSectionVisibility.every(Boolean);
+};
 
 const parseCondition = (condition: string, updatedQuestion: Question): boolean => {
     const regExLogicOperators = new RegExp("[&|]{2}", "g");
@@ -293,55 +250,10 @@ const parseCondition = (condition: string, updatedQuestion: Question): boolean =
     const conditionArray = condition.split(regExLogicOperators);
     const operatorsOrder = condition.match(regExLogicOperators);
 
-    const values: boolean[] = [];
-    conditionArray.map(condition => {
-        //If the condition is one of the d2Functions, handle them
+    const values: boolean[] = conditionArray.map(condition => {
+        //TO DO : If the condition is one of the d2Functions, handle them
         if (D2_FUNCTIONS.some(d2Function => condition.includes(d2Function))) {
-            switch (true) {
-                case condition.includes("!d2:hasValue"): {
-                    const leftOperand =
-                        updatedQuestion.type === "select"
-                            ? updatedQuestion.value?.code
-                            : updatedQuestion.value;
-                    if (
-                        leftOperand === undefined ||
-                        (updatedQuestion.type === "select" && leftOperand === "")
-                    ) {
-                        console.debug(true);
-                        values.push(true);
-                    }
-
-                    break;
-                }
-
-                case condition.includes("d2:hasValue"): {
-                    const leftOperand =
-                        updatedQuestion.type === "select"
-                            ? updatedQuestion.value?.code
-                            : updatedQuestion.value;
-                    if (
-                        leftOperand !== undefined ||
-                        (updatedQuestion.type === "select" && leftOperand !== "")
-                    ) {
-                        console.debug(true);
-                        values.push(true);
-                    }
-
-                    break;
-                }
-
-                case condition.includes("d2:daysBetween"): {
-                    // "TO DO: handle
-                    values.push(false);
-                    break;
-                }
-
-                case condition.includes("d2:yearsBetween"): {
-                    // "TO DO: handle
-                    values.push(false);
-                    break;
-                }
-            }
+            return false;
         } else {
             const operatorArr = D2_OPERATORS.filter(d2Operator => condition.includes(d2Operator));
 
@@ -374,37 +286,28 @@ const parseCondition = (condition: string, updatedQuestion: Question): boolean =
                         : false
                     : rightOperandStr;
 
-            if (updatedQuestion.type !== "boolean") {
-                //If not boolean, means the option in the questionnaire is not filled, so condition is always false
-                if (leftOperand === undefined) {
-                    values.push(false);
-                }
-            }
-
             switch (operator) {
                 case "!=": {
-                    values.push(leftOperand !== rightOperand);
-                    break;
+                    return leftOperand !== rightOperand;
                 }
                 case "==": {
-                    values.push(leftOperand === rightOperand);
-                    break;
+                    return leftOperand === rightOperand;
                 }
                 case ">": {
-                    if (leftOperand) values.push(leftOperand > rightOperand);
-                    break;
+                    if (leftOperand) return leftOperand > rightOperand;
+                    else return false;
                 }
                 case ">=": {
-                    if (leftOperand) values.push(leftOperand >= rightOperand);
-                    break;
+                    if (leftOperand) return leftOperand >= rightOperand;
+                    else return false;
                 }
                 case "<": {
-                    if (leftOperand) values.push(leftOperand < rightOperand);
-                    break;
+                    if (leftOperand) return leftOperand < rightOperand;
+                    else return false;
                 }
                 case "<=": {
-                    if (leftOperand) values.push(leftOperand <= rightOperand);
-                    break;
+                    if (leftOperand) return leftOperand <= rightOperand;
+                    else return false;
                 }
                 default:
                     throw new Error(`Operator ${operator} not handled`);
@@ -422,13 +325,6 @@ const parseCondition = (condition: string, updatedQuestion: Question): boolean =
         throw new Error("Program Rule could not be evaluated");
     }
 };
-
-// const isQuestionOptionValue = (
-//     value: string | boolean | QuestionOption | Date | undefined
-// ): value is QuestionOption => {
-//     return (value as QuestionOption)?.code !== undefined;
-// };
-
 export class QuestionnaireQuestionM {
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;

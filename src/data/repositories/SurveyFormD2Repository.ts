@@ -9,6 +9,7 @@ import {
     Question,
     Questionnaire,
     QuestionnaireEntity,
+    QuestionnaireRule,
     QuestionnaireSection,
     QuestionnaireStage,
     SelectQuestion,
@@ -27,7 +28,6 @@ import {
     ProgramStageSection,
     TrackedEntityAttibute,
     ProgramStage,
-    ProgramRule,
     D2ProgramRuleVariable,
     D2ProgramRule,
     D2ProgramRuleAction,
@@ -317,7 +317,7 @@ export class SurveyD2Repository implements SurveyRepository {
             ? trackedEntity?.orgUnit ?? ""
             : event?.orgUnit ?? "";
 
-        const progRules: ProgramRule[] = this.getProgramRules(
+        const questionnaireRules: QuestionnaireRule[] = this.getProgramRules(
             programRules,
             programRuleVariables,
             programRuleActions
@@ -331,14 +331,13 @@ export class SurveyD2Repository implements SurveyRepository {
             year: "",
             isCompleted: false,
             isMandatory: false,
-            rules: [],
             stages: stages.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true })),
             subLevelDetails: {
                 enrollmentId: trackedEntity
                     ? trackedEntity.enrollments?.at(0)?.enrollment ?? ""
                     : "",
             },
-            programRules: progRules,
+            rules: questionnaireRules,
         };
 
         if (trackedEntityAttributes) {
@@ -1042,7 +1041,7 @@ export class SurveyD2Repository implements SurveyRepository {
         programRulesResponse: D2ProgramRule[] | undefined,
         programRuleVariables: D2ProgramRuleVariable[] | undefined,
         programRuleActionsResponse: D2ProgramRuleAction[] | undefined
-    ): ProgramRule[] {
+    ): QuestionnaireRule[] {
         return (
             programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
                 const programRuleVariableName = condition.substring(
