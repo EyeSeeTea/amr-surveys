@@ -19,20 +19,7 @@ import { Id, Ref } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import {
-    ProgramDataElement,
-    ProgramMetadata,
-    ImportStrategy,
-    Option,
-    Program,
-    ProgramStageSection,
-    TrackedEntityAttibute,
-    ProgramStage,
-    D2ProgramRuleVariable,
-    D2ProgramRule,
-    D2ProgramRuleAction,
-    ProgramCountMap,
-} from "../../domain/entities/Program";
+import { ImportStrategy, ProgramCountMap } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 import {
@@ -77,6 +64,18 @@ import {
     PREVELANCE_SURVEY_NAME_DATAELEMENT_ID,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
+import {
+    D2ProgramRule,
+    D2ProgramRuleAction,
+    D2ProgramRuleVariable,
+    Option,
+    Program,
+    ProgramDataElement,
+    ProgramMetadata,
+    ProgramStage,
+    ProgramStageSection,
+    TrackedEntityAttibute,
+} from "../entities/D2Program";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}

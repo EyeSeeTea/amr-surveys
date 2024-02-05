@@ -1,7 +1,7 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
 import { Id, NamedRef, Ref } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
-import { D2ProgramRuleAction } from "./Program";
+import { D2ProgramRuleAction } from "../../data/entities/D2Program";
 
 export type Code = string;
 export interface QuestionnaireBase {
@@ -143,17 +143,20 @@ export class QuestionnarieM {
 
             const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
                 return stage.sections.flatMap(section => {
-                    return section.questions.flatMap(question => question);
+                    return section.questions.map(question => question);
                 });
             });
 
-            allQsInQuestionnaire.forEach(question => {
-                questionnaire = this.updateQuestion(questionnaire, question);
-            });
+            const updatedQuestionnaire = allQsInQuestionnaire.reduce(
+                (questionnaireAcc, question) => {
+                    return this.updateQuestion(questionnaireAcc, question);
+                },
+                questionnaire
+            );
 
-            return questionnaire;
+            return updatedQuestionnaire;
         } catch (err) {
-            //An error occured qhile parsing rules, return questionnaire as is.
+            //An error occured while parsing rules, return questionnaire as is.
             console.debug(err);
             return questionnaire;
         }
