@@ -1,9 +1,22 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
 import { Id, NamedRef, Ref } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
-import { D2ProgramRuleAction } from "../../data/entities/D2Program";
 
 export type Code = string;
+
+type QuestionnaireRuleActionType =
+    | "DISPLAYTEXT"
+    | "DISPLAYKEYVALUEPAIR"
+    | "HIDEFIELD"
+    | "HIDESECTION"
+    | "ASSIGN"
+    | "SHOWWARNING"
+    | "SHOWERROR"
+    | "WARNINGONCOMPLETINON"
+    | "ERRORONCOMPLETION"
+    | "CREATEEVENT"
+    | "SETMANDATORYFIELD";
+
 export interface QuestionnaireBase {
     id: Id;
     name: string;
@@ -19,11 +32,27 @@ export interface QuestionnaireSelector {
     orgUnitId: Id;
     year: string;
 }
+
+export interface QuestionnaireRuleAction {
+    id: Id;
+    programRuleActionType: QuestionnaireRuleActionType;
+    dataElement?: {
+        id: Id | undefined; // to hide
+    };
+    data?: string; // to assign
+    programStageSection?: {
+        id: Id | undefined; // to hide/show
+    };
+    programStage?: {
+        id: Id | undefined; // to hide/show
+    };
+    content?: string; // message content to show
+}
 export interface QuestionnaireRule {
     id: Id;
     condition: string; // eg: "${AMR-Sample 2} != 'NO'"
     dataElementId: Id; // from ProgramRuleVariable
-    programRuleActions: D2ProgramRuleAction[];
+    programRuleActions: QuestionnaireRuleAction[];
 }
 
 export interface Questionnaire extends QuestionnaireBase {

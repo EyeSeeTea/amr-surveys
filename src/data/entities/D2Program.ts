@@ -104,14 +104,14 @@ export interface D2ProgramRuleAction {
     id: Id;
     programRuleActionType: ProgramRuleActionType;
     dataElement?: {
-        id: Id | undefined; // to hide
+        id: Id | undefined;
     };
-    data?: string; // to assign
+    data?: string;
     programStageSection?: {
-        id: Id | undefined; // to hide/show
+        id: Id | undefined;
     };
     programStage?: {
-        id: Id | undefined; // to hide/show
+        id: Id | undefined;
     };
-    content?: string; // message content to show
+    content?: string;
 }
