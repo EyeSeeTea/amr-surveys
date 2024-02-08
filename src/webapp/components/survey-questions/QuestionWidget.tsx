@@ -14,6 +14,7 @@ import DatePickerWidget from "./widgets/DatePickerWidget";
 import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "./widgets/DropdownSelectWidget";
 import DateTimePickerWidget from "./widgets/DateTimePickerWidget";
+import SearchableSelect from "./widgets/SearchableSelect";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
@@ -28,10 +29,21 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
 
     switch (type) {
         case "select": {
-            if (question.options.length > 5) {
+            if (question.options.length > 5 && question.options.length < 10) {
                 return (
                     <DropdownSelectWidget
                         value={question.value?.id}
+                        options={question.options}
+                        onChange={(value: Maybe<QuestionOption>) =>
+                            onChange(update(question, value))
+                        }
+                        disabled={disabled}
+                    />
+                );
+            } else if (question.options.length > 10) {
+                return (
+                    <SearchableSelect
+                        value={question.options.find(op => op.id === question.value?.id) || null}
                         options={question.options}
                         onChange={(value: Maybe<QuestionOption>) =>
                             onChange(update(question, value))

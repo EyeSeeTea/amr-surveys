@@ -1,7 +1,6 @@
 import React from "react";
 // @ts-ignore
 import { Button } from "@dhis2/ui";
-
 import { BaseWidgetProps } from "./BaseWidget";
 import { makeStyles, MenuItem, Select } from "@material-ui/core";
 import { Maybe } from "../../../../utils/ts-utils";
