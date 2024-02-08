@@ -201,14 +201,25 @@ export class QuestionnarieM {
                     return {
                         ...section,
                         questions: section.questions.map(question => {
-                            return {
-                                ...question,
-                                isVisible: isQuestionVisible(
-                                    question,
-                                    updatedQuestion,
-                                    questionnaire.rules
-                                ),
-                            };
+                            if (question.id === updatedQuestion.id) {
+                                return {
+                                    ...updatedQuestion,
+                                    isVisible: isQuestionVisible(
+                                        question,
+                                        updatedQuestion,
+                                        questionnaire.rules
+                                    ),
+                                };
+                            } else {
+                                return {
+                                    ...question,
+                                    isVisible: isQuestionVisible(
+                                        question,
+                                        updatedQuestion,
+                                        questionnaire.rules
+                                    ),
+                                };
+                            }
                         }),
                         isVisible: isSectionVisible(section, updatedQuestion, questionnaire.rules),
                     };
