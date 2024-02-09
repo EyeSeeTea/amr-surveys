@@ -4,7 +4,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { Question } from "../../../domain/entities/Questionnaire";
+import { Question, QuestionnarieM } from "../../../domain/entities/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -72,29 +72,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     };
 
     const updateQuestion = (question: Question) => {
-        setQuestionnaire(questionnaire => {
-            const stageToBeUpdated = questionnaire?.stages.find(stage =>
-                stage.sections?.find(sec => sec.questions?.find(q => q.id === question?.id))
-            );
-            if (stageToBeUpdated) {
-                const sectionToBeUpdated = stageToBeUpdated.sections.find(section =>
-                    section.questions.find(q => q.id === question?.id)
-                );
-                if (sectionToBeUpdated) {
-                    const questionToBeUpdated = sectionToBeUpdated.questions.find(
-                        q => q.id === question.id
-                    );
-                    if (questionToBeUpdated) questionToBeUpdated.value = question.value;
-                }
-            } else {
-                //Stage not found, entity could be updated.
-                const questionToBeUpdated = questionnaire?.entity?.questions.find(
-                    q => q.id === question.id
-                );
-                if (questionToBeUpdated) questionToBeUpdated.value = question.value;
-            }
-            return questionnaire;
-        });
+        if (questionnaire) {
+            const updatedQuestionnaire = QuestionnarieM.updateQuestion(questionnaire, question);
+            setQuestionnaire(updatedQuestionnaire);
+        }
     };
 
     const onCancel = () => {
@@ -119,8 +100,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         questions={questionnaire.entity.questions}
                     />
                 )}
-
-                {questionnaire?.stages.map(stage => {
+                {questionnaire?.stages?.map(stage => {
                     if (!stage.isVisible) return null;
 
                     return (

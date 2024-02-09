@@ -9,6 +9,7 @@ import {
     Question,
     Questionnaire,
     QuestionnaireEntity,
+    QuestionnaireRule,
     QuestionnaireSection,
     QuestionnaireStage,
     SelectQuestion,
@@ -18,17 +19,7 @@ import { Id, Ref } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import {
-    ProgramDataElement,
-    ProgramMetadata,
-    ImportStrategy,
-    Option,
-    Program,
-    ProgramStageSection,
-    TrackedEntityAttibute,
-    ProgramStage,
-    ProgramCountMap,
-} from "../../domain/entities/Program";
+import { ImportStrategy, ProgramCountMap } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_STATUSES } from "../../domain/entities/Survey";
 import { DataValue } from "@eyeseetea/d2-api";
 import {
@@ -73,6 +64,18 @@ import {
     PREVELANCE_SURVEY_NAME_DATAELEMENT_ID,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
+import {
+    D2ProgramRule,
+    D2ProgramRuleAction,
+    D2ProgramRuleVariable,
+    Option,
+    Program,
+    ProgramDataElement,
+    ProgramMetadata,
+    ProgramStage,
+    ProgramStageSection,
+    TrackedEntityAttibute,
+} from "../entities/D2Program";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -85,12 +88,23 @@ export class SurveyD2Repository implements SurveyRepository {
         return apiToFuture(
             this.api.request<ProgramMetadata>({
                 method: "get",
-                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages`,
+                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
                 const programDataElements = resp.programStageDataElements.map(
                     psde => psde.dataElement
+                );
+
+                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
+                    de => {
+                        return {
+                            ...de,
+                            sortOrder: resp.programStageDataElements.find(
+                                psde => psde.dataElement.id === de.id
+                            )?.sortOrder,
+                        };
+                    }
                 );
 
                 //If event specified,populate the form
@@ -106,11 +120,14 @@ export class SurveyD2Repository implements SurveyRepository {
                                             undefined,
                                             trackedEntity,
                                             programDataElements,
-                                            resp.dataElements,
+                                            dataElementsWithSortOrder,
                                             resp.options,
                                             resp.programStages,
                                             resp.programStageSections,
-                                            resp.trackedEntityAttributes
+                                            resp.trackedEntityAttributes,
+                                            resp.programRules,
+                                            resp.programRuleVariables,
+                                            resp.programRuleActions
                                         )
                                     );
                                 } else {
@@ -129,11 +146,14 @@ export class SurveyD2Repository implements SurveyRepository {
                                         event,
                                         undefined,
                                         programDataElements,
-                                        resp.dataElements,
+                                        dataElementsWithSortOrder,
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
-                                        resp.trackedEntityAttributes
+                                        resp.trackedEntityAttributes,
+                                        resp.programRules,
+                                        resp.programRuleVariables,
+                                        resp.programRuleActions
                                     )
                                 );
                             } else {
@@ -150,11 +170,14 @@ export class SurveyD2Repository implements SurveyRepository {
                             undefined,
                             undefined,
                             programDataElements,
-                            resp.dataElements,
+                            dataElementsWithSortOrder,
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
-                            resp.trackedEntityAttributes
+                            resp.trackedEntityAttributes,
+                            resp.programRules,
+                            resp.programRuleVariables,
+                            resp.programRuleActions
                         )
                     );
                 }
@@ -173,7 +196,10 @@ export class SurveyD2Repository implements SurveyRepository {
         options: Option[],
         programStages?: ProgramStage[],
         programStageSections?: ProgramStageSection[],
-        trackedEntityAttributes?: TrackedEntityAttibute[]
+        trackedEntityAttributes?: TrackedEntityAttibute[],
+        programRules?: D2ProgramRule[],
+        programRuleVariables?: D2ProgramRuleVariable[],
+        programRuleActions?: D2ProgramRuleAction[]
     ): Questionnaire {
         //If the Program has sections, fetch and use programStageSections
         const sections: QuestionnaireSection[] = programStageSections
@@ -251,7 +277,9 @@ export class SurveyD2Repository implements SurveyRepository {
                       return {
                           title: stage.name,
                           code: stage.id,
-                          sections: processedSections,
+                          sections: _(processedSections)
+                              .sortBy(section => section.sortOrder)
+                              .value(),
                           isVisible: true,
                           instanceId: trackedEntity?.enrollments
                               ?.at(0)
@@ -262,7 +290,9 @@ export class SurveyD2Repository implements SurveyRepository {
                       return {
                           title: stage.name,
                           code: stage.id,
-                          sections: currentProgramStageSections,
+                          sections: _(currentProgramStageSections)
+                              .sortBy(section => section.sortOrder)
+                              .value(),
                           isVisible: true,
                           instanceId: trackedEntity?.enrollments
                               ?.at(0)
@@ -275,7 +305,9 @@ export class SurveyD2Repository implements SurveyRepository {
                   {
                       title: "STAGE",
                       code: "STAGE",
-                      sections: sections,
+                      sections: _(sections)
+                          .sortBy(section => section.sortOrder)
+                          .value(),
                       isVisible: true,
                   },
               ];
@@ -283,6 +315,12 @@ export class SurveyD2Repository implements SurveyRepository {
         const orgUnitId = isTrackerProgram(program.id)
             ? trackedEntity?.orgUnit ?? ""
             : event?.orgUnit ?? "";
+
+        const questionnaireRules: QuestionnaireRule[] = this.getProgramRules(
+            programRules,
+            programRuleVariables,
+            programRuleActions
+        );
 
         const form: Questionnaire = {
             id: program.id,
@@ -292,13 +330,13 @@ export class SurveyD2Repository implements SurveyRepository {
             year: "",
             isCompleted: false,
             isMandatory: false,
-            rules: [],
             stages: stages.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true })),
             subLevelDetails: {
                 enrollmentId: trackedEntity
                     ? trackedEntity.enrollments?.at(0)?.enrollment ?? ""
                     : "",
             },
+            rules: questionnaireRules,
         };
 
         if (trackedEntityAttributes) {
@@ -367,6 +405,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         curDataElement.id,
                         curDataElement.code,
                         curDataElement.formName,
+                        curDataElement.sortOrder,
                         options,
                         curDataElement.optionSet,
                         dataValue ?? ""
@@ -400,6 +439,7 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         )
             .compact()
+            .sortBy(q => q.sortOrder)
             .value();
 
         return { questions, sectionAddQuestion: sectionAddQuestion };
@@ -421,6 +461,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     attribute.id,
                     attribute.code,
                     attribute.formName,
+                    attribute.sortOrder,
                     options,
                     attribute.optionSet,
                     attributeValue?.value
@@ -440,6 +481,7 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         )
             .compact()
+            .sortBy(q => q.sortOrder)
             .value();
 
         return questions;
@@ -450,6 +492,7 @@ export class SurveyD2Repository implements SurveyRepository {
         id: Id,
         code: string,
         formName: string,
+        sortOrder: number | undefined,
         options: Option[],
         optionSet?: { id: string },
         dataValue?: string
@@ -464,6 +507,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     storeFalse: true,
                     value: dataValue ? (dataValue === "true" ? true : false) : true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return boolQ;
             }
@@ -476,6 +520,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     storeFalse: false,
                     value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return boolQ;
             }
@@ -490,6 +535,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     numberType: "INTEGER",
                     value: dataValue ? dataValue : "",
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return intQ;
             }
@@ -512,6 +558,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         options: selectOptions,
                         value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        sortOrder: sortOrder,
                     };
                     return selectQ;
                 } else {
@@ -523,6 +570,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         value: dataValue ? (dataValue as string) : "",
                         multiline: false,
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        sortOrder: sortOrder,
                     };
                     return singleLineText;
                 }
@@ -537,6 +585,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? (dataValue as string) : "",
                     multiline: true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return singleLineTextQ;
             }
@@ -549,6 +598,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "date",
                     value: dataValue ? new Date(dataValue as string) : new Date(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return dateQ;
             }
@@ -563,6 +613,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         ? new Date(dataValue as string).toISOString()
                         : new Date().toISOString(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    sortOrder: sortOrder,
                 };
                 return dateQ;
             }
@@ -984,6 +1035,56 @@ export class SurveyD2Repository implements SurveyRepository {
                 } else return Future.success("");
             })
             .flatMapError(_err => Future.success(""));
+    }
+    private getProgramRules(
+        programRulesResponse: D2ProgramRule[] | undefined,
+        programRuleVariables: D2ProgramRuleVariable[] | undefined,
+        programRuleActionsResponse: D2ProgramRuleAction[] | undefined
+    ): QuestionnaireRule[] {
+        return (
+            programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
+                const programRuleVariableName = condition.substring(
+                    condition.indexOf("{") + 1,
+                    condition.indexOf("}")
+                );
+
+                // dataElement associated with ProgramRuleVariable: the one to compare in the condition
+                const dataElementId =
+                    programRuleVariables?.find(
+                        programRuleVariable => programRuleVariable.name === programRuleVariableName
+                    )?.dataElement?.id || "";
+
+                const programRuleActionIds: string[] = actions.map(action => action.id);
+
+                const programRuleActions: D2ProgramRuleAction[] | undefined =
+                    programRuleActionsResponse
+                        ?.filter(programRuleAction =>
+                            programRuleActionIds.includes(programRuleAction.id)
+                        )
+                        .map(programRuleAction => {
+                            return {
+                                id: programRuleAction.id,
+                                programRuleActionType: programRuleAction.programRuleActionType,
+                                data: programRuleAction.data,
+                                dataElement: programRuleAction.dataElement,
+                                programStageSection: {
+                                    id: programRuleAction.programStageSection?.id,
+                                },
+                                programStage: {
+                                    id: programRuleAction.programStage?.id,
+                                },
+                                content: programRuleAction.content,
+                            };
+                        });
+
+                return {
+                    id: id,
+                    condition: condition,
+                    dataElementId: dataElementId || "",
+                    programRuleActions: programRuleActions || [],
+                };
+            }) || []
+        );
     }
 
     getSurveyChildCount(

@@ -1,8 +1,22 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
-import { Id, NamedRef, Ref, updateCollection } from "./Ref";
+import { Id, NamedRef, Ref } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
 
 export type Code = string;
+
+type QuestionnaireRuleActionType =
+    | "DISPLAYTEXT"
+    | "DISPLAYKEYVALUEPAIR"
+    | "HIDEFIELD"
+    | "HIDESECTION"
+    | "ASSIGN"
+    | "SHOWWARNING"
+    | "SHOWERROR"
+    | "WARNINGONCOMPLETINON"
+    | "ERRORONCOMPLETION"
+    | "CREATEEVENT"
+    | "SETMANDATORYFIELD";
+
 export interface QuestionnaireBase {
     id: Id;
     name: string;
@@ -11,7 +25,6 @@ export interface QuestionnaireBase {
     year: string;
     isCompleted: boolean;
     isMandatory: boolean;
-    rules: QuestionnaireRule[];
 }
 
 export interface QuestionnaireSelector {
@@ -20,12 +33,35 @@ export interface QuestionnaireSelector {
     year: string;
 }
 
+export interface QuestionnaireRuleAction {
+    id: Id;
+    programRuleActionType: QuestionnaireRuleActionType;
+    dataElement?: {
+        id: Id | undefined; // to hide
+    };
+    data?: string; // to assign
+    programStageSection?: {
+        id: Id | undefined; // to hide/show
+    };
+    programStage?: {
+        id: Id | undefined; // to hide/show
+    };
+    content?: string; // message content to show
+}
+export interface QuestionnaireRule {
+    id: Id;
+    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
+    dataElementId: Id; // from ProgramRuleVariable
+    programRuleActions: QuestionnaireRuleAction[];
+}
+
 export interface Questionnaire extends QuestionnaireBase {
     stages: QuestionnaireStage[];
     entity?: QuestionnaireEntity; //Equivalant to tracked entity instance of tracker program
     subLevelDetails?: {
         enrollmentId: Id;
     };
+    rules: QuestionnaireRule[];
 }
 
 export interface QuestionnaireEntity {
@@ -68,6 +104,7 @@ export interface QuestionBase {
     text: string;
     disabled?: boolean;
     isVisible: boolean;
+    sortOrder: number | undefined;
 }
 
 export interface SelectQuestion extends QuestionBase {
@@ -114,34 +151,223 @@ export interface QuestionOption extends NamedRef {
     code?: string;
 }
 
-export type QuestionnaireRule = RuleToggleSectionsVisibility;
-
-interface RuleToggleSectionsVisibility {
-    type: "setSectionsVisibility";
-    dataElementCode: Code;
-    sectionCodes: Code[];
-}
+const D2_FUNCTIONS = ["!d2:hasValue", "d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
+const D2_OPERATORS = [
+    ">" as const,
+    ">=" as const,
+    "<" as const,
+    "<=" as const,
+    "==" as const,
+    "!=" as const,
+];
 
 export class QuestionnarieM {
     static setAsComplete(questionnarie: Questionnaire, value: boolean): Questionnaire {
         return { ...questionnarie, isCompleted: value };
     }
 
-    static updateQuestion(questionnaire: Questionnaire, questionUpdated: Question): Questionnaire {
+    static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
+        try {
+            if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
+
+            const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
+                return stage.sections.flatMap(section => {
+                    return section.questions.map(question => question);
+                });
+            });
+
+            const updatedQuestionnaire = allQsInQuestionnaire.reduce(
+                (questionnaireAcc, question) => {
+                    return this.updateQuestion(questionnaireAcc, question);
+                },
+                questionnaire
+            );
+
+            return updatedQuestionnaire;
+        } catch (err) {
+            //An error occured while parsing rules, return questionnaire as is.
+            console.debug(err);
+            return questionnaire;
+        }
+    }
+
+    static updateQuestion(questionnaire: Questionnaire, updatedQuestion: Question): Questionnaire {
+        console.debug(`processing question : ${updatedQuestion.id} - ${updatedQuestion.code}`);
         return {
             ...questionnaire,
-
             stages: questionnaire.stages.map(stage => ({
                 ...stage,
-                sections: stage.sections.map(section => ({
-                    ...section,
-                    questions: updateCollection(section.questions, questionUpdated),
-                })),
+                sections: stage.sections.map(section => {
+                    return {
+                        ...section,
+                        questions: section.questions.map(question => {
+                            if (question.id === updatedQuestion.id) {
+                                return {
+                                    ...updatedQuestion,
+                                    isVisible: isQuestionVisible(
+                                        question,
+                                        updatedQuestion,
+                                        questionnaire.rules
+                                    ),
+                                };
+                            } else {
+                                return {
+                                    ...question,
+                                    isVisible: isQuestionVisible(
+                                        question,
+                                        updatedQuestion,
+                                        questionnaire.rules
+                                    ),
+                                };
+                            }
+                        }),
+                        isVisible: isSectionVisible(section, updatedQuestion, questionnaire.rules),
+                    };
+                }),
             })),
         };
     }
 }
 
+const isQuestionVisible = (
+    question: Question,
+    updatedQuestion: Question,
+    questionnaireRules: QuestionnaireRule[]
+): boolean => {
+    const applicableRules = questionnaireRules.filter(
+        rule =>
+            rule.dataElementId === updatedQuestion.id &&
+            rule.programRuleActions.filter(
+                action =>
+                    action.programRuleActionType === "HIDEFIELD" &&
+                    action.dataElement &&
+                    action.dataElement.id === question.id
+            ).length > 0
+    );
+    if (!applicableRules || applicableRules.length === 0) return question.isVisible;
+
+    const updatedQuestionVisibility = applicableRules.flatMap(rule => {
+        return rule.programRuleActions.flatMap(action => {
+            if (action.programRuleActionType === "HIDEFIELD") {
+                const hideSection = parseCondition(rule.condition, updatedQuestion);
+                return !hideSection;
+            } else return question.isVisible;
+        });
+    });
+    return updatedQuestionVisibility.every(Boolean);
+};
+
+const isSectionVisible = (
+    section: QuestionnaireSection,
+    updatedQuestion: Question,
+    questionnaireRules: QuestionnaireRule[]
+): boolean => {
+    //Check of there are any rules applicable to the current updated question
+    //with hide section action
+    const applicableRules = questionnaireRules.filter(
+        rule =>
+            rule.dataElementId === updatedQuestion.id &&
+            rule.programRuleActions.filter(
+                action =>
+                    action.programRuleActionType === "HIDESECTION" &&
+                    action.programStageSection &&
+                    action.programStageSection.id === section.code
+            ).length > 0
+    );
+    if (!applicableRules || applicableRules.length === 0) return section.isVisible;
+
+    const updatedSectionVisibility = applicableRules.flatMap(rule => {
+        return rule.programRuleActions.flatMap(action => {
+            if (action.programRuleActionType === "HIDESECTION") {
+                const hideSection = parseCondition(rule.condition, updatedQuestion);
+                return !hideSection;
+            } else return section.isVisible;
+        });
+    });
+    return updatedSectionVisibility.every(Boolean);
+};
+
+const parseCondition = (condition: string, updatedQuestion: Question): boolean => {
+    const regExLogicOperators = new RegExp("[&|]{2}", "g");
+
+    const conditionArray = condition.split(regExLogicOperators);
+    const operatorsOrder = condition.match(regExLogicOperators);
+
+    const values: boolean[] = conditionArray.map(condition => {
+        //TO DO : If the condition is one of the d2Functions, handle them
+        if (D2_FUNCTIONS.some(d2Function => condition.includes(d2Function))) {
+            return false;
+        } else {
+            const operatorArr = D2_OPERATORS.filter(d2Operator => condition.includes(d2Operator));
+
+            const operator = operatorArr.at(operatorArr.length - 1);
+
+            if (!operator || !D2_OPERATORS.includes(operator))
+                throw new Error(`Operator ${operator} is either undefined or not handled`);
+
+            const leftOperand =
+                updatedQuestion.type === "select"
+                    ? updatedQuestion.value?.code
+                    : updatedQuestion.type === "boolean"
+                    ? // Handle left operand boolean undefined, which means it's not filled, so false
+                      updatedQuestion.value === undefined
+                        ? false
+                        : updatedQuestion.value
+                    : updatedQuestion.value;
+
+            const rightOperandStr = condition
+                .substring(condition.indexOf(operator))
+                .replace(operator, "")
+                .replaceAll("'", "")
+                .trim();
+
+            // Handle right operands boolean values of "1" and "0" for true and false
+            const rightOperand: string | boolean =
+                updatedQuestion.type === "boolean"
+                    ? rightOperandStr === "1"
+                        ? true
+                        : false
+                    : rightOperandStr;
+
+            switch (operator) {
+                case "!=": {
+                    return leftOperand !== rightOperand;
+                }
+                case "==": {
+                    return leftOperand === rightOperand;
+                }
+                case ">": {
+                    if (leftOperand) return leftOperand > rightOperand;
+                    else return false;
+                }
+                case ">=": {
+                    if (leftOperand) return leftOperand >= rightOperand;
+                    else return false;
+                }
+                case "<": {
+                    if (leftOperand) return leftOperand < rightOperand;
+                    else return false;
+                }
+                case "<=": {
+                    if (leftOperand) return leftOperand <= rightOperand;
+                    else return false;
+                }
+                default:
+                    throw new Error(`Operator ${operator} not handled`);
+            }
+        }
+    });
+
+    //TO DO: handle multiple operations
+    const result: boolean | undefined =
+        operatorsOrder?.[0] === "&&" ? values.every(Boolean) : values.some(Boolean);
+
+    if (result !== undefined) {
+        return result;
+    } else {
+        throw new Error("Program Rule could not be evaluated");
+    }
+};
 export class QuestionnaireQuestionM {
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
