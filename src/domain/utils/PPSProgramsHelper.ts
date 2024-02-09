@@ -175,7 +175,7 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Ward";
         case "PPSPatientRegister":
             return "Patient";
-        //Prevelance module
+        //Prevalence module
         case "PrevalenceSurveyForm":
             return "Prevalence Survey";
         case "PrevalenceFacilityLevelForm":

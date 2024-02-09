@@ -61,7 +61,7 @@ import {
     PPS_SURVEY_FORM_ID,
     PREVALENCE_SURVEY_FORM_ID,
     SURVEY_NAME_DATAELEMENT_ID,
-    PREVELANCE_SURVEY_NAME_DATAELEMENT_ID,
+    PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
 import {
@@ -812,7 +812,7 @@ export class SurveyD2Repository implements SurveyRepository {
             : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
     }
 
-    //Currently tracker programs are only in Prevelance module
+    //Currently tracker programs are only in Prevalence module
     private getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
@@ -1028,7 +1028,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         return Future.success(ppsSurveyName ?? "");
                     } else {
                         const prevalenceSurveyName = survey.dataValues?.find(
-                            dv => dv.dataElement === PREVELANCE_SURVEY_NAME_DATAELEMENT_ID
+                            dv => dv.dataElement === PREVALENCE_SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
                         return Future.success(prevalenceSurveyName ?? "");
                     }
