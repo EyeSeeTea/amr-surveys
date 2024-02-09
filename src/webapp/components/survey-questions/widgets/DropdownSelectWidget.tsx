@@ -14,7 +14,7 @@ export interface SingleSelectWidgetProps extends BaseWidgetProps<Option> {
 type Option = { id: string; name: string };
 
 const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
-    const { onChange: onValueChange, value, options } = props;
+    const { onChange: onValueChange, value, options, disabled } = props;
 
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
@@ -35,6 +35,7 @@ const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
             <Select
                 value={stateValue}
                 onChange={option => notifyChange(option.target.value as string)}
+                disabled={disabled}
             >
                 {options.map(option => (
                     <MenuItem key={option.id} value={option.id}>

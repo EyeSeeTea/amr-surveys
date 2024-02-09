@@ -11,7 +11,7 @@ export interface SearchableSelectProps extends BaseWidgetProps<Option> {
 type Option = { id: string; name: string };
 
 const SearchableSelect: React.FC<SearchableSelectProps> = props => {
-    const { onChange: onValueChange, value, options } = props;
+    const { onChange: onValueChange, value, options, disabled } = props;
 
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
@@ -34,6 +34,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = props => {
             options={options}
             sx={{ width: 300 }}
             renderInput={params => <TextField {...params} label="Select..." />}
+            disabled={disabled}
         />
     );
 };
