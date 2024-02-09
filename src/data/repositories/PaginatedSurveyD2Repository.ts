@@ -46,7 +46,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
               );
     }
 
-    //Currently tracker programs are only in Prevelance module
+    //Currently tracker programs are only in Prevalence module
     getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,

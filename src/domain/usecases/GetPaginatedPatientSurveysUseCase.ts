@@ -8,7 +8,7 @@ import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyReposi
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
 
-//This use case fetched only patient surveys for both Prevelance and PPS modules
+//This use case fetched only patient surveys for both Prevalence and PPS modules
 export class GetPaginatedPatientSurveysUseCase {
     constructor(
         private paginatedSurveyRepo: PaginatedSurveyRepository,

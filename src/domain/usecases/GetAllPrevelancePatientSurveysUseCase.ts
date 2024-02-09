@@ -13,7 +13,7 @@ import {
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 
-export class GetAllPrevelancePatientSurveysUseCase {
+export class GetAllPrevalencePatientSurveysUseCase {
     constructor(private paginatedSurveyRepo: PaginatedSurveyRepository) {}
 
     public execute(

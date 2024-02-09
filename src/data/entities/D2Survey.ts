@@ -21,7 +21,7 @@ export const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 export const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
 export const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
 export const SURVEY_PATIENT_ID_DATAELEMENT_ID = "eKUbBRlR684";
-//Prevalance Program Ids
+//Prevalence Program Ids
 
 export const PREVALENCE_SURVEY_FORM_ID = "WcSw803XiUk";
 export const PREVALENCE_FACILITY_LEVEL_FORM_ID = "m404pwBZ4YT";
@@ -41,16 +41,16 @@ export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL = "mcY57Zn7FFl";
 export const AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF = "tlRPoWumrSa";
 
 export const PREVALENCE_START_DATE_DATAELEMENT_ID = "xlvLBmg9Mkg";
-export const PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID = "xiFcLr23IbW";
-export const PREVELANCE_SURVEY_NAME_DATAELEMENT_ID = "HXnhZ8rsDts";
-///Prevelance Tracked Entity Attribute types
+export const PREVALENCE_SURVEY_COMPLETED_DATAELEMENT_ID = "xiFcLr23IbW";
+export const PREVALENCE_SURVEY_NAME_DATAELEMENT_ID = "HXnhZ8rsDts";
+///Prevalence Tracked Entity Attribute types
 
-export const PREVALANCE_FACILITY_LEVEL_TET = "eY4BDBKXegX";
-export const PREVALANCE_CASE_REPORT_TET = "hyR1eTHLX8B";
-export const PREVALANCE_SAMPLE_SHIPMENT_TET = "ukqXKDH1cqP";
-export const PREVALANCE_CENTRAL_REF_LAB_TET = "yqa88gKCdV8";
-export const PREVALANCE_PATHOGEN_ISOLATES_TET = "aWIdBmjFWF0";
-export const PREVALANCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
+export const PREVALENCE_FACILITY_LEVEL_TET = "eY4BDBKXegX";
+export const PREVALENCE_CASE_REPORT_TET = "hyR1eTHLX8B";
+export const PREVALENCE_SAMPLE_SHIPMENT_TET = "ukqXKDH1cqP";
+export const PREVALENCE_CENTRAL_REF_LAB_TET = "yqa88gKCdV8";
+export const PREVALENCE_PATHOGEN_ISOLATES_TET = "aWIdBmjFWF0";
+export const PREVALENCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
 //Data Elements to hide
 export const hiddenFields = ["Add new antibiotic"];
 //To do : Move to datastore?
@@ -80,7 +80,7 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
     { key: "surveyType", dataElements: [SURVEY_TYPE_DATAELEMENT_ID] },
     {
         key: "surveyCompleted",
-        dataElements: [SURVEY_COMPLETED_DATAELEMENT_ID, PREVELANCE_SURVEY_COMPLETED_DATAELEMENT_ID],
+        dataElements: [SURVEY_COMPLETED_DATAELEMENT_ID, PREVALENCE_SURVEY_COMPLETED_DATAELEMENT_ID],
     },
     {
         key: "parentPPSSurveyId",
@@ -92,7 +92,7 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
     },
     {
         key: "surveyName",
-        dataElements: [SURVEY_NAME_DATAELEMENT_ID, PREVELANCE_SURVEY_NAME_DATAELEMENT_ID],
+        dataElements: [SURVEY_NAME_DATAELEMENT_ID, PREVALENCE_SURVEY_NAME_DATAELEMENT_ID],
     },
     { key: "hospitalCode", dataElements: [SURVEY_HOSPITAL_CODE_DATAELEMENT_ID] },
     { key: "wardCode", dataElements: [SURVEY_WARD_CODE_DATAELEMENT_ID] },

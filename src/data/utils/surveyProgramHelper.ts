@@ -11,12 +11,12 @@ import {
     PPS_PATIENT_REGISTER_ID,
     PPS_SURVEY_FORM_ID,
     PPS_WARD_REGISTER_ID,
-    PREVALANCE_CASE_REPORT_TET,
-    PREVALANCE_CENTRAL_REF_LAB_TET,
-    PREVALANCE_FACILITY_LEVEL_TET,
-    PREVALANCE_PATHOGEN_ISOLATES_TET,
-    PREVALANCE_SAMPLE_SHIPMENT_TET,
-    PREVALANCE_SUPRANATIONAL_TET,
+    PREVALENCE_CASE_REPORT_TET,
+    PREVALENCE_CENTRAL_REF_LAB_TET,
+    PREVALENCE_FACILITY_LEVEL_TET,
+    PREVALENCE_PATHOGEN_ISOLATES_TET,
+    PREVALENCE_SAMPLE_SHIPMENT_TET,
+    PREVALENCE_SUPRANATIONAL_TET,
     PREVALENCE_CASE_REPORT_FORM_ID,
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
@@ -46,17 +46,17 @@ export const isTrackerProgram = (programId: Id) => {
 export const getTrackedEntityAttributeType = (programId: Id) => {
     switch (programId) {
         case PREVALENCE_CASE_REPORT_FORM_ID:
-            return PREVALANCE_CASE_REPORT_TET;
+            return PREVALENCE_CASE_REPORT_TET;
         case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
-            return PREVALANCE_SAMPLE_SHIPMENT_TET;
+            return PREVALENCE_SAMPLE_SHIPMENT_TET;
         case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
-            return PREVALANCE_CENTRAL_REF_LAB_TET;
+            return PREVALENCE_CENTRAL_REF_LAB_TET;
         case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
-            return PREVALANCE_PATHOGEN_ISOLATES_TET;
+            return PREVALENCE_PATHOGEN_ISOLATES_TET;
         case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
-            return PREVALANCE_SUPRANATIONAL_TET;
+            return PREVALENCE_SUPRANATIONAL_TET;
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
-            return PREVALANCE_FACILITY_LEVEL_TET;
+            return PREVALENCE_FACILITY_LEVEL_TET;
 
         default:
             return "";
@@ -146,7 +146,7 @@ export const getChildProgramId = (programId: Id): Id | Id[] => {
     }
 };
 
-export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Prevelance" => {
+export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Prevalence" => {
     switch (surveyFormType) {
         case "PPSSurveyForm":
         case "PPSCountryQuestionnaire":
@@ -162,6 +162,6 @@ export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Preve
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSupranationalRefLabForm":
         default:
-            return "Prevelance";
+            return "Prevalence";
     }
 };
