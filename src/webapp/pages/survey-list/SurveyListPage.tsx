@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyList } from "../../components/survey-list/SurveyList";
@@ -9,16 +9,41 @@ import { useCurrentModule } from "../../contexts/current-module-context";
 
 export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
-    const { resetCurrentPPSSurveyForm, resetCurrentPrevalenceSurveyForm } = useCurrentSurveys();
+    const {
+        currentPPSSurveyForm,
+        currentCountryQuestionnaire,
+        currentHospitalForm,
+        currentWardRegister,
+        resetCurrentPPSSurveyForm,
+        resetCurrentPrevalenceSurveyForm,
+    } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
+    const history = useHistory();
 
     //reset all current survey context when root form of either module is listed.
     useEffect(() => {
         if (formType === "PPSSurveyForm" || formType === "PrevalenceSurveyForm") {
             resetCurrentPPSSurveyForm();
             resetCurrentPrevalenceSurveyForm();
+        } else if (
+            (formType === "PPSCountryQuestionnaire" && !currentPPSSurveyForm) ||
+            (formType === "PPSHospitalForm" && !currentCountryQuestionnaire) ||
+            (formType === "PPSWardRegister" && !currentHospitalForm) ||
+            (formType === "PPSPatientRegister" && !currentWardRegister)
+        ) {
+            //Redirecting to home page as no currentPPSSurveyForm is available.
+            history.push("/");
         }
-    }, [formType, resetCurrentPPSSurveyForm, resetCurrentPrevalenceSurveyForm]);
+    }, [
+        formType,
+        resetCurrentPPSSurveyForm,
+        resetCurrentPrevalenceSurveyForm,
+        currentPPSSurveyForm,
+        currentCountryQuestionnaire,
+        currentHospitalForm,
+        currentWardRegister,
+        history,
+    ]);
 
     return (
         <ContentWrapper>

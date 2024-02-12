@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
+import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
 
 const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
@@ -65,14 +66,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         const orgUnitId = getOrgUnitByFormType();
 
         //Only Patient Forms are paginated.
-        if (
-            surveyFormType === "PPSPatientRegister" ||
-            surveyFormType === "PrevalenceCaseReportForm" ||
-            surveyFormType === "PrevalenceCentralRefLabForm" ||
-            surveyFormType === "PrevalencePathogenIsolatesLog" ||
-            surveyFormType === "PrevalenceSampleShipTrackForm" ||
-            surveyFormType === "PrevalenceSupranationalRefLabForm"
-        ) {
+        if (isPaginatedSurveyList(surveyFormType)) {
             compositionRoot.surveys.getPaginatedSurveys
                 .execute(
                     surveyFormType,
@@ -131,5 +125,6 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         pageSize,
         setPageSize,
         total,
+        setTotal,
     };
 }
