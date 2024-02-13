@@ -1,7 +1,6 @@
 import React from "react";
 // @ts-ignore
 import { Button } from "@dhis2/ui";
-
 import { BaseWidgetProps } from "./BaseWidget";
 import { makeStyles, MenuItem, Select } from "@material-ui/core";
 import { Maybe } from "../../../../utils/ts-utils";
@@ -15,7 +14,7 @@ export interface SingleSelectWidgetProps extends BaseWidgetProps<Option> {
 type Option = { id: string; name: string };
 
 const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
-    const { onChange: onValueChange, value, options } = props;
+    const { onChange: onValueChange, value, options, disabled } = props;
 
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
@@ -36,6 +35,7 @@ const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
             <Select
                 value={stateValue}
                 onChange={option => notifyChange(option.target.value as string)}
+                disabled={disabled}
             >
                 {options.map(option => (
                     <MenuItem key={option.id} value={option.id}>
