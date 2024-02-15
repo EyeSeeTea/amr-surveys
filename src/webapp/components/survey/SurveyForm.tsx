@@ -13,6 +13,7 @@ import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
+import { useHistory } from "react-router-dom";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -33,6 +34,7 @@ const CancelButton = withStyles(() => ({
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
+    const history = useHistory();
 
     const {
         questionnaire,
@@ -61,7 +63,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             snackbar.error(saveCompleteState.message);
             if (props.hideForm) props.hideForm();
         }
-    }, [error, saveCompleteState, snackbar, props]);
+
+        //If error fetching survey, redirect to homepage.
+        if (error) {
+            history.push(`/`);
+        }
+    }, [error, saveCompleteState, snackbar, history, props]);
 
     const saveSurveyForm = () => {
         setLoading(true);
