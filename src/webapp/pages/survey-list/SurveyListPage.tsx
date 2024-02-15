@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
@@ -11,38 +11,63 @@ export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
     const {
         currentPPSSurveyForm,
+        currentPrevalenceSurveyForm,
         currentCountryQuestionnaire,
         currentHospitalForm,
         currentWardRegister,
+        currentFacilityLevelForm,
+        currentCaseReportForm,
         resetCurrentPPSSurveyForm,
         resetCurrentPrevalenceSurveyForm,
     } = useCurrentSurveys();
+
     const { currentModule } = useCurrentModule();
     const history = useHistory();
+
+    const shouldRedirectToHome = useCallback(
+        (formType: SURVEY_FORM_TYPES): boolean => {
+            if (
+                (formType === "PPSCountryQuestionnaire" && !currentPPSSurveyForm) ||
+                (formType === "PPSHospitalForm" && !currentCountryQuestionnaire) ||
+                (formType === "PPSWardRegister" && !currentHospitalForm) ||
+                (formType === "PPSPatientRegister" && !currentWardRegister) ||
+                (formType === "PrevalenceFacilityLevelForm" && !currentPrevalenceSurveyForm) ||
+                (formType === "PrevalenceCaseReportForm" && !currentFacilityLevelForm) ||
+                ((formType === "PrevalenceCentralRefLabForm" ||
+                    formType === "PrevalencePathogenIsolatesLog" ||
+                    formType === "PrevalenceSampleShipTrackForm" ||
+                    formType === "PrevalenceSupranationalRefLabForm") &&
+                    !currentCaseReportForm)
+            )
+                return true;
+            else return false;
+        },
+        [
+            currentPPSSurveyForm,
+            currentPrevalenceSurveyForm,
+            currentCountryQuestionnaire,
+            currentHospitalForm,
+            currentWardRegister,
+            currentFacilityLevelForm,
+            currentCaseReportForm,
+        ]
+    );
 
     //reset all current survey context when root form of either module is listed.
     useEffect(() => {
         if (formType === "PPSSurveyForm" || formType === "PrevalenceSurveyForm") {
             resetCurrentPPSSurveyForm();
             resetCurrentPrevalenceSurveyForm();
-        } else if (
-            (formType === "PPSCountryQuestionnaire" && !currentPPSSurveyForm) ||
-            (formType === "PPSHospitalForm" && !currentCountryQuestionnaire) ||
-            (formType === "PPSWardRegister" && !currentHospitalForm) ||
-            (formType === "PPSPatientRegister" && !currentWardRegister)
-        ) {
-            //Redirecting to home page as no currentPPSSurveyForm is available.
+        } else if (shouldRedirectToHome(formType)) {
+            //Redirecting to home page.
             history.push("/");
         }
     }, [
         formType,
+        history,
         resetCurrentPPSSurveyForm,
         resetCurrentPrevalenceSurveyForm,
-        currentPPSSurveyForm,
-        currentCountryQuestionnaire,
-        currentHospitalForm,
-        currentWardRegister,
-        history,
+        shouldRedirectToHome,
     ]);
 
     return (

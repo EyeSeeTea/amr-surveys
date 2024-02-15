@@ -44,7 +44,6 @@ export const usePatientSearch = (
                     response => {
                         setSearchResultSurveys(response.objects);
                         setTotal(response.pager.total);
-                        // setPageSize(response.pager.pageSize);
                         setIsLoading(false);
                     },
                     () => {
