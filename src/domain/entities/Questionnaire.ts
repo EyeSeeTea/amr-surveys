@@ -1,6 +1,7 @@
 import { Maybe, assertUnreachable } from "../../utils/ts-utils";
 import { Id, NamedRef, Ref } from "./Ref";
 import _ from "../../domain/entities/generic/Collection";
+import { produce } from "immer";
 
 export type Code = string;
 
@@ -193,39 +194,63 @@ export class QuestionnarieM {
 
     static updateQuestion(questionnaire: Questionnaire, updatedQuestion: Question): Questionnaire {
         console.debug(`processing question : ${updatedQuestion.id} - ${updatedQuestion.code}`);
-        return {
-            ...questionnaire,
-            stages: questionnaire.stages.map(stage => ({
-                ...stage,
-                sections: stage.sections.map(section => {
-                    return {
-                        ...section,
-                        questions: section.questions.map(question => {
-                            if (question.id === updatedQuestion.id) {
-                                return {
-                                    ...updatedQuestion,
-                                    isVisible: isQuestionVisible(
-                                        question,
-                                        updatedQuestion,
-                                        questionnaire.rules
-                                    ),
-                                };
-                            } else {
-                                return {
-                                    ...question,
-                                    isVisible: isQuestionVisible(
-                                        question,
-                                        updatedQuestion,
-                                        questionnaire.rules
-                                    ),
-                                };
-                            }
-                        }),
-                        isVisible: isSectionVisible(section, updatedQuestion, questionnaire.rules),
-                    };
-                }),
-            })),
-        };
+
+        // return {
+        //     ...questionnaire,
+        //     stages: questionnaire.stages.map(stage => ({
+        //         ...stage,
+        //         sections: stage.sections.map(section => {
+        //             return {
+        //                 ...section,
+        //                 questions: section.questions.map(question => {
+        //                     if (question.id === updatedQuestion.id) {
+        //                         return {
+        //                             ...updatedQuestion,
+        //                             isVisible: isQuestionVisible(
+        //                                 question,
+        //                                 updatedQuestion,
+        //                                 questionnaire.rules
+        //                             ),
+        //                         };
+        //                     } else {
+        //                         return {
+        //                             ...question,
+        //                             isVisible: isQuestionVisible(
+        //                                 question,
+        //                                 updatedQuestion,
+        //                                 questionnaire.rules
+        //                             ),
+        //                         };
+        //                     }
+        //                 }),
+        //                 isVisible: isSectionVisible(section, updatedQuestion, questionnaire.rules),
+        //             };
+        //         }),
+        //     })),
+        // };
+
+        return produce(questionnaire, draft => {
+            draft.stages.forEach(stage => {
+                stage.sections.forEach(section => {
+                    section.questions.forEach(question => {
+                        const currentQuestionVisibility = isQuestionVisible(
+                            question,
+                            updatedQuestion,
+                            questionnaire.rules
+                        );
+                        if (question.id === updatedQuestion.id) {
+                            question.isVisible = currentQuestionVisibility;
+                            question.value = updatedQuestion.value;
+                        } else question.isVisible = currentQuestionVisibility;
+                    });
+                    section.isVisible = isSectionVisible(
+                        section,
+                        updatedQuestion,
+                        questionnaire.rules
+                    );
+                });
+            });
+        });
     }
 }
 

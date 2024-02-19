@@ -5,6 +5,7 @@ import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
+import { produce } from "immer";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -22,42 +23,67 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [error, setError] = useState<string>();
 
     const addNew = (prevSection: QuestionnaireSection) => {
+        // setQuestionnaire(prevQuestionnaire => {
+        //     if (prevQuestionnaire) {
+        //         const stageToUpdate = prevQuestionnaire?.stages.find(
+        //             stage => stage.code === prevSection.stageId
+        //         );
+        //         const sectionToUpdate = stageToUpdate?.sections.find(
+        //             section => section.sortOrder === prevSection.sortOrder + 1
+        //         );
+        //         return {
+        //             ...prevQuestionnaire,
+        //             stages: prevQuestionnaire.stages.map(stage => {
+        //                 if (stage.code !== stageToUpdate?.code) return stage;
+        //                 else {
+        //                     return {
+        //                         ...stage,
+        //                         sections: stage.sections.map(section => {
+        //                             if (section.code !== sectionToUpdate?.code) return section;
+        //                             else {
+        //                                 return {
+        //                                     ...section,
+        //                                     isVisible: true,
+        //                                     questions: section.questions.map(q => {
+        //                                         if (
+        //                                             q.id === section.showAddQuestion &&
+        //                                             q.type === "boolean"
+        //                                         ) {
+        //                                             return {
+        //                                                 ...q,
+        //                                                 value: true,
+        //                                             };
+        //                                         } else return q;
+        //                                     }),
+        //                                 };
+        //                             }
+        //                         }),
+        //                     };
+        //                 }
+        //             }),
+        //         };
+        //     }
+        // });
+
         setQuestionnaire(prevQuestionnaire => {
             if (prevQuestionnaire) {
-                const stageToUpdate = prevQuestionnaire?.stages.find(
-                    stage => stage.code === prevSection.stageId
-                );
+                return produce(prevQuestionnaire, draft => {
+                    const stageToUpdate = draft.stages.find(
+                        stage => stage.code === prevSection.stageId
+                    );
+                    const sectionToUpdate = stageToUpdate?.sections.find(
+                        section => section.sortOrder === prevSection.sortOrder + 1
+                    );
 
-                const sectionToUpdate = stageToUpdate?.sections.find(
-                    section => section.sortOrder === prevSection.sortOrder + 1
-                );
-
-                return {
-                    ...prevQuestionnaire,
-                    stages: prevQuestionnaire.stages.map(stage => {
-                        if (stage.code !== stageToUpdate?.code) return stage;
-                        else {
-                            return {
-                                ...stage,
-                                sections: stage.sections.map(section => {
-                                    if (section.code !== sectionToUpdate?.code) return section;
-                                    else {
-                                        return {
-                                            ...section,
-                                            isVisible: true,
-                                            questions: section.questions.map(q => {
-                                                if (q.id === section.showAddQuestion) {
-                                                    q.value = true;
-                                                    return q;
-                                                } else return q;
-                                            }),
-                                        };
-                                    }
-                                }),
-                            };
-                        }
-                    }),
-                };
+                    if (stageToUpdate && sectionToUpdate) {
+                        sectionToUpdate.isVisible = true;
+                        sectionToUpdate.questions.forEach(q => {
+                            if (q.id === sectionToUpdate.showAddQuestion) {
+                                q.value = true;
+                            }
+                        });
+                    }
+                });
             }
         });
     };

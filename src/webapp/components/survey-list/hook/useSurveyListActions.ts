@@ -2,12 +2,7 @@ import { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Id } from "../../../../domain/entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
-import {
-    getChildSurveyType,
-    getFormTypeFromOption,
-    getSurveyOptions,
-    PREVALENCE_PATIENT_OPTIONS,
-} from "../../../../domain/utils/PPSProgramsHelper";
+import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
@@ -182,21 +177,6 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
     };
 
-    const handleSplitButtonClick = (
-        option:
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[0]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[1]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[2]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[3]
-            | (typeof PREVALENCE_PATIENT_OPTIONS)[4]
-    ) => {
-        const formType = getFormTypeFromOption(option);
-        if (formType)
-            history.push({
-                pathname: `/new-survey/${formType}`,
-            });
-    };
-
     return {
         options,
         sortedSurveys,
@@ -207,6 +187,5 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         listChildren,
         actionClick,
         sortByColumn,
-        handleSplitButtonClick,
     };
 }

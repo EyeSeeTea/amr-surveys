@@ -16,7 +16,7 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
         switch (formType) {
             case "PPSWardRegister":
             case "PPSPatientRegister":
-                return (orgUnitId = currentHospitalForm?.orgUnitId ?? "");
+                return currentHospitalForm?.orgUnitId ?? "";
             case "PrevalenceCaseReportForm":
             case "PrevalenceSampleShipTrackForm":
             case "PrevalenceCentralRefLabForm":
