@@ -8,7 +8,11 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
+import {
+    getSurveyDisplayName,
+    hideCreateNewButton,
+    isPaginatedSurveyList,
+} from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
@@ -17,7 +21,7 @@ import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
-import { usePatientSurveyFilters } from "./hook/usePatientSurveyFilters";
+import { usePatientSearch } from "./hook/usePatientSearch";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -38,7 +42,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         page,
         setPage,
         pageSize,
+        setPageSize,
         total,
+        setTotal,
         setRefreshSurveys,
     } = useSurveys(surveyFormType);
 
@@ -50,8 +56,13 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         filteredSurveys,
     } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
 
-    const { surveyList, patientFilterKeyword, setPatientFilterKeyword, handleKeyPress, isLoading } =
-        usePatientSurveyFilters(filteredSurveys, surveyFormType);
+    const {
+        searchResultSurveys,
+        patientSearchKeyword,
+        setPatientSearchKeyword,
+        handleKeyPress,
+        isLoading,
+    } = usePatientSearch(filteredSurveys, surveyFormType, setPageSize, setTotal);
 
     return (
         <ContentWrapper>
@@ -72,8 +83,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                                     <TextField
                                         label={i18n.t("Search Patient")}
                                         helperText={i18n.t("Filter by patient id or code")}
-                                        value={patientFilterKeyword}
-                                        onChange={e => setPatientFilterKeyword(e.target.value)}
+                                        value={patientSearchKeyword}
+                                        onChange={e => setPatientSearchKeyword(e.target.value)}
                                         onKeyDown={handleKeyPress}
                                     />
                                 )}
@@ -104,14 +115,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         />
                     )}
 
-                    {surveyFormType === "PPSPatientRegister" ||
-                    surveyFormType === "PrevalenceCaseReportForm" ||
-                    surveyFormType === "PrevalenceCentralRefLabForm" ||
-                    surveyFormType === "PrevalencePathogenIsolatesLog" ||
-                    surveyFormType === "PrevalenceSampleShipTrackForm" ||
-                    surveyFormType === "PrevalenceSupranationalRefLabForm" ? (
+                    {isPaginatedSurveyList(surveyFormType) ? (
                         <PaginatedSurveyListTable
-                            surveys={surveyList}
+                            surveys={searchResultSurveys}
                             surveyFormType={surveyFormType}
                             page={page}
                             setPage={setPage}

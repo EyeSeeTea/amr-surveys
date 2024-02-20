@@ -69,7 +69,15 @@ import {
 } from "../entities/D2Program";
 import { QuestionnaireSection } from "../../domain/entities/Questionnaire/QuestionnaireSection";
 import { QuestionnaireRule } from "../../domain/entities/Questionnaire/QuestionnaireRules";
-import { BooleanQuestion, DateQuestion, DateTimeQuestion, NumberQuestion, Question, SelectQuestion, TextQuestion } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    BooleanQuestion,
+    DateQuestion,
+    DateTimeQuestion,
+    NumberQuestion,
+    Question,
+    SelectQuestion,
+    TextQuestion,
+} from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
