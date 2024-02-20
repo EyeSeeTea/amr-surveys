@@ -16,9 +16,9 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Button } from "@material-ui/core";
 import styled from "styled-components";
-import { Question } from "../../../domain/entities/Questionnaire";
 import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
+import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 interface SurveySectionProps {
     title: string;

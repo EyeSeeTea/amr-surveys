@@ -1,5 +1,5 @@
 import { useAppContext } from "../../../contexts/app-context";
-import { Questionnaire } from "../../../../domain/entities/Questionnaire";
+import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { Id } from "../../../../domain/entities/Ref";
 import { useState } from "react";

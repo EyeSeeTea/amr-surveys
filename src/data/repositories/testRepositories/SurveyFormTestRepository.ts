@@ -1,7 +1,7 @@
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
-import { Questionnaire } from "../../../domain/entities/Questionnaire";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
 import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";

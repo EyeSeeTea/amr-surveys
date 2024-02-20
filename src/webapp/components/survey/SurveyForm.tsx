@@ -4,7 +4,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { Question, QuestionnarieM } from "../../../domain/entities/Questionnaire";
+import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -13,6 +13,7 @@ import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
+import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -73,7 +74,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.updateQuestion(questionnaire, question);
+            const updatedQuestionnaire = QuestionnarieM.updateQuestionnaire(
+                questionnaire,
+                question
+            );
             setQuestionnaire(updatedQuestionnaire);
         }
     };

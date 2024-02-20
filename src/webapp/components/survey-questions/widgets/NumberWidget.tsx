@@ -2,8 +2,12 @@ import React from "react";
 // @ts-ignore
 import { Input } from "@dhis2/ui";
 import { BaseWidgetProps } from "./BaseWidget";
-import { NumberQuestion, QuestionnaireQuestionM } from "../../../../domain/entities/Questionnaire";
+
 import { Maybe } from "../../../../utils/ts-utils";
+import {
+    NumberQuestion,
+    QuestionnaireQuestion,
+} from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface NumberWidgetProps extends BaseWidgetProps<string> {
     value: Maybe<string>;
@@ -44,6 +48,6 @@ const NumberWidget: React.FC<NumberWidgetProps> = props => {
     );
 };
 
-const { isValidNumberValue } = QuestionnaireQuestionM;
+const { isValidNumberValue } = QuestionnaireQuestion;
 
 export default React.memo(NumberWidget);

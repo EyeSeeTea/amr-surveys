@@ -2,19 +2,10 @@ import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
 import {
-    BooleanQuestion,
-    DateQuestion,
-    DateTimeQuestion,
-    NumberQuestion,
-    Question,
     Questionnaire,
     QuestionnaireEntity,
-    QuestionnaireRule,
-    QuestionnaireSection,
     QuestionnaireStage,
-    SelectQuestion,
-    TextQuestion,
-} from "../../domain/entities/Questionnaire";
+} from "../../domain/entities/Questionnaire/Questionnaire";
 import { Id, Ref } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -76,6 +67,9 @@ import {
     ProgramStageSection,
     TrackedEntityAttibute,
 } from "../entities/D2Program";
+import { QuestionnaireSection } from "../../domain/entities/Questionnaire/QuestionnaireSection";
+import { QuestionnaireRule } from "../../domain/entities/Questionnaire/QuestionnaireRules";
+import { BooleanQuestion, DateQuestion, DateTimeQuestion, NumberQuestion, Question, SelectQuestion, TextQuestion } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}

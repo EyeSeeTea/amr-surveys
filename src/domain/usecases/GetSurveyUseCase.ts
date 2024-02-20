@@ -12,12 +12,12 @@ import {
 } from "../../data/entities/D2Survey";
 import { Future } from "../entities/generic/Future";
 import {
-    Question,
     Questionnaire,
     QuestionnaireEntity,
-    QuestionnaireSection,
     QuestionnaireStage,
-} from "../entities/Questionnaire";
+} from "../entities/Questionnaire/Questionnaire";
+import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
+import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 

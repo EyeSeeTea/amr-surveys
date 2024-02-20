@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
-import { Questionnaire, QuestionnaireSection } from "../../../../domain/entities/Questionnaire";
+import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
+import { QuestionnaireSection } from "../../../../domain/entities/Questionnaire/QuestionnaireSection";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
