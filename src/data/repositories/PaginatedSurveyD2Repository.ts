@@ -157,7 +157,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pager: {
                     page: response.page,
                     pageSize: response.pageSize,
-                    total: response.total,
+                    total: surveys.length,
                 },
                 objects: surveys,
             };

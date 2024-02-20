@@ -1,46 +1,49 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SURVEY_FORM_TYPES, Survey } from "../../../../domain/entities/Survey";
 import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "../../../../utils/i18n";
 
-export const usePatientSurveyFilters = (
+export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
-    surveyFormType: SURVEY_FORM_TYPES
+    surveyFormType: SURVEY_FORM_TYPES,
+    setPageSize: Dispatch<SetStateAction<number>>,
+    setTotal: Dispatch<SetStateAction<number | undefined>>
 ) => {
     const { compositionRoot } = useAppContext();
     const { currentHospitalForm } = useCurrentSurveys();
     const snackbar = useSnackbar();
 
-    const [patientFilterKeyword, setPatientFilterKeyword] = useState("");
-    const [surveyList, setSurveyList] = useState<Survey[]>([]);
+    const [patientSearchKeyword, setPatientSearchKeyword] = useState("");
+    const [searchResultSurveys, setSearchResultSurveys] = useState<Survey[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     // Start with the default surveys to begin with, if they exist
     useEffect(() => {
-        if (filteredSurveys && filteredSurveys.length > 0) setSurveyList(filteredSurveys);
+        if (filteredSurveys && filteredSurveys.length > 0) setSearchResultSurveys(filteredSurveys);
     }, [filteredSurveys]);
 
     // Every time the patient filter is blank, reset to the default surveys
     useEffect(() => {
-        if (!patientFilterKeyword && filteredSurveys) {
-            setSurveyList(filteredSurveys);
+        if (!patientSearchKeyword && filteredSurveys) {
+            setSearchResultSurveys(filteredSurveys);
         }
-    }, [filteredSurveys, patientFilterKeyword]);
+    }, [filteredSurveys, patientSearchKeyword]);
 
     const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (
-            patientFilterKeyword &&
+            patientSearchKeyword &&
             surveyFormType === "PPSPatientRegister" &&
             event.key === "Enter"
         ) {
             setIsLoading(true);
             compositionRoot.surveys.getFilteredPatients
-                .execute(patientFilterKeyword, currentHospitalForm?.orgUnitId ?? "")
+                .execute(patientSearchKeyword, currentHospitalForm?.orgUnitId ?? "")
                 .run(
                     response => {
-                        setSurveyList(response.objects);
+                        setSearchResultSurveys(response.objects);
+                        setTotal(response.pager.total);
                         setIsLoading(false);
                     },
                     () => {
@@ -52,9 +55,9 @@ export const usePatientSurveyFilters = (
     };
 
     return {
-        surveyList,
-        patientFilterKeyword,
-        setPatientFilterKeyword,
+        searchResultSurveys,
+        patientSearchKeyword,
+        setPatientSearchKeyword,
         handleKeyPress,
         isLoading,
     };

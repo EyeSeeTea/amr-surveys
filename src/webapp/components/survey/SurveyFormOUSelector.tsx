@@ -79,6 +79,8 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
                             ? [currentPrevalenceSurveyForm?.orgUnitId]
                             : [GLOBAL_OU_ID]
                     }
+                    showShortName={true}
+                    showNameSetting={true}
                 />
             )}
         </>

@@ -242,3 +242,17 @@ export const getFormTypeFromOption = (
             return undefined;
     }
 };
+
+export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolean => {
+    switch (surveyFormType) {
+        case "PPSPatientRegister":
+        case "PrevalenceCaseReportForm":
+        case "PrevalenceCentralRefLabForm":
+        case "PrevalencePathogenIsolatesLog":
+        case "PrevalenceSampleShipTrackForm":
+        case "PrevalenceSupranationalRefLabForm":
+            return true;
+        default:
+            return false;
+    }
+};
