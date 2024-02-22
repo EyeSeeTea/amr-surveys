@@ -1,6 +1,8 @@
 import { Id } from "../Ref";
+import { Questionnaire } from "./Questionnaire";
 import { Code, Question, QuestionnaireQuestion } from "./QuestionnaireQuestion";
-import { QuestionnaireRule, parseCondition } from "./QuestionnaireRules";
+import { QuestionnaireRule } from "./QuestionnaireRules";
+import _ from "../generic/Collection";
 
 export interface QuestionnaireSection {
     title: string;
@@ -14,35 +16,57 @@ export interface QuestionnaireSection {
 }
 
 export class QuestionnaireSectionM {
+    static updatedSections(
+        sections: QuestionnaireSection[],
+        updatedQuestion: Question,
+        questionnaire: Questionnaire,
+        rules: QuestionnaireRule[]
+    ): QuestionnaireSection[] {
+        //Get all the sections that require update
+        const allSectionsRequiringUpdate = _(
+            rules.flatMap(rule => {
+                return rule.actions.flatMap(action => action.programStageSection?.id);
+            })
+        )
+            .compact()
+            .value();
+
+        const updatedSections = sections.map(section => {
+            //If the section is part of any of the rule actions, update the section
+            const updatedSection = allSectionsRequiringUpdate.includes(section.code)
+                ? this.updateSection(section, rules)
+                : section;
+
+            return {
+                ...updatedSection,
+                questions: QuestionnaireQuestion.updateQuestions(
+                    updatedSection.questions,
+                    updatedQuestion,
+                    rules
+                ),
+            };
+        });
+
+        return updatedSections;
+    }
+
     static updateSection(
         section: QuestionnaireSection,
-        updatedQuestion: Question,
-        questionnaireRules: QuestionnaireRule[]
+        rules: QuestionnaireRule[]
     ): QuestionnaireSection {
+        //If any more section specific rules are added, they can be handled here
         return {
             ...section,
-            isVisible: this.isSectionVisible(section, updatedQuestion, questionnaireRules),
-            questions: section.questions.map(question => {
-                return QuestionnaireQuestion.updateQuestion(
-                    question,
-                    updatedQuestion,
-                    questionnaireRules
-                );
-            }),
+            isVisible: this.isSectionVisible(section, rules),
         };
     }
 
-    static isSectionVisible(
-        section: QuestionnaireSection,
-        updatedQuestion: Question,
-        questionnaireRules: QuestionnaireRule[]
-    ): boolean {
-        //Check of there are any rules applicable to the current updated question
+    static isSectionVisible(section: QuestionnaireSection, rules: QuestionnaireRule[]): boolean {
+        //Check of there are any rules applicable to the current section
         //with hide section action
-        const applicableRules = questionnaireRules.filter(
+        const applicableRules = rules.filter(
             rule =>
-                rule.dataElementId === updatedQuestion.id &&
-                rule.programRuleActions.filter(
+                rule.actions.filter(
                     action =>
                         action.programRuleActionType === "HIDESECTION" &&
                         action.programStageSection &&
@@ -52,13 +76,15 @@ export class QuestionnaireSectionM {
         if (!applicableRules || applicableRules.length === 0) return section.isVisible;
 
         const updatedSectionVisibility = applicableRules.flatMap(rule => {
-            return rule.programRuleActions.flatMap(action => {
+            return rule.actions.flatMap(action => {
                 if (action.programRuleActionType === "HIDESECTION") {
-                    const hideSection = parseCondition(rule.condition, updatedQuestion);
-                    return !hideSection;
+                    if (rule.parsedResult === true) return false;
+                    else return true;
                 } else return section.isVisible;
             });
         });
-        return updatedSectionVisibility.every(Boolean);
+
+        //If even one of the rules asks to hide the section, hide the section
+        return updatedSectionVisibility.some(visibility => visibility === false) ? false : true;
     }
 }

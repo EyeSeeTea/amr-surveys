@@ -1,6 +1,7 @@
 import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import { Id, NamedRef } from "../Ref";
-import { QuestionnaireRule, parseCondition } from "./QuestionnaireRules";
+import { QuestionnaireRule } from "./QuestionnaireRules";
+import _ from "../generic/Collection";
 
 export type Code = string;
 export type Question =
@@ -90,16 +91,40 @@ export class QuestionnaireQuestion {
         return { ...question, value };
     }
 
+    static updateQuestions(
+        questions: Question[],
+        updatedQuestion: Question,
+        rules: QuestionnaireRule[]
+    ): Question[] {
+        //Get all the questions that require update
+        const allQuestionsRequiringUpdate = _(
+            rules.flatMap(rule => {
+                return rule.actions.flatMap(action => action?.dataElement?.id);
+            })
+        )
+            .compact()
+            .value();
+
+        const updatedQuestions = questions.map(question => {
+            //If the question is part of any of the rule actions, update the section
+            const updatedParsedQuestion =
+                allQuestionsRequiringUpdate.includes(question.id) ||
+                question.id === updatedQuestion.id
+                    ? this.updateQuestion(question, updatedQuestion, rules)
+                    : question;
+
+            return updatedParsedQuestion;
+        });
+
+        return updatedQuestions;
+    }
+
     static updateQuestion(
         question: Question,
         updatedQuestion: Question,
-        questionnaireRules: QuestionnaireRule[]
+        rules: QuestionnaireRule[]
     ): Question {
-        const updatedIsVisible = this.isQuestionVisible(
-            question,
-            updatedQuestion,
-            questionnaireRules
-        );
+        const updatedIsVisible = this.isQuestionVisible(question, rules);
 
         if (question.id === updatedQuestion.id)
             return {
@@ -113,15 +138,12 @@ export class QuestionnaireQuestion {
             };
     }
 
-    static isQuestionVisible(
-        question: Question,
-        updatedQuestion: Question,
-        questionnaireRules: QuestionnaireRule[]
-    ): boolean {
-        const applicableRules = questionnaireRules.filter(
+    static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {
+        //Check of there are any rules applicable to the current question
+        //with hide field action
+        const applicableRules = rules.filter(
             rule =>
-                rule.dataElementId === updatedQuestion.id &&
-                rule.programRuleActions.filter(
+                rule.actions.filter(
                     action =>
                         action.programRuleActionType === "HIDEFIELD" &&
                         action.dataElement &&
@@ -131,14 +153,16 @@ export class QuestionnaireQuestion {
         if (!applicableRules || applicableRules.length === 0) return question.isVisible;
 
         const updatedQuestionVisibility = applicableRules.flatMap(rule => {
-            return rule.programRuleActions.flatMap(action => {
+            return rule.actions.flatMap(action => {
                 if (action.programRuleActionType === "HIDEFIELD") {
-                    const hideSection = parseCondition(rule.condition, updatedQuestion);
-                    return !hideSection;
+                    if (rule.parsedResult === true) return false;
+                    else return;
                 } else return question.isVisible;
             });
         });
-        return updatedQuestionVisibility.every(Boolean);
+
+        //If even one of the rules asks to hide the field, hide the question
+        return updatedQuestionVisibility.some(visibility => visibility === false) ? false : true;
     }
 }
 

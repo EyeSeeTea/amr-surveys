@@ -40,9 +40,10 @@ export interface QuestionnaireRuleAction {
 }
 export interface QuestionnaireRule {
     id: Id;
-    condition: string; // eg: "${AMR-Sample 2} != 'NO'"
-    dataElementId: Id; // from ProgramRuleVariable
-    programRuleActions: QuestionnaireRuleAction[];
+    condition: string; //condition is parsed with dataelementId e.g: #{dataElementId} == 'Yes'
+    dataElementIds: Id[]; // all dataElements in condition (there could be mutiple conditions)
+    actions: QuestionnaireRuleAction[];
+    parsedResult?: boolean; //calculate the condition and store the result
 }
 
 export const parseCondition = (condition: string, updatedQuestion: Question): boolean => {

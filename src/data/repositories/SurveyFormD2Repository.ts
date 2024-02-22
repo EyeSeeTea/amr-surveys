@@ -1045,16 +1045,24 @@ export class SurveyD2Repository implements SurveyRepository {
     ): QuestionnaireRule[] {
         return (
             programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
-                const programRuleVariableName = condition.substring(
-                    condition.indexOf("{") + 1,
-                    condition.indexOf("}")
-                );
+                const dataElementIds =
+                    condition.match(/#{(.*?)}/g)?.map(programRuleVariableName => {
+                        const dataElementId =
+                            programRuleVariables?.find(programRuleVariable =>
+                                programRuleVariableName.includes(programRuleVariable.name)
+                            )?.dataElement?.id || "";
 
-                // dataElement associated with ProgramRuleVariable: the one to compare in the condition
-                const dataElementId =
-                    programRuleVariables?.find(
-                        programRuleVariable => programRuleVariable.name === programRuleVariableName
-                    )?.dataElement?.id || "";
+                        return dataElementId;
+                    }) || [];
+
+                const parsedCondition = condition.replace(/#{(.*?)}/g, (match, programRuleVar) => {
+                    const dataElementId =
+                        programRuleVariables?.find(
+                            programRuleVariable => programRuleVariable.name === programRuleVar
+                        )?.dataElement?.id || "";
+
+                    return `#{${dataElementId}}`;
+                });
 
                 const programRuleActionIds: string[] = actions.map(action => action.id);
 
@@ -1081,9 +1089,9 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 return {
                     id: id,
-                    condition: condition,
-                    dataElementId: dataElementId || "",
-                    programRuleActions: programRuleActions || [],
+                    condition: parsedCondition,
+                    dataElementIds: _(dataElementIds).uniq().value(),
+                    actions: programRuleActions || [],
                 };
             }) || []
         );

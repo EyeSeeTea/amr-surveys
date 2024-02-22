@@ -1,7 +1,7 @@
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Code, Question } from "./QuestionnaireQuestion";
-import { QuestionnaireRule } from "./QuestionnaireRules";
+import { QuestionnaireRule, parseCondition } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
 export interface QuestionnaireBase {
@@ -70,22 +70,42 @@ export class QuestionnarieM {
         }
     }
 
+    private static getApplicableRules(
+        updatedQuestion: Question,
+        questionnaire: Questionnaire
+    ): QuestionnaireRule[] {
+        //1. Get all Rules that are applicable to the updated question
+        const applicableRules = questionnaire.rules.filter(rule =>
+            rule.dataElementIds.includes(updatedQuestion.id)
+        );
+
+        //2. Run the rule conditions and return rules with parsed results
+        const parsedRulesToApply = applicableRules.map(rule => {
+            const parsedResult = parseCondition(rule.condition, updatedQuestion);
+            return { ...rule, parsedResult };
+        });
+
+        return parsedRulesToApply;
+    }
+
     static updateQuestionnaire(
         questionnaire: Questionnaire,
         updatedQuestion: Question
     ): Questionnaire {
+        //For the updated question, get all rules that are applicable
+        const applicableRules = this.getApplicableRules(updatedQuestion, questionnaire);
+
         return {
             ...questionnaire,
             stages: questionnaire.stages.map(stage => {
                 return {
                     ...stage,
-                    sections: stage.sections.map(section => {
-                        return QuestionnaireSectionM.updateSection(
-                            section,
-                            updatedQuestion,
-                            questionnaire.rules
-                        );
-                    }),
+                    sections: QuestionnaireSectionM.updatedSections(
+                        stage.sections,
+                        updatedQuestion,
+                        questionnaire,
+                        applicableRules
+                    ),
                 };
             }),
         };
