@@ -19,6 +19,7 @@ export interface QuestionBase {
     disabled?: boolean;
     isVisible: boolean;
     sortOrder: number | undefined;
+    errors: string[];
 }
 
 export interface SelectQuestion extends QuestionBase {
@@ -99,7 +100,9 @@ export class QuestionnaireQuestion {
         //Get all the questions that require update
         const allQuestionsRequiringUpdate = _(
             rules.flatMap(rule => {
-                return rule.actions.flatMap(action => action?.dataElement?.id);
+                const actionUpdates = rule.actions.flatMap(action => action?.dataElement?.id);
+                const dataElementUpdates = rule.dataElementIds;
+                return [...actionUpdates, ...dataElementUpdates];
             })
         )
             .compact()
@@ -125,16 +128,19 @@ export class QuestionnaireQuestion {
         rules: QuestionnaireRule[]
     ): Question {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
+        const updatedErrors = this.getQuestionWarningsAndErrors(updatedQuestion, rules);
 
         if (question.id === updatedQuestion.id)
             return {
                 ...updatedQuestion,
                 isVisible: updatedIsVisible,
+                errors: [...updatedErrors],
             };
         else
             return {
                 ...question,
                 isVisible: updatedIsVisible,
+                errors: [...question.errors, ...updatedErrors],
             };
     }
 
@@ -163,6 +169,36 @@ export class QuestionnaireQuestion {
 
         //If even one of the rules asks to hide the field, hide the question
         return updatedQuestionVisibility.some(visibility => visibility === false) ? false : true;
+    }
+
+    static getQuestionWarningsAndErrors(question: Question, rules: QuestionnaireRule[]): string[] {
+        //Check of there are any rules applicable to the current question
+        //with show error message
+        const applicableRules = rules.filter(
+            rule =>
+                rule.actions.filter(
+                    action =>
+                        (action.programRuleActionType === "SHOWWARNING" ||
+                            action.programRuleActionType === "SHOWERROR") &&
+                        action.dataElement &&
+                        action.dataElement.id === question.id
+                ).length > 0
+        );
+        if (!applicableRules || applicableRules.length === 0) return [];
+
+        const updatedQuestionErrors = applicableRules.flatMap(rule => {
+            return rule.actions.flatMap(action => {
+                if (
+                    action.programRuleActionType === "SHOWWARNING" ||
+                    action.programRuleActionType === "SHOWERROR"
+                ) {
+                    if (rule.parsedResult === true) return action.content;
+                    else return;
+                }
+            });
+        });
+
+        return _(updatedQuestionErrors).compact().value();
     }
 }
 

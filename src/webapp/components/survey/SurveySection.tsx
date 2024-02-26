@@ -64,6 +64,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                                 question={question}
                                                 disabled={question.disabled ? true : false}
                                             />
+                                            {question.errors.map((err, index) => (
+                                                <p key={index}>{err}</p>
+                                            ))}
                                         </StyledInput>
                                     </StyledWrapper>
                                 </DataTableCell>

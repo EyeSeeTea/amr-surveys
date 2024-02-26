@@ -81,7 +81,7 @@ export class QuestionnarieM {
 
         //2. Run the rule conditions and return rules with parsed results
         const parsedRulesToApply = applicableRules.map(rule => {
-            const parsedResult = parseCondition(rule.condition, updatedQuestion);
+            const parsedResult = parseCondition(rule.condition, updatedQuestion, questionnaire);
             return { ...rule, parsedResult };
         });
 

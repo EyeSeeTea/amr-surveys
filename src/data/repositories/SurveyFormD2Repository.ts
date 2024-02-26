@@ -510,6 +510,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? (dataValue === "true" ? true : false) : true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return boolQ;
             }
@@ -523,6 +524,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return boolQ;
             }
@@ -538,6 +540,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? dataValue : "",
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return intQ;
             }
@@ -561,6 +564,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
                         sortOrder: sortOrder,
+                        errors: [],
                     };
                     return selectQ;
                 } else {
@@ -573,6 +577,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         multiline: false,
                         isVisible: hiddenFields.some(field => field === formName) ? false : true,
                         sortOrder: sortOrder,
+                        errors: [],
                     };
                     return singleLineText;
                 }
@@ -588,6 +593,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     multiline: true,
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return singleLineTextQ;
             }
@@ -601,6 +607,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue ? new Date(dataValue as string) : new Date(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return dateQ;
             }
@@ -616,6 +623,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         : new Date().toISOString(),
                     isVisible: hiddenFields.some(field => field === formName) ? false : true,
                     sortOrder: sortOrder,
+                    errors: [],
                 };
                 return dateQ;
             }
@@ -1047,9 +1055,11 @@ export class SurveyD2Repository implements SurveyRepository {
             programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
                 const dataElementIds =
                     condition.match(/#{(.*?)}/g)?.map(programRuleVariableName => {
+                        const variableName = programRuleVariableName.replace(/#{|}/g, "");
+
                         const dataElementId =
-                            programRuleVariables?.find(programRuleVariable =>
-                                programRuleVariableName.includes(programRuleVariable.name)
+                            programRuleVariables?.find(
+                                programRuleVariable => variableName === programRuleVariable.name
                             )?.dataElement?.id || "";
 
                         return dataElementId;
