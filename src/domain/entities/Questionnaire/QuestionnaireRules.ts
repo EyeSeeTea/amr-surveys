@@ -1,8 +1,6 @@
 import { Id } from "../Ref";
 import _ from "../generic/Collection";
-import { Questionnaire, QuestionnaireStage } from "./Questionnaire";
 import { Question } from "./QuestionnaireQuestion";
-import { QuestionnaireSection } from "./QuestionnaireSection";
 
 const D2_FUNCTIONS = ["d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
 const D2_OPERATORS = [
@@ -72,7 +70,7 @@ const getQuestionValueByType = (question: Question): string => {
 export function parseCondition(
     condition: string,
     updatedQuestion: Question,
-    questionnaire: Questionnaire
+    questions: Question[]
 ): boolean {
     // Create a regular expression from D2_FUNCTIONS array
     const d2FunctionsRegex = new RegExp(`(?<!${D2_FUNCTIONS.join("|")})\\(`);
@@ -81,7 +79,7 @@ export function parseCondition(
     // Handle parentheses as long as they are not immediately preceded by a value in D2_FUNCTIONS array
     while (condition.search(d2FunctionsRegex) !== -1) {
         condition = condition.replace(/\(([^()]+)\)/g, (_, subCondition) => {
-            return parseCondition(subCondition, updatedQuestion, questionnaire) ? "true" : "false";
+            return parseCondition(subCondition, updatedQuestion, questions) ? "true" : "false";
         });
     }
 
@@ -102,16 +100,10 @@ export function parseCondition(
                         return getQuestionValueByType(updatedQuestion);
                     } else {
                         //if not, check in the questionnaire
-                        const questions = questionnaire.stages.flatMap(
-                            (stage: QuestionnaireStage) => {
-                                return stage.sections.flatMap((section: QuestionnaireSection) => {
-                                    return section.questions.find(
-                                        (question: Question) => question.id === dataElementId
-                                    );
-                                });
-                            }
+                        const currentQuestion = questions.find(
+                            (question: Question) => question.id === dataElementId
                         );
-                        const currentQuestion = _(questions).first();
+
                         if (currentQuestion) {
                             return getQuestionValueByType(currentQuestion);
                         } else {
@@ -167,11 +159,9 @@ export function parseCondition(
                             break;
                     }
                 } else {
-                    const operatorArr = D2_OPERATORS.filter(d2Operator =>
+                    const operator = D2_OPERATORS.find(d2Operator =>
                         parsedConditionWithValues.includes(d2Operator)
                     );
-
-                    const operator = operatorArr.at(operatorArr.length - 1);
 
                     if (!operator || !D2_OPERATORS.includes(operator))
                         throw new Error(`Operator ${operator} is either undefined or not handled`);
@@ -197,38 +187,44 @@ export function parseCondition(
 
                     switch (operator) {
                         case "!=": {
-                            return leftOperand !== rightOperand;
+                            result = leftOperand !== rightOperand;
+                            break;
                         }
                         case "==": {
-                            return leftOperand === rightOperand;
+                            result = leftOperand === rightOperand;
+                            break;
                         }
                         case ">": {
                             try {
-                                return parseFloat(leftOperand) > parseFloat(rightOperand);
+                                result = parseFloat(leftOperand) > parseFloat(rightOperand);
                             } catch {
-                                return leftOperand > rightOperand;
+                                result = leftOperand > rightOperand;
                             }
+                            break;
                         }
                         case ">=": {
                             try {
-                                return parseFloat(leftOperand) >= parseFloat(rightOperand);
+                                result = parseFloat(leftOperand) >= parseFloat(rightOperand);
                             } catch {
-                                return leftOperand >= rightOperand;
+                                result = leftOperand >= rightOperand;
                             }
+                            break;
                         }
                         case "<": {
                             try {
-                                return parseFloat(leftOperand) < parseFloat(rightOperand);
+                                result = parseFloat(leftOperand) < parseFloat(rightOperand);
                             } catch {
-                                return leftOperand < rightOperand;
+                                result = leftOperand < rightOperand;
                             }
+                            break;
                         }
                         case "<=": {
                             try {
-                                return parseFloat(leftOperand) <= parseFloat(rightOperand);
+                                result = parseFloat(leftOperand) <= parseFloat(rightOperand);
                             } catch {
-                                return leftOperand <= rightOperand;
+                                result = leftOperand <= rightOperand;
                             }
+                            break;
                         }
                         default:
                             throw new Error(`Operator ${operator} not handled`);

@@ -2,6 +2,7 @@ import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import { Id, NamedRef } from "../Ref";
 import { QuestionnaireRule } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
+import { Questionnaire, QuestionnarieM } from "./Questionnaire";
 
 export type Code = string;
 export type Question =
@@ -95,8 +96,16 @@ export class QuestionnaireQuestion {
     static updateQuestions(
         questions: Question[],
         updatedQuestion: Question,
-        rules: QuestionnaireRule[]
+        rules: QuestionnaireRule[],
+        questionnaire: Questionnaire
     ): Question[] {
+        //1. Update the question value.
+        const updatedQuestionValue = questions.map(question => {
+            if (question.id === updatedQuestion.id) return updatedQuestion;
+            else return question;
+        });
+
+        //2. Now, apply all possible side effects of the updated value to the rest of the questionnaire.
         //Get all the questions that require update
         const allQuestionsRequiringUpdate = _(
             rules.flatMap(rule => {
@@ -106,14 +115,21 @@ export class QuestionnaireQuestion {
             })
         )
             .compact()
+            .uniq()
             .value();
 
-        const updatedQuestions = questions.map(question => {
+        const updatedQuestions = updatedQuestionValue.map(question => {
+            const rulesForCurrentQuestion = QuestionnarieM.getApplicableRules(
+                question,
+                questionnaire.rules,
+                questions
+            );
+
             //If the question is part of any of the rule actions, update the section
             const updatedParsedQuestion =
                 allQuestionsRequiringUpdate.includes(question.id) ||
                 question.id === updatedQuestion.id
-                    ? this.updateQuestion(question, updatedQuestion, rules)
+                    ? this.updateQuestion(question, rulesForCurrentQuestion)
                     : question;
 
             return updatedParsedQuestion;
@@ -122,26 +138,23 @@ export class QuestionnaireQuestion {
         return updatedQuestions;
     }
 
-    static updateQuestion(
-        question: Question,
-        updatedQuestion: Question,
-        rules: QuestionnaireRule[]
-    ): Question {
+    static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
-        const updatedErrors = this.getQuestionWarningsAndErrors(updatedQuestion, rules);
+        const updatedErrorsByDataElement = this.getQuestionWarningsAndErrors(rules);
 
-        if (question.id === updatedQuestion.id)
-            return {
-                ...updatedQuestion,
-                isVisible: updatedIsVisible,
-                errors: [...updatedErrors],
-            };
-        else
-            return {
-                ...question,
-                isVisible: updatedIsVisible,
-                errors: [...question.errors, ...updatedErrors],
-            };
+        const updatedErrors = _(
+            updatedErrorsByDataElement
+                .filter(err => err.dataElementId === question.id)
+                .map(error => error.errorMsg)
+        )
+            .compact()
+            .value();
+
+        return {
+            ...question,
+            isVisible: updatedIsVisible,
+            errors: updatedErrors,
+        };
     }
 
     static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {
@@ -171,28 +184,18 @@ export class QuestionnaireQuestion {
         return updatedQuestionVisibility.some(visibility => visibility === false) ? false : true;
     }
 
-    static getQuestionWarningsAndErrors(question: Question, rules: QuestionnaireRule[]): string[] {
-        //Check of there are any rules applicable to the current question
-        //with show error message
-        const applicableRules = rules.filter(
-            rule =>
-                rule.actions.filter(
-                    action =>
-                        (action.programRuleActionType === "SHOWWARNING" ||
-                            action.programRuleActionType === "SHOWERROR") &&
-                        action.dataElement &&
-                        action.dataElement.id === question.id
-                ).length > 0
-        );
-        if (!applicableRules || applicableRules.length === 0) return [];
-
-        const updatedQuestionErrors = applicableRules.flatMap(rule => {
+    static getQuestionWarningsAndErrors(rules: QuestionnaireRule[]): {
+        errorMsg: string | undefined;
+        dataElementId: string | undefined;
+    }[] {
+        const updatedQuestionErrors = rules.flatMap(rule => {
             return rule.actions.flatMap(action => {
                 if (
                     action.programRuleActionType === "SHOWWARNING" ||
                     action.programRuleActionType === "SHOWERROR"
                 ) {
-                    if (rule.parsedResult === true) return action.content;
+                    if (rule.parsedResult === true)
+                        return { errorMsg: action.content, dataElementId: action.dataElement?.id };
                     else return;
                 }
             });

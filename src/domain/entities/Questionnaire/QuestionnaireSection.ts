@@ -34,7 +34,7 @@ export class QuestionnaireSectionM {
         const updatedSections = sections.map(section => {
             //If the section is part of any of the rule actions, update the section
             const updatedSection = allSectionsRequiringUpdate.includes(section.code)
-                ? this.updateSection(section, rules)
+                ? this.updateSection(section, questionnaire.rules)
                 : section;
 
             return {
@@ -42,7 +42,8 @@ export class QuestionnaireSectionM {
                 questions: QuestionnaireQuestion.updateQuestions(
                     updatedSection.questions,
                     updatedQuestion,
-                    rules
+                    rules,
+                    questionnaire
                 ),
             };
         });

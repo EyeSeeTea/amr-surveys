@@ -70,18 +70,21 @@ export class QuestionnarieM {
         }
     }
 
-    private static getApplicableRules(
+    static getApplicableRules(
         updatedQuestion: Question,
-        questionnaire: Questionnaire
+        questionnaireRules: QuestionnaireRule[],
+        questions: Question[]
     ): QuestionnaireRule[] {
         //1. Get all Rules that are applicable to the updated question
-        const applicableRules = questionnaire.rules.filter(rule =>
-            rule.dataElementIds.includes(updatedQuestion.id)
+        const applicableRules = questionnaireRules.filter(
+            rule =>
+                rule.dataElementIds.includes(updatedQuestion.id) ||
+                rule.actions.some(action => action.dataElement?.id === updatedQuestion.id)
         );
 
         //2. Run the rule conditions and return rules with parsed results
         const parsedRulesToApply = applicableRules.map(rule => {
-            const parsedResult = parseCondition(rule.condition, updatedQuestion, questionnaire);
+            const parsedResult = parseCondition(rule.condition, updatedQuestion, questions);
             return { ...rule, parsedResult };
         });
 
@@ -93,7 +96,17 @@ export class QuestionnarieM {
         updatedQuestion: Question
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
-        const applicableRules = this.getApplicableRules(updatedQuestion, questionnaire);
+        const questions = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
+            return stage.sections.flatMap(section => {
+                return section.questions.map(question => question);
+            });
+        });
+
+        const applicableRules = this.getApplicableRules(
+            updatedQuestion,
+            questionnaire.rules,
+            questions
+        );
 
         return {
             ...questionnaire,
