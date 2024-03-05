@@ -183,6 +183,10 @@ export function parseCondition(
                             ? rightOperandStr === "1"
                                 ? "true"
                                 : "false"
+                            : updatedQuestion.type === "select" &&
+                              leftOperand === "true" &&
+                              rightOperandStr === "1"
+                            ? "true"
                             : rightOperandStr;
 
                     switch (operator) {

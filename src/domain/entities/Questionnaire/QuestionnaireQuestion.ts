@@ -119,11 +119,14 @@ export class QuestionnaireQuestion {
             .value();
 
         const updatedQuestions = updatedQuestionValue.map(question => {
-            const rulesForCurrentQuestion = QuestionnarieM.getApplicableRules(
-                question,
-                questionnaire.rules,
-                questions
-            );
+            const rulesForCurrentQuestion =
+                question.id !== updatedQuestion.id
+                    ? QuestionnarieM.getApplicableRules(
+                          question,
+                          questionnaire.rules,
+                          updatedQuestionValue
+                      )
+                    : rules;
 
             //If the question is part of any of the rule actions, update the section
             const updatedParsedQuestion =
@@ -135,7 +138,9 @@ export class QuestionnaireQuestion {
             return updatedParsedQuestion;
         });
 
-        return updatedQuestions;
+        return _(updatedQuestions)
+            .sortBy(question => question.sortOrder)
+            .value();
     }
 
     static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
