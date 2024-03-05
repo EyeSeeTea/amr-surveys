@@ -46,6 +46,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         setCurrentOrgUnit,
         error,
         addNew,
+        shouldDisableSave,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -140,7 +141,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     {i18n.t("Cancel")}
                 </CancelButton>
 
-                <Button variant="contained" color="primary" onClick={saveSurveyForm}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={saveSurveyForm}
+                    disabled={shouldDisableSave()}
+                >
                     {i18n.t("Save")}
                 </Button>
             </PageFooter>

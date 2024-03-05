@@ -1,7 +1,7 @@
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Code, Question } from "./QuestionnaireQuestion";
-import { QuestionnaireRule, parseCondition } from "./QuestionnaireRules";
+import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
 export interface QuestionnaireBase {
@@ -70,42 +70,21 @@ export class QuestionnarieM {
         }
     }
 
-    static getApplicableRules(
-        updatedQuestion: Question,
-        questionnaireRules: QuestionnaireRule[],
-        questions: Question[]
-    ): QuestionnaireRule[] {
-        //1. Get all Rules that are applicable to the updated question
-        const applicableRules = questionnaireRules.filter(
-            rule =>
-                rule.dataElementIds.includes(updatedQuestion.id) ||
-                rule.actions.some(action => action.dataElement?.id === updatedQuestion.id)
-        );
-
-        //2. Run the rule conditions and return rules with parsed results
-        const parsedRulesToApply = applicableRules.map(rule => {
-            const parsedResult = parseCondition(rule.condition, updatedQuestion, questions);
-            return { ...rule, parsedResult };
-        });
-
-        return parsedRulesToApply;
-    }
-
     static updateQuestionnaire(
         questionnaire: Questionnaire,
         updatedQuestion: Question
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
-        const questions = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
+        const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
             return stage.sections.flatMap(section => {
                 return section.questions.map(question => question);
             });
         });
 
-        const applicableRules = this.getApplicableRules(
+        const applicableRules = getApplicableRules(
             updatedQuestion,
             questionnaire.rules,
-            questions
+            allQsInQuestionnaire
         );
 
         return {

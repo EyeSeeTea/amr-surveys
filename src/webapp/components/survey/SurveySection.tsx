@@ -14,7 +14,7 @@ import {
     TableBody,
 } from "@dhis2/ui";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { Button } from "@material-ui/core";
+import { Button, Typography } from "@material-ui/core";
 import styled from "styled-components";
 import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
@@ -65,7 +65,11 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                                 disabled={question.disabled ? true : false}
                                             />
                                             {question.errors.map((err, index) => (
-                                                <p key={index}>{err}</p>
+                                                <PaddedDiv key={index}>
+                                                    <Typography variant="body2" color="error">
+                                                        {err}
+                                                    </Typography>
+                                                </PaddedDiv>
                                             ))}
                                         </StyledInput>
                                     </StyledWrapper>
@@ -83,6 +87,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
         </StyledSection>
     );
 };
+
+const PaddedDiv = styled.div`
+    padding: 5px;
+`;
 
 const StyledSection = styled.div`
     margin: 10;

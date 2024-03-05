@@ -1,8 +1,8 @@
 import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import { Id, NamedRef } from "../Ref";
-import { QuestionnaireRule } from "./QuestionnaireRules";
+import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
-import { Questionnaire, QuestionnarieM } from "./Questionnaire";
+import { Questionnaire } from "./Questionnaire";
 
 export type Code = string;
 export type Question =
@@ -99,14 +99,15 @@ export class QuestionnaireQuestion {
         rules: QuestionnaireRule[],
         questionnaire: Questionnaire
     ): Question[] {
-        //1. Update the question value.
-        const updatedQuestionValue = questions.map(question => {
+        //1. Update the question value before anything else, the updated value needs to be used to parse rule conditions
+        const updatedQuestions = questions.map(question => {
             if (question.id === updatedQuestion.id) return updatedQuestion;
             else return question;
         });
 
         //2. Now, apply all possible side effects of the updated value to the rest of the questionnaire.
-        //Get all the questions that require update
+
+        //Get list question ids that require update
         const allQuestionsRequiringUpdate = _(
             rules.flatMap(rule => {
                 const actionUpdates = rule.actions.flatMap(action => action?.dataElement?.id);
@@ -118,42 +119,32 @@ export class QuestionnaireQuestion {
             .uniq()
             .value();
 
-        const updatedQuestions = updatedQuestionValue.map(question => {
-            const rulesForCurrentQuestion =
+        const parsedAndUpdatedQuestions = updatedQuestions.map(question => {
+            //Get the rules that are applicable for the current question
+            //this is done to take care of any "side-effects" of an updated question.
+            const rulesApplicableForCurrentQuestion =
                 question.id !== updatedQuestion.id
-                    ? QuestionnarieM.getApplicableRules(
-                          question,
-                          questionnaire.rules,
-                          updatedQuestionValue
-                      )
+                    ? getApplicableRules(question, questionnaire.rules, updatedQuestions)
                     : rules;
 
             //If the question is part of any of the rule actions, update the section
-            const updatedParsedQuestion =
+            const parsedAndUpdatedQuestion =
                 allQuestionsRequiringUpdate.includes(question.id) ||
                 question.id === updatedQuestion.id
-                    ? this.updateQuestion(question, rulesForCurrentQuestion)
+                    ? this.updateQuestion(question, rulesApplicableForCurrentQuestion)
                     : question;
 
-            return updatedParsedQuestion;
+            return parsedAndUpdatedQuestion;
         });
 
-        return _(updatedQuestions)
+        return _(parsedAndUpdatedQuestions)
             .sortBy(question => question.sortOrder)
             .value();
     }
 
-    static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
+    private static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
-        const updatedErrorsByDataElement = this.getQuestionWarningsAndErrors(rules);
-
-        const updatedErrors = _(
-            updatedErrorsByDataElement
-                .filter(err => err.dataElementId === question.id)
-                .map(error => error.errorMsg)
-        )
-            .compact()
-            .value();
+        const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
 
         return {
             ...question,
@@ -162,7 +153,7 @@ export class QuestionnaireQuestion {
         };
     }
 
-    static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {
+    private static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {
         //Check of there are any rules applicable to the current question
         //with hide field action
         const applicableRules = rules.filter(
@@ -189,10 +180,10 @@ export class QuestionnaireQuestion {
         return updatedQuestionVisibility.some(visibility => visibility === false) ? false : true;
     }
 
-    static getQuestionWarningsAndErrors(rules: QuestionnaireRule[]): {
-        errorMsg: string | undefined;
-        dataElementId: string | undefined;
-    }[] {
+    private static getQuestionWarningsAndErrors(
+        question: Question,
+        rules: QuestionnaireRule[]
+    ): string[] {
         const updatedQuestionErrors = rules.flatMap(rule => {
             return rule.actions.flatMap(action => {
                 if (
@@ -206,7 +197,17 @@ export class QuestionnaireQuestion {
             });
         });
 
-        return _(updatedQuestionErrors).compact().value();
+        const updatedErrorsByDataElement = _(updatedQuestionErrors).compact().value();
+
+        const updatedErrors = _(
+            updatedErrorsByDataElement
+                .filter(err => err.dataElementId === question.id)
+                .map(error => error.errorMsg)
+        )
+            .compact()
+            .value();
+
+        return updatedErrors;
     }
 }
 

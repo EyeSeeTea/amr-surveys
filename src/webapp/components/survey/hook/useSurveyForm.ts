@@ -22,6 +22,17 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
+    const shouldDisableSave = (): boolean => {
+        if (!questionnaire) return true;
+        const allQuestions = questionnaire.stages.flatMap(stage => {
+            return stage.sections.flatMap(section => {
+                return section.questions.map(question => question);
+            });
+        });
+
+        return allQuestions.some(question => question.errors.length > 0);
+    };
+
     const addNew = (prevSection: QuestionnaireSection) => {
         setQuestionnaire(prevQuestionnaire => {
             if (prevQuestionnaire) {
@@ -174,5 +185,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setLoading,
         error,
         addNew,
+        shouldDisableSave,
     };
 }
