@@ -129,11 +129,6 @@ const handleD2Functions = (condition: string): boolean => {
                 }
             } else return false;
         }
-        case "d2:daysBetween":
-            return false;
-
-        case "d2:yearsBetween":
-            return false;
 
         default:
             console.debug(`Unkown d2 function: ${d2Function}`);
