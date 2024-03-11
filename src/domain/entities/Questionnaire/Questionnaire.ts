@@ -1,3 +1,4 @@
+import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Code, Question } from "./QuestionnaireQuestion";
@@ -45,7 +46,9 @@ export class QuestionnarieM {
         return { ...questionnarie, isCompleted: value };
     }
 
-    static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
+    static applyProgramRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire
+    ): Questionnaire {
         try {
             if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
 
@@ -68,6 +71,53 @@ export class QuestionnarieM {
             console.debug(err);
             return questionnaire;
         }
+    }
+
+    static applySurveyRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire,
+        surveyRule: SurveyRule
+    ): Questionnaire {
+        if (surveyRule.rules.length === 0) return questionnaire;
+
+        const updatedQuestionnaire: Questionnaire = {
+            ...questionnaire,
+            stages: questionnaire.stages.map(stage => {
+                return {
+                    ...stage,
+                    sections: stage.sections.map(section => {
+                        const currentSectionRule = surveyRule.rules.find(rule =>
+                            rule.toHide?.find(de => de === section.code)
+                        );
+
+                        const sectionVisibility =
+                            currentSectionRule && currentSectionRule.type === "HIDESECTION"
+                                ? false
+                                : true;
+
+                        return {
+                            ...section,
+                            isVisible: sectionVisibility,
+                            questions: section.questions.map(question => {
+                                const currentQuestionRule = surveyRule.rules.find(rule =>
+                                    rule.toHide?.find(de => de === question.id)
+                                );
+                                if (
+                                    currentQuestionRule &&
+                                    currentQuestionRule.type === "HIDEFIELD"
+                                ) {
+                                    return {
+                                        ...question,
+                                        isVisible: false,
+                                    };
+                                } else return question;
+                            }),
+                        };
+                    }),
+                };
+            }),
+        };
+
+        return updatedQuestionnaire;
     }
 
     static updateQuestionnaire(

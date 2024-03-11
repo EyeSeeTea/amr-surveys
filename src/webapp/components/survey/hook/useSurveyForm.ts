@@ -6,6 +6,7 @@ import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
 import { QuestionnaireSection } from "../../../../domain/entities/Questionnaire/QuestionnaireSection";
+import { useCurrentModule } from "../../../contexts/current-module-context";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -21,6 +22,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentFacilityLevelForm,
     } = useCurrentSurveys();
     const [error, setError] = useState<string>();
+    const { currentModule } = useCurrentModule();
 
     const shouldDisableSave = (): boolean => {
         if (!questionnaire) return true;
@@ -88,14 +90,17 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 .run(
                     questionnaireForm => {
                         //apply rules, if any
-                        if (questionnaireForm.rules && questionnaireForm.rules?.length > 0) {
+                        if (
+                            (questionnaireForm.rules && questionnaireForm.rules?.length > 0) ||
+                            (currentModule && currentModule?.rulesBySurvey?.length > 0)
+                        ) {
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(
-                                    questionnaireForm
+                                    questionnaireForm,
+                                    currentModule?.rulesBySurvey ?? []
                                 );
                             setQuestionnaire(processedQuestionnaire);
                         } else setQuestionnaire(questionnaireForm);
-
                         setLoading(false);
                     },
                     err => {
@@ -120,18 +125,19 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 .execute(eventId, formType, orgUnitId)
                 .run(
                     questionnaireWithData => {
-                        //apply rules, if any
+                        //apply rules
                         if (
-                            questionnaireWithData.rules &&
-                            questionnaireWithData.rules?.length > 0
+                            (questionnaireWithData.rules &&
+                                questionnaireWithData.rules?.length > 0) ||
+                            (currentModule && currentModule?.rulesBySurvey?.length > 0)
                         ) {
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(
-                                    questionnaireWithData
+                                    questionnaireWithData,
+                                    currentModule?.rulesBySurvey ?? []
                                 );
                             setQuestionnaire(processedQuestionnaire);
                         } else setQuestionnaire(questionnaireWithData);
-
                         if (
                             formType === "PPSCountryQuestionnaire" ||
                             formType === "PrevalenceSurveyForm"
@@ -174,6 +180,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentWardRegister,
         currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
+        currentModule,
     ]);
 
     return {
