@@ -13,7 +13,7 @@ type Rule = {
 };
 
 export type SurveyRule = {
-    surveyId: Id;
+    formId: Id;
     rules: Rule[];
 };
 
@@ -23,5 +23,5 @@ export interface AMRSurveyModule {
     color: string;
     surveyPrograms: NamedRef[];
     userGroups: UserGroups;
-    rulesBySurvey: SurveyRule[];
+    rulesBySurvey: { surveyId: Id; surveyRules: SurveyRule[] }[];
 }

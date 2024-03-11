@@ -97,7 +97,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(
                                     questionnaireForm,
-                                    currentModule?.rulesBySurvey ?? []
+                                    currentModule,
+                                    currentPPSSurveyForm?.id,
+                                    currentPrevalenceSurveyForm?.id
                                 );
                             setQuestionnaire(processedQuestionnaire);
                         } else setQuestionnaire(questionnaireForm);
@@ -134,7 +136,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                             const processedQuestionnaire =
                                 compositionRoot.surveys.applyInitialRules.execute(
                                     questionnaireWithData,
-                                    currentModule?.rulesBySurvey ?? []
+                                    currentModule,
+                                    currentPPSSurveyForm?.id,
+                                    currentPrevalenceSurveyForm?.id
                                 );
                             setQuestionnaire(processedQuestionnaire);
                         } else setQuestionnaire(questionnaireWithData);
