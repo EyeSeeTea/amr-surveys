@@ -36,7 +36,9 @@ export interface QuestionnaireStage {
     title: string;
     code: Code;
     sections: QuestionnaireSection[];
+    sortOrder: number;
     isVisible: boolean;
+    repeatable: boolean;
     showNextStage?: boolean;
     instanceId?: Id; //Corresponds to DHIS eventId
 }

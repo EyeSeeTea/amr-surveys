@@ -259,6 +259,8 @@ export class SurveyD2Repository implements SurveyRepository {
                       instanceId: trackedEntity?.enrollments
                           ?.at(0)
                           ?.events.find(e => e.programStage === stage.id)?.event,
+                      sortOrder: stage.sortOrder,
+                      repeatable: stage.repeatable,
                   };
               })
             : //If the Program has no stages, create a single stage
@@ -270,6 +272,8 @@ export class SurveyD2Repository implements SurveyRepository {
                           .sortBy(section => section.sortOrder)
                           .value(),
                       isVisible: true,
+                      sortOrder: 1,
+                      repeatable: false,
                   },
               ];
 
@@ -291,7 +295,9 @@ export class SurveyD2Repository implements SurveyRepository {
             year: "",
             isCompleted: false,
             isMandatory: false,
-            stages: stages.sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true })),
+            stages: _(stages)
+                .sortBy(stage => stage.sortOrder)
+                .value(),
             subLevelDetails: {
                 enrollmentId: trackedEntity
                     ? trackedEntity.enrollments?.at(0)?.enrollment ?? ""

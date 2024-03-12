@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Button, Typography, withStyles } from "@material-ui/core";
+import { Button, withStyles, Typography } from "@material-ui/core";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
@@ -105,18 +105,29 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 />
 
                 {questionnaire?.entity && (
-                    <SurveySection
-                        title={questionnaire.entity.title}
-                        updateQuestion={updateQuestion}
-                        questions={questionnaire.entity.questions}
-                    />
+                    <PaddedDiv>
+                        <Typography>Stage : Profile</Typography>
+                        <SurveySection
+                            title={questionnaire.entity.title}
+                            updateQuestion={updateQuestion}
+                            questions={questionnaire.entity.questions}
+                        />
+                    </PaddedDiv>
                 )}
                 {questionnaire?.stages?.map(stage => {
                     if (!stage.isVisible) return null;
 
                     return (
-                        <div key={stage.code}>
-                            <p> {`Stage : ${stage.title}`}</p>
+                        <PaddedDiv key={stage.code}>
+                            <Typography>Stage : {stage.title}</Typography>
+                            {stage.repeatable && (
+                                <RightAlignedButton>
+                                    <Button variant="contained" color="primary">
+                                        Add Another {stage.title}
+                                    </Button>
+                                </RightAlignedButton>
+                            )}
+
                             {stage.sections.map(section => {
                                 if (!section.isVisible) return null;
 
@@ -129,7 +140,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     />
                                 );
                             })}
-                        </div>
+                        </PaddedDiv>
                     );
                 })}
             </ContentLoader>
@@ -160,4 +171,14 @@ const PageFooter = styled.div`
 
 const Title = styled(Typography)`
     margin-block-end: 10px;
+`;
+
+const PaddedDiv = styled.div`
+    padding: 15px 0;
+`;
+
+const RightAlignedButton = styled.div`
+    display: flex;
+    justify-content: end;
+    padding: 10px;
 `;

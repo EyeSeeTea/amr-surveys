@@ -47,6 +47,8 @@ export class SurveyTestRepository implements SurveyRepository {
                             sortOrder: 1,
                         },
                     ],
+                    sortOrder: 1,
+                    repeatable: false,
                 },
             ],
 
