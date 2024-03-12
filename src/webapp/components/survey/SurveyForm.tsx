@@ -45,7 +45,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
-        addNew,
         shouldDisableSave,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
@@ -127,8 +126,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         title={section.title}
                                         updateQuestion={updateQuestion}
                                         questions={section.questions}
-                                        showAddnew={section.showAddnew}
-                                        addNewClick={() => addNew(section)}
                                     />
                                 );
                             })}

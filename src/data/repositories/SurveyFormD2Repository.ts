@@ -31,13 +31,11 @@ import {
     isTrackerProgram,
 } from "../utils/surveyProgramHelper";
 import {
-    programsWithRepeatableSections,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
     WARD2_ID_DATAELEMENT_ID,
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
-    hiddenFields,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
@@ -206,7 +204,7 @@ export class SurveyD2Repository implements SurveyRepository {
         //If the Program has sections, fetch and use programStageSections
         const sections: QuestionnaireSection[] = programStageSections
             ? programStageSections.map(section => {
-                  const { questions, sectionAddQuestion } = this.mapProgramDataElementToQuestions(
+                  const questions = this.mapProgramDataElementToQuestions(
                       isTrackerProgram(program.id),
                       section.dataElements,
                       dataElements,
@@ -222,7 +220,6 @@ export class SurveyD2Repository implements SurveyRepository {
                       isVisible: true,
                       stageId: section.programStage.id,
                       sortOrder: section.sortOrder,
-                      showAddQuestion: sectionAddQuestion,
                   };
               })
             : //If the Program has no sections, create a single section
@@ -237,7 +234,7 @@ export class SurveyD2Repository implements SurveyRepository {
                           options,
                           event,
                           trackedEntity
-                      ).questions,
+                      ),
                       isVisible: true,
                       stageId: "default",
                       sortOrder: 1,
@@ -252,55 +249,17 @@ export class SurveyD2Repository implements SurveyRepository {
                           ? sections
                           : sections.filter(section => section.stageId === stage.id);
 
-                  //check if current program has repeatable Questions.
-                  if (programsWithRepeatableSections.find(p => p === program.id)) {
-                      const groupedProgramStageSections = _(currentProgramStageSections)
-                          .sortBy(s => s.sortOrder)
-                          .groupBy(section =>
-                              section.title.substring(0, section.title.lastIndexOf(" "))
-                          );
-
-                      const processedSections: QuestionnaireSection[] = [];
-                      groupedProgramStageSections.forEach(group => {
-                          if (group[1].length > 1) {
-                              const currentSectionGroup: QuestionnaireSection[] = group[1].map(
-                                  (section, index) => {
-                                      return {
-                                          ...section,
-                                          isVisible: index === 0 ? true : false,
-                                          showAddnew: true,
-                                      };
-                                  }
-                              );
-                              processedSections.push(...currentSectionGroup);
-                          } else processedSections.push(...group[1]);
-                      });
-
-                      return {
-                          title: stage.name,
-                          code: stage.id,
-                          sections: _(processedSections)
-                              .sortBy(section => section.sortOrder)
-                              .value(),
-                          isVisible: true,
-                          instanceId: trackedEntity?.enrollments
-                              ?.at(0)
-                              ?.events.find(e => e.programStage === stage.id)?.event,
-                      };
-                  } else {
-                      // no need for grouping and hiding logic
-                      return {
-                          title: stage.name,
-                          code: stage.id,
-                          sections: _(currentProgramStageSections)
-                              .sortBy(section => section.sortOrder)
-                              .value(),
-                          isVisible: true,
-                          instanceId: trackedEntity?.enrollments
-                              ?.at(0)
-                              ?.events.find(e => e.programStage === stage.id)?.event,
-                      };
-                  }
+                  return {
+                      title: stage.name,
+                      code: stage.id,
+                      sections: _(currentProgramStageSections)
+                          .sortBy(section => section.sortOrder)
+                          .value(),
+                      isVisible: true,
+                      instanceId: trackedEntity?.enrollments
+                          ?.at(0)
+                          ?.events.find(e => e.programStage === stage.id)?.event,
+                  };
               })
             : //If the Program has no stages, create a single stage
               [
@@ -367,8 +326,7 @@ export class SurveyD2Repository implements SurveyRepository {
         options: Option[],
         event: D2TrackerEvent | undefined = undefined,
         trackedEntity: TrackedEntity | undefined = undefined
-    ): { questions: Question[]; sectionAddQuestion: string } {
-        let sectionAddQuestion = "";
+    ): Question[] {
         const questions: Question[] = _(
             sectionDataElements.map(dataElement => {
                 const curDataElement = dataElements.find(de => de.id === dataElement.id);
@@ -425,17 +383,6 @@ export class SurveyD2Repository implements SurveyRepository {
                         currentQuestion.disabled = true;
                     }
 
-                    //Some field was hidden, set it as label
-                    if (currentQuestion?.isVisible === false) {
-                        const LsectionAddLabel = hiddenFields.find(
-                            field => field === currentQuestion.text
-                        );
-
-                        if (LsectionAddLabel) {
-                            sectionAddQuestion = currentQuestion.id;
-                        }
-                    }
-
                     return currentQuestion;
                 }
             })
@@ -444,7 +391,7 @@ export class SurveyD2Repository implements SurveyRepository {
             .sortBy(q => q.sortOrder)
             .value();
 
-        return { questions, sectionAddQuestion: sectionAddQuestion };
+        return questions;
     }
 
     private mapTrackedAttributesToQuestions(
@@ -508,7 +455,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "boolean",
                     storeFalse: true,
                     value: dataValue ? (dataValue === "true" ? true : false) : true,
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };
@@ -522,7 +469,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "boolean",
                     storeFalse: false,
                     value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };
@@ -538,7 +485,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "number",
                     numberType: "INTEGER",
                     value: dataValue ? dataValue : "",
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };
@@ -562,7 +509,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         type: "select",
                         options: selectOptions,
                         value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
-                        isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        isVisible: true,
                         sortOrder: sortOrder,
                         errors: [],
                     };
@@ -575,7 +522,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         type: "text",
                         value: dataValue ? (dataValue as string) : "",
                         multiline: false,
-                        isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                        isVisible: true,
                         sortOrder: sortOrder,
                         errors: [],
                     };
@@ -591,7 +538,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     type: "text",
                     value: dataValue ? (dataValue as string) : "",
                     multiline: true,
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };
@@ -605,7 +552,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     text: formName,
                     type: "date",
                     value: dataValue ? new Date(dataValue as string) : new Date(),
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };
@@ -621,7 +568,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     value: dataValue
                         ? new Date(dataValue as string).toISOString()
                         : new Date().toISOString(),
-                    isVisible: hiddenFields.some(field => field === formName) ? false : true,
+                    isVisible: true,
                     sortOrder: sortOrder,
                     errors: [],
                 };

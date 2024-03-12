@@ -18,7 +18,7 @@ export class ApplyInitialRulesToSurveyUseCase {
         const currentParentId =
             module?.name === "PPS" ? currentPPSSurveyForm : currentPrevalenceSurveyForm;
 
-        const currentSurveyRules = module?.rulesBySurvey.find(
+        const currentSurveyRules = module?.rulesBySurvey?.find(
             rule => rule.surveyId === currentParentId
         )?.surveyRules;
 
