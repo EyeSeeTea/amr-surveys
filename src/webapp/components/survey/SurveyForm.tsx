@@ -14,7 +14,7 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
-import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Code, Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -89,6 +89,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
+    const addProgramStage = (stageCode: Code) => {
+        if (questionnaire) {
+            const updatedQuestionnaire = QuestionnarieM.addProgramStage(questionnaire, stageCode);
+            setQuestionnaire(updatedQuestionnaire);
+        }
+    };
+
+    const removeProgramStage = (stageId: Id) => {
+        if (questionnaire) {
+            const updatedQuestionnaire = QuestionnarieM.removeProgramStage(questionnaire, stageId);
+            setQuestionnaire(updatedQuestionnaire);
+        }
+    };
+
     const onCancel = () => {
         props.hideForm();
     };
@@ -121,11 +135,24 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         <PaddedDiv key={stage.code}>
                             <Typography>Stage : {stage.title}</Typography>
                             {stage.repeatable && (
-                                <RightAlignedButton>
-                                    <Button variant="contained" color="primary">
+                                <RightAlignedDiv>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => addProgramStage(stage.code)}
+                                    >
                                         Add Another {stage.title}
                                     </Button>
-                                </RightAlignedButton>
+                                    {stage.isAddedByUser && (
+                                        <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => removeProgramStage(stage.id)}
+                                        >
+                                            Remove {stage.title}
+                                        </Button>
+                                    )}
+                                </RightAlignedDiv>
                             )}
 
                             {stage.sections.map(section => {
@@ -177,7 +204,7 @@ const PaddedDiv = styled.div`
     padding: 15px 0;
 `;
 
-const RightAlignedButton = styled.div`
+const RightAlignedDiv = styled.div`
     display: flex;
     justify-content: end;
     padding: 10px;

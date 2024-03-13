@@ -1,3 +1,4 @@
+import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
@@ -33,6 +34,7 @@ export interface QuestionnaireEntity {
 }
 
 export interface QuestionnaireStage {
+    id: Id;
     title: string;
     code: Code;
     sections: QuestionnaireSection[];
@@ -41,6 +43,7 @@ export interface QuestionnaireStage {
     repeatable: boolean;
     showNextStage?: boolean;
     instanceId?: Id; //Corresponds to DHIS eventId
+    isAddedByUser?: boolean;
 }
 
 export class QuestionnarieM {
@@ -152,6 +155,36 @@ export class QuestionnarieM {
                     ),
                 };
             }),
+        };
+    }
+
+    static addProgramStage(questionnaire: Questionnaire, stageCode: Id): Questionnaire {
+        const stageToAdd = questionnaire.stages.find(stage => stage.code === stageCode);
+
+        if (!stageToAdd) return questionnaire;
+
+        const newStage: QuestionnaireStage = {
+            id: generateUid(),
+            title: stageToAdd.title,
+            code: stageToAdd.code,
+            sections: stageToAdd.sections.map(section => section),
+            sortOrder: questionnaire.stages.length,
+            isVisible: stageToAdd.isVisible,
+            repeatable: stageToAdd.repeatable,
+            isAddedByUser: true,
+        };
+
+        return {
+            ...questionnaire,
+            stages: [...questionnaire.stages, newStage],
+        };
+    }
+
+    static removeProgramStage(questionnaire: Questionnaire, stageId: Id): Questionnaire {
+        const updatedStages = questionnaire.stages.filter(stage => stage.id !== stageId);
+        return {
+            ...questionnaire,
+            stages: updatedStages,
         };
     }
 }

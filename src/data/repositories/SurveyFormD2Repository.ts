@@ -250,6 +250,7 @@ export class SurveyD2Repository implements SurveyRepository {
                           : sections.filter(section => section.stageId === stage.id);
 
                   return {
+                      id: stage.id,
                       title: stage.name,
                       code: stage.id,
                       sections: _(currentProgramStageSections)
@@ -266,6 +267,7 @@ export class SurveyD2Repository implements SurveyRepository {
             : //If the Program has no stages, create a single stage
               [
                   {
+                      id: "STAGE",
                       title: "STAGE",
                       code: "STAGE",
                       sections: _(sections)

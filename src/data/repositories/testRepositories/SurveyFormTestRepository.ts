@@ -34,6 +34,7 @@ export class SurveyTestRepository implements SurveyRepository {
             description: "Test Questionnaire",
             stages: [
                 {
+                    id: "S1",
                     isVisible: true,
                     code: "S1",
                     title: "Stage1",
