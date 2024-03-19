@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
-import {
-    Questionnaire,
-    QuestionnaireM,
-} from "../../../../domain/entities/Questionnaire/Questionnaire";
+import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
-import { QuestionnaireSection } from "../../../../domain/entities/Questionnaire/QuestionnaireSection";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -26,51 +22,10 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     } = useCurrentSurveys();
     const [error, setError] = useState<string>();
 
-    const addNew = (prevSection: QuestionnaireSection) => {
-        setQuestionnaire(prevQuestionnaire => {
-            if (prevQuestionnaire) {
-                const stageToUpdate = prevQuestionnaire?.stages.find(
-                    stage => stage.code === prevSection.stageId
-                );
-
-                const sectionToUpdate = stageToUpdate?.sections.find(
-                    section => section.sortOrder === prevSection.sortOrder + 1
-                );
-
-                return {
-                    ...prevQuestionnaire,
-                    stages: prevQuestionnaire.stages.map(stage => {
-                        if (stage.code !== stageToUpdate?.code) return stage;
-                        else {
-                            return {
-                                ...stage,
-                                sections: stage.sections.map(section => {
-                                    if (section.code !== sectionToUpdate?.code) return section;
-                                    else {
-                                        return {
-                                            ...section,
-                                            isVisible: true,
-                                            questions: section.questions.map(q => {
-                                                if (q.id === section.showAddQuestion) {
-                                                    q.value = true;
-                                                    return q;
-                                                } else return q;
-                                            }),
-                                        };
-                                    }
-                                }),
-                            };
-                        }
-                    }),
-                };
-            }
-        });
-    };
-
     useEffect(() => {
         if (!questionnaire) setShouldDisableSave(true);
         else {
-            const shouldDisable = QuestionnaireM.doesQuestionnaireHaveErrors(questionnaire);
+            const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
             setShouldDisableSave(shouldDisable);
         }
     }, [questionnaire]);
@@ -185,7 +140,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setCurrentOrgUnit,
         setLoading,
         error,
-        addNew,
         shouldDisableSave,
     };
 }

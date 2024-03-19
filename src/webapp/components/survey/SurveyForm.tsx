@@ -14,7 +14,7 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { QuestionnaireM } from "../../../domain/entities/Questionnaire/Questionnaire";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -45,7 +45,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
-        addNew,
         shouldDisableSave,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
@@ -82,10 +81,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnaireM.updateQuestionnaire(
-                questionnaire,
-                question
-            );
+            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(questionnaire, question);
             setQuestionnaire(updatedQuestionnaire);
         }
     };
@@ -128,7 +124,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         updateQuestion={updateQuestion}
                                         questions={section.questions}
                                         showAddnew={section.showAddnew}
-                                        addNewClick={() => addNew(section)}
                                     />
                                 );
                             })}

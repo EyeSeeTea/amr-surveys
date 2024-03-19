@@ -31,7 +31,7 @@ export class SurveyTestRepository implements SurveyRepository {
         throw new Error("Method not implemented.");
     }
     getForm(programId: string): FutureData<Questionnaire> {
-        const questionnaire: Questionnaire = {
+        const questionnaire: Questionnaire = Questionnaire.create({
             id: programId,
             name: "Test Questionnaire",
             description: "Test Questionnaire",
@@ -58,7 +58,7 @@ export class SurveyTestRepository implements SurveyRepository {
             isMandatory: false,
             year: "2023",
             rules: [],
-        };
+        });
         return Future.success(questionnaire);
     }
 

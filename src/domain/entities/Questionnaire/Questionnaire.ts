@@ -14,7 +14,7 @@ export interface QuestionnaireBase {
     isMandatory: boolean;
 }
 
-export interface Questionnaire extends QuestionnaireBase {
+interface QuestionnaireData extends QuestionnaireBase {
     stages: QuestionnaireStage[];
     entity?: QuestionnaireEntity; //Equivalant to tracked entity instance of tracker program
     subLevelDetails?: {
@@ -40,9 +40,72 @@ export interface QuestionnaireStage {
     instanceId?: Id; //Corresponds to DHIS eventId
 }
 
-export class QuestionnaireM {
+export class Questionnaire {
+    private readonly data: QuestionnaireData;
+
+    private constructor(data: QuestionnaireData) {
+        this.data = data;
+    }
+    public get stages(): QuestionnaireStage[] {
+        return this.data.stages;
+    }
+
+    public get rules(): QuestionnaireRule[] {
+        return this.data.rules;
+    }
+    public get entity(): QuestionnaireEntity | undefined {
+        return this.data.entity;
+    }
+    public get orgUnit(): Ref {
+        return this.data.orgUnit;
+    }
+
+    public get subLevelDetails(): { enrollmentId: Id } | undefined {
+        return this.data.subLevelDetails;
+    }
+
+    public static create(data: QuestionnaireData): Questionnaire {
+        //TO DO : Add validations if any
+        return new Questionnaire({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            orgUnit: data.orgUnit,
+            year: data.year,
+            isCompleted: data.isCompleted,
+            isMandatory: data.isMandatory,
+            stages: data.stages,
+            entity: data.entity,
+            subLevelDetails: data.subLevelDetails,
+            rules: data.rules,
+        });
+    }
+
+    static updateQuestionnaireEntity(
+        questionnaire: Questionnaire,
+        entity: QuestionnaireEntity
+    ): Questionnaire {
+        return Questionnaire.create({
+            ...questionnaire.data,
+            entity: entity,
+        });
+    }
+
+    static updateQuestionnaireStages(
+        questionnaire: Questionnaire,
+        stages: QuestionnaireStage[]
+    ): Questionnaire {
+        return Questionnaire.create({
+            ...questionnaire.data,
+            stages: stages,
+        });
+    }
+
     static setAsComplete(questionnarie: Questionnaire, value: boolean): Questionnaire {
-        return { ...questionnarie, isCompleted: value };
+        return Questionnaire.create({
+            ...questionnarie.data,
+            isCompleted: value,
+        });
     }
 
     static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
@@ -87,8 +150,8 @@ export class QuestionnaireM {
             allQsInQuestionnaire
         );
 
-        return {
-            ...questionnaire,
+        return Questionnaire.create({
+            ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
                 return {
                     ...stage,
@@ -100,7 +163,7 @@ export class QuestionnaireM {
                     ),
                 };
             }),
-        };
+        });
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {

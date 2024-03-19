@@ -173,7 +173,7 @@ export const mapProgramToQuestionnaire = (
         programRuleActions
     );
 
-    const form: Questionnaire = {
+    const form = {
         id: program.id,
         name: program.name,
         description: program.name,
@@ -202,9 +202,10 @@ export const mapProgramToQuestionnaire = (
             isVisible: true,
             stageId: "PROFILE",
         };
-        form.entity = profileSection;
+
+        return Questionnaire.create({ ...form, entity: profileSection });
     }
-    return form;
+    return Questionnaire.create(form);
 };
 
 export const mapQuestionnaireToEvent = (
