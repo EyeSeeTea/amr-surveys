@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
-import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
+import {
+    Questionnaire,
+    QuestionnaireM,
+} from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
@@ -13,6 +16,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
+    const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
     const {
         currentPPSSurveyForm,
         currentHospitalForm,
@@ -21,17 +25,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentFacilityLevelForm,
     } = useCurrentSurveys();
     const [error, setError] = useState<string>();
-
-    const shouldDisableSave = (): boolean => {
-        if (!questionnaire) return true;
-        const allQuestions = questionnaire.stages.flatMap(stage => {
-            return stage.sections.flatMap(section => {
-                return section.questions.map(question => question);
-            });
-        });
-
-        return allQuestions.some(question => question.errors.length > 0);
-    };
 
     const addNew = (prevSection: QuestionnaireSection) => {
         setQuestionnaire(prevQuestionnaire => {
@@ -73,6 +66,14 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
             }
         });
     };
+
+    useEffect(() => {
+        if (!questionnaire) setShouldDisableSave(true);
+        else {
+            const shouldDisable = QuestionnaireM.doesQuestionnaireHaveErrors(questionnaire);
+            setShouldDisableSave(shouldDisable);
+        }
+    }, [questionnaire]);
 
     useEffect(() => {
         setLoading(true);

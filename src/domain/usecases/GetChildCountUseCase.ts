@@ -22,42 +22,47 @@ export class GetChildCountUseCase {
         secondaryparentId?: Id
     ): FutureData<number | ProgramOptionCountMap> {
         const programId = getProgramId(surveyFormType);
-        return this.surveyReporsitory
-            .getSurveyChildCount(programId, orgUnitId, parentSurveyId, secondaryparentId)
-            .map(programCountMap => {
-                if (typeof programCountMap === "number") {
-                    return programCountMap;
-                } else {
-                    const programOptionsMap: ProgramOptionCountMap = programCountMap.map(pc => {
-                        if (pc.id === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID) {
-                            return {
-                                option: `List Sample Shipments (${pc.count})`,
-                                count: pc.count,
-                            };
-                        } else if (pc.id === PREVALENCE_CENTRAL_REF_LAB_FORM_ID) {
-                            return {
-                                option: `List Central Ref Labs (${pc.count})`,
-                                count: pc.count,
-                            };
-                        } else if (pc.id === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID) {
-                            return {
-                                option: `List Pathogen Isolates Logs (${pc.count})`,
-                                count: pc.count,
-                            };
-                        } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
-                            return {
-                                option: `List Supranational Refs (${pc.count})`,
-                                count: pc.count,
-                            };
-                        } else {
-                            return {
-                                option: ``,
-                                count: 0,
-                            };
-                        }
-                    });
-                    return programOptionsMap;
-                }
+        const programCountMap = this.surveyReporsitory.getSurveyChildCount(
+            programId,
+            orgUnitId,
+            parentSurveyId,
+            secondaryparentId
+        );
+
+        if (programCountMap.type === "value") {
+            return programCountMap.value;
+        } else {
+            return programCountMap.value.map(programCountMap => {
+                const programOptionsMap: ProgramOptionCountMap = programCountMap.map(pc => {
+                    if (pc.id === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID) {
+                        return {
+                            option: `List Sample Shipments (${pc.count})`,
+                            count: pc.count,
+                        };
+                    } else if (pc.id === PREVALENCE_CENTRAL_REF_LAB_FORM_ID) {
+                        return {
+                            option: `List Central Ref Labs (${pc.count})`,
+                            count: pc.count,
+                        };
+                    } else if (pc.id === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID) {
+                        return {
+                            option: `List Pathogen Isolates Logs (${pc.count})`,
+                            count: pc.count,
+                        };
+                    } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
+                        return {
+                            option: `List Supranational Refs (${pc.count})`,
+                            count: pc.count,
+                        };
+                    } else {
+                        return {
+                            option: ``,
+                            count: 0,
+                        };
+                    }
+                });
+                return programOptionsMap;
             });
+        }
     }
 }

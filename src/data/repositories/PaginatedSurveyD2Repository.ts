@@ -140,11 +140,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         ).flatMap(response => {
             const events = response.instances;
 
-            const surveys = mapEventToSurvey(
-                events,
-                "PPSPatientRegister",
-                PPS_PATIENT_REGISTER_ID
-            );
+            const surveys = mapEventToSurvey(events, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {

@@ -40,7 +40,7 @@ export interface QuestionnaireStage {
     instanceId?: Id; //Corresponds to DHIS eventId
 }
 
-export class QuestionnarieM {
+export class QuestionnaireM {
     static setAsComplete(questionnarie: Questionnaire, value: boolean): Questionnaire {
         return { ...questionnarie, isCompleted: value };
     }
@@ -101,5 +101,15 @@ export class QuestionnarieM {
                 };
             }),
         };
+    }
+
+    static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {
+        const allQuestions = questionnaire.stages.flatMap(stage => {
+            return stage.sections.flatMap(section => {
+                return section.questions.map(question => question);
+            });
+        });
+
+        return allQuestions.some(question => question.errors.length > 0);
     }
 }

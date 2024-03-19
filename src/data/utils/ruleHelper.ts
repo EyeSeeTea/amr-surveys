@@ -54,7 +54,7 @@ export const getProgramRules = (
 
             return {
                 id: id,
-                condition: parsedCondition,
+                condition: parsedCondition.replace(/d2:/g, "fn:"), //replace d2: with fn: to decouple entity from DHIS
                 dataElementIds: _(dataElementIds).uniq().compact().value(),
                 actions: programRuleActions || [],
             };

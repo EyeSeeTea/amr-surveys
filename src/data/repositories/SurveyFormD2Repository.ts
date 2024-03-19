@@ -1,7 +1,6 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
-import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -36,6 +35,7 @@ import {
     mapQuestionnaireToTrackedEntities,
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -307,27 +307,30 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): FutureData<number | ProgramCountMap> {
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> } {
         const childIds = getChildProgramId(parentProgram);
 
-        if (childIds && childIds[0]) {
-            //As of now, all child programs for a given program are of the same type,
-            //so we will check only the first child
+        //As of now, all child programs for a given program are of the same type,
+        //so we will check only the first child
 
-            const childId = typeof childIds === "string" ? childIds : childIds[0];
+        const childId = childIds.type === "singleChild" ? childIds.value : childIds.value[0];
+
+        if (childId) {
             const isTracker = isTrackerProgram(childId);
 
             if (isTracker) {
-                if (typeof childIds === "string") {
+                if (childIds.type === "singleChild") {
                     const eventCount = this.getTrackerSurveyCount(
                         childId,
                         orgUnitId,
                         parentSurveyId
                     );
 
-                    return eventCount;
+                    return { type: "value", value: eventCount };
                 } else {
-                    const eventCounts = childIds.map(id => {
+                    const eventCounts = childIds.value.map(id => {
                         return this.getTrackerSurveyCount(id, orgUnitId, parentSurveyId).map(
                             count => {
                                 return { id: id, count: count };
@@ -335,27 +338,35 @@ export class SurveyD2Repository implements SurveyRepository {
                         );
                     });
 
-                    return Future.sequential(eventCounts);
+                    return { type: "map", value: Future.sequential(eventCounts) };
                 }
             } else {
-                if (typeof childIds === "string") {
+                if (childIds.type === "singleChild") {
                     const eventCount = this.getEventSurveyCount(
-                        childIds,
+                        childIds.value,
                         orgUnitId,
                         parentSurveyId,
                         secondaryparentId
                     );
 
-                    return eventCount;
+                    return { type: "value", value: eventCount };
                 } else {
-                    return Future.error(
-                        new Error(
-                            "Event programs in AMR Surveys have single child. It should not contain multiple children"
-                        )
-                    );
+                    return {
+                        type: "map",
+                        value: Future.error(
+                            new Error(
+                                "Event programs in AMR Surveys have single child. It should not contain multiple children"
+                            )
+                        ),
+                    };
                 }
             }
-        } else return Future.error(new Error("Unknown child program"));
+        } else {
+            return {
+                type: "value",
+                value: Future.error(new Error("Unknown Child program ")),
+            };
+        }
     }
 
     private getEventSurveyCount(

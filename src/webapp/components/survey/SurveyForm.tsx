@@ -14,7 +14,7 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
+import { QuestionnaireM } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -82,7 +82,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.updateQuestionnaire(
+            const updatedQuestionnaire = QuestionnaireM.updateQuestionnaire(
                 questionnaire,
                 question
             );
@@ -145,7 +145,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     variant="contained"
                     color="primary"
                     onClick={saveSurveyForm}
-                    disabled={shouldDisableSave()}
+                    disabled={shouldDisableSave}
                 >
                     {i18n.t("Save")}
                 </Button>
