@@ -101,8 +101,7 @@ export class QuestionnaireQuestion {
     ): Question[] {
         //1. Update the question value before anything else, the updated value needs to be used to parse rule conditions
         const updatedQuestions = questions.map(question => {
-            if (question.id === updatedQuestion.id) return updatedQuestion;
-            else return question;
+            return question.id === updatedQuestion.id ? updatedQuestion : question;
         });
 
         //2. Now, apply all possible side effects of the updated value to the rest of the questionnaire.
@@ -199,11 +198,9 @@ export class QuestionnaireQuestion {
 
         const updatedErrorsByDataElement = _(updatedQuestionErrors).compact().value();
 
-        const updatedErrors = _(
-            updatedErrorsByDataElement
-                .filter(err => err.dataElementId === question.id)
-                .map(error => error.errorMsg)
-        )
+        const updatedErrors = _(updatedErrorsByDataElement)
+            .filter(err => err.dataElementId === question.id)
+            .map(error => error.errorMsg)
             .compact()
             .value();
 

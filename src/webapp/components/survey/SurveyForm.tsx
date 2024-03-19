@@ -4,7 +4,6 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -15,6 +14,7 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
