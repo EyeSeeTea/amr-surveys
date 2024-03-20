@@ -4,7 +4,6 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -15,6 +14,7 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -45,7 +45,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
-        addNew,
         shouldDisableSave,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
@@ -82,10 +81,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.updateQuestionnaire(
-                questionnaire,
-                question
-            );
+            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(questionnaire, question);
             setQuestionnaire(updatedQuestionnaire);
         }
     };
@@ -128,7 +124,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         updateQuestion={updateQuestion}
                                         questions={section.questions}
                                         showAddnew={section.showAddnew}
-                                        addNewClick={() => addNew(section)}
                                     />
                                 );
                             })}
@@ -145,7 +140,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     variant="contained"
                     color="primary"
                     onClick={saveSurveyForm}
-                    disabled={shouldDisableSave()}
+                    disabled={shouldDisableSave}
                 >
                     {i18n.t("Save")}
                 </Button>

@@ -1,5 +1,6 @@
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
-import { Questionnaire, QuestionnarieM } from "../entities/Questionnaire/Questionnaire";
+import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
+
 import { Id } from "../entities/Ref";
 
 export class ApplyInitialRulesToSurveyUseCase {
@@ -11,7 +12,7 @@ export class ApplyInitialRulesToSurveyUseCase {
     ): Questionnaire {
         //1. Apply program rules defined in metadata
         const questionnaireWithProgramRules =
-            QuestionnarieM.applyProgramRulesOnQuestionnaireInitialLoad(questionnaire);
+            Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(questionnaire);
 
         //2. Apply survey rules defined in the datastore
 
@@ -30,7 +31,7 @@ export class ApplyInitialRulesToSurveyUseCase {
         if (!currentFormRule) return questionnaireWithProgramRules;
         else {
             const questionnaireWithSurveyRules =
-                QuestionnarieM.applySurveyRulesOnQuestionnaireInitialLoad(
+                Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
                     questionnaire,
                     currentFormRule
                 );

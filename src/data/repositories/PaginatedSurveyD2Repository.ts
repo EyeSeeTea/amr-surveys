@@ -13,11 +13,11 @@ import {
     SURVEY_PATIENT_ID_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
 } from "../entities/D2Survey";
-import { SurveyD2Repository } from "./SurveyFormD2Repository";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
+import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
-    constructor(private api: D2Api, private surveyFormRepository: SurveyD2Repository) {}
+    constructor(private api: D2Api) {}
 
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
@@ -71,10 +71,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 filter: `${filterParentDEId}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
-            const surveys = this.surveyFormRepository.mapTrackedEntityToSurvey(
-                trackedEntities,
-                surveyFormType
-            );
+            const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -112,11 +109,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         ).flatMap(response => {
             const events = response.instances;
 
-            const surveys = this.surveyFormRepository.mapEventToSurvey(
-                events,
-                surveyFormType,
-                programId
-            );
+            const surveys = mapEventToSurvey(events, surveyFormType, programId);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -147,11 +140,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         ).flatMap(response => {
             const events = response.instances;
 
-            const surveys = this.surveyFormRepository.mapEventToSurvey(
-                events,
-                "PPSPatientRegister",
-                PPS_PATIENT_REGISTER_ID
-            );
+            const surveys = mapEventToSurvey(events, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {

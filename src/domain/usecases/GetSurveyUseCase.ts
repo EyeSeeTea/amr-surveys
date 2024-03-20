@@ -105,7 +105,9 @@ export class GetSurveyUseCase {
                         sections: updatedSections,
                     };
 
-                    return Future.success({ ...questionnaire, stages: [updatedStage] });
+                    return Future.success(
+                        Questionnaire.updateQuestionnaireStages(questionnaire, [updatedStage])
+                    );
                 } else {
                     return Future.success(questionnaire);
                 }
@@ -150,10 +152,9 @@ export class GetSurveyUseCase {
                     questions: updatedEntityQuestions,
                 };
 
-                return Future.success({
-                    ...questionnaire,
-                    entity: updatedEntity,
-                });
+                return Future.success(
+                    Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
+                );
             });
     }
 }
