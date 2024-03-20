@@ -191,7 +191,8 @@ export class Questionnaire {
 
     static updateQuestionnaire(
         questionnaire: Questionnaire,
-        updatedQuestion: Question
+        updatedQuestion: Question,
+        stageId?: string
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
         const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
@@ -209,6 +210,7 @@ export class Questionnaire {
         return Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
+                if (stageId && stage.id !== stageId) return stage;
                 return {
                     ...stage,
                     sections: QuestionnaireSectionM.updatedSections(
@@ -234,14 +236,30 @@ export class Questionnaire {
 
     static addProgramStage(questionnaire: Questionnaire, stageCode: Id): Questionnaire {
         const stageToAdd = questionnaire.stages.find(stage => stage.code === stageCode);
-
         if (!stageToAdd) return questionnaire;
+
+        const addEmptySectionWithEmptyQuestions = (
+            section: QuestionnaireSection
+        ): QuestionnaireSection => {
+            return {
+                ...section,
+                questions: section.questions.map(question => {
+                    return {
+                        ...question,
+                        value: undefined,
+                        errors: [],
+                    };
+                }),
+            };
+        };
 
         const newStage: QuestionnaireStage = {
             id: generateUid(),
             title: stageToAdd.title,
             code: stageToAdd.code,
-            sections: stageToAdd.sections.map(section => section),
+            sections: stageToAdd.sections.map(section =>
+                addEmptySectionWithEmptyQuestions(section)
+            ),
             sortOrder: questionnaire.stages.length,
             isVisible: stageToAdd.isVisible,
             repeatable: stageToAdd.repeatable,
@@ -256,7 +274,6 @@ export class Questionnaire {
 
     static removeProgramStage(questionnaire: Questionnaire, stageId: Id): Questionnaire {
         const updatedStages = questionnaire.stages.filter(stage => stage.id !== stageId);
-
         return Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages);
     }
 }

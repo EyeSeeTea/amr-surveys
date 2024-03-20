@@ -79,9 +79,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
-    const updateQuestion = (question: Question) => {
+    const updateQuestion = (question: Question, stageId?: string) => {
         if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(questionnaire, question);
+            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
+                questionnaire,
+                question,
+                stageId
+            );
             setQuestionnaire(updatedQuestionnaire);
         }
     };
@@ -141,13 +145,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         Add Another {stage.title}
                                     </Button>
                                     {stage.isAddedByUser && (
-                                        <Button
-                                            variant="contained"
-                                            color="secondary"
+                                        <CancelButton
+                                            variant="outlined"
                                             onClick={() => removeProgramStage(stage.id)}
                                         >
                                             Remove {stage.title}
-                                        </Button>
+                                        </CancelButton>
                                     )}
                                 </RightAlignedDiv>
                             )}
@@ -159,7 +162,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     <SurveySection
                                         key={section.code}
                                         title={section.title}
-                                        updateQuestion={updateQuestion}
+                                        updateQuestion={question =>
+                                            updateQuestion(question, stage.id)
+                                        }
                                         questions={section.questions}
                                     />
                                 );
@@ -205,4 +210,5 @@ const RightAlignedDiv = styled.div`
     display: flex;
     justify-content: end;
     padding: 10px;
+    gap: 5px;
 `;
