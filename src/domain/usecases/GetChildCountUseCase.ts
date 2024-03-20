@@ -41,7 +41,7 @@ export class GetChildCountUseCase {
                         };
                     } else if (pc.id === PREVALENCE_CENTRAL_REF_LAB_FORM_ID) {
                         return {
-                            option: `List Central Ref Labs (${pc.count})`,
+                            option: `List Central Ref Labs Results (${pc.count})`,
                             count: pc.count,
                         };
                     } else if (pc.id === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID) {
@@ -51,7 +51,7 @@ export class GetChildCountUseCase {
                         };
                     } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
                         return {
-                            option: `List Supranational Refs (${pc.count})`,
+                            option: `List Supranational Refs Results (${pc.count})`,
                             count: pc.count,
                         };
                     } else {
