@@ -21,9 +21,7 @@ export class QuestionnaireSectionM {
     ): QuestionnaireSection[] {
         //Get all the sections that require update
         const allSectionsRequiringUpdate = _(
-            rules.flatMap(rule => {
-                return rule.actions.flatMap(action => action.programStageSection?.id);
-            })
+            rules.flatMap(rule => rule.actions.flatMap(action => action.programStageSection?.id))
         )
             .compact()
             .value();
@@ -82,7 +80,7 @@ export class QuestionnaireSectionM {
             });
         });
 
-        //If even one of the rules asks to hide the section, hide the section
-        return updatedSectionVisibility.some(visibility => visibility === false) ? false : true;
+        // If even one of the rules asks to hide the section, hide the section
+        return !updatedSectionVisibility.some(visibility => visibility === false);
     }
 }

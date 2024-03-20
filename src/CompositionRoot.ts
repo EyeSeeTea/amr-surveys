@@ -86,10 +86,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         localeRepository: new LocalesD2Repository(api),
         moduleRepository: new ModuleD2Repository(dataStoreClient, api),
         surveyFormRepository: new SurveyD2Repository(api),
-        paginatedSurveyRepository: new PaginatedSurveyD2Repository(
-            api,
-            new SurveyD2Repository(api)
-        ),
+        paginatedSurveyRepository: new PaginatedSurveyD2Repository(api),
     };
 
     return getCompositionRoot(repositories);

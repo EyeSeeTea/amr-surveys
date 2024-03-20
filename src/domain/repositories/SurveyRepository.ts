@@ -37,5 +37,7 @@ export interface SurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): FutureData<number | ProgramCountMap>;
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> };
 }

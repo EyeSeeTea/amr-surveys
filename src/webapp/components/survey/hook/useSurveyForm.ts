@@ -13,6 +13,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
+    const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
     const {
         currentPPSSurveyForm,
         currentHospitalForm,
@@ -23,16 +24,13 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [error, setError] = useState<string>();
     const { currentModule } = useCurrentModule();
 
-    const shouldDisableSave = (): boolean => {
-        if (!questionnaire) return true;
-        const allQuestions = questionnaire.stages.flatMap(stage => {
-            return stage.sections.flatMap(section => {
-                return section.questions.map(question => question);
-            });
-        });
-
-        return allQuestions.some(question => question.errors.length > 0);
-    };
+    useEffect(() => {
+        if (!questionnaire) setShouldDisableSave(true);
+        else {
+            const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
+            setShouldDisableSave(shouldDisable);
+        }
+    }, [questionnaire]);
 
     useEffect(() => {
         setLoading(true);

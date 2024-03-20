@@ -20,9 +20,9 @@ import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
-
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
+
 export class GetSurveyUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
@@ -105,7 +105,9 @@ export class GetSurveyUseCase {
                         sections: updatedSections,
                     };
 
-                    return Future.success({ ...questionnaire, stages: [updatedStage] });
+                    return Future.success(
+                        Questionnaire.updateQuestionnaireStages(questionnaire, [updatedStage])
+                    );
                 } else {
                     return Future.success(questionnaire);
                 }
@@ -150,10 +152,9 @@ export class GetSurveyUseCase {
                     questions: updatedEntityQuestions,
                 };
 
-                return Future.success({
-                    ...questionnaire,
-                    entity: updatedEntity,
-                });
+                return Future.success(
+                    Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
+                );
             });
     }
 }

@@ -4,7 +4,6 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { QuestionnarieM } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -14,7 +13,8 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
-import { Code, Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Question, Code } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -81,24 +81,21 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.updateQuestionnaire(
-                questionnaire,
-                question
-            );
+            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(questionnaire, question);
             setQuestionnaire(updatedQuestionnaire);
         }
     };
 
     const addProgramStage = (stageCode: Code) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.addProgramStage(questionnaire, stageCode);
+            const updatedQuestionnaire = Questionnaire.addProgramStage(questionnaire, stageCode);
             setQuestionnaire(updatedQuestionnaire);
         }
     };
 
     const removeProgramStage = (stageId: Id) => {
         if (questionnaire) {
-            const updatedQuestionnaire = QuestionnarieM.removeProgramStage(questionnaire, stageId);
+            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
             setQuestionnaire(updatedQuestionnaire);
         }
     };
@@ -180,7 +177,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     variant="contained"
                     color="primary"
                     onClick={saveSurveyForm}
-                    disabled={shouldDisableSave()}
+                    disabled={shouldDisableSave}
                 >
                     {i18n.t("Save")}
                 </Button>

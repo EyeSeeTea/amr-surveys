@@ -2,8 +2,8 @@ import { Id } from "../Ref";
 import _ from "../generic/Collection";
 import { Question } from "./QuestionnaireQuestion";
 
-const D2_FUNCTIONS = ["d2:hasValue", "d2:daysBetween", "d2:yearsBetween"];
-const D2_OPERATORS = [
+const RULE_FUNCTIONS = ["fn:hasValue", "fn:daysBetween", "fn:yearsBetween"];
+const RULE_OPERATORS = [
     ">" as const,
     ">=" as const,
     "<" as const,
@@ -94,52 +94,46 @@ const parseConditionValues = (
     questions: Question[]
 ) => {
     return condition.replace(/#\{(.*?)\}/g, (_i, dataElementId) => {
-        //first check if the dataElementId is in the updatedQuestion,
-        if (updatedQuestion.id === dataElementId) {
+        const isDataElementInUpdatedQuestion = updatedQuestion.id === dataElementId;
+        if (isDataElementInUpdatedQuestion) {
             return getQuestionValueByType(updatedQuestion);
         } else {
-            //if not, check in the questionnaire
             const currentQuestion = questions.find(
                 (question: Question) => question.id === dataElementId
             );
-
-            if (currentQuestion) {
-                return getQuestionValueByType(currentQuestion);
-            } else {
-                return "";
-            }
+            return currentQuestion ? getQuestionValueByType(currentQuestion) : "";
         }
     });
 };
 
-const handleD2Functions = (condition: string): boolean => {
-    const d2Function = D2_FUNCTIONS.find(d2func => condition.includes(d2func));
+const handleRuleFunctions = (condition: string): boolean => {
+    const ruleFunction = RULE_FUNCTIONS.find(rulefunc => condition.includes(rulefunc));
 
-    switch (d2Function) {
-        case "d2:hasValue": {
-            const match = condition.match(/d2:hasValue\((.*?)\)/);
+    switch (ruleFunction) {
+        case "fn:hasValue": {
+            const match = condition.match(/fn:hasValue\((.*?)\)/);
             if (match) {
                 const innerString = match[1];
                 if (innerString?.trim() === "") {
-                    console.debug('The string between "d2:hasValue(" and ")" is empty.');
+                    console.debug('The string between "fn:hasValue(" and ")" is empty.');
                     return false;
                 } else {
-                    console.debug(`The string between "d2:hasValue(" and ")" is: ${innerString}`);
+                    console.debug(`The string between "fn:hasValue(" and ")" is: ${innerString}`);
                     return true;
                 }
             } else return false;
         }
 
         default:
-            console.debug(`Unkown d2 function: ${d2Function}`);
+            console.debug(`Unkown rule function: ${ruleFunction}`);
             return false;
     }
 };
 
 const handleCondition = (condition: string): boolean => {
-    const operator = D2_OPERATORS.find(d2Operator => condition.includes(d2Operator));
+    const operator = RULE_OPERATORS.find(ruleOperator => condition.includes(ruleOperator));
 
-    if (!operator || !D2_OPERATORS.includes(operator))
+    if (!operator || !RULE_OPERATORS.includes(operator))
         throw new Error(`Operator ${operator} is either undefined or not handled`);
 
     const leftOperand = condition
@@ -172,32 +166,59 @@ const handleCondition = (condition: string): boolean => {
             try {
                 return parseFloat(leftOperand) > parseFloat(rightOperand);
             } catch {
-                return leftOperand > rightOperand;
+                return false;
             }
         }
         case ">=": {
             try {
                 return parseFloat(leftOperand) >= parseFloat(rightOperand);
             } catch {
-                return leftOperand >= rightOperand;
+                return false;
             }
         }
         case "<": {
             try {
                 return parseFloat(leftOperand) < parseFloat(rightOperand);
             } catch {
-                return leftOperand < rightOperand;
+                return false;
             }
         }
         case "<=": {
             try {
                 return parseFloat(leftOperand) <= parseFloat(rightOperand);
             } catch {
-                return leftOperand <= rightOperand;
+                return false;
             }
         }
         default:
             throw new Error(`Operator ${operator} not handled`);
+    }
+};
+
+const parseAndEvaluateSubCondition = (
+    subCondition: string,
+    updatedQuestion: Question,
+    questions: Question[]
+): boolean => {
+    // Replace #{dataElementId} with actual value from questionnaire
+    const parsedConditionWithValues = parseConditionValues(
+        subCondition,
+        updatedQuestion,
+        questions
+    );
+
+    // Evaluate the condition
+    try {
+        if (RULE_FUNCTIONS.some(ruleFunction => parsedConditionWithValues.includes(ruleFunction))) {
+            return handleRuleFunctions(parsedConditionWithValues);
+        } else {
+            return handleCondition(parsedConditionWithValues);
+        }
+    } catch (error) {
+        console.error(
+            `Error evaluating condition: ${parsedConditionWithValues} with error : ${error}`
+        );
+        return false;
     }
 };
 
@@ -206,64 +227,42 @@ export const parseCondition = (
     updatedQuestion: Question,
     questions: Question[]
 ): boolean => {
-    // Create a regular expression from D2_FUNCTIONS array
-    const d2FunctionsRegex = new RegExp(`(?<!${D2_FUNCTIONS.join("|")})\\(`);
+    // Create a regular expression from RULE_FUNCTIONS array
+    const ruleFunctionsRegex = new RegExp(`(?<!${RULE_FUNCTIONS.join("|")})\\(`);
 
-    // Handle parentheses as long as they are not immediately preceded by a value in D2_FUNCTIONS array
-    while (condition.search(d2FunctionsRegex) !== -1) {
-        condition = condition.replace(
-            new RegExp(`(?<!${D2_FUNCTIONS.join("|")})\\(([^()]+)\\)`, "g"),
-            (_, subCondition) => {
-                return parseCondition(subCondition, updatedQuestion, questions) ? "true" : "false";
-            }
-        );
-    }
+    // Handle parentheses as long as they are not immediately preceded by a value in RULE_FUNCTIONS array
+    const newCondition =
+        condition.search(ruleFunctionsRegex) !== -1
+            ? condition.replace(
+                  new RegExp(`(?<!${RULE_FUNCTIONS.join("|")})\\(([^()]+)\\)`, "g"),
+                  (_, subCondition) => {
+                      return parseCondition(subCondition, updatedQuestion, questions)
+                          ? "true"
+                          : "false";
+                  }
+              )
+            : condition;
 
     // Split condition into sub-conditions based on logical operators
-    const andConditions = condition.split("&&").map(subCondition1 => {
+    const andConditions = newCondition.split("&&").map(subCondition1 => {
         const orConditions = subCondition1.split("||").map(subCondition2 => {
             const notCondition = subCondition2.trim().startsWith("!");
-            if (notCondition) {
-                subCondition2 = subCondition2.trim().substring(1);
-            }
+            const trimmedSubCondition = notCondition
+                ? subCondition2.trim().substring(1)
+                : subCondition2;
 
-            let result: boolean;
-            const trimmedSubCondition = subCondition2.replace(/\s/g, "");
-            if (trimmedSubCondition === "true") {
-                result = true;
-            } else if (trimmedSubCondition === "false") {
-                result = false;
-            } else {
-                // Replace #{dataElementId} with actual value from questionnaire
-                const parsedConditionWithValues = parseConditionValues(
-                    subCondition2,
-                    updatedQuestion,
-                    questions
-                );
+            const result =
+                trimmedSubCondition.replace(/\s/g, "") === "true"
+                    ? true
+                    : trimmedSubCondition.replace(/\s/g, "") === "false"
+                    ? false
+                    : parseAndEvaluateSubCondition(trimmedSubCondition, updatedQuestion, questions);
 
-                // Evaluate the condition
-                try {
-                    if (
-                        D2_FUNCTIONS.some(d2Function =>
-                            parsedConditionWithValues.includes(d2Function)
-                        )
-                    ) {
-                        result = handleD2Functions(parsedConditionWithValues);
-                    } else {
-                        result = handleCondition(parsedConditionWithValues);
-                    }
-                } catch (error) {
-                    console.error(
-                        `Error evaluating condition: ${parsedConditionWithValues} with error : ${error}`
-                    );
-                    result = false;
-                }
-            }
             return notCondition ? !result : result;
         });
-        // Combine results using OR operator
-        return orConditions.includes(true);
+
+        return orConditions.some(condition => condition);
     });
-    // Combine results using AND operator
-    return !andConditions.includes(false);
+
+    return andConditions.every(condition => condition);
 };

@@ -118,31 +118,35 @@ export const getParentDataElementForProgram = (programId: Id): Id => {
     }
 };
 
-export const getChildProgramId = (programId: Id): Id | Id[] => {
+export const getChildProgramId = (
+    programId: Id
+): { type: "singleChild"; value: Id } | { type: "multipleChildren"; value: Id[] } => {
     switch (programId) {
         case PPS_SURVEY_FORM_ID:
-            return PPS_COUNTRY_QUESTIONNAIRE_ID;
+            return { type: "singleChild", value: PPS_COUNTRY_QUESTIONNAIRE_ID };
         case PPS_COUNTRY_QUESTIONNAIRE_ID:
-            return PPS_HOSPITAL_FORM_ID;
+            return { type: "singleChild", value: PPS_HOSPITAL_FORM_ID };
         case PPS_HOSPITAL_FORM_ID:
-            return PPS_WARD_REGISTER_ID;
+            return { type: "singleChild", value: PPS_WARD_REGISTER_ID };
         case PPS_WARD_REGISTER_ID:
-            return PPS_PATIENT_REGISTER_ID;
+            return { type: "singleChild", value: PPS_PATIENT_REGISTER_ID };
 
         case PREVALENCE_SURVEY_FORM_ID:
-            return PREVALENCE_FACILITY_LEVEL_FORM_ID;
+            return { type: "singleChild", value: PREVALENCE_FACILITY_LEVEL_FORM_ID };
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
-            return PREVALENCE_CASE_REPORT_FORM_ID;
+            return { type: "singleChild", value: PREVALENCE_CASE_REPORT_FORM_ID };
         case PREVALENCE_CASE_REPORT_FORM_ID:
-            return [
-                PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
-                PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
-                PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
-                PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-            ];
-
+            return {
+                type: "multipleChildren",
+                value: [
+                    PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
+                    PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+                    PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
+                    PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
+                ],
+            };
         default:
-            return [];
+            return { type: "singleChild", value: "" };
     }
 };
 
