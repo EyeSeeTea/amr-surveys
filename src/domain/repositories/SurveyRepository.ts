@@ -1,6 +1,6 @@
 import { FutureData } from "../../data/api-futures";
 import { ImportStrategy, ProgramCountMap } from "../entities/Program";
-import { Questionnaire } from "../entities/Questionnaire";
+import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
@@ -37,5 +37,7 @@ export interface SurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): FutureData<number | ProgramCountMap>;
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> };
 }

@@ -1,7 +1,7 @@
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
-import { ImportStrategy } from "../../../domain/entities/Program";
+import { ImportStrategy, ProgramCountMap } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
-import { Questionnaire } from "../../../domain/entities/Questionnaire";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
 import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
@@ -9,26 +9,29 @@ import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 
 export class SurveyTestRepository implements SurveyRepository {
+    getSurveyChildCount(
+        _parentProgram: string,
+        _orgUnitId: string,
+        _parentSurveyId: string,
+        _secondaryparentId: string | undefined
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> } {
+        throw new Error("Method not implemented.");
+    }
     deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
         throw new Error("Method not implemented.");
     }
     getSurveyNameFromId(_id: string): FutureData<string> {
         throw new Error("Method not implemented.");
     }
-    getSurveyChildCount(
-        _parentProgram: string,
-        _orgUnitId: string,
-        _parentSurveyId: string,
-        _secondaryparentId: string | undefined
-    ): FutureData<number> {
-        throw new Error("Method not implemented.");
-    }
+
     getPopulatedSurveyById(eventId: string, programId: string): FutureData<Questionnaire> {
         console.debug(eventId, programId);
         throw new Error("Method not implemented.");
     }
     getForm(programId: string): FutureData<Questionnaire> {
-        const questionnaire: Questionnaire = {
+        const questionnaire: Questionnaire = Questionnaire.create({
             id: programId,
             name: "Test Questionnaire",
             description: "Test Questionnaire",
@@ -55,7 +58,7 @@ export class SurveyTestRepository implements SurveyRepository {
             isMandatory: false,
             year: "2023",
             rules: [],
-        };
+        });
         return Future.success(questionnaire);
     }
 

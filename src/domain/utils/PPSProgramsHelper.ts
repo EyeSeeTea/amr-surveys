@@ -219,30 +219,6 @@ export const hideCreateNewButton = (
     );
 };
 
-export const getFormTypeFromOption = (
-    option:
-        | (typeof PREVALENCE_PATIENT_OPTIONS)[0]
-        | (typeof PREVALENCE_PATIENT_OPTIONS)[1]
-        | (typeof PREVALENCE_PATIENT_OPTIONS)[2]
-        | (typeof PREVALENCE_PATIENT_OPTIONS)[3]
-        | (typeof PREVALENCE_PATIENT_OPTIONS)[4]
-): SURVEY_FORM_TYPES | undefined => {
-    switch (option) {
-        case "Case Report":
-            return "PrevalenceCaseReportForm";
-        case "Sample Shipment":
-            return "PrevalenceSampleShipTrackForm";
-        case "Central Reference Lab Result":
-            return "PrevalenceCentralRefLabForm";
-        case "Pathogen Isolates":
-            return "PrevalencePathogenIsolatesLog";
-        case "Supranational Result":
-            return "PrevalenceSupranationalRefLabForm";
-        default:
-            return undefined;
-    }
-};
-
 export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolean => {
     switch (surveyFormType) {
         case "PPSPatientRegister":

@@ -1,7 +1,7 @@
-import { Questionnaire, QuestionnarieM } from "../entities/Questionnaire";
+import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 
 export class ApplyInitialRulesToSurveyUseCase {
     public execute(questionnaire: Questionnaire): Questionnaire {
-        return QuestionnarieM.applyAllRulesOnQuestionnaireInitialLoad(questionnaire);
+        return Questionnaire.applyAllRulesOnQuestionnaireInitialLoad(questionnaire);
     }
 }

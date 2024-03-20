@@ -1,5 +1,5 @@
 import { FutureData } from "../../data/api-futures";
-import { Questionnaire } from "../entities/Questionnaire";
+import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";

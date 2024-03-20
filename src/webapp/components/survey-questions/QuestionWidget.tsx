@@ -1,10 +1,4 @@
 import React from "react";
-import {
-    Question,
-    QuestionOption,
-    QuestionnaireQuestionM,
-} from "../../../domain/entities/Questionnaire";
-
 import BooleanWidget from "./widgets/BooleanWidget";
 import NumberWidget from "./widgets/NumberWidget";
 import SingleSelect from "./widgets/SingleSelectWidget";
@@ -15,6 +9,11 @@ import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "./widgets/DropdownSelectWidget";
 import DateTimePickerWidget from "./widgets/DateTimePickerWidget";
 import SearchableSelect from "./widgets/SearchableSelect";
+import {
+    Question,
+    QuestionOption,
+    QuestionnaireQuestion,
+} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
@@ -25,7 +24,7 @@ export interface QuestionWidgetProps {
 export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props => {
     const { question, disabled, onChange } = props;
     const { type } = question;
-    const { update } = QuestionnaireQuestionM;
+    const { update } = QuestionnaireQuestion;
 
     switch (type) {
         case "select": {

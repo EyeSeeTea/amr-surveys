@@ -12,12 +12,12 @@ import {
 } from "../../data/entities/D2Survey";
 import { Future } from "../entities/generic/Future";
 import {
-    Question,
     Questionnaire,
     QuestionnaireEntity,
-    QuestionnaireSection,
     QuestionnaireStage,
-} from "../entities/Questionnaire";
+} from "../entities/Questionnaire/Questionnaire";
+import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
+import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 
@@ -39,65 +39,73 @@ export class GetSurveyUseCase {
                 .flatMap(questionnaire => {
                     if (questionnaire.stages && questionnaire.stages[0]) {
                         const updatedSections: QuestionnaireSection[] =
-                            questionnaire.stages[0].sections.map(section => {
-                                //PPS Questionnaires have only 1 stage
-                                const isSurveyIdOrWardIdSection =
-                                    section.questions.find(
-                                        question =>
-                                            question.id === SURVEY_ID_DATAELEMENT_ID ||
-                                            question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
-                                            question.id === WARD_ID_DATAELEMENT_ID
-                                    ) !== undefined;
-
-                                if (isSurveyIdOrWardIdSection) {
-                                    const updatedQuestions: Question[] = section.questions.map(
-                                        question => {
-                                            const isSurveyIdQuestion =
+                            questionnaire.stages[0].sections.map(
+                                (section: QuestionnaireSection) => {
+                                    //PPS Questionnaires have only 1 stage
+                                    const isSurveyIdOrWardIdSection =
+                                        section.questions.find(
+                                            question =>
                                                 question.id === SURVEY_ID_DATAELEMENT_ID ||
-                                                question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID;
-                                            const isWardIdQuestion =
-                                                question.id === WARD_ID_DATAELEMENT_ID;
+                                                question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
+                                                question.id === WARD_ID_DATAELEMENT_ID
+                                        ) !== undefined;
 
-                                            if (isSurveyIdQuestion && question.type === "text") {
-                                                //Survey Id Question, pre-populate value to parent survey id
-                                                const updatedSurveyIdQuestion: Question = {
-                                                    ...question,
-                                                    value: parentPPSSurveyId,
-                                                };
-                                                return updatedSurveyIdQuestion;
-                                            } else if (
-                                                isWardIdQuestion &&
-                                                question.type === "text"
-                                            ) {
-                                                //Survey Id Question, pre-populate value to parent survey id
-                                                const updatedWardIdQuestion: Question = {
-                                                    ...question,
-                                                    value: parentWardRegisterId,
-                                                };
-                                                return updatedWardIdQuestion;
-                                            } else {
-                                                //Not survey id question, return without any update
-                                                return question;
+                                    if (isSurveyIdOrWardIdSection) {
+                                        const updatedQuestions: Question[] = section.questions.map(
+                                            question => {
+                                                const isSurveyIdQuestion =
+                                                    question.id === SURVEY_ID_DATAELEMENT_ID ||
+                                                    question.id ===
+                                                        SURVEY_ID_PATIENT_DATAELEMENT_ID;
+                                                const isWardIdQuestion =
+                                                    question.id === WARD_ID_DATAELEMENT_ID;
+
+                                                if (
+                                                    isSurveyIdQuestion &&
+                                                    question.type === "text"
+                                                ) {
+                                                    //Survey Id Question, pre-populate value to parent survey id
+                                                    const updatedSurveyIdQuestion: Question = {
+                                                        ...question,
+                                                        value: parentPPSSurveyId,
+                                                    };
+                                                    return updatedSurveyIdQuestion;
+                                                } else if (
+                                                    isWardIdQuestion &&
+                                                    question.type === "text"
+                                                ) {
+                                                    //Survey Id Question, pre-populate value to parent survey id
+                                                    const updatedWardIdQuestion: Question = {
+                                                        ...question,
+                                                        value: parentWardRegisterId,
+                                                    };
+                                                    return updatedWardIdQuestion;
+                                                } else {
+                                                    //Not survey id question, return without any update
+                                                    return question;
+                                                }
                                             }
-                                        }
-                                    );
+                                        );
 
-                                    return {
-                                        ...section,
-                                        questions: updatedQuestions,
-                                    };
+                                        return {
+                                            ...section,
+                                            questions: updatedQuestions,
+                                        };
+                                    }
+
+                                    //Not survey id section, return without any update
+                                    return section;
                                 }
-
-                                //Not survey id section, return without any update
-                                return section;
-                            });
+                            );
 
                         const updatedStage: QuestionnaireStage = {
                             ...questionnaire.stages[0],
                             sections: updatedSections,
                         };
 
-                        return Future.success({ ...questionnaire, stages: [updatedStage] });
+                        return Future.success(
+                            Questionnaire.updateQuestionnaireStages(questionnaire, [updatedStage])
+                        );
                     } else {
                         return Future.success(questionnaire);
                     }
@@ -112,7 +120,7 @@ export class GetSurveyUseCase {
                         return Future.success(questionnaire);
                     }
                     const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
-                        question => {
+                        (question: Question) => {
                             const isSurveyIdQuestion =
                                 question.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
                                 question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
@@ -137,10 +145,9 @@ export class GetSurveyUseCase {
                         questions: updatedEntityQuestions,
                     };
 
-                    return Future.success({
-                        ...questionnaire,
-                        entity: updatedEntity,
-                    });
+                    return Future.success(
+                        Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
+                    );
                 });
         } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
     }

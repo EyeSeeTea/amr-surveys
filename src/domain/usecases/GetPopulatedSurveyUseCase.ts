@@ -1,5 +1,5 @@
 import { FutureData } from "../../data/api-futures";
-import { Questionnaire } from "../entities/Questionnaire";
+import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 
