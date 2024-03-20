@@ -35,8 +35,7 @@ export class GetAllAccesibleModulesUseCase {
                                 (module.userGroups.readAccess.length === 0 &&
                                     accesibleSurveysInModule.length > 0))
                         ) {
-                            module.surveyPrograms = accesibleSurveysInModule;
-                            return module;
+                            return { ...module, surveyPrograms: accesibleSurveysInModule };
                         }
                     });
 
