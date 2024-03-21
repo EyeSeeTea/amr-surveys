@@ -51,13 +51,7 @@ export const PREVALENCE_SAMPLE_SHIPMENT_TET = "ukqXKDH1cqP";
 export const PREVALENCE_CENTRAL_REF_LAB_TET = "yqa88gKCdV8";
 export const PREVALENCE_PATHOGEN_ISOLATES_TET = "aWIdBmjFWF0";
 export const PREVALENCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
-//Data Elements to hide
-export const hiddenFields = ["Add new antibiotic"];
-//To do : Move to datastore?
-export const programsWithRepeatableSections = [
-    PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-    PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
-];
+
 type SURVEY_DATA_ELEMENT_KEYS =
     | "startDate"
     | "surveyType"

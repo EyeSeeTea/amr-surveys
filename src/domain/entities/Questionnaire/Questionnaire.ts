@@ -1,3 +1,5 @@
+import { generateUid } from "../../../utils/uid";
+import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Code, Question } from "./QuestionnaireQuestion";
@@ -32,12 +34,16 @@ export interface QuestionnaireEntity {
 }
 
 export interface QuestionnaireStage {
+    id: Id;
     title: string;
     code: Code;
     sections: QuestionnaireSection[];
+    sortOrder: number;
     isVisible: boolean;
+    repeatable: boolean;
     showNextStage?: boolean;
     instanceId?: Id; //Corresponds to DHIS eventId
+    isAddedByUser?: boolean;
 }
 
 export class Questionnaire {
@@ -46,10 +52,13 @@ export class Questionnaire {
     private constructor(data: QuestionnaireData) {
         this.data = data;
     }
+
+    public get id(): Id {
+        return this.data.id;
+    }
     public get stages(): QuestionnaireStage[] {
         return this.data.stages;
     }
-
     public get rules(): QuestionnaireRule[] {
         return this.data.rules;
     }
@@ -108,19 +117,23 @@ export class Questionnaire {
         });
     }
 
-    static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
+    static applyProgramRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire
+    ): Questionnaire {
         try {
             if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
 
             const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
                 return stage.sections.flatMap(section => {
-                    return section.questions.map(question => question);
+                    return section.questions.map(question => {
+                        return { ...question, stageId: stage.id };
+                    });
                 });
             });
 
             const updatedQuestionnaire = allQsInQuestionnaire.reduce(
                 (questionnaireAcc, question) => {
-                    return this.updateQuestionnaire(questionnaireAcc, question);
+                    return this.updateQuestionnaire(questionnaireAcc, question, question.stageId);
                 },
                 questionnaire
             );
@@ -133,9 +146,55 @@ export class Questionnaire {
         }
     }
 
+    static applySurveyRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire,
+        surveyRule: SurveyRule
+    ): Questionnaire {
+        if (surveyRule.rules.length === 0) return questionnaire;
+
+        const updatedStages = questionnaire.stages.map(stage => {
+            return {
+                ...stage,
+                sections: stage.sections.map(section => {
+                    const currentSectionRule = surveyRule.rules.find(rule =>
+                        rule.toHide?.find(de => de === section.code)
+                    );
+
+                    const sectionVisibility =
+                        currentSectionRule && currentSectionRule.type === "HIDESECTION"
+                            ? false
+                            : true;
+
+                    return {
+                        ...section,
+                        isVisible: sectionVisibility,
+                        questions: section.questions.map(question => {
+                            const currentQuestionRule = surveyRule.rules.find(rule =>
+                                rule.toHide?.find(de => de === question.id)
+                            );
+                            if (currentQuestionRule && currentQuestionRule.type === "HIDEFIELD") {
+                                return {
+                                    ...question,
+                                    isVisible: false,
+                                };
+                            } else return question;
+                        }),
+                    };
+                }),
+            };
+        });
+        const updatedQuestionnaire = Questionnaire.updateQuestionnaireStages(
+            questionnaire,
+            updatedStages
+        );
+
+        return updatedQuestionnaire;
+    }
+
     static updateQuestionnaire(
         questionnaire: Questionnaire,
-        updatedQuestion: Question
+        updatedQuestion: Question,
+        stageId?: string
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
         const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
@@ -153,6 +212,7 @@ export class Questionnaire {
         return Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
+                if (stageId && stage.id !== stageId) return stage;
                 return {
                     ...stage,
                     sections: QuestionnaireSectionM.updatedSections(
@@ -174,5 +234,48 @@ export class Questionnaire {
         });
 
         return allQuestions.some(question => question.errors.length > 0);
+    }
+
+    static addProgramStage(questionnaire: Questionnaire, stageCode: Id): Questionnaire {
+        const stageToAdd = questionnaire.stages.find(stage => stage.code === stageCode);
+        if (!stageToAdd) return questionnaire;
+
+        const addEmptySectionWithEmptyQuestions = (
+            section: QuestionnaireSection
+        ): QuestionnaireSection => {
+            return {
+                ...section,
+                questions: section.questions.map(question => {
+                    return {
+                        ...question,
+                        value: undefined,
+                        errors: [],
+                    };
+                }),
+            };
+        };
+
+        const newStage: QuestionnaireStage = {
+            id: generateUid(),
+            title: stageToAdd.title,
+            code: stageToAdd.code,
+            sections: stageToAdd.sections.map(section =>
+                addEmptySectionWithEmptyQuestions(section)
+            ),
+            sortOrder: questionnaire.stages.length,
+            isVisible: stageToAdd.isVisible,
+            repeatable: stageToAdd.repeatable,
+            isAddedByUser: true,
+        };
+
+        return Questionnaire.updateQuestionnaireStages(questionnaire, [
+            ...questionnaire.stages,
+            newStage,
+        ]);
+    }
+
+    static removeProgramStage(questionnaire: Questionnaire, stageId: Id): Questionnaire {
+        const updatedStages = questionnaire.stages.filter(stage => stage.id !== stageId);
+        return Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages);
     }
 }

@@ -1,4 +1,3 @@
-import { Id } from "../Ref";
 import { Questionnaire } from "./Questionnaire";
 import { Code, Question, QuestionnaireQuestion } from "./QuestionnaireQuestion";
 import { QuestionnaireRule } from "./QuestionnaireRules";
@@ -11,8 +10,6 @@ export interface QuestionnaireSection {
     isVisible: boolean;
     sortOrder: number;
     stageId: string;
-    showAddnew?: boolean;
-    showAddQuestion?: Id;
 }
 
 export class QuestionnaireSectionM {

@@ -13,10 +13,9 @@ import {
     // @ts-ignore
     TableBody,
 } from "@dhis2/ui";
-import i18n from "@eyeseetea/feedback-component/locales";
-import { Button, Typography } from "@material-ui/core";
+
+import { Typography } from "@material-ui/core";
 import styled from "styled-components";
-import { muiTheme } from "../../pages/app/themes/dhis2.theme";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
@@ -24,17 +23,11 @@ interface SurveySectionProps {
     title: string;
     questions: Question[];
     updateQuestion: (question: Question) => void;
-    showAddnew?: boolean;
-    showAddQuestion?: string;
-    addNewClick?: () => void;
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
     questions,
     updateQuestion,
-    showAddnew,
-    showAddQuestion,
-    addNewClick,
 }) => {
     return (
         <StyledSection key={title}>
@@ -79,11 +72,6 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                     })}
                 </TableBody>
             </DataTable>
-            {showAddnew && addNewClick && (
-                <StyledButton onClick={() => addNewClick()}>
-                    {questions.find(q => q.id === showAddQuestion)?.text ?? i18n.t("Add new")}
-                </StyledButton>
-            )}
         </StyledSection>
     );
 };
@@ -92,9 +80,7 @@ const PaddedDiv = styled.div`
     padding: 5px;
 `;
 
-const StyledSection = styled.div`
-    margin: 10;
-`;
+const StyledSection = styled.div``;
 
 const StyledTitle = styled.span`
     fontweight: "bold" as const;
@@ -106,16 +92,4 @@ const StyledWrapper = styled.div`
 
 const StyledInput = styled.div`
     flexgrow: 1;
-`;
-
-const StyledButton = styled(Button)`
-    color: white;
-    background-color: ${muiTheme.palette.primary.main};
-    margin: 10px 5px 10px 0px;
-    text-transform: none;
-    float: right;
-    &:hover {
-        background-color: ${muiTheme.palette.primary.main};
-        opacity: 0.7;
-    }
 `;

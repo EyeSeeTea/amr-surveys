@@ -11,7 +11,6 @@ import {
 } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../domain/entities/Ref";
 import { Option, ProgramDataElement, TrackedEntityAttibute } from "../entities/D2Program";
-import { hiddenFields } from "../entities/D2Survey";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -39,7 +38,7 @@ const getQuestionBase = (
         id: id,
         code: code, //code
         text: formName, //formName
-        isVisible: !hiddenFields.some(field => field === formName),
+        isVisible: true,
         sortOrder: sortOrder,
         errors: [],
     };
@@ -180,6 +179,7 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
 
     return dataValues as DataValue[];
 };
+
 export const mapProgramDataElementToQuestions = (
     isTrackerProgram: boolean,
     sectionDataElements: { id: string }[],
@@ -187,8 +187,7 @@ export const mapProgramDataElementToQuestions = (
     options: Option[],
     event: D2TrackerEvent | undefined = undefined,
     trackedEntity: TrackedEntity | undefined = undefined
-): { questions: Question[]; sectionAddQuestion: string } => {
-    let sectionAddQuestion = "";
+): Question[] => {
     const questions: Question[] = _(
         sectionDataElements.map(dataElement => {
             const curDataElement = dataElements.find(de => de.id === dataElement.id);
@@ -243,17 +242,42 @@ export const mapProgramDataElementToQuestions = (
                 ) {
                     currentQuestion.disabled = true;
                 }
+                return currentQuestion;
+            }
+        })
+    )
+        .compact()
+        .sortBy(q => q.sortOrder)
+        .value();
 
-                //Some field was hidden, set it as label
-                if (currentQuestion?.isVisible === false) {
-                    const LsectionAddLabel = hiddenFields.find(
-                        field => field === currentQuestion.text
-                    );
+    return questions;
+};
 
-                    if (LsectionAddLabel) {
-                        sectionAddQuestion = currentQuestion.id;
-                    }
-                }
+export const mapRepeatedStageEventToQuestions = (
+    sectionDataElements: { id: string }[],
+    dataElements: ProgramDataElement[],
+    options: Option[],
+    event: D2TrackerEvent
+): Question[] => {
+    const questions: Question[] = _(
+        sectionDataElements.map(dataElement => {
+            const curDataElement = dataElements.find(de => de.id === dataElement.id);
+
+            if (curDataElement) {
+                const dataValue = event.dataValues.find(
+                    dv => dv.dataElement === curDataElement.id
+                )?.value;
+
+                const currentQuestion = getQuestion(
+                    curDataElement.valueType,
+                    curDataElement.id,
+                    curDataElement.code,
+                    curDataElement.formName,
+                    curDataElement.sortOrder,
+                    options,
+                    curDataElement.optionSet,
+                    dataValue ?? ""
+                );
 
                 return currentQuestion;
             }
@@ -263,7 +287,7 @@ export const mapProgramDataElementToQuestions = (
         .sortBy(q => q.sortOrder)
         .value();
 
-    return { questions, sectionAddQuestion: sectionAddQuestion };
+    return questions;
 };
 
 export const mapTrackedAttributesToQuestions = (

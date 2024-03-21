@@ -21,6 +21,7 @@ export interface QuestionBase {
     isVisible: boolean;
     sortOrder: number | undefined;
     errors: string[];
+    stageId?: Id; //For repeatable stages processing.
 }
 
 export interface SelectQuestion extends QuestionBase {

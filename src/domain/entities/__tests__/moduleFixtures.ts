@@ -37,6 +37,7 @@ export function createModuleList(): AMRSurveyModule[] {
                     },
                 ],
             },
+            rulesBySurvey: [],
         },
         {
             color: "#E23A75",
@@ -68,6 +69,7 @@ export function createModuleList(): AMRSurveyModule[] {
                     },
                 ],
             },
+            rulesBySurvey: [],
         },
     ];
 }
