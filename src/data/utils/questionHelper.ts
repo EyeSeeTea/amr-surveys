@@ -179,6 +179,7 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
 
     return dataValues as DataValue[];
 };
+
 export const mapProgramDataElementToQuestions = (
     isTrackerProgram: boolean,
     sectionDataElements: { id: string }[],
@@ -241,6 +242,43 @@ export const mapProgramDataElementToQuestions = (
                 ) {
                     currentQuestion.disabled = true;
                 }
+                return currentQuestion;
+            }
+        })
+    )
+        .compact()
+        .sortBy(q => q.sortOrder)
+        .value();
+
+    return questions;
+};
+
+export const mapRepeatedStageEventToQuestions = (
+    sectionDataElements: { id: string }[],
+    dataElements: ProgramDataElement[],
+    options: Option[],
+    event: D2TrackerEvent
+): Question[] => {
+    const questions: Question[] = _(
+        sectionDataElements.map(dataElement => {
+            const curDataElement = dataElements.find(de => de.id === dataElement.id);
+
+            if (curDataElement) {
+                const dataValue = event.dataValues.find(
+                    dv => dv.dataElement === curDataElement.id
+                )?.value;
+
+                const currentQuestion = getQuestion(
+                    curDataElement.valueType,
+                    curDataElement.id,
+                    curDataElement.code,
+                    curDataElement.formName,
+                    curDataElement.sortOrder,
+                    options,
+                    curDataElement.optionSet,
+                    dataValue ?? ""
+                );
+
                 return currentQuestion;
             }
         })

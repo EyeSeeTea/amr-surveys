@@ -130,10 +130,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     </PaddedDiv>
                 )}
                 {questionnaire?.stages?.map(stage => {
-                    if (!stage.isVisible) return null;
+                    if (!stage?.isVisible) return null;
 
                     return (
-                        <PaddedDiv key={stage.code}>
+                        <PaddedDiv key={stage.id}>
                             <Typography>Stage : {stage.title}</Typography>
                             {stage.repeatable && (
                                 <RightAlignedDiv>

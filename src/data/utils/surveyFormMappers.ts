@@ -25,6 +25,7 @@ import _ from "../../domain/entities/generic/Collection";
 import {
     mapProgramDataElementToQuestions,
     mapQuestionsToDataValues,
+    mapRepeatedStageEventToQuestions,
     mapTrackedAttributesToQuestions,
 } from "./questionHelper";
 import { getProgramRules } from "./ruleHelper";
@@ -36,6 +37,7 @@ import {
     D2TrackerEnrollmentAttribute,
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import { DataValue } from "@eyeseetea/d2-api";
+import { generateUid } from "../../utils/uid";
 
 export const mapProgramToQuestionnaire = (
     program: Program,
@@ -93,26 +95,76 @@ export const mapProgramToQuestionnaire = (
 
     //If the Program has stages, fetch and use programStages
     const stages: QuestionnaireStage[] = programStages
-        ? programStages.map(stage => {
-              const currentProgramStageSections =
-                  programStages.length === 1 //If there is only 1 program stage, then all the sections belong to it.
-                      ? sections
-                      : sections.filter(section => section.stageId === stage.id);
-              return {
-                  id: stage.id,
-                  title: stage.name,
-                  code: stage.id,
-                  sections: _(currentProgramStageSections)
-                      .sortBy(section => section.sortOrder)
-                      .value(),
-                  isVisible: true,
-                  instanceId: trackedEntity?.enrollments
-                      ?.at(0)
-                      ?.events.find(e => e.programStage === stage.id)?.event,
-                  sortOrder: stage.sortOrder,
-                  repeatable: stage.repeatable,
-              };
-          })
+        ? _(
+              programStages.map(stage => {
+                  const currentProgramStageSections =
+                      programStages.length === 1 //If there is only 1 program stage, then all the sections belong to it.
+                          ? sections
+                          : sections.filter(section => section.stageId === stage.id);
+
+                  if (stage.repeatable && trackedEntity) {
+                      const repeatedStageEvents = trackedEntity?.enrollments
+                          ?.at(0)
+                          ?.events.filter(e => e.programStage === stage.id);
+                      return repeatedStageEvents?.map((repeatedStageEvt, index) => {
+                          const newStageId = generateUid();
+                          const currentRepeatableSections = programStageSections?.filter(
+                              sections => sections.programStage.id === stage.id
+                          );
+
+                          const currentSections =
+                              currentRepeatableSections?.map(section => {
+                                  const currentRepeatablequestions =
+                                      mapRepeatedStageEventToQuestions(
+                                          section.dataElements,
+                                          dataElements,
+                                          options,
+                                          repeatedStageEvt
+                                      );
+                                  return {
+                                      title: section.name,
+                                      code: section.id,
+                                      questions: currentRepeatablequestions,
+                                      isVisible: true,
+                                      stageId: newStageId,
+                                      sortOrder: section.sortOrder,
+                                  };
+                              }) ?? [];
+
+                          return {
+                              id: newStageId,
+                              title: stage.name,
+                              code: stage.id,
+                              sections: _(currentSections)
+                                  .sortBy(section => section.sortOrder)
+                                  .value(),
+                              isVisible: true,
+                              instanceId: repeatedStageEvt.event,
+                              sortOrder: stage.sortOrder,
+                              repeatable: stage.repeatable,
+                              userAdded: index === 0 ? false : true,
+                          };
+                      });
+                  } else {
+                      return {
+                          id: stage.id,
+                          title: stage.name,
+                          code: stage.id,
+                          sections: _(currentProgramStageSections)
+                              .sortBy(section => section.sortOrder)
+                              .value(),
+                          isVisible: true,
+                          instanceId: trackedEntity?.enrollments
+                              ?.at(0)
+                              ?.events.find(e => e.programStage === stage.id)?.event,
+                          sortOrder: stage.sortOrder,
+                          repeatable: stage.repeatable,
+                      };
+                  }
+              })
+          )
+              .flatten()
+              .value()
         : //If the Program has no stages, create a single stage
           [
               {

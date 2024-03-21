@@ -125,13 +125,15 @@ export class Questionnaire {
 
             const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
                 return stage.sections.flatMap(section => {
-                    return section.questions.map(question => question);
+                    return section.questions.map(question => {
+                        return { ...question, stageId: stage.id };
+                    });
                 });
             });
 
             const updatedQuestionnaire = allQsInQuestionnaire.reduce(
                 (questionnaireAcc, question) => {
-                    return this.updateQuestionnaire(questionnaireAcc, question);
+                    return this.updateQuestionnaire(questionnaireAcc, question, question.stageId);
                 },
                 questionnaire
             );
