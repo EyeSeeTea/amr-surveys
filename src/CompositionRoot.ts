@@ -33,6 +33,10 @@ import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurvey
 import { GetUserAccessibleOUByLevel } from "./domain/usecases/GetUserAccessibleOUByLevel";
 import { GetChildCountUseCase } from "./domain/usecases/GetChildCountUseCase";
 import { ApplyInitialRulesToSurveyUseCase } from "./domain/usecases/ApplyInitialRulesToSurveyUseCase";
+import { ASTGuidelinesRepository } from "./domain/repositories/ASTGuidelinesRepository";
+import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCase";
+import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Repository";
+import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -42,6 +46,7 @@ type Repositories = {
     moduleRepository: ModuleRepository;
     surveyFormRepository: SurveyRepository;
     paginatedSurveyRepository: PaginatedSurveyRepository;
+    astGuidelinesRepository: ASTGuidelinesRepository;
 };
 
 function getCompositionRoot(repositories: Repositories) {
@@ -76,6 +81,9 @@ function getCompositionRoot(repositories: Repositories) {
             getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
         },
+        astGuidelines: {
+            getGuidelines: new GetASTGuidelinesUseCase(repositories.astGuidelinesRepository),
+        },
     };
 }
 
@@ -87,6 +95,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         moduleRepository: new ModuleD2Repository(dataStoreClient, api),
         surveyFormRepository: new SurveyD2Repository(api),
         paginatedSurveyRepository: new PaginatedSurveyD2Repository(api),
+        astGuidelinesRepository: new ASTGuidelinesD2Repository(dataStoreClient, api),
     };
 
     return getCompositionRoot(repositories);
@@ -99,6 +108,7 @@ export function getTestCompositionRoot(nonAdminUser?: boolean) {
         moduleRepository: new ModulesTestRepository(),
         surveyFormRepository: new SurveyTestRepository(),
         paginatedSurveyRepository: new PaginatedSurveyTestRepository(),
+        astGuidelinesRepository: new ASTGuidelinesTestRepository(),
     };
 
     return getCompositionRoot(repositories);
