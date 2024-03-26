@@ -39,6 +39,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -54,6 +55,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -74,6 +76,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -170,7 +173,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
         } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
         else if (surveyFormType === "PrevalenceSurveyForm")
-            changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
+            changeCurrentPrevalenceSurveyForm(
+                survey.id,
+                survey.name,
+                orgUnitId,
+                survey.astGuideline
+            );
         else if (surveyFormType === "PrevalenceFacilityLevelForm")
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
         else if (surveyFormType === "PrevalenceCaseReportForm")
