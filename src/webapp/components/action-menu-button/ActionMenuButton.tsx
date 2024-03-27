@@ -2,9 +2,10 @@ import { IconButton, Menu, MenuItem } from "@material-ui/core";
 import MoreVert from "@material-ui/icons/MoreVert";
 import * as React from "react";
 import styled from "styled-components";
+import { OptionType } from "../../../domain/utils/optionsHelper";
 
 interface ActionMenuProps {
-    options: string[];
+    options: OptionType[];
     optionClickHandler: { option: string; handler: (option?: string) => void }[];
     onClickHandler: () => void;
 }
@@ -49,11 +50,13 @@ export const ActionMenuButton: React.FC<ActionMenuProps> = ({
                 open={open}
                 onClose={handleClose}
             >
-                {options.map(option => (
-                    <MenuItem key={option} onClick={() => menuItemClick(option)}>
-                        {option}
-                    </MenuItem>
-                ))}
+                {options
+                    .filter(option => !option.isHidden)
+                    .map(option => (
+                        <MenuItem key={option.label} onClick={() => menuItemClick(option.label)}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
             </Menu>
         </div>
     );

@@ -1,3 +1,5 @@
+import { OptionType } from "../utils/optionsHelper";
+
 export type ImportStrategy = "CREATE" | "UPDATE" | "CREATE_AND_UPDATE" | "DELETE";
 
 export type ProgramCountMap = {
@@ -6,6 +8,6 @@ export type ProgramCountMap = {
 }[];
 
 export type ProgramOptionCountMap = {
-    option: string;
+    option: OptionType;
     count: number;
 }[];

@@ -53,7 +53,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
         optionLoading,
         sortedSurveys,
         setSortedSurveys,
-        editSurvey,
+        goToSurvey,
         assignChild,
         listChildren,
         actionClick,
@@ -269,13 +269,17 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                         }
                                                         options={
                                                             optionLoading
-                                                                ? [i18n.t("Loading...")]
+                                                                ? [{ label: i18n.t("Loading...") }]
                                                                 : options
                                                         }
                                                         optionClickHandler={[
                                                             {
                                                                 option: "Edit",
-                                                                handler: () => editSurvey(survey),
+                                                                handler: () => goToSurvey(survey),
+                                                            },
+                                                            {
+                                                                option: "View",
+                                                                handler: () => goToSurvey(survey),
                                                             },
                                                             {
                                                                 option: "Delete",
@@ -285,15 +289,19 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                             {
                                                                 option:
                                                                     options.find(option =>
-                                                                        option.startsWith("Add")
-                                                                    ) || "",
+                                                                        option.label.startsWith(
+                                                                            "Add"
+                                                                        )
+                                                                    )?.label || "",
                                                                 handler: () => assignChild(survey),
                                                             },
                                                             {
                                                                 option:
                                                                     options.find(option =>
-                                                                        option.startsWith("List")
-                                                                    ) || "",
+                                                                        option.label.startsWith(
+                                                                            "List"
+                                                                        )
+                                                                    )?.label || "",
                                                                 handler: () => listChildren(survey),
                                                             },
                                                         ]}
