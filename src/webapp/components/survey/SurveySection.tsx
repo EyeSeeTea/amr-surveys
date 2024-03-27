@@ -27,6 +27,7 @@ interface SurveySectionProps {
     showAddnew?: boolean;
     showAddQuestion?: string;
     addNewClick?: () => void;
+    viewOnly?: boolean;
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
@@ -35,6 +36,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     showAddnew,
     showAddQuestion,
     addNewClick,
+    viewOnly,
 }) => {
     return (
         <StyledSection key={title}>
@@ -62,7 +64,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                             <QuestionWidget
                                                 onChange={updateQuestion}
                                                 question={question}
-                                                disabled={question.disabled ? true : false}
+                                                disabled={
+                                                    question.disabled || viewOnly ? true : false
+                                                }
                                             />
                                             {question.errors.map((err, index) => (
                                                 <PaddedDiv key={index}>

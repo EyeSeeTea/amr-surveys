@@ -15,6 +15,7 @@ import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
+import useReadAccess from "./hook/useReadAccess";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -36,6 +37,7 @@ const CancelButton = withStyles(() => ({
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
+    const { hasReadAccess } = useReadAccess();
 
     const {
         questionnaire,
@@ -106,6 +108,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         title={questionnaire.entity.title}
                         updateQuestion={updateQuestion}
                         questions={questionnaire.entity.questions}
+                        viewOnly={hasReadAccess}
                     />
                 )}
                 {questionnaire?.stages?.map(stage => {
@@ -124,6 +127,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         updateQuestion={updateQuestion}
                                         questions={section.questions}
                                         showAddnew={section.showAddnew}
+                                        viewOnly={hasReadAccess}
                                     />
                                 );
                             })}
