@@ -15,6 +15,7 @@ export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAcces
         },
         {
             label: "Add New Country",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Country",
@@ -38,6 +39,7 @@ export const PPSSurveyHospitalOptions = (hasReadAccess: boolean, hasCaptureAcces
         },
         {
             label: "Add New Hospital",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Hospitals",
@@ -61,6 +63,7 @@ export const PPSSurveyDefaultOptions = (hasReadAccess: boolean, hasCaptureAccess
         },
         {
             label: "Add New Country",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Countries",
@@ -84,6 +87,7 @@ export const PPSCountryFormOptions = (hasReadAccess: boolean, hasCaptureAccess: 
         },
         {
             label: "Add New Hospital",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Hospitals",
@@ -107,6 +111,7 @@ export const PPSHospitalFormOptions = (hasReadAccess: boolean, hasCaptureAccess:
         },
         {
             label: "Add New Ward",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Wards",
@@ -130,6 +135,7 @@ export const PPSWardFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boo
         },
         {
             label: "Add New Patient",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Patients",
@@ -153,6 +159,7 @@ export const PrevalenceSurveyFormOptions = (hasReadAccess: boolean, hasCaptureAc
         },
         {
             label: "Add New Facility",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Facilities",
@@ -179,6 +186,7 @@ export const PrevalenceFacilityLevelFormOptions = (
         },
         {
             label: "Add New Patient",
+            isHidden: hasReadAccess,
         },
         {
             label: "List Patients",
