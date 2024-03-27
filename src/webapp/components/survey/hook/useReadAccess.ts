@@ -10,8 +10,11 @@ const useReadAccess = () => {
 
     useEffect(() => {
         if (currentModule) {
-            const { hasReadAccess } = getUserAccess(currentModule, currentUser.userGroups);
-            setHasReadAccess(hasReadAccess);
+            const { hasReadAccess, hasCaptureAccess, hasAdminAccess } = getUserAccess(
+                currentModule,
+                currentUser.userGroups
+            );
+            setHasReadAccess(hasReadAccess && !hasCaptureAccess && !hasAdminAccess);
         }
     }, [currentModule, currentUser.userGroups]);
 
