@@ -2,7 +2,7 @@ import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
-import { Code, Question } from "./QuestionnaireQuestion";
+import { Code, Question, isSpeciesQuestion } from "./QuestionnaireQuestion";
 import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
@@ -226,48 +226,64 @@ export class Questionnaire {
             }),
         });
 
-        if (updatedQuestion.type === "select" && updatedQuestion.isSpeciesQuestion) {
+        if (updatedQuestion.type === "select" && isSpeciesQuestion(updatedQuestion)) {
             const stageToUpdate = questionnaire.stages.find(stage => stage.id === stageId);
             if (!stageToUpdate) return updatedRulesQuestionnaire;
-
-            const currentQuestionIdentifier = updatedQuestion.code.substring(
-                updatedQuestion.code.length - 1
-            ); //The last number char of the code should be the identifier in metadata.
-
-            const updatedSections = stageToUpdate.sections.map(section => {
-                return {
-                    ...section,
-                    questions: section.questions.map(question => {
-                        if (
-                            question.type === "select" &&
-                            question.name.startsWith(
-                                `Specify the antibiotic${currentQuestionIdentifier}`
-                            )
-                        ) {
-                            return {
-                                ...question,
-                                filteredOptions: question.options.filter(
-                                    op => op.code && updatedOptions?.includes(op.code)
-                                ),
-                            };
-                        } else return question;
-                    }),
-                };
-            });
-
-            const updatedStage = {
-                ...stageToUpdate,
-                sections: updatedSections,
-            };
-
-            return Questionnaire.updateQuestionnaireStages(
-                updatedRulesQuestionnaire,
-                questionnaire.stages.map(stage => {
-                    if (stage.id === stageId) return updatedStage;
-                    else return stage;
-                })
-            );
+            else
+                return this.updateAntibioticQuestionOptions(
+                    updatedRulesQuestionnaire,
+                    updatedQuestion,
+                    stageToUpdate,
+                    stageId,
+                    updatedOptions
+                );
         } else return updatedRulesQuestionnaire;
+    }
+
+    static updateAntibioticQuestionOptions(
+        questionnaire: Questionnaire,
+        updatedQuestion: Question,
+        stageToUpdate: QuestionnaireStage,
+        stageId?: string,
+        updatedOptions?: string[]
+    ) {
+        const currentQuestionIdentifier = updatedQuestion.code.substring(
+            updatedQuestion.code.length - 1
+        ); //The last number char of the code should be the identifier in metadata.
+
+        const updatedSections = stageToUpdate.sections.map(section => {
+            return {
+                ...section,
+                questions: section.questions.map(question => {
+                    if (
+                        question.type === "select" &&
+                        question.name.startsWith(
+                            `Specify the antibiotic${currentQuestionIdentifier}`
+                        )
+                    ) {
+                        return {
+                            ...question,
+                            filteredOptions: question.options.filter(
+                                op => op.code && updatedOptions?.includes(op.code)
+                            ),
+                        };
+                    } else return question;
+                }),
+            };
+        });
+
+        const updatedStage = {
+            ...stageToUpdate,
+            sections: updatedSections,
+        };
+
+        return Questionnaire.updateQuestionnaireStages(
+            questionnaire,
+            questionnaire.stages.map(stage => {
+                if (stage.id === stageId) return updatedStage;
+                else return stage;
+            })
+        );
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {

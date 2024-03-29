@@ -13,10 +13,13 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
-import { Question, Code } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    Question,
+    Code,
+    isSpeciesQuestion,
+} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
-import { useASTGuidelinesContext } from "../../contexts/ast-guidelines-context";
-import { useCurrentSurveys } from "../../contexts/current-surveys-context";
+import { useASTGuidelinesOptions } from "../../hooks/useASTGuidelinesOptions";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -38,8 +41,7 @@ const CancelButton = withStyles(() => ({
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
-    const astGuidelines = useASTGuidelinesContext();
-    const { currentPrevalenceSurveyForm } = useCurrentSurveys();
+    const { getAntibioticOptions } = useASTGuidelinesOptions();
 
     const {
         questionnaire,
@@ -85,35 +87,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question, stageId?: string) => {
         if (questionnaire) {
-            let matrixHeader = "";
-            const currentASTList =
-                currentPrevalenceSurveyForm?.astGuidelines === "CLSI"
-                    ? astGuidelines.CLSI_lists
-                    : astGuidelines.EUCAST_lists;
-
-            Object.entries(currentASTList).forEach(obj => {
-                const key = obj[0];
-                const value = obj[1];
-
-                if (question.type === "select" && value.includes(question?.value?.code)) {
-                    matrixHeader = key;
-                }
-            });
-
-            const currentMatrix: any =
-                currentPrevalenceSurveyForm?.astGuidelines === "CLSI"
-                    ? astGuidelines.CLSI_matrix
-                    : astGuidelines.EUCAST_matrix;
-
-            const updatedOptions = currentMatrix[matrixHeader];
-
-            console.debug(updatedOptions);
+            const antibioticOptions =
+                question.type === "select" && isSpeciesQuestion(question)
+                    ? getAntibioticOptions(question)
+                    : undefined;
 
             const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
                 questionnaire,
                 question,
                 stageId,
-                updatedOptions
+                antibioticOptions
             );
             setQuestionnaire(updatedQuestionnaire);
         }

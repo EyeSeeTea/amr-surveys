@@ -25,12 +25,27 @@ export interface QuestionBase {
     stageId?: Id; //For repeatable stages processing.
 }
 
+export interface SpeciesQuestion extends SelectQuestion {
+    subType: "select-species";
+    relatedAntibioticQuestions: Id[];
+}
+
+export interface AntibioticQuestion extends SelectQuestion {
+    subType: "select-antibiotic";
+    filteredOptions?: QuestionOption[];
+}
+
+export const isSpeciesQuestion = (question: SelectQuestion): question is SpeciesQuestion => {
+    return (question as SpeciesQuestion).subType === "select-species";
+};
+
+export const isAntibioticQuestion = (question: SelectQuestion): question is AntibioticQuestion => {
+    return (question as AntibioticQuestion).subType === "select-antibiotic";
+};
+
 export interface SelectQuestion extends QuestionBase {
     type: "select";
-    isSpeciesQuestion: boolean;
-    relatedAntibioticQuestions: Id[];
     options: QuestionOption[];
-    filteredOptions?: QuestionOption[];
     value: Maybe<QuestionOption>;
 }
 

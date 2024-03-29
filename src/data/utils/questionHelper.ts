@@ -1,5 +1,6 @@
 import { DataValue } from "@eyeseetea/d2-api";
 import {
+    AntibioticQuestion,
     BooleanQuestion,
     DateQuestion,
     DateTimeQuestion,
@@ -7,6 +8,7 @@ import {
     Question,
     QuestionBase,
     SelectQuestion,
+    SpeciesQuestion,
     TextQuestion,
 } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../domain/entities/Ref";
@@ -99,16 +101,38 @@ export const getQuestion = (
                     ? selectOptions.find(o => o.code === dataValue)
                     : undefined;
 
-                const isSpeciesQuestion = formName === "Specify the species";
-                const selectQ: SelectQuestion = {
-                    ...base,
-                    type: "select",
-                    options: selectOptions,
-                    value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
-                    isSpeciesQuestion: isSpeciesQuestion,
-                    relatedAntibioticQuestions: [],
-                };
-                return selectQ;
+                const isSpeciesQuestion = formName.includes("Specify the specie");
+                const isAntibioticQuestion = name.startsWith(`Specify the antibiotic`);
+
+                if (isSpeciesQuestion) {
+                    const speciesQ: SpeciesQuestion = {
+                        ...base,
+                        type: "select",
+                        options: selectOptions,
+                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                        subType: "select-species",
+                        relatedAntibioticQuestions: [],
+                    };
+                    return speciesQ;
+                } else if (isAntibioticQuestion) {
+                    const antibioticQ: AntibioticQuestion = {
+                        ...base,
+                        type: "select",
+                        options: selectOptions,
+                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                        subType: "select-antibiotic",
+                        filteredOptions: [],
+                    };
+                    return antibioticQ;
+                } else {
+                    const selectQ: SelectQuestion = {
+                        ...base,
+                        type: "select",
+                        options: selectOptions,
+                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                    };
+                    return selectQ;
+                }
             } else {
                 const singleLineText: TextQuestion = {
                     ...base,
