@@ -14,6 +14,7 @@ export type Question =
     | DateTimeQuestion;
 
 export interface QuestionBase {
+    name: string;
     id: Id;
     code: Code;
     text: string;
@@ -26,7 +27,10 @@ export interface QuestionBase {
 
 export interface SelectQuestion extends QuestionBase {
     type: "select";
+    isSpeciesQuestion: boolean;
+    relatedAntibioticQuestions: Id[];
     options: QuestionOption[];
+    filteredOptions?: QuestionOption[];
     value: Maybe<QuestionOption>;
 }
 

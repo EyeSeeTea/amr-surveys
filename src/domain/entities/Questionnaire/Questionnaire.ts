@@ -194,7 +194,8 @@ export class Questionnaire {
     static updateQuestionnaire(
         questionnaire: Questionnaire,
         updatedQuestion: Question,
-        stageId?: string
+        stageId?: string,
+        updatedOptions?: string[]
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
         const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
@@ -209,7 +210,7 @@ export class Questionnaire {
             allQsInQuestionnaire
         );
 
-        return Questionnaire.create({
+        const updatedRulesQuestionnaire = Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
                 if (stageId && stage.id !== stageId) return stage;
@@ -224,6 +225,49 @@ export class Questionnaire {
                 };
             }),
         });
+
+        if (updatedQuestion.type === "select" && updatedQuestion.isSpeciesQuestion) {
+            const stageToUpdate = questionnaire.stages.find(stage => stage.id === stageId);
+            if (!stageToUpdate) return updatedRulesQuestionnaire;
+
+            const currentQuestionIdentifier = updatedQuestion.code.substring(
+                updatedQuestion.code.length - 1
+            ); //The last number char of the code should be the identifier in metadata.
+
+            const updatedSections = stageToUpdate.sections.map(section => {
+                return {
+                    ...section,
+                    questions: section.questions.map(question => {
+                        if (
+                            question.type === "select" &&
+                            question.name.startsWith(
+                                `Specify the antibiotic${currentQuestionIdentifier}`
+                            )
+                        ) {
+                            return {
+                                ...question,
+                                filteredOptions: question.options.filter(
+                                    op => op.code && updatedOptions?.includes(op.code)
+                                ),
+                            };
+                        } else return question;
+                    }),
+                };
+            });
+
+            const updatedStage = {
+                ...stageToUpdate,
+                sections: updatedSections,
+            };
+
+            return Questionnaire.updateQuestionnaireStages(
+                updatedRulesQuestionnaire,
+                questionnaire.stages.map(stage => {
+                    if (stage.id === stageId) return updatedStage;
+                    else return stage;
+                })
+            );
+        } else return updatedRulesQuestionnaire;
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {
