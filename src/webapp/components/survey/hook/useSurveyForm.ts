@@ -6,6 +6,8 @@ import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
+import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Id } from "../../../../domain/entities/Ref";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -143,6 +145,31 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentModule,
     ]);
 
+    const updateQuestion = (question: Question, stageId?: string) => {
+        if (questionnaire) {
+            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
+                questionnaire,
+                question,
+                stageId
+            );
+            setQuestionnaire(updatedQuestionnaire);
+        }
+    };
+
+    const addProgramStage = (stageCode: Code) => {
+        if (questionnaire) {
+            const updatedQuestionnaire = Questionnaire.addProgramStage(questionnaire, stageCode);
+            setQuestionnaire(updatedQuestionnaire);
+        }
+    };
+
+    const removeProgramStage = (stageId: Id) => {
+        if (questionnaire) {
+            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
+            setQuestionnaire(updatedQuestionnaire);
+        }
+    };
+
     return {
         questionnaire,
         setQuestionnaire,
@@ -152,5 +179,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         setLoading,
         error,
         shouldDisableSave,
+        updateQuestion,
+        addProgramStage,
+        removeProgramStage,
     };
 }
