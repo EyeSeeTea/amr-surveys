@@ -214,7 +214,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             option:
                                                                 options.find(op =>
                                                                     op.label.startsWith(
-                                                                        "Add New Central Ref Lab"
+                                                                        "Add New Central Ref Lab Results"
                                                                     )
                                                                 )?.label ?? "",
                                                             handler: option =>
@@ -224,7 +224,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             option:
                                                                 options.find(op =>
                                                                     op.label.startsWith(
-                                                                        "List Central Ref Labs"
+                                                                        "List Central Ref Labs Results"
                                                                     )
                                                                 )?.label ?? "",
                                                             handler: option =>
@@ -255,7 +255,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             option:
                                                                 options.find(op =>
                                                                     op.label.startsWith(
-                                                                        "Add New Supranational Ref"
+                                                                        "Add New Supranational Ref Results"
                                                                     )
                                                                 )?.label ?? "",
                                                             handler: option =>
@@ -265,7 +265,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             option:
                                                                 options.find(op =>
                                                                     op.label.startsWith(
-                                                                        "List Supranational Refs"
+                                                                        "List Supranational Refs Results"
                                                                     )
                                                                 )?.label ?? "",
                                                             handler: option =>

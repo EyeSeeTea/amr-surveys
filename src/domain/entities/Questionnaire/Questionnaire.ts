@@ -1,3 +1,4 @@
+import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Code, Question } from "./QuestionnaireQuestion";
@@ -46,10 +47,13 @@ export class Questionnaire {
     private constructor(data: QuestionnaireData) {
         this.data = data;
     }
+
+    public get id(): Id {
+        return this.data.id;
+    }
     public get stages(): QuestionnaireStage[] {
         return this.data.stages;
     }
-
     public get rules(): QuestionnaireRule[] {
         return this.data.rules;
     }
@@ -108,7 +112,9 @@ export class Questionnaire {
         });
     }
 
-    static applyAllRulesOnQuestionnaireInitialLoad(questionnaire: Questionnaire): Questionnaire {
+    static applyProgramRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire
+    ): Questionnaire {
         try {
             if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
 
@@ -131,6 +137,52 @@ export class Questionnaire {
             console.debug(err);
             return questionnaire;
         }
+    }
+
+    static applySurveyRulesOnQuestionnaireInitialLoad(
+        questionnaire: Questionnaire,
+        surveyRule: SurveyRule
+    ): Questionnaire {
+        if (surveyRule.rules.length === 0) return questionnaire;
+
+        const updatedStages = questionnaire.stages.map(stage => {
+            return {
+                ...stage,
+                sections: stage.sections.map(section => {
+                    const currentSectionRule = surveyRule.rules.find(rule =>
+                        rule.toHide?.find(de => de === section.code)
+                    );
+
+                    const sectionVisibility =
+                        currentSectionRule && currentSectionRule.type === "HIDESECTION"
+                            ? false
+                            : true;
+
+                    return {
+                        ...section,
+                        isVisible: sectionVisibility,
+                        questions: section.questions.map(question => {
+                            const currentQuestionRule = surveyRule.rules.find(rule =>
+                                rule.toHide?.find(de => de === question.id)
+                            );
+                            if (currentQuestionRule && currentQuestionRule.type === "HIDEFIELD") {
+                                return {
+                                    ...question,
+                                    isVisible: false,
+                                };
+                            } else return question;
+                        }),
+                    };
+                }),
+            };
+        });
+
+        const updatedQuestionnaire: Questionnaire = Questionnaire.updateQuestionnaireStages(
+            questionnaire,
+            updatedStages
+        );
+
+        return updatedQuestionnaire;
     }
 
     static updateQuestionnaire(

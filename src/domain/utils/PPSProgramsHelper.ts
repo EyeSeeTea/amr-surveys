@@ -102,16 +102,16 @@ export const getChildSurveyType = (
                 case option?.startsWith("List Sample Shipments"):
                     return "PrevalenceSampleShipTrackForm";
 
-                case option === "Add New Central Ref Lab":
-                case option?.startsWith("List Central Ref Labs"):
+                case option === "Add New Central Ref Lab Results":
+                case option?.startsWith("List Central Ref Labs Results"):
                     return "PrevalenceCentralRefLabForm";
 
                 case option === "Add New Pathogen Isolates Log":
                 case option?.startsWith("List Pathogen Isolates Logs"):
                     return "PrevalencePathogenIsolatesLog";
 
-                case option === "Add New Supranational Ref":
-                case option?.startsWith("List Supranational Refs"):
+                case option === "Add New Supranational Ref Results":
+                case option?.startsWith("List Supranational Refs Results"):
                     return "PrevalenceSupranationalRefLabForm";
                 default:
                     return undefined;
