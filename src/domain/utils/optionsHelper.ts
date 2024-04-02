@@ -219,11 +219,11 @@ export const PrevalenceCaseReportFormOptions = (
             label: "List Sample Shipments",
         },
         {
-            label: "Add New Central Ref Lab",
+            label: "Add New Central Ref Lab Results",
             isHidden: hasReadAccess,
         },
         {
-            label: "List Central Ref Labs",
+            label: "List Central Ref Labs Results",
         },
         {
             label: "Add New Pathogen Isolates Log",
@@ -233,11 +233,11 @@ export const PrevalenceCaseReportFormOptions = (
             label: "List Pathogen Isolates Logs",
         },
         {
-            label: "Add New Supranational Ref",
+            label: "Add New Supranational Ref Results",
             isHidden: hasReadAccess,
         },
         {
-            label: "List Supranational Refs",
+            label: "List Supranational Refs Results",
         },
         {
             label: "Delete",
