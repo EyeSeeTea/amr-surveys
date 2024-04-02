@@ -3,10 +3,10 @@ import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 
-const useReadAccess = () => {
+const useReadOnlyAccess = () => {
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
-    const [hasReadAccess, setHasReadAccess] = useState<boolean>(false);
+    const [hasReadOnlyAccess, setHasReadOnlyAccess] = useState<boolean>(false);
 
     useEffect(() => {
         if (currentModule) {
@@ -14,11 +14,11 @@ const useReadAccess = () => {
                 currentModule,
                 currentUser.userGroups
             );
-            setHasReadAccess(hasReadAccess && !hasCaptureAccess && !hasAdminAccess);
+            setHasReadOnlyAccess(hasReadAccess && !hasCaptureAccess && !hasAdminAccess);
         }
     }, [currentModule, currentUser.userGroups]);
 
-    return { hasReadAccess };
+    return { hasReadOnlyAccess };
 };
 
-export default useReadAccess;
+export default useReadOnlyAccess;

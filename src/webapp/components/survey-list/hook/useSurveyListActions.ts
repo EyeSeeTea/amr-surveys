@@ -9,7 +9,7 @@ import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
 import { OptionType } from "../../../../domain/utils/optionsHelper";
-import useReadAccess from "../../survey/hook/useReadAccess";
+import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 
 export type SortDirection = "asc" | "desc";
@@ -31,7 +31,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
     const { currentUser } = useAppContext();
-    const { hasReadAccess } = useReadAccess();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
     const { hasCaptureAccess } = useCaptureAccess();
 
     const isAdmin = currentModule
@@ -97,7 +97,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         setOptionLoading(true);
         const currentOptions = getSurveyOptions(
             surveyFormType,
-            hasReadAccess,
+            hasReadOnlyAccess,
             hasCaptureAccess,
             ppsSurveyType
         );

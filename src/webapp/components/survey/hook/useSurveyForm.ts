@@ -5,7 +5,7 @@ import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
-import useReadAccess from "./useReadAccess";
+import useReadOnlyAccess from "./useReadOnlyAccess";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -21,7 +21,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentPrevalenceSurveyForm,
         currentFacilityLevelForm,
     } = useCurrentSurveys();
-    const { hasReadAccess } = useReadAccess();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const [error, setError] = useState<string>();
 
@@ -29,9 +29,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         if (!questionnaire) setShouldDisableSave(true);
         else {
             const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
-            setShouldDisableSave(shouldDisable || hasReadAccess);
+            setShouldDisableSave(shouldDisable || hasReadOnlyAccess);
         }
-    }, [hasReadAccess, questionnaire]);
+    }, [hasReadOnlyAccess, questionnaire]);
 
     useEffect(() => {
         setLoading(true);
