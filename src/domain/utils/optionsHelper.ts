@@ -5,14 +5,7 @@ export type OptionType = {
 
 export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Country",
             isHidden: hasReadAccess,
@@ -20,23 +13,12 @@ export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAcces
         {
             label: "List Country",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
     ];
 };
 
 export const PPSSurveyHospitalOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Hospital",
             isHidden: hasReadAccess,
@@ -44,23 +26,12 @@ export const PPSSurveyHospitalOptions = (hasReadAccess: boolean, hasCaptureAcces
         {
             label: "List Hospitals",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
     ];
 };
 
 export const PPSSurveyDefaultOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Country",
             isHidden: hasReadAccess,
@@ -68,23 +39,11 @@ export const PPSSurveyDefaultOptions = (hasReadAccess: boolean, hasCaptureAccess
         {
             label: "List Countries",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
     ];
 };
 
 export const PPSCountryFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
         {
             label: "Add New Hospital",
             isHidden: hasReadAccess,
@@ -92,23 +51,13 @@ export const PPSCountryFormOptions = (hasReadAccess: boolean, hasCaptureAccess: 
         {
             label: "List Hospitals",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
     ];
 };
 
 export const PPSHospitalFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Ward",
             isHidden: hasReadAccess,
@@ -116,23 +65,12 @@ export const PPSHospitalFormOptions = (hasReadAccess: boolean, hasCaptureAccess:
         {
             label: "List Wards",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
     ];
 };
 
 export const PPSWardFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Patient",
             isHidden: hasReadAccess,
@@ -140,33 +78,18 @@ export const PPSWardFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boo
         {
             label: "List Patients",
         },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
     ];
 };
 
 export const PrevalenceSurveyFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Facility",
             isHidden: hasReadAccess,
         },
         {
             label: "List Facilities",
-        },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
         },
     ];
 };
@@ -176,24 +99,13 @@ export const PrevalenceFacilityLevelFormOptions = (
     hasCaptureAccess: boolean
 ) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Patient",
             isHidden: hasReadAccess,
         },
         {
             label: "List Patients",
-        },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
         },
     ];
 };
@@ -203,14 +115,7 @@ export const PrevalenceCaseReportFormOptions = (
     hasCaptureAccess: boolean
 ) => {
     return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
+        ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
             label: "Add New Sample Shipment",
             isHidden: hasReadAccess,
@@ -238,10 +143,6 @@ export const PrevalenceCaseReportFormOptions = (
         },
         {
             label: "List Supranational Refs Results",
-        },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
         },
     ];
 };
