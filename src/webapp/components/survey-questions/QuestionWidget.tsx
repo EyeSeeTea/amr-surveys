@@ -33,11 +33,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 return (
                     <SearchableSelect
                         value={question.options.find(op => op.id === question.value?.id) || null}
-                        options={
-                            question.filteredOptions && question.filteredOptions.length > 0
-                                ? question.filteredOptions
-                                : question.options
-                        }
+                        options={question.filteredOptions ?? []}
                         onChange={(value: Maybe<QuestionOption>) =>
                             onChange(update(question, value))
                         }

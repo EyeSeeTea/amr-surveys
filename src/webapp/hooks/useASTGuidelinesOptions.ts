@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { useASTGuidelinesContext } from "../contexts/ast-guidelines-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
-import { SpeciesQuestion } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    AntibioticQuestion,
+    SpeciesQuestion,
+    isSpeciesQuestion,
+} from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
+import _ from "../../domain/entities/generic/Collection";
 
 export function useASTGuidelinesOptions() {
     const astGuidelines = useASTGuidelinesContext();
@@ -37,5 +43,19 @@ export function useASTGuidelinesOptions() {
         }
     };
 
-    return { getAntibioticOptions };
+    const getSpeciesQuestionForAntibiotic = (
+        question: AntibioticQuestion,
+        questionnaire: Questionnaire
+    ): SpeciesQuestion | undefined => {
+        const currentStage = questionnaire.stages.find(stage => stage.id === question.stageId);
+
+        const speciesSection = currentStage?.sections.find(s => s.title.startsWith("Specie"));
+
+        const speciesQuestion: SpeciesQuestion | undefined = speciesSection?.questions?.find(
+            q => q.type === "select" && isSpeciesQuestion(q)
+        ) as SpeciesQuestion;
+
+        return speciesQuestion;
+    };
+    return { getAntibioticOptions, getSpeciesQuestionForAntibiotic };
 }

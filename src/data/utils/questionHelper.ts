@@ -111,7 +111,6 @@ export const getQuestion = (
                         options: selectOptions,
                         value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
                         subType: "select-species",
-                        relatedAntibioticQuestions: [],
                     };
                     return speciesQ;
                 } else if (isAntibioticQuestion) {

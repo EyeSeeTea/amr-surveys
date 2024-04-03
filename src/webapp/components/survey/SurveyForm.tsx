@@ -17,6 +17,7 @@ import {
     Question,
     Code,
     isSpeciesQuestion,
+    isAntibioticQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { useASTGuidelinesOptions } from "../../hooks/useASTGuidelinesOptions";
@@ -41,7 +42,7 @@ const CancelButton = withStyles(() => ({
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
-    const { getAntibioticOptions } = useASTGuidelinesOptions();
+    const { getAntibioticOptions, getSpeciesQuestionForAntibiotic } = useASTGuidelinesOptions();
 
     const {
         questionnaire,
@@ -87,9 +88,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const updateQuestion = (question: Question, stageId?: string) => {
         if (questionnaire) {
+            const corrspondingSpeciesQuestion =
+                question.type === "select" && isAntibioticQuestion(question)
+                    ? getSpeciesQuestionForAntibiotic(question, questionnaire)
+                    : undefined;
+
             const antibioticOptions =
                 question.type === "select" && isSpeciesQuestion(question)
                     ? getAntibioticOptions(question)
+                    : corrspondingSpeciesQuestion
+                    ? getAntibioticOptions(corrspondingSpeciesQuestion)
                     : undefined;
 
             const updatedQuestionnaire = Questionnaire.updateQuestionnaire(

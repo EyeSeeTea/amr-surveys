@@ -27,7 +27,6 @@ export interface QuestionBase {
 
 export interface SpeciesQuestion extends SelectQuestion {
     subType: "select-species";
-    relatedAntibioticQuestions: Id[];
 }
 
 export interface AntibioticQuestion extends SelectQuestion {
@@ -41,6 +40,18 @@ export const isSpeciesQuestion = (question: SelectQuestion): question is Species
 
 export const isAntibioticQuestion = (question: SelectQuestion): question is AntibioticQuestion => {
     return (question as AntibioticQuestion).subType === "select-antibiotic";
+};
+
+const ANTIBIOTIC_QUESTION_FORM_NAME = "Specify the antibiotic";
+export const isSectionAntibioticQuestion = (
+    question: Question,
+    sectionIdentifier: string
+): question is AntibioticQuestion => {
+    return (
+        question.type === "select" &&
+        (question as AntibioticQuestion).subType === "select-antibiotic" &&
+        question.name.startsWith(`${ANTIBIOTIC_QUESTION_FORM_NAME}${sectionIdentifier}`)
+    );
 };
 
 export interface SelectQuestion extends QuestionBase {
