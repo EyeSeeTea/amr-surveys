@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
@@ -145,30 +145,45 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentModule,
     ]);
 
-    const updateQuestion = (question: Question, stageId?: string) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
-                questionnaire,
-                question,
-                stageId
-            );
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
+    const updateQuestion = useCallback(
+        (question: Question, stageId?: string) => {
+            if (questionnaire) {
+                const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
+                    questionnaire,
+                    question,
+                    stageId
+                );
+                setQuestionnaire(updatedQuestionnaire);
+            }
+        },
+        [questionnaire]
+    );
 
-    const addProgramStage = (stageCode: Code) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.addProgramStage(questionnaire, stageCode);
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
+    const addProgramStage = useCallback(
+        (stageCode: Code) => {
+            if (questionnaire) {
+                const updatedQuestionnaire = Questionnaire.addProgramStage(
+                    questionnaire,
+                    stageCode
+                );
+                setQuestionnaire(updatedQuestionnaire);
+            }
+        },
+        [questionnaire]
+    );
 
-    const removeProgramStage = (stageId: Id) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
+    const removeProgramStage = useCallback(
+        (stageId: Id) => {
+            if (questionnaire) {
+                const updatedQuestionnaire = Questionnaire.removeProgramStage(
+                    questionnaire,
+                    stageId
+                );
+                setQuestionnaire(updatedQuestionnaire);
+            }
+        },
+        [questionnaire]
+    );
 
     return {
         questionnaire,
