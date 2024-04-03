@@ -89,16 +89,16 @@ export const getChildSurveyType = (
                 case option?.startsWith("List Sample Shipments"):
                     return "PrevalenceSampleShipTrackForm";
 
-                case option === "Add New Central Ref Lab":
-                case option?.startsWith("List Central Ref Labs"):
+                case option === "Add New Central Ref Lab Results":
+                case option?.startsWith("List Central Ref Labs Results"):
                     return "PrevalenceCentralRefLabForm";
 
                 case option === "Add New Pathogen Isolates Log":
                 case option?.startsWith("List Pathogen Isolates Logs"):
                     return "PrevalencePathogenIsolatesLog";
 
-                case option === "Add New Supranational Ref":
-                case option?.startsWith("List Supranational Refs"):
+                case option === "Add New Supranational Ref Results":
+                case option?.startsWith("List Supranational Refs Results"):
                     return "PrevalenceSupranationalRefLabForm";
                 default:
                     return undefined;
@@ -144,12 +144,12 @@ export const getSurveyOptions = (
                 "Edit",
                 "Add New Sample Shipment",
                 "List Sample Shipments",
-                "Add New Central Ref Lab",
-                "List Central Ref Labs",
+                "Add New Central Ref Lab Results",
+                "List Central Ref Labs Results",
                 "Add New Pathogen Isolates Log",
                 "List Pathogen Isolates Logs",
-                "Add New Supranational Ref",
-                "List Supranational Refs",
+                "Add New Supranational Ref Results",
+                "List Supranational Refs Results",
                 "Delete",
             ];
         case "PrevalenceSampleShipTrackForm":

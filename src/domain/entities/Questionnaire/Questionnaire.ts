@@ -183,7 +183,8 @@ export class Questionnaire {
                 }),
             };
         });
-        const updatedQuestionnaire = Questionnaire.updateQuestionnaireStages(
+
+        const updatedQuestionnaire: Questionnaire = Questionnaire.updateQuestionnaireStages(
             questionnaire,
             updatedStages
         );
