@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Button, Typography, withStyles } from "@material-ui/core";
+import { Button, withStyles, Typography } from "@material-ui/core";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
@@ -13,8 +13,6 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
-import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -39,13 +37,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const {
         questionnaire,
-        setQuestionnaire,
         loading,
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
         shouldDisableSave,
+        updateQuestion,
+        addProgramStage,
+        removeProgramStage,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -79,13 +79,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
-    const updateQuestion = (question: Question) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(questionnaire, question);
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
-
     const onCancel = () => {
         props.hideForm();
     };
@@ -102,18 +95,41 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 />
 
                 {questionnaire?.entity && (
-                    <SurveySection
-                        title={questionnaire.entity.title}
-                        updateQuestion={updateQuestion}
-                        questions={questionnaire.entity.questions}
-                    />
+                    <PaddedDiv>
+                        <Typography>{i18n.t(`Stage - Profile`)}</Typography>
+                        <SurveySection
+                            title={questionnaire.entity.title}
+                            updateQuestion={updateQuestion}
+                            questions={questionnaire.entity.questions}
+                        />
+                    </PaddedDiv>
                 )}
                 {questionnaire?.stages?.map(stage => {
-                    if (!stage.isVisible) return null;
+                    if (!stage?.isVisible) return null;
 
                     return (
-                        <div key={stage.code}>
-                            <p> {`Stage : ${stage.title}`}</p>
+                        <PaddedDiv key={stage.id}>
+                            <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
+                            {stage.repeatable && (
+                                <RightAlignedDiv>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => addProgramStage(stage.code)}
+                                    >
+                                        {i18n.t(`Add Another ${stage.title}`)}
+                                    </Button>
+                                    {stage.isAddedByUser && (
+                                        <CancelButton
+                                            variant="outlined"
+                                            onClick={() => removeProgramStage(stage.id)}
+                                        >
+                                            {i18n.t(`Remove ${stage.title}`)}
+                                        </CancelButton>
+                                    )}
+                                </RightAlignedDiv>
+                            )}
+
                             {stage.sections.map(section => {
                                 if (!section.isVisible) return null;
 
@@ -121,13 +137,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     <SurveySection
                                         key={section.code}
                                         title={section.title}
-                                        updateQuestion={updateQuestion}
+                                        updateQuestion={question =>
+                                            updateQuestion(question, stage.id)
+                                        }
                                         questions={section.questions}
-                                        showAddnew={section.showAddnew}
                                     />
                                 );
                             })}
-                        </div>
+                        </PaddedDiv>
                     );
                 })}
             </ContentLoader>
@@ -158,4 +175,15 @@ const PageFooter = styled.div`
 
 const Title = styled(Typography)`
     margin-block-end: 10px;
+`;
+
+const PaddedDiv = styled.div`
+    padding: 15px 0;
+`;
+
+const RightAlignedDiv = styled.div`
+    display: flex;
+    justify-content: end;
+    padding: 10px;
+    gap: 5px;
 `;

@@ -1,6 +1,5 @@
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
-
 import { Id } from "../entities/Ref";
 
 export class ApplyInitialRulesToSurveyUseCase {
