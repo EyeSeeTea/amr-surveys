@@ -30,6 +30,8 @@ import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
+const SPECIES_QUESTION_FORNAME = "Specify the specie";
+const ANTIBIOTIC_QUESTION_FORNAME = "Specify the antibiotic";
 const getQuestionBase = (
     id: Id,
     code: string,
@@ -46,6 +48,25 @@ const getQuestionBase = (
         sortOrder: sortOrder,
         errors: [],
     };
+};
+
+const getSelectQuestionBase = (
+    base: QuestionBase,
+    options: Option[],
+    optionSet?: { id: string },
+    dataValue?: string
+) => {
+    const selectOptions = options.filter(op => op.optionSet.id === optionSet?.id);
+
+    const selectedOption = dataValue ? selectOptions.find(o => o.code === dataValue) : undefined;
+
+    const selectQ: SelectQuestion = {
+        ...base,
+        type: "select",
+        options: selectOptions,
+        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+    };
+    return selectQ;
 };
 
 export const getQuestion = (
@@ -95,42 +116,26 @@ export const getQuestion = (
         case "EMAIL":
         case "TEXT": {
             if (optionSet) {
-                const selectOptions = options.filter(op => op.optionSet.id === optionSet?.id);
+                const isSpeciesQuestion = formName.includes(SPECIES_QUESTION_FORNAME);
+                const isAntibioticQuestion = name.startsWith(ANTIBIOTIC_QUESTION_FORNAME);
 
-                const selectedOption = dataValue
-                    ? selectOptions.find(o => o.code === dataValue)
-                    : undefined;
-
-                const isSpeciesQuestion = formName.includes("Specify the specie");
-                const isAntibioticQuestion = name.startsWith(`Specify the antibiotic`);
+                const selectBase = getSelectQuestionBase(base, options, optionSet, dataValue);
 
                 if (isSpeciesQuestion) {
                     const speciesQ: SpeciesQuestion = {
-                        ...base,
-                        type: "select",
-                        options: selectOptions,
-                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                        ...selectBase,
                         subType: "select-species",
                     };
                     return speciesQ;
                 } else if (isAntibioticQuestion) {
                     const antibioticQ: AntibioticQuestion = {
-                        ...base,
-                        type: "select",
-                        options: selectOptions,
-                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+                        ...selectBase,
                         subType: "select-antibiotic",
                         filteredOptions: [],
                     };
                     return antibioticQ;
                 } else {
-                    const selectQ: SelectQuestion = {
-                        ...base,
-                        type: "select",
-                        options: selectOptions,
-                        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
-                    };
-                    return selectQ;
+                    return getSelectQuestionBase(base, options, optionSet, dataValue);
                 }
             } else {
                 const singleLineText: TextQuestion = {

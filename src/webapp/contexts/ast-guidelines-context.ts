@@ -1,10 +1,14 @@
 import React, { useContext } from "react";
 
+type Pathogen = string;
+type Antibiotics = string;
+type ASTGuidelineMap = Map<Pathogen, Antibiotics[]>;
+
 export interface ASTGuidelinesContextState {
-    CLSI_lists: Map<string, string[]>;
-    CLSI_matrix: Map<string, string[]>;
-    EUCAST_lists: Map<string, string[]>;
-    EUCAST_matrix: Map<string, string[]>;
+    CLSI_lists: ASTGuidelineMap;
+    CLSI_matrix: ASTGuidelineMap;
+    EUCAST_lists: ASTGuidelineMap;
+    EUCAST_matrix: ASTGuidelineMap;
 }
 
 export const ASTGuidelinesContext = React.createContext<ASTGuidelinesContextState | null>(null);

@@ -8,6 +8,7 @@ import {
 } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import _ from "../../domain/entities/generic/Collection";
+import { QuestionnaireSectionM } from "../../domain/entities/Questionnaire/QuestionnaireSection";
 
 export function useASTGuidelinesOptions() {
     const astGuidelines = useASTGuidelinesContext();
@@ -49,7 +50,8 @@ export function useASTGuidelinesOptions() {
     ): SpeciesQuestion | undefined => {
         const currentStage = questionnaire.stages.find(stage => stage.id === question.stageId);
 
-        const speciesSection = currentStage?.sections.find(s => s.title.startsWith("Specie"));
+        if (!currentStage) return undefined;
+        const speciesSection = QuestionnaireSectionM.getSpeciesSection(currentStage?.sections);
 
         const speciesQuestion: SpeciesQuestion | undefined = speciesSection?.questions?.find(
             q => q.type === "select" && isSpeciesQuestion(q)

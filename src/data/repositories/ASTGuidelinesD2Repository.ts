@@ -1,4 +1,3 @@
-import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { DataStoreClient } from "../DataStoreClient";
 import { ASTGuidelinesRepository } from "../../domain/repositories/ASTGuidelinesRepository";
 import { ASTGuidelinesContextState } from "../../webapp/contexts/ast-guidelines-context";
@@ -6,7 +5,7 @@ import { FutureData } from "../api-futures";
 import { DataStoreKeys } from "../DataStoreKeys";
 
 export class ASTGuidelinesD2Repository implements ASTGuidelinesRepository {
-    constructor(private dataStoreClient: DataStoreClient, private api: D2Api) {}
+    constructor(private dataStoreClient: DataStoreClient) {}
     getAll(): FutureData<ASTGuidelinesContextState> {
         return this.dataStoreClient.listCollection(DataStoreKeys.CLSI_LISTS).flatMap(CLSI_Lists => {
             return this.dataStoreClient

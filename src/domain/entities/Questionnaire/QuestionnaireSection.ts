@@ -3,6 +3,7 @@ import { Code, Question, QuestionnaireQuestion } from "./QuestionnaireQuestion";
 import { QuestionnaireRule } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
 
+const SPECIES_TITLE = "Specie";
 export interface QuestionnaireSection {
     title: string;
     code: Code;
@@ -13,6 +14,10 @@ export interface QuestionnaireSection {
 }
 
 export class QuestionnaireSectionM {
+    static getSpeciesSection(sections: QuestionnaireSection[]): QuestionnaireSection | undefined {
+        return sections.find(section => section.title.startsWith(SPECIES_TITLE));
+    }
+
     static updatedSections(
         sections: QuestionnaireSection[],
         updatedQuestion: Question,
