@@ -1,6 +1,5 @@
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
-
 import { Id } from "../entities/Ref";
 
 export class ApplyInitialRulesToSurveyUseCase {
@@ -19,7 +18,7 @@ export class ApplyInitialRulesToSurveyUseCase {
         const currentParentId =
             module?.name === "PPS" ? currentPPSSurveyForm : currentPrevalenceSurveyForm;
 
-        const currentSurveyRules = module?.rulesBySurvey.find(
+        const currentSurveyRules = module?.rulesBySurvey?.find(
             rule => rule.surveyId === currentParentId
         )?.surveyRules;
 

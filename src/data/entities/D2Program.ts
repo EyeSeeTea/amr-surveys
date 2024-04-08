@@ -35,6 +35,8 @@ export interface ProgramStageSection {
 export interface ProgramStage {
     id: string;
     name: string;
+    sortOrder: number;
+    repeatable: boolean;
     ProgramStageSection: ProgramStageSection[];
 }
 

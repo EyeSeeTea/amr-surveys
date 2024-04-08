@@ -20,9 +20,9 @@ import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
-
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
+
 export class GetSurveyUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
 
