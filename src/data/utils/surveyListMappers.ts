@@ -10,6 +10,7 @@ import {
     PREVALENCE_SURVEY_FORM_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     keyToDataElementMap,
+    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
 } from "../entities/D2Survey";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
@@ -31,6 +32,11 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
             )?.value ?? "";
 
+        const uniqueSurveyPatientId =
+            trackedEntity.attributes?.find(
+                attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID
+            )?.value ?? "";
+
         const survey: Survey = {
             id: trackedEntity.trackedEntity ?? "",
             name: trackedEntity.trackedEntity ?? "",
@@ -49,6 +55,7 @@ export const mapTrackedEntityToSurvey = (
             parentWardRegisterId: undefined,
             surveyFormType: surveyFormType,
             childCount: undefined,
+            uniqueSurveyPatientId: uniqueSurveyPatientId,
         };
         return survey;
     });

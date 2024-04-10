@@ -224,6 +224,17 @@ export class Questionnaire {
                     ),
                 };
             }),
+            entity:
+                questionnaire.entity && stageId === questionnaire.entity.stageId
+                    ? {
+                          ...questionnaire.entity,
+                          questions: questionnaire.entity.questions.map(question => {
+                              if (question.id === updatedQuestion.id) {
+                                  return updatedQuestion;
+                              } else return question;
+                          }),
+                      }
+                    : questionnaire.entity,
         });
     }
 

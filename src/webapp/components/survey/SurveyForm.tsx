@@ -99,7 +99,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         <Typography>{i18n.t(`Stage - Profile`)}</Typography>
                         <SurveySection
                             title={questionnaire.entity.title}
-                            updateQuestion={updateQuestion}
+                            updateQuestion={question =>
+                                updateQuestion(question, questionnaire.entity?.stageId)
+                            }
                             questions={questionnaire.entity.questions}
                         />
                     </PaddedDiv>
