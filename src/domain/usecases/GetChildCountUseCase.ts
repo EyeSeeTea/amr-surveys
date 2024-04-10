@@ -36,27 +36,27 @@ export class GetChildCountUseCase {
                 const programOptionsMap: ProgramOptionCountMap = programCountMap.map(pc => {
                     if (pc.id === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID) {
                         return {
-                            option: `List Sample Shipments (${pc.count})`,
+                            option: { label: `List Sample Shipments (${pc.count})` },
                             count: pc.count,
                         };
                     } else if (pc.id === PREVALENCE_CENTRAL_REF_LAB_FORM_ID) {
                         return {
-                            option: `List Central Ref Labs Results (${pc.count})`,
+                            option: { label: `List Central Ref Labs Results (${pc.count})` },
                             count: pc.count,
                         };
                     } else if (pc.id === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID) {
                         return {
-                            option: `List Pathogen Isolates Logs (${pc.count})`,
+                            option: { label: `List Pathogen Isolates Logs (${pc.count})` },
                             count: pc.count,
                         };
                     } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
                         return {
-                            option: `List Supranational Refs Results (${pc.count})`,
+                            option: { label: `List Supranational Refs Results (${pc.count})` },
                             count: pc.count,
                         };
                     } else {
                         return {
-                            option: ``,
+                            option: { label: "" },
                             count: 0,
                         };
                     }

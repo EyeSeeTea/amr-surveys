@@ -13,6 +13,19 @@ import {
     PREVALENCE_SURVEY_FORM_ID,
 } from "../../data/entities/D2Survey";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
+import {
+    DefaultFormOptions,
+    OptionType,
+    PPSCountryFormOptions,
+    PPSHospitalFormOptions,
+    PPSSurveyDefaultOptions,
+    PPSSurveyHospitalOptions,
+    PPSSurveyNationalOptions,
+    PPSWardFormOptions,
+    PrevalenceCaseReportFormOptions,
+    PrevalenceFacilityLevelFormOptions,
+    PrevalenceSurveyFormOptions,
+} from "./optionsHelper";
 
 export const PREVALENCE_PATIENT_OPTIONS = [
     "Case Report",
@@ -112,53 +125,44 @@ export const getChildSurveyType = (
 
 export const getSurveyOptions = (
     surveyFormType: SURVEY_FORM_TYPES,
+    hasReadAccess: boolean,
+    hasCaptureAccess: boolean,
     ppsSurveyType?: string
-): string[] => {
+): OptionType[] => {
     switch (surveyFormType) {
         case "PPSSurveyForm": {
             switch (ppsSurveyType) {
                 case "NATIONAL":
-                    return ["Edit", "Add New Country", "List Country", "Delete"];
+                    return PPSSurveyNationalOptions(hasReadAccess, hasCaptureAccess);
                 case "HOSP":
-                    return ["Edit", "Add New Hospital", "List Hospitals", "Delete"];
+                    return PPSSurveyHospitalOptions(hasReadAccess, hasCaptureAccess);
                 case "SUPRANATIONAL":
                 default:
-                    return ["Edit", "Add New Country", "List Countries", "Delete"];
+                    return PPSSurveyDefaultOptions(hasReadAccess, hasCaptureAccess);
             }
         }
         case "PPSCountryQuestionnaire":
-            return ["Edit", "Add New Hospital", "List Hospitals", "Delete"];
+            return PPSCountryFormOptions(hasReadAccess, hasCaptureAccess);
         case "PPSHospitalForm":
-            return ["Edit", "Add New Ward", "List Wards", "Delete"];
+            return PPSHospitalFormOptions(hasReadAccess, hasCaptureAccess);
         case "PPSWardRegister":
-            return ["Edit", "Add New Patient", "List Patients", "Delete"];
+            return PPSWardFormOptions(hasReadAccess, hasCaptureAccess);
 
         case "PrevalenceSurveyForm":
-            return ["Edit", "Add New Facility", "List Facilities", "Delete"];
+            return PrevalenceSurveyFormOptions(hasReadAccess, hasCaptureAccess);
 
         case "PrevalenceFacilityLevelForm":
-            return ["Edit", "Add New Patient", "List Patients", "Delete"];
+            return PrevalenceFacilityLevelFormOptions(hasReadAccess, hasCaptureAccess);
 
         case "PrevalenceCaseReportForm":
-            return [
-                "Edit",
-                "Add New Sample Shipment",
-                "List Sample Shipments",
-                "Add New Central Ref Lab Results",
-                "List Central Ref Labs Results",
-                "Add New Pathogen Isolates Log",
-                "List Pathogen Isolates Logs",
-                "Add New Supranational Ref Results",
-                "List Supranational Refs Results",
-                "Delete",
-            ];
+            return PrevalenceCaseReportFormOptions(hasReadAccess, hasCaptureAccess);
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceCentralRefLabForm":
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSupranationalRefLabForm":
         case "PPSPatientRegister":
         default:
-            return ["Edit", "Delete"];
+            return DefaultFormOptions(hasReadAccess, hasCaptureAccess);
     }
 };
 
@@ -206,10 +210,12 @@ export const getParentOUIdFromPath = (path: string | undefined) => {
 export const hideCreateNewButton = (
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
+    hasReadAccess: boolean,
     currentPPSFormType: string,
     surveys: Survey[] | undefined
 ): boolean => {
     return (
+        hasReadAccess ||
         (surveyFormType === "PPSHospitalForm" && !isAdmin) ||
         // For PPS Survey Forms of National Type, only one child survey(country) should be allowed.
         (surveyFormType === "PPSCountryQuestionnaire" &&

@@ -8,12 +8,15 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
+import { OptionType } from "../../../../domain/utils/optionsHelper";
+import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
+import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
-    const [options, setOptions] = useState<string[]>([]);
+    const [options, setOptions] = useState<OptionType[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     const [optionLoading, setOptionLoading] = useState<boolean>(false);
 
@@ -28,12 +31,14 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
     const { currentUser } = useAppContext();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
+    const { hasCaptureAccess } = useCaptureAccess();
 
     const isAdmin = currentModule
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
         : false;
 
-    const editSurvey = (survey: Survey) => {
+    const goToSurvey = (survey: Survey) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -90,8 +95,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
 
     const actionClick = (ppsSurveyType: string, survey?: Survey) => {
         setOptionLoading(true);
-        const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
-
+        const currentOptions = getSurveyOptions(
+            surveyFormType,
+            hasReadOnlyAccess,
+            hasCaptureAccess,
+            ppsSurveyType
+        );
         if (!survey) {
             setOptions(currentOptions);
             setOptionLoading(false);
@@ -109,9 +118,9 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 childCountMap => {
                     if (typeof childCountMap === "number") {
                         const optionsWithChildCount = currentOptions.map(option => {
-                            if (option.startsWith("List")) {
-                                const updatedOption = `${option} (${childCountMap})`;
-                                return updatedOption;
+                            if (option.label.startsWith("List")) {
+                                const updatedLabel = `${option.label} (${childCountMap})`;
+                                return { ...option, label: updatedLabel };
                             }
                             return option;
                         });
@@ -121,7 +130,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     } else {
                         const optionsWithChildCount = currentOptions.map(option => {
                             const updatedChilsOptionMap = childCountMap.find(childMap =>
-                                childMap.option.startsWith(option)
+                                childMap.option.label.startsWith(option.label)
                             );
                             if (updatedChilsOptionMap) {
                                 return updatedChilsOptionMap.option;
@@ -182,7 +191,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         sortedSurveys,
         optionLoading,
         setSortedSurveys,
-        editSurvey,
+        goToSurvey,
         assignChild,
         listChildren,
         actionClick,

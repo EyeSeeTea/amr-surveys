@@ -13,6 +13,7 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
+import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -34,6 +35,7 @@ const CancelButton = withStyles(() => ({
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const {
         questionnaire,
@@ -101,6 +103,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                             title={questionnaire.entity.title}
                             updateQuestion={updateQuestion}
                             questions={questionnaire.entity.questions}
+                            viewOnly={hasReadOnlyAccess}
                         />
                     </PaddedDiv>
                 )}
@@ -141,6 +144,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                             updateQuestion(question, stage.id)
                                         }
                                         questions={section.questions}
+                                        viewOnly={hasReadOnlyAccess}
                                     />
                                 );
                             })}
