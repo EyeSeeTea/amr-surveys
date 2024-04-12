@@ -43,7 +43,7 @@ export const mapTrackedEntityToSurvey = (
             status: "ACTIVE",
             assignedOrgUnit: {
                 id: trackedEntity.orgUnit ?? "",
-                name: "",
+                name: trackedEntity.enrollments?.[0]?.orgUnitName ?? "",
             },
             surveyType: "",
             parentWardRegisterId: undefined,

@@ -23,11 +23,13 @@ interface SurveySectionProps {
     title: string;
     questions: Question[];
     updateQuestion: (question: Question) => void;
+    viewOnly?: boolean;
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
     questions,
     updateQuestion,
+    viewOnly,
 }) => {
     return (
         <StyledSection key={title}>
@@ -55,7 +57,9 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                             <QuestionWidget
                                                 onChange={updateQuestion}
                                                 question={question}
-                                                disabled={question.disabled ? true : false}
+                                                disabled={
+                                                    question.disabled || viewOnly ? true : false
+                                                }
                                             />
                                             {question.errors.map((err, index) => (
                                                 <PaddedDiv key={index}>

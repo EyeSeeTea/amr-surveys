@@ -13,14 +13,7 @@ import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
-import {
-    Question,
-    Code,
-    isSpeciesQuestion,
-    isAntibioticQuestion,
-} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
-import { useASTGuidelinesOptions } from "../../hooks/useASTGuidelinesOptions";
+import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -42,17 +35,19 @@ const CancelButton = withStyles(() => ({
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
-    const { getAntibioticOptions, getSpeciesQuestionForAntibiotic } = useASTGuidelinesOptions();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const {
         questionnaire,
-        setQuestionnaire,
         loading,
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
         error,
         shouldDisableSave,
+        updateQuestion,
+        addProgramStage,
+        removeProgramStage,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -86,44 +81,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
 
-    const updateQuestion = (question: Question, stageId?: string) => {
-        if (questionnaire) {
-            const corrspondingSpeciesQuestion =
-                question.type === "select" && isAntibioticQuestion(question)
-                    ? getSpeciesQuestionForAntibiotic(question, questionnaire)
-                    : undefined;
-
-            const antibioticOptions =
-                question.type === "select" && isSpeciesQuestion(question)
-                    ? getAntibioticOptions(question)
-                    : corrspondingSpeciesQuestion
-                    ? getAntibioticOptions(corrspondingSpeciesQuestion)
-                    : undefined;
-
-            const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
-                questionnaire,
-                question,
-                stageId,
-                antibioticOptions
-            );
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
-
-    const addProgramStage = (stageCode: Code) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.addProgramStage(questionnaire, stageCode);
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
-
-    const removeProgramStage = (stageId: Id) => {
-        if (questionnaire) {
-            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
-            setQuestionnaire(updatedQuestionnaire);
-        }
-    };
-
     const onCancel = () => {
         props.hideForm();
     };
@@ -141,11 +98,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                 {questionnaire?.entity && (
                     <PaddedDiv>
-                        <Typography>Stage : Profile</Typography>
+                        <Typography>{i18n.t(`Stage - Profile`)}</Typography>
                         <SurveySection
                             title={questionnaire.entity.title}
                             updateQuestion={updateQuestion}
                             questions={questionnaire.entity.questions}
+                            viewOnly={hasReadOnlyAccess}
                         />
                     </PaddedDiv>
                 )}
@@ -154,7 +112,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                     return (
                         <PaddedDiv key={stage.id}>
-                            <Typography>Stage : {stage.title}</Typography>
+                            <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
                             {stage.repeatable && (
                                 <RightAlignedDiv>
                                     <Button
@@ -162,14 +120,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         color="primary"
                                         onClick={() => addProgramStage(stage.code)}
                                     >
-                                        Add Another {stage.title}
+                                        {i18n.t(`Add Another ${stage.title}`)}
                                     </Button>
                                     {stage.isAddedByUser && (
                                         <CancelButton
                                             variant="outlined"
                                             onClick={() => removeProgramStage(stage.id)}
                                         >
-                                            Remove {stage.title}
+                                            {i18n.t(`Remove ${stage.title}`)}
                                         </CancelButton>
                                     )}
                                 </RightAlignedDiv>
@@ -186,6 +144,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                             updateQuestion(question, stage.id)
                                         }
                                         questions={section.questions}
+                                        viewOnly={hasReadOnlyAccess}
                                     />
                                 );
                             })}
