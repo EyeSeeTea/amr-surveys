@@ -1,12 +1,16 @@
 import { FutureData } from "../../data/api-futures";
+import { ASTGUIDELINE_TYPES, CurrentASTGuidelines } from "../entities/ASTGuidelines";
+import { Id } from "../entities/Ref";
 import _ from "../entities/generic/Collection";
-import { ASTGuidelinesContextState } from "../../webapp/contexts/ast-guidelines-context";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
 
 export class GetASTGuidelinesUseCase {
     constructor(private astGuidelinesRepository: ASTGuidelinesRepository) {}
 
-    public execute(): FutureData<ASTGuidelinesContextState> {
-        return this.astGuidelinesRepository.getAll();
+    public execute(
+        astGuidelineType: ASTGUIDELINE_TYPES,
+        surveyId?: Id
+    ): FutureData<CurrentASTGuidelines> {
+        return this.astGuidelinesRepository.getByASTGuidelineType(astGuidelineType, surveyId);
     }
 }

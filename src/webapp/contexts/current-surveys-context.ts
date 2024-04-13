@@ -1,11 +1,7 @@
 import { useContext, createContext } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import {
-    ASTGUIDELINE_TYPES,
-    OrgUnitNamedRef,
-    PrevalenceSurveyForm,
-    SurveyBase,
-} from "../../domain/entities/Survey";
+import { OrgUnitNamedRef, PrevalenceSurveyForm, SurveyBase } from "../../domain/entities/Survey";
+import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 
 export interface CurrentSurveysContextProps {
     //PPS Module

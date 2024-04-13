@@ -43,6 +43,7 @@ export const PREVALENCE_START_DATE_DATAELEMENT_ID = "xlvLBmg9Mkg";
 export const PREVALENCE_SURVEY_COMPLETED_DATAELEMENT_ID = "xiFcLr23IbW";
 export const PREVALENCE_SURVEY_NAME_DATAELEMENT_ID = "HXnhZ8rsDts";
 export const AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES = "SmuESJHyhC2";
+export const AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE = "lyeNV8Ag6lp";
 
 //Prevalence Tracked Entity Attribute types
 export const PREVALENCE_FACILITY_LEVEL_TET = "eY4BDBKXegX";
@@ -62,7 +63,8 @@ type SURVEY_DATA_ELEMENT_KEYS =
     | "wardCode"
     | "patientCode"
     | "parentWardRegisterId"
-    | "astGuideline";
+    | "astGuideline"
+    | "customAstGuideline";
 interface SurveyKeyDataElementMapType {
     key: SURVEY_DATA_ELEMENT_KEYS;
     dataElements: Id[];
@@ -94,4 +96,5 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
     { key: "patientCode", dataElements: [SURVEY_PATIENT_CODE_DATAELEMENT_ID] },
     { key: "parentWardRegisterId", dataElements: [WARD_ID_DATAELEMENT_ID] },
     { key: "astGuideline", dataElements: [AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES] },
+    { key: "customAstGuideline", dataElements: [AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE] },
 ];

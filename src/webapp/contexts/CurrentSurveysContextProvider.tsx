@@ -1,12 +1,8 @@
 import { PropsWithChildren, useState } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import {
-    ASTGUIDELINE_TYPES,
-    OrgUnitNamedRef,
-    PrevalenceSurveyForm,
-    SurveyBase,
-} from "../../domain/entities/Survey";
+import { OrgUnitNamedRef, PrevalenceSurveyForm, SurveyBase } from "../../domain/entities/Survey";
 import { CurrentSurveysContext } from "./current-surveys-context";
+import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
     //PPS Module states

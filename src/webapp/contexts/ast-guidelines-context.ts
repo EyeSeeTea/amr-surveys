@@ -1,17 +1,12 @@
-import React, { useContext } from "react";
+import { createContext, useContext } from "react";
+import { CurrentASTGuidelines } from "../../domain/entities/ASTGuidelines";
 
-type Pathogen = string;
-type Antibiotics = string;
-type ASTGuidelineMap = Map<Pathogen, Antibiotics[]>;
-
-export interface ASTGuidelinesContextState {
-    CLSI_lists: ASTGuidelineMap;
-    CLSI_matrix: ASTGuidelineMap;
-    EUCAST_lists: ASTGuidelineMap;
-    EUCAST_matrix: ASTGuidelineMap;
+export interface CurrentASTGuidelinesContextProps {
+    currentASTGuidelines: CurrentASTGuidelines;
+    changeCurrentASTGuidelines: (astGuidelines: CurrentASTGuidelines) => void;
 }
 
-export const ASTGuidelinesContext = React.createContext<ASTGuidelinesContextState | null>(null);
+export const ASTGuidelinesContext = createContext<CurrentASTGuidelinesContextProps | null>(null);
 
 export function useASTGuidelinesContext() {
     const context = useContext(ASTGuidelinesContext);
