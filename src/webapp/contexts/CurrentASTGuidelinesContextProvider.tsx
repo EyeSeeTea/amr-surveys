@@ -1,5 +1,5 @@
 import { PropsWithChildren, useState } from "react";
-import { ASTGuidelinesContext } from "./ast-guidelines-context";
+import { currentASTGuidelinesContext } from "./current-ast-guidelines-context";
 import { CurrentASTGuidelines } from "../../domain/entities/ASTGuidelines";
 
 const defaultASTGuidelines: CurrentASTGuidelines = {
@@ -17,8 +17,10 @@ export const ASTGuidelinesContextProvider: React.FC<PropsWithChildren> = ({ chil
     };
 
     return (
-        <ASTGuidelinesContext.Provider value={{ currentASTGuidelines, changeCurrentASTGuidelines }}>
+        <currentASTGuidelinesContext.Provider
+            value={{ currentASTGuidelines, changeCurrentASTGuidelines }}
+        >
             {children}
-        </ASTGuidelinesContext.Provider>
+        </currentASTGuidelinesContext.Provider>
     );
 };

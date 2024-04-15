@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useASTGuidelinesContext } from "../contexts/ast-guidelines-context";
+import { useCurrentASTGuidelinesContext } from "../contexts/current-ast-guidelines-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import {
     AntibioticQuestion,
@@ -11,7 +11,7 @@ import _ from "../../domain/entities/generic/Collection";
 import { QuestionnaireSectionM } from "../../domain/entities/Questionnaire/QuestionnaireSection";
 
 export function useASTGuidelinesOptions() {
-    const { currentASTGuidelines } = useASTGuidelinesContext();
+    const { currentASTGuidelines } = useCurrentASTGuidelinesContext();
     const { currentPrevalenceSurveyForm } = useCurrentSurveys();
 
     const [currentASTMatrix, setCurrentASTMatrix] = useState<Map<string, string[]>>(new Map());

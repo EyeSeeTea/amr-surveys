@@ -102,4 +102,62 @@ export class ASTGuidelinesD2Repository implements ASTGuidelinesRepository {
             }
         }
     }
+
+    saveByASTGuidelineType(astGuidelineType: ASTGUIDELINE_TYPES, surveyId: Id): FutureData<void> {
+        switch (astGuidelineType) {
+            case "CLSI":
+                return this.dataStoreClient
+                    .listCollection(DataStoreKeys.CLSI_LISTS)
+                    .flatMap(CLSI_Lists => {
+                        return this.dataStoreClient
+                            .listCollection(DataStoreKeys.CLSI_MATRIX)
+                            .flatMap(CLSI_matrix => {
+                                return this.dataStoreClient
+                                    .saveObject(`CUSTOM_lists_${surveyId}`, CLSI_Lists)
+                                    .flatMap(() => {
+                                        return this.dataStoreClient
+                                            .saveObject(`CUSTOM_matrix_${surveyId}`, CLSI_matrix)
+                                            .flatMap(() => {
+                                                return Future.success(undefined);
+                                            });
+                                    });
+                            });
+                    });
+
+            case "EUCAST":
+                return this.dataStoreClient
+                    .listCollection(DataStoreKeys.EUCAST_LISTS)
+                    .flatMap(EUCAST_lists => {
+                        return this.dataStoreClient
+                            .listCollection(DataStoreKeys.EUCAST_MATRIX)
+                            .flatMap(EUCAST_matrix => {
+                                return this.dataStoreClient
+                                    .saveObject(`CUSTOM_lists_${surveyId}`, EUCAST_lists)
+                                    .flatMap(() => {
+                                        return this.dataStoreClient
+                                            .saveObject(`CUSTOM_matrix_${surveyId}`, EUCAST_matrix)
+                                            .flatMap(() => {
+                                                return Future.success(undefined);
+                                            });
+                                    });
+                            });
+                    });
+
+            case "CUSTOM": {
+                return this.dataStoreClient
+                    .saveObject(`CUSTOM_lists_${surveyId}`, {})
+                    .flatMap(() => {
+                        return this.dataStoreClient
+                            .saveObject(`CUSTOM_matrix_${surveyId}`, {})
+                            .flatMap(() => {
+                                return Future.success(undefined);
+                            });
+                    });
+            }
+
+            default: {
+                return Future.error(new Error("Invalid AST Guideline type"));
+            }
+        }
+    }
 }

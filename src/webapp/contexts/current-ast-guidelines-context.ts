@@ -6,13 +6,15 @@ export interface CurrentASTGuidelinesContextProps {
     changeCurrentASTGuidelines: (astGuidelines: CurrentASTGuidelines) => void;
 }
 
-export const ASTGuidelinesContext = createContext<CurrentASTGuidelinesContextProps | null>(null);
+export const currentASTGuidelinesContext = createContext<CurrentASTGuidelinesContextProps | null>(
+    null
+);
 
-export function useASTGuidelinesContext() {
-    const context = useContext(ASTGuidelinesContext);
+export function useCurrentASTGuidelinesContext() {
+    const context = useContext(currentASTGuidelinesContext);
     if (context) {
         return context;
     } else {
-        throw new Error("AST Guidelines context uninitialized");
+        throw new Error("Current AST Guidelines context uninitialized");
     }
 }

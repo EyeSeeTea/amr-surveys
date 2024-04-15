@@ -7,4 +7,6 @@ export interface ASTGuidelinesRepository {
         astGuidelineType: ASTGUIDELINE_TYPES,
         surveyId?: Id
     ): FutureData<CurrentASTGuidelines>;
+
+    saveByASTGuidelineType(astGuidelineType: ASTGUIDELINE_TYPES, surveyId: Id): FutureData<void>;
 }

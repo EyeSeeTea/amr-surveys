@@ -15,7 +15,7 @@ import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
 import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
-import { ASTGuidelinesContextProvider } from "../../contexts/ASTGuidelinesContextProvider";
+import { ASTGuidelinesContextProvider } from "../../contexts/CurrentASTGuidelinesContextProvider";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;

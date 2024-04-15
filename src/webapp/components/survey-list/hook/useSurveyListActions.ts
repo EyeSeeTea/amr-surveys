@@ -11,7 +11,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import { OptionType } from "../../../../domain/utils/optionsHelper";
 import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
-import { useASTGuidelinesContext } from "../../../contexts/ast-guidelines-context";
+import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -34,7 +34,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { currentUser } = useAppContext();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
     const { hasCaptureAccess } = useCaptureAccess();
-    const { changeCurrentASTGuidelines } = useASTGuidelinesContext();
+    const { changeCurrentASTGuidelines } = useCurrentASTGuidelinesContext();
 
     const isAdmin = currentModule
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
