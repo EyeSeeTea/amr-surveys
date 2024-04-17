@@ -3,6 +3,9 @@ import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
+import { getUserAccess } from "../../domain/utils/menuHelper";
+import { useCurrentModule } from "../contexts/current-module-context";
+import { useHospitalContext } from "../contexts/hospital-context";
 
 const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
@@ -23,7 +26,25 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentFacilityLevelForm,
     } = useCurrentSurveys();
 
+    const { currentModule } = useCurrentModule();
+
+    const {
+        currentUser: { userGroups },
+    } = useAppContext();
+
+    const { userHospitalsAccess } = useHospitalContext();
+
     const getOrgUnitByFormType = useCallback(() => {
+        //TO DO : make chunked calls as user may have large number of hospitals.
+        //TO DO : do not make call for PrevalenceFacilityLevelForm until userHospitalsAccess data is loaded.
+        const currentUserHospitals = userHospitalsAccess
+            .filter(hospitals => hospitals.readAccess === true)
+            .map(hospital => hospital.orgUnitId)
+            .join(";");
+        const hasAdminAccess = currentModule
+            ? getUserAccess(currentModule, userGroups).hasAdminAccess
+            : false;
+
         switch (surveyFormType) {
             case "PPSHospitalForm":
                 return currentCountryQuestionnaire?.orgUnitId ?? "";
@@ -32,7 +53,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                 return currentHospitalForm?.orgUnitId ?? "";
 
             case "PrevalenceFacilityLevelForm":
-                return currentPrevalenceSurveyForm?.orgUnitId ?? "";
+                return hasAdminAccess
+                    ? currentPrevalenceSurveyForm?.orgUnitId ?? ""
+                    : currentUserHospitals;
             case "PrevalenceCaseReportForm":
             case "PrevalenceCentralRefLabForm":
             case "PrevalencePathogenIsolatesLog":
@@ -46,8 +69,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentCountryQuestionnaire?.orgUnitId,
         currentFacilityLevelForm?.orgUnitId,
         currentHospitalForm?.orgUnitId,
+        currentModule,
         currentPrevalenceSurveyForm?.orgUnitId,
         surveyFormType,
+        userGroups,
+        userHospitalsAccess,
     ]);
 
     useEffect(() => {
