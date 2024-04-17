@@ -1808,9 +1808,7 @@
         "Pseudomonas zeshuii",
         "Pseudomonas sp."
     ],
-    "S. maltophilia": [
-        "Stenotrophomonas maltophilia"
-    ],
+    "S. maltophilia": ["Stenotrophomonas maltophilia"],
     "Acinetobacter": [
         "Acinetobacter baumannii",
         "Acinetobacter baylyi",
@@ -1914,9 +1912,7 @@
         "Streptococcus equi zooepidimicus",
         "Streptococcus canis"
     ],
-    "S. pneumoniae": [
-        "Streptococcus pneumoniae"
-    ],
+    "S. pneumoniae": ["Streptococcus pneumoniae"],
     "Viridans group Streptococci": [
         "Streptococcus anginosus",
         "Streptococcus constellatus",
@@ -1946,19 +1942,10 @@
         "Streptococcus mutans",
         "Streptococcus sobrinus"
     ],
-    "H. influenzae": [
-        "Haemophylus influenzae",
-        "Haemophylus parainfluenzae"
-    ],
-    "M. catarrhalis": [
-        "Moraxella catarrhalis"
-    ],
-    "N. gonorrheae": [
-        "Neisseria gonorrheae"
-    ],
-    "N. meningitidis": [
-        "Neisseria meningitidis"
-    ],
+    "H. influenzae": ["Haemophylus influenzae", "Haemophylus parainfluenzae"],
+    "M. catarrhalis": ["Moraxella catarrhalis"],
+    "N. gonorrheae": ["Neisseria gonorrheae"],
+    "N. meningitidis": ["Neisseria meningitidis"],
     "Bacteroides": [
         "Bacteroides asaccharolyticus",
         "Bacteroides bivius",
@@ -2088,24 +2075,12 @@
         "Prevotella zoogleoformans",
         "Prevotella sp."
     ],
-    "F. necrophorum": [
-        "Fusobacterium necrophorum"
-    ],
-    "C. perfringens": [
-        "Clostridium perfringens"
-    ],
-    "C. acnes": [
-        "Cutibacterium acnes"
-    ],
-    "C. difficile": [
-        "Clostridioides difficile"
-    ],
-    "H. pylori": [
-        "Helycobacter pylori"
-    ],
-    "L. monocytogenes": [
-        "Listeria monocytogenes"
-    ],
+    "F. necrophorum": ["Fusobacterium necrophorum"],
+    "C. perfringens": ["Clostridium perfringens"],
+    "C. acnes": ["Cutibacterium acnes"],
+    "C. difficile": ["Clostridioides difficile"],
+    "H. pylori": ["Helycobacter pylori"],
+    "L. monocytogenes": ["Listeria monocytogenes"],
     "Pasteurella": [
         "Pasteurella aerogenes",
         "Pasteurella anatis",
@@ -2126,10 +2101,7 @@
         "Pasteurella ureae",
         "Pasteurella sp."
     ],
-    "Campylobacter jejuni and coli": [
-        "Campylobacter jejuni",
-        "Campylobacter coli"
-    ],
+    "Campylobacter jejuni and coli": ["Campylobacter jejuni", "Campylobacter coli"],
     "Corynebacterium": [
         "Corynebacterium accolens",
         "Corynebacterium afermentans",
@@ -2211,13 +2183,8 @@
         "Corynebacterium diphteriae",
         "Corynebacterium ulcerans"
     ],
-    "Aerococcus sanguinicola and urinae": [
-        "Aerococcus sanguinicola",
-        "Aerococcus urinae"
-    ],
-    "K. kingae": [
-        "Kingella kingae"
-    ],
+    "Aerococcus sanguinicola and urinae": ["Aerococcus sanguinicola", "Aerococcus urinae"],
+    "K. kingae": ["Kingella kingae"],
     "Aeromonas": [
         "Aeromonas aquariorum",
         "Aeromonas caviae",
@@ -2247,9 +2214,7 @@
         "Aeromonas veronii",
         "Aeromonas sp."
     ],
-    "A. xylosoxidans": [
-        "Achromobacter xylosoxidans"
-    ],
+    "A. xylosoxidans": ["Achromobacter xylosoxidans"],
     "Vibrio": [
         "Vibrio alginolyticus",
         "Vibrio cholerae",
@@ -2296,9 +2261,7 @@
         "Bacillus weihenstephanensis",
         "Bacillus sp."
     ],
-    "B. pseudomallei": [
-        "Burkholderia pseudomallei"
-    ],
+    "B. pseudomallei": ["Burkholderia pseudomallei"],
     "Candida and Cryptococcus": [
         "Candida albicans",
         "Candida dubliniensis",

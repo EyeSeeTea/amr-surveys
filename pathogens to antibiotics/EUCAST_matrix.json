@@ -76,10 +76,7 @@
         "Ticarcillin-clavulanic acid",
         "Tobramycin"
     ],
-    "S. maltophilia": [
-        "Cefiderocol",
-        "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"
-    ],
+    "S. maltophilia": ["Cefiderocol", "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"],
     "Acinetobacter": [
         "Amikacin",
         "Cefiderocol",
@@ -315,12 +312,7 @@
         "Rifampicin",
         "Tetracycline"
     ],
-    "Bacteroides ": [
-        "Clindamycin",
-        "Meropenem",
-        "Metronidazole",
-        "Piperacillin-tazobactam"
-    ],
+    "Bacteroides ": ["Clindamycin", "Meropenem", "Metronidazole", "Piperacillin-tazobactam"],
     "Prevotella": [
         "Benzylpenicillin (Penicillin, Penicillin G)",
         "Clindamycin",
@@ -350,10 +342,7 @@
         "Piperacillin-tazobactam",
         "Vancomycin"
     ],
-    "C. difficile": [
-        "Metronidazole",
-        "Vancomycin"
-    ],
+    "C. difficile": ["Metronidazole", "Vancomycin"],
     "H. pylori": [
         "Amoxicillin",
         "Clarithromycin",
@@ -382,11 +371,7 @@
         "Tetracycline",
         "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"
     ],
-    "Campylobacter jejuni and coli": [
-        "Ciprofloxacin",
-        "Erythromycin",
-        "Tetracycline"
-    ],
+    "Campylobacter jejuni and coli": ["Ciprofloxacin", "Erythromycin", "Tetracycline"],
     "Corynebacterium ": [
         "Benzylpenicillin (Penicillin, Penicillin G)",
         "Ciprofloxacin",

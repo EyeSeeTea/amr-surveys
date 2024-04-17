@@ -541,9 +541,7 @@
         "Tetracycline",
         "Trimethoprim-sulfamethoxazole (Co-trimoxazole)"
     ],
-    "H. pylori": [
-        "Clarithromycin"
-    ],
+    "H. pylori": ["Clarithromycin"],
     "Lactobacillus": [
         "Ampicillin",
         "Clindamycin",

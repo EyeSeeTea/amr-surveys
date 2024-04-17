@@ -1750,9 +1750,7 @@
         "Yersinia sp.",
         "Yokenella sp."
     ],
-    "Pseudomonas": [
-        "Pseudomonas aeruginosa"
-    ],
+    "Pseudomonas": ["Pseudomonas aeruginosa"],
     "Acinetobacter": [
         "Acinetobacter baumannii",
         "Acinetobacter baylyi",
@@ -1778,12 +1776,8 @@
         "Acinetobacter variabilis",
         "Acinetobacter sp."
     ],
-    "B. cepacia": [
-        "Burkholderia cepacia"
-    ],
-    "S. maltophilia": [
-        "Stenotrophomonas maltophilia"
-    ],
+    "B. cepacia": ["Burkholderia cepacia"],
+    "S. maltophilia": ["Stenotrophomonas maltophilia"],
     "Nonfastidious, glucose-nonfermenting, gram-negative bacilli": [
         "Pseudomonas acidovorans",
         "Pseudomonas alcaligenes",
@@ -2042,16 +2036,9 @@
         "Enterococcus raffinosus",
         "Enterococcus sp."
     ],
-    "H. influenzae and parainfluenzae": [
-        "Haemophylus influenzae",
-        "Haemophylus parainfluenzae"
-    ],
-    "N. gonorrheae": [
-        "Neisseria gonorrheae"
-    ],
-    "S. pneumoniae": [
-        "Streptococcus pneumoniae"
-    ],
+    "H. influenzae and parainfluenzae": ["Haemophylus influenzae", "Haemophylus parainfluenzae"],
+    "N. gonorrheae": ["Neisseria gonorrheae"],
+    "S. pneumoniae": ["Streptococcus pneumoniae"],
     "Beta hemolytic streptococci": [
         "Streptococcus pyogenes",
         "Streptococcus agalactiae",
@@ -2090,9 +2077,7 @@
         "Streptococcus mutans",
         "Streptococcus sobrinus"
     ],
-    "N. meningitidis": [
-        "Neisseria meningitidis"
-    ],
+    "N. meningitidis": ["Neisseria meningitidis"],
     "Anaerobes": [
         "Actinomyces bovis",
         "Actinomyces dentalis",
@@ -2717,10 +2702,7 @@
         "Lysinibacillus sp.",
         "Paenibacillus sp."
     ],
-    "Campylobacter jejuni and coli": [
-        "Campylobacter jejuni",
-        "Campylobacter coli"
-    ],
+    "Campylobacter jejuni and coli": ["Campylobacter jejuni", "Campylobacter coli"],
     "Corynebacterium": [
         "Arcanobacterium bernardiae",
         "Arcanobacterium pyogenes",
@@ -2858,9 +2840,7 @@
         "Trueperella sp.",
         "Turicella sp."
     ],
-    "E. rhusiopathiae": [
-        "Erysipeothrix rhusiopathiae"
-    ],
+    "E. rhusiopathiae": ["Erysipeothrix rhusiopathiae"],
     "Gemella": [
         "Gemella asaccharolytica",
         "Gemella bergeri",
@@ -2887,9 +2867,7 @@
         "Kingella oralis",
         "Kingella potus"
     ],
-    "H. pylori": [
-        "Helycobacter pylori"
-    ],
+    "H. pylori": ["Helycobacter pylori"],
     "Lactobacillus": [
         "Lactobacillus acidophilus",
         "Lactobacillus argentoratensis",
@@ -2917,10 +2895,7 @@
         "Lactobacillus rimae",
         "Lactobacillus sp."
     ],
-    "Lactococcus": [
-        "Lactococcus garvieae bovis",
-        "Lactococcus garvieae garvieae"
-    ],
+    "Lactococcus": ["Lactococcus garvieae bovis", "Lactococcus garvieae garvieae"],
     "Leuconostoc": [
         "Leuconostoc argentinum",
         "Leuconostoc lactis",
@@ -2932,9 +2907,7 @@
         "Leuconostoc pseudomesenteroides",
         "Leuconostoc sp."
     ],
-    "L. monocytogenes": [
-        "Listeria monocytogenes"
-    ],
+    "L. monocytogenes": ["Listeria monocytogenes"],
     "Micrococcus": [
         "Micrococcus kristinae",
         "Micrococcus luteus",
@@ -2944,9 +2917,7 @@
         "Micrococcus yunnanensis",
         "Micrococcus sp."
     ],
-    "M. catarrhalis": [
-        "Moraxella catarrhalis"
-    ],
+    "M. catarrhalis": ["Moraxella catarrhalis"],
     "Pasteurella": [
         "Pasteurella aerogenes",
         "Pasteurella anatis",
@@ -2981,9 +2952,7 @@
         "Pediococcus stilesii",
         "Pediococcus sp."
     ],
-    "R. mucilaginosa": [
-        "Ruthia mucilaginosa"
-    ],
+    "R. mucilaginosa": ["Ruthia mucilaginosa"],
     "Vibrio": [
         "Vibrio albensis",
         "Vibrio alginolyticus",
