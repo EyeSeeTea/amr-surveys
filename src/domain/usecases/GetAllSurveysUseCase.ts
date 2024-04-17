@@ -26,7 +26,8 @@ export class GetAllSurveysUseCase {
                 const filteredSurveys =
                     surveyFormType === "PPSSurveyForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentSurveyId) ||
-                    surveyFormType === "PrevalenceSurveyForm"
+                    surveyFormType === "PrevalenceSurveyForm" ||
+                    (surveyFormType === "PrevalenceFacilityLevelForm" && !parentSurveyId)
                         ? surveys
                         : _(
                               surveys.map(survey => {
