@@ -11,6 +11,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import { OptionType } from "../../../../domain/utils/optionsHelper";
 import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
+import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -180,9 +181,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
         else if (surveyFormType === "PrevalenceSurveyForm")
             changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PrevalenceFacilityLevelForm")
+        else if (surveyFormType === "PrevalenceFacilityLevelForm") {
+            if (!isAdmin) {
+                changeCurrentPrevalenceSurveyForm(rootSurvey.id, rootSurvey.name, GLOBAL_OU_ID);
+            }
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PrevalenceCaseReportForm")
+        } else if (surveyFormType === "PrevalenceCaseReportForm")
             changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
     };
 
