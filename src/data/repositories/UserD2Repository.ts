@@ -9,7 +9,7 @@ import { NamedRef } from "../../domain/entities/Ref";
 
 const NA_OU_ID = "zXAaAXzwt4M";
 export const COUNTRY_OU_LEVEL = 3;
-export const HOSPITAL_OU_LEVEL = 7;
+export const HOSPITAL_OU_LEVELS = [6, 7, 8];
 export class UserD2Repository implements UserRepository {
     constructor(private api: D2Api) {}
 
@@ -28,10 +28,10 @@ export class UserD2Repository implements UserRepository {
         organisationUnits: NamedRef[],
         dataViewOrganisationUnits: NamedRef[]
     ): FutureData<OrgUnitAccess[]> {
-        const hospital$ = this.getAllOrgUnitsByLevel(
+        const hospital$ = this.getAllOrgUnitsByLevels(
             organisationUnits,
             dataViewOrganisationUnits,
-            HOSPITAL_OU_LEVEL
+            HOSPITAL_OU_LEVELS
         );
 
         return hospital$.flatMap(hospitals => {
@@ -161,6 +161,54 @@ export class UserD2Repository implements UserRepository {
         });
     };
 
+    //TO DO : TEMP FIX for multi level hospitals.
+    getAllOrgUnitsByLevels = (
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[],
+        level: number[]
+    ): FutureData<{ userOrgUnits: OrgUnit[]; userDataViewOrgUnits: OrgUnit[] }> => {
+        //1. Get all OUs
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                filter: {
+                    level: { in: [level.toString()] },
+                },
+                fields: {
+                    id: true,
+                    shortName: true,
+                    path: true,
+                    level: true,
+                },
+                paging: false,
+            })
+        ).flatMap(res => {
+            const allLevelOUs: OrgUnit[] = _(
+                res.objects.map(ou => {
+                    if (!ou.path.includes(NA_OU_ID))
+                        return {
+                            id: ou.id,
+                            shortName: ou.shortName,
+
+                            path: ou.path,
+                        };
+                })
+            )
+                .compact()
+                .value();
+
+            //2. Filter OUs which the user has access to.
+            //If the user has access to any parent of the OU, then they have access to the OU.
+            //So, check the path to see if it contains any OU  user has access to.
+            const userOrgUnits = allLevelOUs.filter(levelOU =>
+                organisationUnits.some(userOU => levelOU.path.includes(userOU.id))
+            );
+            const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
+                dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
+            );
+
+            return Future.success({ userOrgUnits, userDataViewOrgUnits });
+        });
+    };
     mapUserOrgUnitsAccess = (
         organisationUnits: OrgUnit[],
         dataViewOrganisationUnits: OrgUnit[]
