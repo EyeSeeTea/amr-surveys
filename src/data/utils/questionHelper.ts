@@ -1,5 +1,6 @@
 import { DataValue } from "@eyeseetea/d2-api";
 import {
+    AntibioticQuestion,
     BooleanQuestion,
     DateQuestion,
     DateTimeQuestion,
@@ -7,6 +8,7 @@ import {
     Question,
     QuestionBase,
     SelectQuestion,
+    SpeciesQuestion,
     TextQuestion,
 } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../domain/entities/Ref";
@@ -28,15 +30,19 @@ import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
+const SPECIES_QUESTION_FORNAME = "Specify the specie";
+const ANTIBIOTIC_QUESTION_FORNAME = "Specify the antibiotic";
 const getQuestionBase = (
     id: Id,
     code: string,
+    name: string,
     formName: string,
     sortOrder: number | undefined
 ): QuestionBase => {
     return {
         id: id,
         code: code, //code
+        name: name,
         text: formName, //formName
         isVisible: true,
         sortOrder: sortOrder,
@@ -44,17 +50,37 @@ const getQuestionBase = (
     };
 };
 
+const getSelectQuestionBase = (
+    base: QuestionBase,
+    options: Option[],
+    optionSet?: { id: string },
+    dataValue?: string
+) => {
+    const selectOptions = options.filter(op => op.optionSet.id === optionSet?.id);
+
+    const selectedOption = dataValue ? selectOptions.find(o => o.code === dataValue) : undefined;
+
+    const selectQ: SelectQuestion = {
+        ...base,
+        type: "select",
+        options: selectOptions,
+        value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
+    };
+    return selectQ;
+};
+
 export const getQuestion = (
     valueType: string,
     id: Id,
     code: string,
+    name: string,
     formName: string,
     sortOrder: number | undefined,
     options: Option[],
     optionSet?: { id: string },
     dataValue?: string
 ): Question | undefined => {
-    const base = getQuestionBase(id, code, formName, sortOrder);
+    const base = getQuestionBase(id, code, name, formName, sortOrder);
     switch (valueType) {
         case "BOOLEAN": {
             const boolQ: BooleanQuestion = {
@@ -90,19 +116,27 @@ export const getQuestion = (
         case "EMAIL":
         case "TEXT": {
             if (optionSet) {
-                const selectOptions = options.filter(op => op.optionSet.id === optionSet?.id);
+                const isSpeciesQuestion = formName.includes(SPECIES_QUESTION_FORNAME);
+                const isAntibioticQuestion = name.startsWith(ANTIBIOTIC_QUESTION_FORNAME);
 
-                const selectedOption = dataValue
-                    ? selectOptions.find(o => o.code === dataValue)
-                    : undefined;
+                const selectBase = getSelectQuestionBase(base, options, optionSet, dataValue);
 
-                const selectQ: SelectQuestion = {
-                    ...base,
-                    type: "select",
-                    options: selectOptions,
-                    value: selectedOption ? selectedOption : { name: "", id: "", code: "" },
-                };
-                return selectQ;
+                if (isSpeciesQuestion) {
+                    const speciesQ: SpeciesQuestion = {
+                        ...selectBase,
+                        subType: "select-species",
+                    };
+                    return speciesQ;
+                } else if (isAntibioticQuestion) {
+                    const antibioticQ: AntibioticQuestion = {
+                        ...selectBase,
+                        subType: "select-antibiotic",
+                        filteredOptions: [],
+                    };
+                    return antibioticQ;
+                } else {
+                    return getSelectQuestionBase(base, options, optionSet, dataValue);
+                }
             } else {
                 const singleLineText: TextQuestion = {
                     ...base,
@@ -224,6 +258,7 @@ export const mapProgramDataElementToQuestions = (
                     curDataElement.valueType,
                     curDataElement.id,
                     curDataElement.code,
+                    curDataElement.name,
                     curDataElement.formName,
                     curDataElement.sortOrder,
                     options,
@@ -272,6 +307,7 @@ export const mapRepeatedStageEventToQuestions = (
                     curDataElement.valueType,
                     curDataElement.id,
                     curDataElement.code,
+                    curDataElement.name,
                     curDataElement.formName,
                     curDataElement.sortOrder,
                     options,
@@ -305,6 +341,7 @@ export const mapTrackedAttributesToQuestions = (
                 attribute.valueType,
                 attribute.id,
                 attribute.code,
+                attribute.name,
                 attribute.formName,
                 attribute.sortOrder,
                 options,

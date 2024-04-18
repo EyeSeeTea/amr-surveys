@@ -13,6 +13,7 @@ import {
     Question,
     QuestionOption,
     QuestionnaireQuestion,
+    isAntibioticQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface QuestionWidgetProps {
@@ -28,7 +29,18 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
 
     switch (type) {
         case "select": {
-            if (question.options.length > 5 && question.options.length < 10) {
+            if (isAntibioticQuestion(question)) {
+                return (
+                    <SearchableSelect
+                        value={question.options.find(op => op.id === question.value?.id) || null}
+                        options={question.filteredOptions ?? []}
+                        onChange={(value: Maybe<QuestionOption>) =>
+                            onChange(update(question, value))
+                        }
+                        disabled={disabled}
+                    />
+                );
+            } else if (question.options.length > 5 && question.options.length < 10) {
                 return (
                     <DropdownSelectWidget
                         value={question.value?.id}

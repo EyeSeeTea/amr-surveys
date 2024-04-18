@@ -1,6 +1,11 @@
 import { useContext, createContext } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { OrgUnitNamedRef, SurveyBase } from "../../domain/entities/Survey";
+import {
+    ASTGUIDELINE_TYPES,
+    OrgUnitNamedRef,
+    PrevalenceSurveyForm,
+    SurveyBase,
+} from "../../domain/entities/Survey";
 
 export interface CurrentSurveysContextProps {
     //PPS Module
@@ -21,8 +26,13 @@ export interface CurrentSurveysContextProps {
     resetCurrentWardRegister: () => void;
 
     //Prevalence
-    currentPrevalenceSurveyForm: OrgUnitNamedRef | undefined;
-    changeCurrentPrevalenceSurveyForm: (id: Id, name: string, orgUnitId: Id) => void;
+    currentPrevalenceSurveyForm: PrevalenceSurveyForm | undefined;
+    changeCurrentPrevalenceSurveyForm: (
+        id: Id,
+        name: string,
+        orgUnitId: Id,
+        astGuidelines: ASTGUIDELINE_TYPES | undefined
+    ) => void;
     resetCurrentPrevalenceSurveyForm: () => void;
 
     currentFacilityLevelForm: OrgUnitNamedRef | undefined;

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-01-15T12:42:39.990Z\n"
+"POT-Creation-Date: 2024-04-01T18:30:50.736Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -15,6 +15,9 @@ msgid "HOME"
 msgstr ""
 
 msgid "Log Out"
+msgstr ""
+
+msgid "Stage - Profile"
 msgstr ""
 
 msgid "Cancel"
@@ -39,9 +42,6 @@ msgid "Wards"
 msgstr ""
 
 msgid "Patients"
-msgstr ""
-
-msgid "Add new"
 msgstr ""
 
 msgid "Submission Success!"

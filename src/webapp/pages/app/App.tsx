@@ -15,6 +15,10 @@ import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
 import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
+import {
+    ASTGuidelinesContext,
+    ASTGuidelinesContextState,
+} from "../../contexts/ast-guidelines-context";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
@@ -27,6 +31,8 @@ function App(props: AppProps) {
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
     const [hospitalContext, setHospitalContext] = useState<HospitalContextState | null>(null);
+    const [astGuidelinesContext, setAstGuidelinesContext] =
+        useState<ASTGuidelinesContextState | null>(null);
 
     useEffect(() => {
         async function setup() {
@@ -35,8 +41,15 @@ function App(props: AppProps) {
             if (!currentUser) throw new Error("User not logged in");
 
             setAppContext({ currentUser, compositionRoot, api });
-            //set some default value for hospital context until its loaded.
+            //set some default value for hospital,astguidelines context until its loaded.
             setHospitalContext({ userHospitalsAccess: [] });
+            setAstGuidelinesContext({
+                CLSI_lists: new Map(),
+                CLSI_matrix: new Map(),
+                EUCAST_lists: new Map(),
+                EUCAST_matrix: new Map(),
+            });
+
             setShowShareButton(isShareButtonVisible);
 
             compositionRoot.users.getAccessibleOUByLevel
@@ -50,6 +63,18 @@ function App(props: AppProps) {
                         console.debug(` No hospital data could be fetched : ${err}`);
                     }
                 );
+
+            compositionRoot.astGuidelines.getGuidelines.execute().run(
+                astGuidelines => {
+                    setAstGuidelinesContext(astGuidelines);
+                    console.debug(
+                        "AST Guidelines data fetched successfully, AST guidelines data set"
+                    );
+                },
+                err => {
+                    console.debug(` No AST guidelines data could be fetched : ${err}`);
+                }
+            );
 
             setLoading(false);
         }
@@ -72,9 +97,11 @@ function App(props: AppProps) {
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
                             <HospitalContext.Provider value={hospitalContext}>
-                                <CurrentModuleContextProvider>
-                                    <Router />
-                                </CurrentModuleContextProvider>
+                                <ASTGuidelinesContext.Provider value={astGuidelinesContext}>
+                                    <CurrentModuleContextProvider>
+                                        <Router />
+                                    </CurrentModuleContextProvider>
+                                </ASTGuidelinesContext.Provider>
                             </HospitalContext.Provider>
                         </AppContext.Provider>
                     </div>

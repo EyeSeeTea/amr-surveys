@@ -79,6 +79,7 @@ export const mapEventToSurvey = (
         const parentPPSSurveyId = surveyProperties.get("parentPPSSurveyId") ?? "";
         const surveyType = surveyProperties.get("surveyType") ?? "";
         const parentWardRegisterId = surveyProperties.get("parentWardRegisterId") ?? "";
+        const astGuideline = surveyProperties.get("astGuideline") ?? "";
 
         const status =
             surveyCompleted === "false" && startDate
@@ -120,6 +121,7 @@ export const mapEventToSurvey = (
             parentWardRegisterId: parentWardRegisterId,
             surveyFormType: surveyFormType,
             childCount: undefined,
+            astGuideline: astGuideline === "EUCAST" ? "EUCAST" : "CLSI",
         };
         return survey;
     });
