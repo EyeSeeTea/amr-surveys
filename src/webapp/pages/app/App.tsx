@@ -15,6 +15,7 @@ import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
 import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
+import { ASTGuidelinesContextProvider } from "../../contexts/CurrentASTGuidelinesContextProvider";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
@@ -76,9 +77,11 @@ function App(props: AppProps) {
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
                             <HospitalContext.Provider value={hospitalContext}>
-                                <CurrentModuleContextProvider>
-                                    <Router />
-                                </CurrentModuleContextProvider>
+                                <ASTGuidelinesContextProvider>
+                                    <CurrentModuleContextProvider>
+                                        <Router />
+                                    </CurrentModuleContextProvider>
+                                </ASTGuidelinesContextProvider>
                             </HospitalContext.Provider>
                         </AppContext.Provider>
                     </div>

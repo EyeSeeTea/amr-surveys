@@ -49,6 +49,7 @@ export class GetAllSurveysUseCase {
                                     survey.rootSurvey.name === ""
                                         ? parentSurveyName
                                         : survey.rootSurvey.name,
+                                astGuideline: survey.rootSurvey.astGuideline,
                             };
 
                             const updatedSurvey: Survey = {
