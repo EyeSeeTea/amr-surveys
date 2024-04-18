@@ -27,12 +27,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     } = useCurrentSurveys();
 
     const { currentModule } = useCurrentModule();
-
     const {
         currentUser: { userGroups },
     } = useAppContext();
-
     const { userHospitalsAccess } = useHospitalContext();
+    const isAdmin = currentModule ? getUserAccess(currentModule, userGroups).hasAdminAccess : false;
 
     const getOrgUnitByFormType = useCallback(() => {
         //TO DO : make chunked calls as user may have large number of hospitals.
@@ -80,12 +79,16 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         setLoadingSurveys(true);
 
         const parentSurveyId =
-            surveyFormType === "PrevalenceFacilityLevelForm" ||
-            surveyFormType === "PrevalenceCaseReportForm" ||
-            surveyFormType === "PrevalenceCentralRefLabForm" ||
-            surveyFormType === "PrevalencePathogenIsolatesLog" ||
-            surveyFormType === "PrevalenceSampleShipTrackForm" ||
-            surveyFormType === "PrevalenceSupranationalRefLabForm"
+            !isAdmin &&
+            (surveyFormType === "PrevalenceFacilityLevelForm" ||
+                surveyFormType === "PPSHospitalForm") //Non admin users , do not have parent survey form.
+                ? undefined
+                : surveyFormType === "PrevalenceFacilityLevelForm" ||
+                  surveyFormType === "PrevalenceCaseReportForm" ||
+                  surveyFormType === "PrevalenceCentralRefLabForm" ||
+                  surveyFormType === "PrevalencePathogenIsolatesLog" ||
+                  surveyFormType === "PrevalenceSampleShipTrackForm" ||
+                  surveyFormType === "PrevalenceSupranationalRefLabForm"
                 ? currentPrevalenceSurveyForm?.id
                 : currentPPSSurveyForm?.id;
 
@@ -139,6 +142,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         shouldRefreshSurveys,
         page,
         getOrgUnitByFormType,
+        isAdmin,
     ]);
 
     return {

@@ -7,18 +7,30 @@ import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { SurveyListBreadCrumb } from "../../components/survey-list/SurveyListBreadCrumb";
 import { useCurrentModule } from "../../contexts/current-module-context";
 import { useRedirectHome } from "./useRedirectHome";
+import { getUserAccess } from "../../../domain/utils/menuHelper";
+import { useAppContext } from "../../contexts/app-context";
 
 export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
     const { resetCurrentPPSSurveyForm, resetCurrentPrevalenceSurveyForm } = useCurrentSurveys();
 
     const { currentModule } = useCurrentModule();
+    const {
+        currentUser: { userGroups },
+    } = useAppContext();
     const { shouldRedirectToHome } = useRedirectHome();
     const history = useHistory();
 
+    const isAdmin = currentModule ? getUserAccess(currentModule, userGroups).hasAdminAccess : false;
+
     //reset all current survey context when root form of either module is listed.
     useEffect(() => {
-        if (formType === "PPSSurveyForm" || formType === "PrevalenceSurveyForm") {
+        if (
+            formType === "PPSSurveyForm" ||
+            formType === "PrevalenceSurveyForm" ||
+            (!isAdmin &&
+                (formType === "PrevalenceFacilityLevelForm" || formType === "PPSHospitalForm"))
+        ) {
             resetCurrentPPSSurveyForm();
             resetCurrentPrevalenceSurveyForm();
         } else if (shouldRedirectToHome(formType)) {
@@ -31,6 +43,7 @@ export const SurveyListPage: React.FC = React.memo(() => {
         resetCurrentPPSSurveyForm,
         resetCurrentPrevalenceSurveyForm,
         shouldRedirectToHome,
+        isAdmin,
     ]);
 
     return (
