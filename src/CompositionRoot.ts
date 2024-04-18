@@ -68,7 +68,10 @@ function getCompositionRoot(repositories: Repositories) {
         surveys: {
             getForm: new GetSurveyUseCase(repositories.surveyFormRepository),
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
-            saveFormData: new SaveFormDataUseCase(repositories.surveyFormRepository),
+            saveFormData: new SaveFormDataUseCase(
+                repositories.surveyFormRepository,
+                repositories.astGuidelinesRepository
+            ),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
             getFilteredPatients: new GetFilteredPatientsUseCase(
                 repositories.paginatedSurveyRepository

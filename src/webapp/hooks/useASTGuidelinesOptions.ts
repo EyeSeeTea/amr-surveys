@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useASTGuidelinesContext } from "../contexts/ast-guidelines-context";
+import { useCurrentASTGuidelinesContext } from "../contexts/current-ast-guidelines-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import {
     AntibioticQuestion,
@@ -11,7 +11,7 @@ import _ from "../../domain/entities/generic/Collection";
 import { QuestionnaireSectionM } from "../../domain/entities/Questionnaire/QuestionnaireSection";
 
 export function useASTGuidelinesOptions() {
-    const astGuidelines = useASTGuidelinesContext();
+    const { currentASTGuidelines } = useCurrentASTGuidelinesContext();
     const { currentPrevalenceSurveyForm } = useCurrentSurveys();
 
     const [currentASTMatrix, setCurrentASTMatrix] = useState<Map<string, string[]>>(new Map());
@@ -19,17 +19,19 @@ export function useASTGuidelinesOptions() {
 
     useEffect(() => {
         const currentList =
-            currentPrevalenceSurveyForm?.astGuidelines === "CLSI"
-                ? astGuidelines.CLSI_lists
-                : astGuidelines.EUCAST_lists;
+            currentPrevalenceSurveyForm?.astGuidelines === currentASTGuidelines?.type
+                ? currentASTGuidelines.lists
+                : new Map();
+
         setCurrentASTList(currentList);
 
         const currentMatrix =
-            currentPrevalenceSurveyForm?.astGuidelines === "CLSI"
-                ? astGuidelines.CLSI_matrix
-                : astGuidelines.EUCAST_matrix;
+            currentPrevalenceSurveyForm?.astGuidelines === currentASTGuidelines?.type
+                ? currentASTGuidelines.matrix
+                : new Map();
+
         setCurrentASTMatrix(currentMatrix);
-    }, [astGuidelines, currentPrevalenceSurveyForm]);
+    }, [currentASTGuidelines, currentPrevalenceSurveyForm]);
 
     const getAntibioticOptions = (question: SpeciesQuestion): string[] | undefined => {
         const matrixKey = [...currentASTList].find(

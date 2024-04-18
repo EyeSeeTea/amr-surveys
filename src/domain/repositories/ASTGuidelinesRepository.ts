@@ -1,6 +1,12 @@
 import { FutureData } from "../../data/api-futures";
-import { ASTGuidelinesContextState } from "../../webapp/contexts/ast-guidelines-context";
+import { Id } from "../entities/Ref";
+import { ASTGUIDELINE_TYPES, CurrentASTGuidelines } from "../entities/ASTGuidelines";
 
 export interface ASTGuidelinesRepository {
-    getAll(): FutureData<ASTGuidelinesContextState>;
+    getByASTGuidelineType(
+        astGuidelineType: ASTGUIDELINE_TYPES,
+        surveyId?: Id
+    ): FutureData<CurrentASTGuidelines>;
+
+    saveByASTGuidelineType(astGuidelineType: ASTGUIDELINE_TYPES, surveyId: Id): FutureData<void>;
 }

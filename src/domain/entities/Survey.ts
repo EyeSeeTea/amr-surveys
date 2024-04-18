@@ -1,3 +1,4 @@
+import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
 import { NamedRef, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
@@ -25,8 +26,6 @@ export interface SurveyBase extends NamedRef {
 export interface OrgUnitNamedRef extends NamedRef {
     orgUnitId: Id;
 }
-
-export type ASTGUIDELINE_TYPES = "EUCAST" | "CLSI";
 
 export interface PrevalenceSurveyForm extends OrgUnitNamedRef {
     astGuidelines: ASTGUIDELINE_TYPES | undefined;

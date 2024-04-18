@@ -1,15 +1,21 @@
 import { Future } from "../../../domain/entities/generic/Future";
 import { ASTGuidelinesRepository } from "../../../domain/repositories/ASTGuidelinesRepository";
-import { ASTGuidelinesContextState } from "../../../webapp/contexts/ast-guidelines-context";
+import { ASTGUIDELINE_TYPES, CurrentASTGuidelines } from "../../../domain/entities/ASTGuidelines";
 import { FutureData } from "../../api-futures";
 
 export class ASTGuidelinesTestRepository implements ASTGuidelinesRepository {
-    getAll(): FutureData<ASTGuidelinesContextState> {
+    saveByASTGuidelineType(
+        astGuidelineType: ASTGUIDELINE_TYPES,
+        surveyId: string
+    ): FutureData<void> {
+        console.debug("saveByASTGuidelineType", astGuidelineType, surveyId);
+        return Future.success(undefined);
+    }
+    getByASTGuidelineType(): FutureData<CurrentASTGuidelines> {
         return Future.success({
-            CLSI_lists: new Map(),
-            CLSI_matrix: new Map(),
-            EUCAST_lists: new Map(),
-            EUCAST_matrix: new Map(),
+            type: "CLSI",
+            lists: new Map(),
+            matrix: new Map(),
         });
     }
 }
