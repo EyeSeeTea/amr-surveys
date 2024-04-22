@@ -101,9 +101,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         <Typography>{i18n.t(`Stage - Profile`)}</Typography>
                         <SurveySection
                             title={questionnaire.entity.title}
-                            updateQuestion={question =>
-                                updateQuestion(question, questionnaire.entity?.stageId)
-                            }
+                            updateQuestion={updateQuestion}
                             questions={questionnaire.entity.questions}
                             viewOnly={hasReadOnlyAccess}
                         />
