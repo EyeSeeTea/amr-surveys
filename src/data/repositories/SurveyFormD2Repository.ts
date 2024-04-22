@@ -36,10 +36,6 @@ import {
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
-import {
-    mapEventToSurveyWithChildren,
-    mapTrackedEntityToSurveyWithChildren,
-} from "../utils/surveyListMappersWithChildren";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -213,18 +209,8 @@ export class SurveyD2Repository implements SurveyRepository {
                 ouMode: ouMode,
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-            if (["PrevalenceSurveyForm", "PrevalenceFacilityLevelForm"].includes(surveyFormType)) {
-                return mapTrackedEntityToSurveyWithChildren(
-                    trackedEntities,
-                    surveyFormType,
-                    this.getSurveyChildCount
-                ).flatMap(surveys => {
-                    return Future.success(surveys);
-                });
-            } else {
-                const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
-                return Future.success(surveys);
-            }
+            const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
+            return Future.success(surveys);
         });
     }
 
@@ -249,19 +235,8 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(response => {
             const events = response.instances;
-            if (["PrevalenceSurveyForm", "PrevalenceFacilityLevelForm"].includes(surveyFormType)) {
-                return mapEventToSurveyWithChildren(
-                    events,
-                    surveyFormType,
-                    programId,
-                    this.getSurveyChildCount
-                ).flatMap(surveys => {
-                    return Future.success(surveys);
-                });
-            } else {
-                const surveys = mapEventToSurvey(events, surveyFormType, programId);
-                return Future.success(surveys);
-            }
+            const surveys = mapEventToSurvey(events, surveyFormType, programId);
+            return Future.success(surveys);
         });
     }
 
@@ -327,14 +302,14 @@ export class SurveyD2Repository implements SurveyRepository {
             .flatMapError(_err => Future.success(""));
     }
 
-    getSurveyChildCount = (
+    getSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
     ):
         | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> } => {
+        | { type: "map"; value: FutureData<ProgramCountMap> } {
         const childIds = getChildProgramId(parentProgram);
 
         //As of now, all child programs for a given program are of the same type,
@@ -392,14 +367,14 @@ export class SurveyD2Repository implements SurveyRepository {
                 value: Future.error(new Error("Unknown Child program ")),
             };
         }
-    };
+    }
 
-    private getEventSurveyCount = (
+    private getEventSurveyCount(
         programId: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryParentId: Id | undefined
-    ): FutureData<number> => {
+    ): FutureData<number> {
         const ouId = programId === PPS_COUNTRY_QUESTIONNAIRE_ID ? "" : orgUnitId;
         const ouMode = programId === PPS_HOSPITAL_FORM_ID ? "DESCENDANTS" : undefined;
         const filterParentDEId = getParentDataElementForProgram(programId);
@@ -420,13 +395,13 @@ export class SurveyD2Repository implements SurveyRepository {
         ).flatMap(response => {
             return Future.success(response.instances.length);
         });
-    };
+    }
 
-    private getTrackerSurveyCount = (
+    private getTrackerSurveyCount(
         programId: Id,
         orgUnitId: Id,
         parentSurveyId: Id
-    ): FutureData<number> => {
+    ): FutureData<number> {
         const filterParentDEId = getParentDataElementForProgram(programId);
 
         const ouMode =
@@ -445,7 +420,7 @@ export class SurveyD2Repository implements SurveyRepository {
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
             return Future.success(trackedEntities.instances.length);
         });
-    };
+    }
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void> {
         if (isTrackerProgram(programId)) {
