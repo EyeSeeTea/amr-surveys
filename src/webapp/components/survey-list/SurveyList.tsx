@@ -22,6 +22,7 @@ import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
 import { usePatientSearch } from "./hook/usePatientSearch";
+import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -30,6 +31,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const isAdmin = currentModule
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
@@ -73,6 +75,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         {!hideCreateNewButton(
                             surveyFormType,
                             isAdmin,
+                            hasReadOnlyAccess,
                             currentPPSSurveyForm?.surveyType
                                 ? currentPPSSurveyForm?.surveyType
                                 : "",

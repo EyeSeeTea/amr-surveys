@@ -43,6 +43,7 @@ export interface ProgramStage {
 export interface ProgramDataElement {
     code: string;
     id: string;
+    name: string;
     formName: string;
     valueType: string;
     optionSet?: { id: string };

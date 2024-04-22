@@ -8,12 +8,16 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
+import { OptionType } from "../../../../domain/utils/optionsHelper";
+import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
+import useCaptureAccess from "../../survey/hook/useCaptureAccess";
+import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
-    const [options, setOptions] = useState<string[]>([]);
+    const [options, setOptions] = useState<OptionType[]>([]);
     const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     const [optionLoading, setOptionLoading] = useState<boolean>(false);
 
@@ -28,17 +32,21 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     } = useCurrentSurveys();
     const { currentModule } = useCurrentModule();
     const { currentUser } = useAppContext();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
+    const { hasCaptureAccess } = useCaptureAccess();
+    const { changeCurrentASTGuidelines } = useCurrentASTGuidelinesContext();
 
     const isAdmin = currentModule
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
         : false;
 
-    const editSurvey = (survey: Survey) => {
+    const goToSurvey = (survey: Survey) => {
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -54,6 +62,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -74,6 +83,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 id: survey.id,
                 name: survey.name,
                 surveyType: survey.surveyType,
+                astGuideline: survey.astGuideline,
             },
             survey.assignedOrgUnit.id,
             survey.rootSurvey
@@ -90,8 +100,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
 
     const actionClick = (ppsSurveyType: string, survey?: Survey) => {
         setOptionLoading(true);
-        const currentOptions = getSurveyOptions(surveyFormType, ppsSurveyType);
-
+        const currentOptions = getSurveyOptions(
+            surveyFormType,
+            hasReadOnlyAccess,
+            hasCaptureAccess,
+            ppsSurveyType
+        );
         if (!survey) {
             setOptions(currentOptions);
             setOptionLoading(false);
@@ -109,9 +123,9 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 childCountMap => {
                     if (typeof childCountMap === "number") {
                         const optionsWithChildCount = currentOptions.map(option => {
-                            if (option.startsWith("List")) {
-                                const updatedOption = `${option} (${childCountMap})`;
-                                return updatedOption;
+                            if (option.label.startsWith("List")) {
+                                const updatedLabel = `${option.label} (${childCountMap})`;
+                                return { ...option, label: updatedLabel };
                             }
                             return option;
                         });
@@ -121,7 +135,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     } else {
                         const optionsWithChildCount = currentOptions.map(option => {
                             const updatedChilsOptionMap = childCountMap.find(childMap =>
-                                childMap.option.startsWith(option)
+                                childMap.option.label.startsWith(option.label)
                             );
                             if (updatedChilsOptionMap) {
                                 return updatedChilsOptionMap.option;
@@ -169,9 +183,29 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             }
             changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
         } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
-        else if (surveyFormType === "PrevalenceSurveyForm")
-            changeCurrentPrevalenceSurveyForm(survey.id, survey.name, orgUnitId);
-        else if (surveyFormType === "PrevalenceFacilityLevelForm")
+        else if (surveyFormType === "PrevalenceSurveyForm") {
+            changeCurrentPrevalenceSurveyForm(
+                survey.id,
+                survey.name,
+                orgUnitId,
+                survey.astGuideline
+            );
+            //when current astGuideline changes, fetch the corresponding ast guidelines from datstore
+            if (survey.astGuideline)
+                compositionRoot.astGuidelines.getGuidelines
+                    .execute(survey.astGuideline, survey.id)
+                    .run(
+                        astGuidelines => {
+                            changeCurrentASTGuidelines(astGuidelines);
+                            console.debug(
+                                "AST Guidelines data fetched successfully, AST guidelines data set"
+                            );
+                        },
+                        err => {
+                            console.debug(` No AST guidelines data could be fetched : ${err}`);
+                        }
+                    );
+        } else if (surveyFormType === "PrevalenceFacilityLevelForm")
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
         else if (surveyFormType === "PrevalenceCaseReportForm")
             changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
@@ -182,7 +216,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         sortedSurveys,
         optionLoading,
         setSortedSurveys,
-        editSurvey,
+        goToSurvey,
         assignChild,
         listChildren,
         actionClick,

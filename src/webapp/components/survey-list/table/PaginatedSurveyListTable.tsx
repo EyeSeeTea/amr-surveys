@@ -57,7 +57,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         optionLoading,
         sortedSurveys,
         setSortedSurveys,
-        editSurvey,
+        goToSurvey,
         assignChild,
         listChildren,
         actionClick,
@@ -147,13 +147,17 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                     }
                                                     options={
                                                         optionLoading
-                                                            ? [i18n.t("Loading...")]
+                                                            ? [{ label: i18n.t("Loading...") }]
                                                             : options
                                                     }
                                                     optionClickHandler={[
                                                         {
                                                             option: "Edit",
-                                                            handler: () => editSurvey(survey),
+                                                            handler: () => goToSurvey(survey),
+                                                        },
+                                                        {
+                                                            option: "View",
+                                                            handler: () => goToSurvey(survey),
                                                         },
                                                         {
                                                             option: "Delete",
@@ -166,40 +170,40 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "Add New Sample Shipment"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "List Sample Shipments"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "Add New Central Ref Lab Results"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "List Central Ref Labs Results"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
@@ -207,40 +211,40 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "Add New Pathogen Isolates Log"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "List Pathogen Isolates Logs"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "Add New Supranational Ref Results"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
                                                             option:
                                                                 options.find(op =>
-                                                                    op.startsWith(
+                                                                    op.label.startsWith(
                                                                         "List Supranational Refs Results"
                                                                     )
-                                                                ) ?? "",
+                                                                )?.label ?? "",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },

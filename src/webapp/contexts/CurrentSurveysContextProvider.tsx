@@ -1,7 +1,8 @@
 import { PropsWithChildren, useState } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { OrgUnitNamedRef, SurveyBase } from "../../domain/entities/Survey";
+import { OrgUnitNamedRef, PrevalenceSurveyForm, SurveyBase } from "../../domain/entities/Survey";
 import { CurrentSurveysContext } from "./current-surveys-context";
+import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 
 export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
     //PPS Module states
@@ -13,7 +14,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
 
     //Prevalence Module states
     const [currentPrevalenceSurveyForm, setCurrentPrevalenceSurveyForm] =
-        useState<OrgUnitNamedRef>();
+        useState<PrevalenceSurveyForm>();
     const [currentFacilityLevelForm, setCurrentFacilityLevelForm] = useState<OrgUnitNamedRef>();
     const [currentCaseReportForm, setCurrentCaseReportForm] = useState<NamedRef>();
 
@@ -56,8 +57,19 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     };
 
     //Prevalence Module functions.
-    const changeCurrentPrevalenceSurveyForm = (id: Id, name: string, orgUnitId: Id) => {
-        setCurrentPrevalenceSurveyForm({ id: id, name: name, orgUnitId: orgUnitId });
+    const changeCurrentPrevalenceSurveyForm = (
+        id: Id,
+        name: string,
+        orgUnitId: Id,
+        astGuidelines: ASTGUIDELINE_TYPES | undefined
+    ) => {
+        console.debug("Current AST Guideline is : " + astGuidelines);
+        setCurrentPrevalenceSurveyForm({
+            id: id,
+            name: name,
+            orgUnitId: orgUnitId,
+            astGuidelines: astGuidelines,
+        });
     };
 
     const resetCurrentPrevalenceSurveyForm = () => {

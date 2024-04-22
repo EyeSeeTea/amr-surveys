@@ -153,7 +153,7 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: Id,
         eventId: string | undefined,
         programId: Id
-    ): FutureData<void> {
+    ): FutureData<Id | undefined> {
         const $payload = isTrackerProgram(programId)
             ? mapQuestionnaireToTrackedEntities(questionnaire, orgUnitId, programId, eventId)
             : mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, this.api, eventId);
@@ -167,7 +167,13 @@ export class SurveyD2Repository implements SurveyRepository {
                     this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
                 ).flatMap(result => {
                     if (result && result.status !== "ERROR") {
-                        return Future.success(undefined);
+                        //return the saved survey id.
+
+                        const surveyId = isTrackerProgram(programId)
+                            ? result.bundleReport?.typeReportMap?.TRACKED_ENTITY?.objectReports[0]
+                                  ?.uid
+                            : result.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
+                        return Future.success(surveyId);
                     } else {
                         return Future.error(
                             new Error(

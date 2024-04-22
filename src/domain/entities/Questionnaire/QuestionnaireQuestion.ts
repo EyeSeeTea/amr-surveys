@@ -14,6 +14,7 @@ export type Question =
     | DateTimeQuestion;
 
 export interface QuestionBase {
+    name: string;
     id: Id;
     code: Code;
     text: string;
@@ -23,6 +24,35 @@ export interface QuestionBase {
     errors: string[];
     stageId?: Id; //For repeatable stages processing.
 }
+
+export interface SpeciesQuestion extends SelectQuestion {
+    subType: "select-species";
+}
+
+export interface AntibioticQuestion extends SelectQuestion {
+    subType: "select-antibiotic";
+    filteredOptions?: QuestionOption[];
+}
+
+export const isSpeciesQuestion = (question: SelectQuestion): question is SpeciesQuestion => {
+    return (question as SpeciesQuestion).subType === "select-species";
+};
+
+export const isAntibioticQuestion = (question: SelectQuestion): question is AntibioticQuestion => {
+    return (question as AntibioticQuestion).subType === "select-antibiotic";
+};
+
+const ANTIBIOTIC_QUESTION_FORM_NAME = "Specify the antibiotic";
+export const isSectionAntibioticQuestion = (
+    question: Question,
+    sectionIdentifier: string
+): question is AntibioticQuestion => {
+    return (
+        question.type === "select" &&
+        (question as AntibioticQuestion).subType === "select-antibiotic" &&
+        question.name.startsWith(`${ANTIBIOTIC_QUESTION_FORM_NAME}${sectionIdentifier}`)
+    );
+};
 
 export interface SelectQuestion extends QuestionBase {
     type: "select";

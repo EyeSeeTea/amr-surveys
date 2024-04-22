@@ -5,9 +5,16 @@ import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useHospitalContext } from "../../../contexts/hospital-context";
+import useReadOnlyAccess from "./useReadOnlyAccess";
 import { useCurrentModule } from "../../../contexts/current-module-context";
-import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    Code,
+    Question,
+    isAntibioticQuestion,
+    isSpeciesQuestion,
+} from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../../../domain/entities/Ref";
+import { useASTGuidelinesOptions } from "../../../hooks/useASTGuidelinesOptions";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser } = useAppContext();
@@ -23,6 +30,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentPrevalenceSurveyForm,
         currentFacilityLevelForm,
     } = useCurrentSurveys();
+    const { hasReadOnlyAccess } = useReadOnlyAccess();
+    const { getAntibioticOptions, getSpeciesQuestionForAntibiotic } = useASTGuidelinesOptions();
+
     const [error, setError] = useState<string>();
     const { currentModule } = useCurrentModule();
 
@@ -30,9 +40,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         if (!questionnaire) setShouldDisableSave(true);
         else {
             const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
-            setShouldDisableSave(shouldDisable);
+            setShouldDisableSave(shouldDisable || hasReadOnlyAccess);
         }
-    }, [questionnaire]);
+    }, [hasReadOnlyAccess, questionnaire]);
 
     useEffect(() => {
         setLoading(true);
@@ -148,15 +158,28 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const updateQuestion = useCallback(
         (question: Question, stageId?: string) => {
             if (questionnaire) {
+                const corrspondingSpeciesQuestion =
+                    question.type === "select" && isAntibioticQuestion(question)
+                        ? getSpeciesQuestionForAntibiotic(question, questionnaire)
+                        : undefined;
+
+                const antibioticOptions =
+                    question.type === "select" && isSpeciesQuestion(question)
+                        ? getAntibioticOptions(question)
+                        : corrspondingSpeciesQuestion
+                        ? getAntibioticOptions(corrspondingSpeciesQuestion)
+                        : undefined;
+
                 const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
                     questionnaire,
                     question,
-                    stageId
+                    stageId,
+                    antibioticOptions
                 );
                 setQuestionnaire(updatedQuestionnaire);
             }
         },
-        [questionnaire]
+        [getAntibioticOptions, getSpeciesQuestionForAntibiotic, questionnaire]
     );
 
     const addProgramStage = useCallback(

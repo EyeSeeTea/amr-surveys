@@ -1,6 +1,6 @@
 import { OrgUnitsSelector, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { useEffect } from "react";
-import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVEL } from "../../../data/repositories/UserD2Repository";
+import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../domain/entities/User";
@@ -60,7 +60,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
                         formType === "PPSCountryQuestionnaire" ||
                         formType === "PrevalenceSurveyForm"
                             ? [COUNTRY_OU_LEVEL]
-                            : [HOSPITAL_OU_LEVEL]
+                            : HOSPITAL_OU_LEVELS
                     }
                     controls={{
                         filterByLevel: false,
