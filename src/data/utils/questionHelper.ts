@@ -96,7 +96,9 @@ export const getQuestion = (
                 ...base,
                 type: "boolean",
                 storeFalse: false,
-                value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
+                value: name.startsWith("Add new antibiotic")
+                    ? true
+                    : !dataValue || dataValue === "true",
             };
             return boolQ;
         }

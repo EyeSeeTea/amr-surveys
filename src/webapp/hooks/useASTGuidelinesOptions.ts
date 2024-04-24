@@ -38,12 +38,7 @@ export function useASTGuidelinesOptions() {
             keyVal => question.value?.code && keyVal[1].includes(question.value.code)
         )?.[0];
 
-        if (matrixKey) {
-            const optionList = currentASTMatrix.get(matrixKey);
-            if (optionList) {
-                return optionList;
-            }
-        }
+        return matrixKey ? currentASTMatrix.get(matrixKey) : undefined;
     };
 
     const getSpeciesQuestionForAntibiotic = (

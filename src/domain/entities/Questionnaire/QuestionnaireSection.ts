@@ -11,6 +11,8 @@ export interface QuestionnaireSection {
     isVisible: boolean;
     sortOrder: number;
     stageId: string;
+    isSpeciesSection: boolean;
+    isAntibioticSection: boolean;
 }
 
 export class QuestionnaireSectionM {

@@ -6,12 +6,13 @@ import TextField from "@mui/material/TextField";
 export interface SearchableSelectProps extends BaseWidgetProps<Option> {
     value: Option | null;
     options: Option[];
+    label?: string;
 }
 
 type Option = { id: string; name: string };
 
 const SearchableSelect: React.FC<SearchableSelectProps> = props => {
-    const { onChange: onValueChange, value, options, disabled } = props;
+    const { onChange: onValueChange, value, options, disabled, label } = props;
 
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
@@ -33,7 +34,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = props => {
             disablePortal
             options={options}
             sx={{ width: 300 }}
-            renderInput={params => <TextField {...params} label="Select..." />}
+            renderInput={params => <TextField {...params} label={label ?? "Select..."} />}
             disabled={disabled}
         />
     );

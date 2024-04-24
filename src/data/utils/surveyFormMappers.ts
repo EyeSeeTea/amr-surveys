@@ -20,7 +20,11 @@ import {
 import { QuestionnaireSection } from "../../domain/entities/Questionnaire/QuestionnaireSection";
 import { getTrackedEntityAttributeType, isTrackerProgram } from "./surveyProgramHelper";
 import { QuestionnaireRule } from "../../domain/entities/Questionnaire/QuestionnaireRules";
-import { Question } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    Question,
+    isAntibioticQuestion,
+    isSpeciesQuestion,
+} from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import _ from "../../domain/entities/generic/Collection";
 import {
     mapProgramDataElementToQuestions,
@@ -72,6 +76,12 @@ export const mapProgramToQuestionnaire = (
                   isVisible: true,
                   stageId: section.programStage.id,
                   sortOrder: section.sortOrder,
+                  isAntibioticSection: questions.some(
+                      q => q.type === "select" && isAntibioticQuestion(q)
+                  ),
+                  isSpeciesSection: questions.some(
+                      q => q.type === "select" && isSpeciesQuestion(q)
+                  ),
               };
           })
         : //If the Program has no sections, create a single section
@@ -90,6 +100,8 @@ export const mapProgramToQuestionnaire = (
                   isVisible: true,
                   stageId: "default",
                   sortOrder: 1,
+                  isAntibioticSection: false,
+                  isSpeciesSection: false,
               },
           ];
 
@@ -215,7 +227,7 @@ const getRepeatedStageEvents = (
             sections => sections.programStage.id === stage.id
         );
 
-        const currentSections =
+        const currentSections: QuestionnaireSection[] =
             currentRepeatableSections?.map(section => {
                 const currentRepeatablequestions = mapRepeatedStageEventToQuestions(
                     section.dataElements,
@@ -230,6 +242,12 @@ const getRepeatedStageEvents = (
                     isVisible: true,
                     stageId: newStageId,
                     sortOrder: section.sortOrder,
+                    isAntibioticSection: currentRepeatablequestions.some(
+                        q => q.type === "select" && isAntibioticQuestion(q)
+                    ),
+                    isSpeciesSection: currentRepeatablequestions.some(
+                        q => q.type === "select" && isSpeciesQuestion(q)
+                    ),
                 };
             }) ?? [];
 

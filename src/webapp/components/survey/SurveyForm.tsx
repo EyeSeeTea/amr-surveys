@@ -14,6 +14,13 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
+import {
+    AntibioticQuestion,
+    SelectQuestion,
+    TextQuestion,
+} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { GridSection } from "./GridSection";
+import _c from "../../../domain/entities/generic/Collection";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -31,6 +38,12 @@ const CancelButton = withStyles(() => ({
         marginRight: "10px",
     },
 }))(Button);
+
+export interface AntibioticSection {
+    antibioticQuestion: AntibioticQuestion;
+    astResults: SelectQuestion;
+    valueQuestion: TextQuestion;
+}
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
@@ -132,9 +145,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     )}
                                 </RightAlignedDiv>
                             )}
-
                             {stage.sections.map(section => {
-                                if (!section.isVisible) return null;
+                                if (!section.isVisible || section.isAntibioticSection) return null;
+
+                                if (section.isSpeciesSection)
+                                    return (
+                                        <GridSection
+                                            speciesSection={section}
+                                            antibioticStage={stage}
+                                            updateQuestion={question =>
+                                                updateQuestion(question, stage.id)
+                                            }
+                                            viewOnly={hasReadOnlyAccess}
+                                        />
+                                    );
 
                                 return (
                                     <SurveySection

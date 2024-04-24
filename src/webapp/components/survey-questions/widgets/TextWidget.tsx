@@ -7,10 +7,11 @@ import { Maybe } from "../../../../utils/ts-utils";
 export interface TextWidgetProps extends BaseWidgetProps<string> {
     value: Maybe<string>;
     multiline: boolean;
+    placeholder?: string;
 }
 
 const TextWidget: React.FC<TextWidgetProps> = props => {
-    const { onChange: onValueChange, value } = props;
+    const { onChange: onValueChange, value, placeholder } = props;
 
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
@@ -37,6 +38,7 @@ const TextWidget: React.FC<TextWidgetProps> = props => {
                 />
             ) : (
                 <Input
+                    placeholder={placeholder}
                     onBlur={notifyChange}
                     onChange={updateState}
                     value={stateValue || ""}
