@@ -229,6 +229,10 @@ export class Questionnaire {
             allQsInQuestionnaire
         );
 
+        const isEntityQuestionUpdated = questionnaire.entity?.questions.find(
+            question => question.id === updatedQuestion.id
+        );
+
         return Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
@@ -243,6 +247,10 @@ export class Questionnaire {
                     ),
                 };
             }),
+            entity:
+                isEntityQuestionUpdated && questionnaire.entity
+                    ? this.updateEntityQuestion(questionnaire.entity, updatedQuestion)
+                    : questionnaire.entity,
         });
     }
 
@@ -297,5 +305,19 @@ export class Questionnaire {
     static removeProgramStage(questionnaire: Questionnaire, stageId: Id): Questionnaire {
         const updatedStages = questionnaire.stages.filter(stage => stage.id !== stageId);
         return Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages);
+    }
+
+    static updateEntityQuestion(
+        questionnaireEntity: QuestionnaireEntity,
+        updatedQuestion: Question
+    ): QuestionnaireEntity | undefined {
+        const updatedEntityQuestions = questionnaireEntity.questions.map(question => {
+            return question.id === updatedQuestion.id ? updatedQuestion : question;
+        });
+
+        return {
+            ...questionnaireEntity,
+            questions: updatedEntityQuestions,
+        };
     }
 }

@@ -47,7 +47,6 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
-    const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
 
     const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
@@ -124,25 +123,6 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                 )}
                                             </span>
                                         </TableCell>
-                                        <TableCell
-                                            onClick={() => {
-                                                patientNameSortDirection === "asc"
-                                                    ? setPatientNameSortDirection("desc")
-                                                    : setPatientNameSortDirection("asc");
-                                                sortByColumn("name", patientNameSortDirection);
-                                            }}
-                                        >
-                                            <span>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Patient Name")}
-                                                </Typography>
-                                                {patientNameSortDirection === "asc" ? (
-                                                    <ArrowUpward fontSize="small" />
-                                                ) : (
-                                                    <ArrowDownward fontSize="small" />
-                                                )}
-                                            </span>
-                                        </TableCell>
                                     </>
 
                                     <TableCell>
@@ -158,10 +138,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         <TableRow key={survey.id}>
                                             <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
 
-                                            <>
-                                                <TableCell>{survey.id}</TableCell>
-                                                <TableCell>{survey.name}</TableCell>
-                                            </>
+                                            <TableCell>{survey.uniqueSurveyPatientId}</TableCell>
 
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
