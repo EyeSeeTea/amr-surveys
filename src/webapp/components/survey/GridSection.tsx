@@ -26,8 +26,8 @@ interface GridSectionProps {
 
 export const GridSection: React.FC<GridSectionProps> = React.memo(
     ({ speciesSection, antibioticStage, updateQuestion, viewOnly }) => {
-        const [gridOptions, setGridOptions] = useState<string[]>();
         const { getAntibioticOptions } = useASTGuidelinesOptions();
+        const [gridOptions, setGridOptions] = useState<string[]>();
         const [antibioticSets, setAntibioticSets] = useState<AntibioticSection[]>();
 
         useEffect(() => {
@@ -77,10 +77,37 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
                 if (question.type === "select" && isSpeciesQuestion(question)) {
                     const options = getAntibioticOptions(question);
                     setGridOptions(options);
+                    antibioticSets?.map(antibioticSet => {
+                        if (antibioticSet.addNewAntibioticQuestion?.value) {
+                            updateQuestion({
+                                ...antibioticSet.addNewAntibioticQuestion,
+                                value: false,
+                            });
+                        }
+                        if (antibioticSet.antibioticQuestion?.value) {
+                            updateQuestion({
+                                ...antibioticSet.antibioticQuestion,
+                                value: undefined,
+                            });
+                        }
+
+                        if (antibioticSet.astResultsQuestion?.value) {
+                            updateQuestion({
+                                ...antibioticSet.astResultsQuestion,
+                                value: undefined,
+                            });
+                        }
+                        if (antibioticSet.valueQuestion?.value) {
+                            updateQuestion({
+                                ...antibioticSet.valueQuestion,
+                                value: undefined,
+                            });
+                        }
+                    });
                 }
                 updateQuestion(question);
             },
-            [getAntibioticOptions, updateQuestion]
+            [antibioticSets, getAntibioticOptions, updateQuestion, setGridOptions]
         );
 
         return (
