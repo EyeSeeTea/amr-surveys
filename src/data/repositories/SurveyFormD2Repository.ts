@@ -28,7 +28,7 @@ import {
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
-import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
+import { ProgramMetadata } from "../entities/D2Program";
 import {
     mapProgramToQuestionnaire,
     mapQuestionnaireToEvent,
@@ -48,7 +48,7 @@ export class SurveyD2Repository implements SurveyRepository {
         return apiToFuture(
             this.api.request<ProgramMetadata>({
                 method: "get",
-                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
+                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements.dataElement,programStageSections,programTrackedEntityAttributes,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
@@ -56,16 +56,18 @@ export class SurveyD2Repository implements SurveyRepository {
                     psde => psde.dataElement
                 );
 
-                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
-                    de => {
-                        return {
-                            ...de,
-                            sortOrder: resp.programStageDataElements.find(
-                                psde => psde.dataElement.id === de.id
-                            )?.sortOrder,
-                        };
-                    }
-                );
+                const sortedTrackedentityAttr = _(
+                    _(resp.programTrackedEntityAttributes)
+                        .sortBy(te => te.sortOrder)
+                        .value()
+                        .map(pste =>
+                            resp.trackedEntityAttributes?.find(
+                                te => te.id === pste.trackedEntityAttribute.id
+                            )
+                        )
+                )
+                    .compact()
+                    .value();
 
                 //If event specified,populate the form
                 if (eventId) {
@@ -80,11 +82,11 @@ export class SurveyD2Repository implements SurveyRepository {
                                             undefined,
                                             trackedEntity,
                                             programDataElements,
-                                            dataElementsWithSortOrder,
+                                            resp.dataElements,
                                             resp.options,
                                             resp.programStages,
                                             resp.programStageSections,
-                                            resp.trackedEntityAttributes,
+                                            sortedTrackedentityAttr,
                                             resp.programRules,
                                             resp.programRuleVariables,
                                             resp.programRuleActions
@@ -106,11 +108,11 @@ export class SurveyD2Repository implements SurveyRepository {
                                         event,
                                         undefined,
                                         programDataElements,
-                                        dataElementsWithSortOrder,
+                                        resp.dataElements,
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
-                                        resp.trackedEntityAttributes,
+                                        sortedTrackedentityAttr,
                                         resp.programRules,
                                         resp.programRuleVariables,
                                         resp.programRuleActions
@@ -130,11 +132,11 @@ export class SurveyD2Repository implements SurveyRepository {
                             undefined,
                             undefined,
                             programDataElements,
-                            dataElementsWithSortOrder,
+                            resp.dataElements,
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
-                            resp.trackedEntityAttributes,
+                            sortedTrackedentityAttr,
                             resp.programRules,
                             resp.programRuleVariables,
                             resp.programRuleActions
