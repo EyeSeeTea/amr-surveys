@@ -38,7 +38,16 @@ export const getBaseSurveyFormType = (
                 );
         }
         case "Prevalence": {
-            return "PrevalenceSurveyForm";
+            const { hasReadAccess, hasCaptureAccess, hasAdminAccess } = getUserAccess(
+                module,
+                currentUserGroups
+            );
+            if (hasAdminAccess) return "PrevalenceSurveyForm";
+            else if (hasReadAccess || hasCaptureAccess) return "PrevalenceFacilityLevelForm";
+            else
+                throw new Error(
+                    "You dont have the neccessary permissions. Please contact your system administrator."
+                );
         }
         default:
             throw new Error("Unknown Module type");

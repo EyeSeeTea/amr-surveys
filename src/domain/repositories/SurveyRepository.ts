@@ -20,7 +20,8 @@ export interface SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        chunked: boolean
     ): FutureData<Survey[]>;
     getPopulatedSurveyById(
         eventId: Id,

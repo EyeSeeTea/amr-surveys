@@ -37,6 +37,7 @@ import {
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 
+const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
@@ -193,15 +194,27 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        chunked = false
     ): FutureData<Survey[]> {
         return isTrackerProgram(programId)
-            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId)
+            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked)
             : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
     }
 
     //Currently tracker programs are only in Prevalence module
     private getTrackerProgramSurveys(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id,
+        chunked = false
+    ): FutureData<Survey[]> {
+        return chunked
+            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId)
+            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId);
+    }
+
+    private getTrackerProgramSurveysUnchunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id
@@ -222,6 +235,35 @@ export class SurveyD2Repository implements SurveyRepository {
             const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
             return Future.success(surveys);
         });
+    }
+
+    private getTrackerProgramSurveysChunked(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnits: string
+    ): FutureData<Survey[]> {
+        const orgUnitIds = orgUnits.split(";");
+        const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
+
+        return Future.sequential(
+            chunkedOUs.flatMap(ouChunk => {
+                return apiToFuture(
+                    this.api.tracker.trackedEntities.get({
+                        fields: {
+                            attributes: true,
+                            enrollments: true,
+                            trackedEntity: true,
+                            orgUnit: true,
+                        },
+                        program: programId,
+                        orgUnit: ouChunk.join(";"),
+                    })
+                ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
+                    const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
+                    return Future.success(surveys);
+                });
+            })
+        ).flatMap(listOfSurveys => Future.success(_(listOfSurveys).flatten().value()));
     }
 
     private getEventProgramSurveys(

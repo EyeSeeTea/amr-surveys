@@ -3,6 +3,9 @@ import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
+import { getUserAccess } from "../../domain/utils/menuHelper";
+import { useCurrentModule } from "../contexts/current-module-context";
+import { useHospitalContext } from "../contexts/hospital-context";
 
 const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
@@ -23,7 +26,19 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentFacilityLevelForm,
     } = useCurrentSurveys();
 
+    const { currentModule } = useCurrentModule();
+    const {
+        currentUser: { userGroups },
+    } = useAppContext();
+    const { hospitalState, userHospitalsAccess } = useHospitalContext();
+    const isAdmin = currentModule ? getUserAccess(currentModule, userGroups).hasAdminAccess : false;
+
     const getOrgUnitByFormType = useCallback(() => {
+        const currentUserHospitals = userHospitalsAccess
+            .filter(hospitals => hospitals.readAccess && hospitals.captureAccess)
+            .map(hospital => hospital.orgUnitId)
+            .join(";");
+
         switch (surveyFormType) {
             case "PPSHospitalForm":
                 return currentCountryQuestionnaire?.orgUnitId ?? "";
@@ -32,7 +47,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                 return currentHospitalForm?.orgUnitId ?? "";
 
             case "PrevalenceFacilityLevelForm":
-                return currentPrevalenceSurveyForm?.orgUnitId ?? "";
+                return isAdmin
+                    ? currentPrevalenceSurveyForm?.orgUnitId ?? ""
+                    : currentUserHospitals;
             case "PrevalenceCaseReportForm":
             case "PrevalenceCentralRefLabForm":
             case "PrevalencePathogenIsolatesLog":
@@ -47,19 +64,34 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentFacilityLevelForm?.orgUnitId,
         currentHospitalForm?.orgUnitId,
         currentPrevalenceSurveyForm?.orgUnitId,
+        isAdmin,
         surveyFormType,
+        userHospitalsAccess,
     ]);
 
     useEffect(() => {
         setLoadingSurveys(true);
 
+        if (
+            !isAdmin &&
+            surveyFormType === "PrevalenceFacilityLevelForm" &&
+            hospitalState === "loading"
+        ) {
+            console.debug("Ensure hospital context is loaded before fetching surveys.");
+            return;
+        }
+
         const parentSurveyId =
-            surveyFormType === "PrevalenceFacilityLevelForm" ||
-            surveyFormType === "PrevalenceCaseReportForm" ||
-            surveyFormType === "PrevalenceCentralRefLabForm" ||
-            surveyFormType === "PrevalencePathogenIsolatesLog" ||
-            surveyFormType === "PrevalenceSampleShipTrackForm" ||
-            surveyFormType === "PrevalenceSupranationalRefLabForm"
+            !isAdmin &&
+            (surveyFormType === "PrevalenceFacilityLevelForm" ||
+                surveyFormType === "PPSHospitalForm") //Non admin users , do not have parent survey form.
+                ? undefined
+                : surveyFormType === "PrevalenceFacilityLevelForm" ||
+                  surveyFormType === "PrevalenceCaseReportForm" ||
+                  surveyFormType === "PrevalenceCentralRefLabForm" ||
+                  surveyFormType === "PrevalencePathogenIsolatesLog" ||
+                  surveyFormType === "PrevalenceSampleShipTrackForm" ||
+                  surveyFormType === "PrevalenceSupranationalRefLabForm"
                 ? currentPrevalenceSurveyForm?.id
                 : currentPPSSurveyForm?.id;
 
@@ -89,9 +121,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                     }
                 );
         } else {
+            const makeChunkedCall: boolean =
+                surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin;
             //Other forms are not paginated.
             compositionRoot.surveys.getSurveys
-                .execute(surveyFormType, orgUnitId, parentSurveyId)
+                .execute(surveyFormType, orgUnitId, parentSurveyId, makeChunkedCall)
                 .run(
                     surveys => {
                         setSurveys(surveys);
@@ -113,6 +147,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         shouldRefreshSurveys,
         page,
         getOrgUnitByFormType,
+        isAdmin,
+        hospitalState,
     ]);
 
     return {
