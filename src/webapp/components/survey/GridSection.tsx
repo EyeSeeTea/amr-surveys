@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import {
     AntibioticQuestion,
+    BooleanQuestion,
     Question,
     SelectQuestion,
     TextQuestion,
@@ -53,12 +54,19 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
                 const valueQuestion = section?.questions.find(
                     q => q.type === "text" && q.text === "Value (unit)"
                 );
+                const addNewAntibioticQuestion = section?.questions.find(
+                    q => q.type === "boolean" && q.text === "Add new antibiotic"
+                );
 
-                return {
+                const antiBioticSet: AntibioticSection = {
                     antibioticQuestion: antibioticQuestion as unknown as AntibioticQuestion,
-                    astResults: astQuestion as unknown as SelectQuestion,
+                    astResultsQuestion: astQuestion as unknown as SelectQuestion,
                     valueQuestion: valueQuestion as unknown as TextQuestion,
+                    addNewAntibioticQuestion:
+                        addNewAntibioticQuestion as unknown as BooleanQuestion,
                 };
+
+                return antiBioticSet;
             });
 
             setAntibioticSets(antibioticGroups);
@@ -94,11 +102,15 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
                                 key={option}
                                 option={option}
                                 antibiotic={currentAntibiotic.antibioticQuestion}
-                                astResults={currentAntibiotic.astResults}
+                                astResults={currentAntibiotic.astResultsQuestion}
                                 valueQuestion={currentAntibiotic.valueQuestion}
+                                addNewAntibioticQuestion={
+                                    currentAntibiotic.addNewAntibioticQuestion
+                                }
                                 updateAntibitoticQuestion={updateQuestion}
                                 updateAstResults={updateQuestion}
                                 updateValue={updateQuestion}
+                                updateAddNewAntibiotic={updateQuestion}
                             />
                         );
                     })}

@@ -96,13 +96,7 @@ export const getQuestion = (
                 ...base,
                 type: "boolean",
                 storeFalse: false,
-                value: name.startsWith("Add new antibiotic")
-                    ? true
-                    : dataValue
-                    ? dataValue === "true"
-                        ? true
-                        : undefined
-                    : undefined,
+                value: dataValue ? (dataValue === "true" ? true : undefined) : undefined,
             };
             return boolQ;
         }
@@ -137,7 +131,6 @@ export const getQuestion = (
                     const antibioticQ: AntibioticQuestion = {
                         ...selectBase,
                         subType: "select-antibiotic",
-                        filteredOptions: [],
                     };
                     return antibioticQ;
                 } else {

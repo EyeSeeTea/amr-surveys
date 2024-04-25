@@ -16,6 +16,7 @@ import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import {
     AntibioticQuestion,
+    BooleanQuestion,
     SelectQuestion,
     TextQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
@@ -41,8 +42,9 @@ const CancelButton = withStyles(() => ({
 
 export interface AntibioticSection {
     antibioticQuestion: AntibioticQuestion;
-    astResults: SelectQuestion;
+    astResultsQuestion: SelectQuestion;
     valueQuestion: TextQuestion;
+    addNewAntibioticQuestion: BooleanQuestion;
 }
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {

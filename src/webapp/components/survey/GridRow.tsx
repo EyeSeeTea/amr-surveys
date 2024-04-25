@@ -1,6 +1,7 @@
 import SearchableSelect from "../survey-questions/widgets/SearchableSelect";
 import {
     AntibioticQuestion,
+    BooleanQuestion,
     Question,
     QuestionOption,
     QuestionnaireQuestion,
@@ -9,7 +10,7 @@ import {
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import TextWidget from "../survey-questions/widgets/TextWidget";
 import styled from "styled-components";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { Typography } from "@material-ui/core";
 
 interface GridRowProps {
@@ -17,9 +18,11 @@ interface GridRowProps {
     antibiotic: AntibioticQuestion;
     astResults: SelectQuestion;
     valueQuestion: TextQuestion;
+    addNewAntibioticQuestion: BooleanQuestion;
     updateAstResults: (question: Question) => void;
     updateValue: (question: Question) => void;
     updateAntibitoticQuestion: (question: Question) => void;
+    updateAddNewAntibiotic: (question: Question) => void;
 }
 
 export const GridRow: React.FC<GridRowProps> = ({
@@ -27,20 +30,45 @@ export const GridRow: React.FC<GridRowProps> = ({
     antibiotic,
     astResults,
     valueQuestion,
+    addNewAntibioticQuestion,
     updateAstResults,
     updateValue,
     updateAntibitoticQuestion,
+    updateAddNewAntibiotic,
 }) => {
     const { update } = QuestionnaireQuestion;
 
-    useEffect(() => {
-        const updatedAntibiotic = {
-            ...antibiotic,
-            value: antibiotic.options.find(op => op.name === option),
-        };
+    const updateGridRow = useCallback(
+        (question: Question) => {
+            if (question.type === "select") {
+                updateAstResults(question);
+            } else if (question.type === "text") {
+                updateValue(question);
+            }
+            const updatedAntibiotic: AntibioticQuestion = {
+                ...antibiotic,
+                value: antibiotic.options.find(op => op.name === option),
+            };
 
-        updateAntibitoticQuestion(updatedAntibiotic);
-    }, [antibiotic, option, updateAntibitoticQuestion]);
+            updateAntibitoticQuestion(updatedAntibiotic);
+
+            const newAddNewAntibiotic: BooleanQuestion = {
+                ...addNewAntibioticQuestion,
+                value: true,
+            };
+
+            updateAddNewAntibiotic(newAddNewAntibiotic);
+        },
+        [
+            antibiotic,
+            option,
+            updateAstResults,
+            updateValue,
+            updateAntibitoticQuestion,
+            addNewAntibioticQuestion,
+            updateAddNewAntibiotic,
+        ]
+    );
 
     return (
         <StyledRow>
@@ -48,14 +76,14 @@ export const GridRow: React.FC<GridRowProps> = ({
             <StyledSearchableSelect
                 value={astResults.options.find(op => op.id === astResults.value?.id) || null}
                 options={astResults.options ?? []}
-                onChange={(value: QuestionOption) => updateAstResults(update(astResults, value))}
+                onChange={(value: QuestionOption) => updateGridRow(update(astResults, value))}
                 disabled={false}
                 label="Select AST results"
             />
 
             <StyledTextWidget
                 value={valueQuestion?.value}
-                onChange={value => updateValue(update(valueQuestion, value))}
+                onChange={value => updateGridRow(update(valueQuestion, value))}
                 disabled={false}
                 multiline={valueQuestion?.multiline ?? false}
                 placeholder="Value (unit)"

@@ -31,7 +31,6 @@ export interface SpeciesQuestion extends SelectQuestion {
 
 export interface AntibioticQuestion extends SelectQuestion {
     subType: "select-antibiotic";
-    filteredOptions?: QuestionOption[];
 }
 
 export const isSpeciesQuestion = (question: SelectQuestion): question is SpeciesQuestion => {
