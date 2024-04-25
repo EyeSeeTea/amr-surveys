@@ -56,18 +56,20 @@ export class SurveyD2Repository implements SurveyRepository {
                     psde => psde.dataElement
                 );
 
-                const sortedTrackedentityAttr = _(
-                    _(resp.programTrackedEntityAttributes)
-                        .sortBy(te => te.sortOrder)
-                        .value()
-                        .map(pste =>
-                            resp.trackedEntityAttributes?.find(
-                                te => te.id === pste.trackedEntityAttribute.id
-                            )
-                        )
-                )
-                    .compact()
-                    .value();
+                const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
+                    ? _(
+                          _(resp.programTrackedEntityAttributes)
+                              .sortBy(te => te.sortOrder)
+                              .value()
+                              .map(pste =>
+                                  resp.trackedEntityAttributes?.find(
+                                      te => te.id === pste.trackedEntityAttribute.id
+                                  )
+                              )
+                      )
+                          .compact()
+                          .value()
+                    : resp.trackedEntityAttributes;
 
                 //If event specified,populate the form
                 if (eventId) {
