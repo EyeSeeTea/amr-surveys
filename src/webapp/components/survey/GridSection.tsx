@@ -30,7 +30,6 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
         const [antibioticSets, setAntibioticSets] = useState<AntibioticSection[]>();
 
         useEffect(() => {
-            console.debug("GridSection useEffect");
             const speciesQuestion = speciesSection.questions.find(
                 question => question.type === "select" && isSpeciesQuestion(question)
             );
@@ -54,7 +53,6 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
                 const valueQuestion = section?.questions.find(
                     q => q.type === "text" && q.text === "Value (unit)"
                 );
-                // if (!antibioticQuestion || !astQuestion || !valueQuestion) return null;
 
                 return {
                     antibioticQuestion: antibioticQuestion as unknown as AntibioticQuestion,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCurrentASTGuidelinesContext } from "../contexts/current-ast-guidelines-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import {
@@ -33,13 +33,16 @@ export function useASTGuidelinesOptions() {
         setCurrentASTMatrix(currentMatrix);
     }, [currentASTGuidelines, currentPrevalenceSurveyForm]);
 
-    const getAntibioticOptions = (question: SpeciesQuestion): string[] | undefined => {
-        const matrixKey = [...currentASTList].find(
-            keyVal => question.value?.code && keyVal[1].includes(question.value.code)
-        )?.[0];
+    const getAntibioticOptions = useCallback(
+        (question: SpeciesQuestion): string[] | undefined => {
+            const matrixKey = [...currentASTList].find(
+                keyVal => question.value?.code && keyVal[1].includes(question.value.code)
+            )?.[0];
 
-        return matrixKey ? currentASTMatrix.get(matrixKey) : undefined;
-    };
+            return matrixKey ? currentASTMatrix.get(matrixKey) : undefined;
+        },
+        [currentASTList, currentASTMatrix]
+    );
 
     const getSpeciesQuestionForAntibiotic = (
         question: AntibioticQuestion,

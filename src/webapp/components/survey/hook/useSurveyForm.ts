@@ -148,19 +148,18 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentModule,
     ]);
 
-    const updateQuestion = useCallback(
-        (question: Question, stageId?: string) => {
-            if (questionnaire) {
+    const updateQuestion = useCallback((question: Question, stageId?: string) => {
+        setQuestionnaire(prevQuestionniare => {
+            if (prevQuestionniare) {
                 const updatedQuestionnaire = Questionnaire.updateQuestionnaire(
-                    questionnaire,
+                    prevQuestionniare,
                     question,
                     stageId
                 );
-                setQuestionnaire(updatedQuestionnaire);
-            }
-        },
-        [questionnaire]
-    );
+                return updatedQuestionnaire;
+            } else return prevQuestionniare;
+        });
+    }, []);
 
     const addProgramStage = useCallback(
         (stageCode: Code) => {
