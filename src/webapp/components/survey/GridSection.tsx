@@ -84,6 +84,7 @@ export const GridSection: React.FC<GridSectionProps> = React.memo(
                     title={speciesSection.title}
                     questions={speciesSection.questions}
                     viewOnly={viewOnly}
+                    updateQuestion={updateSpeciesQuestion}
                 />
                 <StyledColumn>
                     {gridOptions?.map((option, index) => {
