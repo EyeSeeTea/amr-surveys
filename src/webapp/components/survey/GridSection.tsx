@@ -13,7 +13,7 @@ import { AntibioticSection } from "./SurveyForm";
 import { QuestionnaireSection } from "../../../domain/entities/Questionnaire/QuestionnaireSection";
 import { QuestionnaireStage } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { SurveySection } from "./SurveySection";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useASTGuidelinesOptions } from "../../hooks/useASTGuidelinesOptions";
 
 interface GridSectionProps {
@@ -23,86 +23,91 @@ interface GridSectionProps {
     viewOnly?: boolean;
 }
 
-export const GridSection: React.FC<GridSectionProps> = ({
-    speciesSection,
-    antibioticStage,
-    updateQuestion,
-    viewOnly,
-}) => {
-    const [gridOptions, setGridOptions] = useState<string[]>();
-    const { getAntibioticOptions } = useASTGuidelinesOptions();
-    const [antibioticSets, setAntibioticSets] = useState<AntibioticSection[]>();
+export const GridSection: React.FC<GridSectionProps> = React.memo(
+    ({ speciesSection, antibioticStage, updateQuestion, viewOnly }) => {
+        const [gridOptions, setGridOptions] = useState<string[]>();
+        const { getAntibioticOptions } = useASTGuidelinesOptions();
+        const [antibioticSets, setAntibioticSets] = useState<AntibioticSection[]>();
 
-    useEffect(() => {
-        const antibioticSections = antibioticStage.sections.filter(
-            section => section.isAntibioticSection
-        );
-        const antibioticGroups: AntibioticSection[] = antibioticSections.map(section => {
-            const antibioticQuestion = section?.questions.find(
-                q => q.type === "select" && isAntibioticQuestion(q)
+        useEffect(() => {
+            console.debug("GridSection useEffect");
+            const speciesQuestion = speciesSection.questions.find(
+                question => question.type === "select" && isSpeciesQuestion(question)
             );
-
-            const astQuestion = section?.questions.find(
-                q => q.type === "select" && q.text === "AST results"
-            );
-
-            const valueQuestion = section?.questions.find(
-                q => q.type === "text" && q.text === "Value (unit)"
-            );
-            // if (!antibioticQuestion || !astQuestion || !valueQuestion) return null;
-
-            return {
-                antibioticQuestion: antibioticQuestion as unknown as AntibioticQuestion,
-                astResults: astQuestion as unknown as SelectQuestion,
-                valueQuestion: valueQuestion as unknown as TextQuestion,
-            };
-        });
-
-        setAntibioticSets(antibioticGroups);
-    }, [antibioticStage.sections]);
-
-    const updateSpeciesQuestion = useCallback(
-        (question: Question) => {
-            if (question.type === "select" && isSpeciesQuestion(question)) {
-                const options = getAntibioticOptions(question);
+            if (speciesQuestion?.type === "select" && isSpeciesQuestion(speciesQuestion)) {
+                const options = getAntibioticOptions(speciesQuestion);
                 setGridOptions(options);
             }
-            updateQuestion(question);
-        },
-        [getAntibioticOptions, updateQuestion]
-    );
 
-    return (
-        <>
-            <SurveySection
-                key={speciesSection.code}
-                title={speciesSection.title}
-                updateQuestion={question => updateSpeciesQuestion(question)}
-                questions={speciesSection.questions}
-                viewOnly={viewOnly}
-            />
-            <StyledColumn>
-                {gridOptions?.map((option, index) => {
-                    const currentAntibiotic = antibioticSets?.at(index);
-                    if (!currentAntibiotic) return null;
+            const antibioticSections = antibioticStage.sections.filter(
+                section => section.isAntibioticSection
+            );
+            const antibioticGroups: AntibioticSection[] = antibioticSections.map(section => {
+                const antibioticQuestion = section?.questions.find(
+                    q => q.type === "select" && isAntibioticQuestion(q)
+                );
 
-                    return (
-                        <GridRow
-                            key={option}
-                            option={option}
-                            antibiotic={currentAntibiotic.antibioticQuestion}
-                            astResults={currentAntibiotic.astResults}
-                            valueQuestion={currentAntibiotic.valueQuestion}
-                            updateAntibitoticQuestion={updateQuestion}
-                            updateAstResults={updateQuestion}
-                            updateValue={updateQuestion}
-                        />
-                    );
-                })}
-            </StyledColumn>
-        </>
-    );
-};
+                const astQuestion = section?.questions.find(
+                    q => q.type === "select" && q.text === "AST results"
+                );
+
+                const valueQuestion = section?.questions.find(
+                    q => q.type === "text" && q.text === "Value (unit)"
+                );
+                // if (!antibioticQuestion || !astQuestion || !valueQuestion) return null;
+
+                return {
+                    antibioticQuestion: antibioticQuestion as unknown as AntibioticQuestion,
+                    astResults: astQuestion as unknown as SelectQuestion,
+                    valueQuestion: valueQuestion as unknown as TextQuestion,
+                };
+            });
+
+            setAntibioticSets(antibioticGroups);
+        }, [antibioticStage.sections, getAntibioticOptions, gridOptions, speciesSection.questions]);
+
+        const updateSpeciesQuestion = useCallback(
+            (question: Question) => {
+                if (question.type === "select" && isSpeciesQuestion(question)) {
+                    const options = getAntibioticOptions(question);
+                    setGridOptions(options);
+                }
+                updateQuestion(question);
+            },
+            [getAntibioticOptions, updateQuestion]
+        );
+
+        return (
+            <>
+                <SurveySection
+                    key={speciesSection.code}
+                    title={speciesSection.title}
+                    questions={speciesSection.questions}
+                    viewOnly={viewOnly}
+                />
+                <StyledColumn>
+                    {gridOptions?.map((option, index) => {
+                        const currentAntibiotic = antibioticSets?.at(index);
+                        if (!currentAntibiotic) return null;
+
+                        return (
+                            <GridRow
+                                key={option}
+                                option={option}
+                                antibiotic={currentAntibiotic.antibioticQuestion}
+                                astResults={currentAntibiotic.astResults}
+                                valueQuestion={currentAntibiotic.valueQuestion}
+                                updateAntibitoticQuestion={updateQuestion}
+                                updateAstResults={updateQuestion}
+                                updateValue={updateQuestion}
+                            />
+                        );
+                    })}
+                </StyledColumn>
+            </>
+        );
+    }
+);
 
 const StyledColumn = styled.div`
     display: flex;
