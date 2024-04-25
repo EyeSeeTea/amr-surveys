@@ -282,7 +282,6 @@ export const mapProgramDataElementToQuestions = (
         })
     )
         .compact()
-        .sortBy(q => q.sortOrder)
         .value();
 
     return questions;
@@ -320,7 +319,6 @@ export const mapRepeatedStageEventToQuestions = (
         })
     )
         .compact()
-        .sortBy(q => q.sortOrder)
         .value();
 
     return questions;
@@ -363,7 +361,6 @@ export const mapTrackedAttributesToQuestions = (
         })
     )
         .compact()
-        .sortBy(q => q.sortOrder)
         .value();
 
     return questions;
