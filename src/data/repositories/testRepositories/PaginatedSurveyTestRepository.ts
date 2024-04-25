@@ -11,6 +11,12 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
     ): FutureData<PaginatedReponse<Survey[]>> {
         throw new Error("Method not implemented.");
     }
+    getFilteredPrevalencePatientSurveys(
+        keyword: string,
+        orgUnitId: string
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        throw new Error("Method not implemented.");
+    }
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: string,

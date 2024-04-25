@@ -16,4 +16,8 @@ export interface PaginatedSurveyRepository {
         keyword: string,
         orgUnitId: Id
     ): FutureData<PaginatedReponse<Survey[]>>;
+    getFilteredPrevalencePatientSurveys(
+        keyword: string,
+        orgUnitId: Id
+    ): FutureData<PaginatedReponse<Survey[]>>;
 }

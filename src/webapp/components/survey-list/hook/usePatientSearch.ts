@@ -12,7 +12,7 @@ export const usePatientSearch = (
     setTotal: Dispatch<SetStateAction<number | undefined>>
 ) => {
     const { compositionRoot } = useAppContext();
-    const { currentHospitalForm } = useCurrentSurveys();
+    const { currentHospitalForm, currentFacilityLevelForm } = useCurrentSurveys();
     const snackbar = useSnackbar();
 
     const [patientSearchKeyword, setPatientSearchKeyword] = useState("");
@@ -34,12 +34,17 @@ export const usePatientSearch = (
     const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (
             patientSearchKeyword &&
-            surveyFormType === "PPSPatientRegister" &&
+            ["PPSPatientRegister", "PrevalenceCaseReportForm"].includes(surveyFormType) &&
             event.key === "Enter"
         ) {
             setIsLoading(true);
+            const orgUnitId =
+                surveyFormType === "PPSPatientRegister"
+                    ? currentHospitalForm?.orgUnitId || ""
+                    : currentFacilityLevelForm?.orgUnitId || "";
+
             compositionRoot.surveys.getFilteredPatients
-                .execute(patientSearchKeyword, currentHospitalForm?.orgUnitId ?? "")
+                .execute(patientSearchKeyword, orgUnitId, surveyFormType)
                 .run(
                     response => {
                         setSearchResultSurveys(response.objects);

@@ -8,13 +8,18 @@ import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSu
 import { PaginatedReponse } from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
 import {
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
+    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     PPS_PATIENT_REGISTER_ID,
+    PREVALENCE_CASE_REPORT_FORM_ID,
     SURVEY_PATIENT_CODE_DATAELEMENT_ID,
     SURVEY_PATIENT_ID_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
 } from "../entities/D2Survey";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import { getSurveyNameFromId } from "../utils/surveyNameHelper";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -153,5 +158,84 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
 
             return Future.success(paginatedSurveys);
         });
+    }
+
+    getFilteredPrevalencePatientSurveys(
+        keyword: string,
+        orgUnitId: Id
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        // In trackedEntities endpoint in dhis2, we can't filter by multiple attributes at once using rootJunction=OR
+        // So we have to make two separate calls and merge the results
+        return Future.join2(
+            apiToFuture(
+                this.api.tracker.trackedEntities.get({
+                    fields: {
+                        $all: true,
+                    },
+                    orgUnit: orgUnitId,
+                    program: PREVALENCE_CASE_REPORT_FORM_ID,
+                    filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}`,
+                })
+            ),
+            apiToFuture(
+                this.api.tracker.trackedEntities.get({
+                    fields: {
+                        $all: true,
+                    },
+                    orgUnit: orgUnitId,
+                    program: PREVALENCE_CASE_REPORT_FORM_ID,
+                    filter: `${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:like:${keyword}`,
+                })
+            )
+        ).flatMap(
+            ([patientIdFilteredTrackedEntitiesResult, surveyIdFilteredTrackedEntitiesResult]) => {
+                const combinedResponse: TrackedEntitiesGetResponse = {
+                    page: 1,
+                    pageSize: 100,
+                    instances: [
+                        ...patientIdFilteredTrackedEntitiesResult.instances,
+                        ...surveyIdFilteredTrackedEntitiesResult.instances,
+                    ],
+                };
+                const surveys = mapTrackedEntityToSurvey(
+                    combinedResponse,
+                    "PrevalenceCaseReportForm"
+                );
+
+                return this.getSurveysWithNames(surveys).flatMap(SurveyWithNames => {
+                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        pager: {
+                            page: combinedResponse.page,
+                            pageSize: combinedResponse.pageSize,
+                            total: SurveyWithNames.length,
+                        },
+                        objects: SurveyWithNames,
+                    };
+                    return Future.success(paginatedSurveys);
+                });
+            }
+        );
+    }
+
+    getSurveysWithNames(surveys: Survey[]): FutureData<Survey[]> {
+        const surveysWithName = surveys.map(survey => {
+            return getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType, this.api).map(
+                (surveyName): Survey => {
+                    const newRootSurvey = {
+                        ...survey.rootSurvey,
+                        name: surveyName ?? "",
+                    };
+
+                    const updatedSurvey: Survey = {
+                        ...survey,
+                        rootSurvey: newRootSurvey,
+                    };
+
+                    return updatedSurvey;
+                }
+            );
+        });
+
+        return Future.sequential(surveysWithName);
     }
 }

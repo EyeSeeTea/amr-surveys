@@ -82,10 +82,18 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             surveys
                         ) && (
                             <ButtonWrapper>
-                                {surveyFormType === "PPSPatientRegister" && (
+                                {["PPSPatientRegister", "PrevalenceCaseReportForm"].includes(
+                                    surveyFormType
+                                ) && (
                                     <TextField
                                         label={i18n.t("Search Patient")}
-                                        helperText={i18n.t("Filter by patient id or code")}
+                                        helperText={
+                                            surveyFormType === "PPSPatientRegister"
+                                                ? i18n.t("Filter by patient id or code")
+                                                : i18n.t(
+                                                      "Filter by survey id or unique survey patient id"
+                                                  )
+                                        }
                                         value={patientSearchKeyword}
                                         onChange={e => setPatientSearchKeyword(e.target.value)}
                                         onKeyDown={handleKeyPress}

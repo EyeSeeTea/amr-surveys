@@ -15,7 +15,6 @@ import {
 import {
     getChildProgramId,
     getParentDataElementForProgram,
-    getSurveyType,
     getTrackedEntityAttributeType,
     isTrackerProgram,
 } from "../utils/surveyProgramHelper";
@@ -24,8 +23,6 @@ import {
     PPS_WARD_REGISTER_ID,
     PPS_HOSPITAL_FORM_ID,
     PPS_PATIENT_REGISTER_ID,
-    SURVEY_NAME_DATAELEMENT_ID,
-    PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
 } from "../entities/D2Survey";
 import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
@@ -36,6 +33,7 @@ import {
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
+import { getEventProgramById, getSurveyNameFromId } from "../utils/surveyNameHelper";
 
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
@@ -257,14 +255,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     private getEventProgramById(eventId: Id): FutureData<D2TrackerEvent | void> {
-        return apiToFuture(
-            this.api.tracker.events.getById(eventId, {
-                fields: { $all: true },
-            })
-        ).flatMap(resp => {
-            if (resp) return Future.success(resp);
-            else return Future.success(undefined);
-        });
+        return getEventProgramById(eventId, this.api);
     }
 
     private getTrackerProgramById(
@@ -287,25 +278,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string> {
-        const parentSurveyType = getSurveyType(surveyFormType);
-
-        return this.getEventProgramById(id)
-            .flatMap(survey => {
-                if (survey) {
-                    if (parentSurveyType === "PPS") {
-                        const ppsSurveyName = survey.dataValues?.find(
-                            dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
-                        )?.value;
-                        return Future.success(ppsSurveyName ?? "");
-                    } else {
-                        const prevalenceSurveyName = survey.dataValues?.find(
-                            dv => dv.dataElement === PREVALENCE_SURVEY_NAME_DATAELEMENT_ID
-                        )?.value;
-                        return Future.success(prevalenceSurveyName ?? "");
-                    }
-                } else return Future.success("");
-            })
-            .flatMapError(_err => Future.success(""));
+        return getSurveyNameFromId(id, surveyFormType, this.api);
     }
 
     getSurveyChildCount(
