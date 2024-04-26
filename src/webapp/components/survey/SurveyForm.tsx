@@ -14,12 +14,6 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
-import {
-    AntibioticQuestion,
-    BooleanQuestion,
-    SelectQuestion,
-    TextQuestion,
-} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
 
@@ -39,13 +33,6 @@ const CancelButton = withStyles(() => ({
         marginRight: "10px",
     },
 }))(Button);
-
-export interface AntibioticSection {
-    antibioticQuestion: AntibioticQuestion;
-    astResultsQuestion: SelectQuestion;
-    valueQuestion: TextQuestion;
-    addNewAntibioticQuestion: BooleanQuestion;
-}
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();

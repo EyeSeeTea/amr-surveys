@@ -76,12 +76,8 @@ export const mapProgramToQuestionnaire = (
                   isVisible: true,
                   stageId: section.programStage.id,
                   sortOrder: section.sortOrder,
-                  isAntibioticSection: questions.some(
-                      q => q.type === "select" && isAntibioticQuestion(q)
-                  ),
-                  isSpeciesSection: questions.some(
-                      q => q.type === "select" && isSpeciesQuestion(q)
-                  ),
+                  isAntibioticSection: questions.some(isAntibioticQuestion),
+                  isSpeciesSection: questions.some(isSpeciesQuestion),
               };
           })
         : //If the Program has no sections, create a single section
@@ -242,12 +238,8 @@ const getRepeatedStageEvents = (
                     isVisible: true,
                     stageId: newStageId,
                     sortOrder: section.sortOrder,
-                    isAntibioticSection: currentRepeatablequestions.some(
-                        q => q.type === "select" && isAntibioticQuestion(q)
-                    ),
-                    isSpeciesSection: currentRepeatablequestions.some(
-                        q => q.type === "select" && isSpeciesQuestion(q)
-                    ),
+                    isAntibioticSection: currentRepeatablequestions.some(isAntibioticQuestion),
+                    isSpeciesSection: currentRepeatablequestions.some(isSpeciesQuestion),
                 };
             }) ?? [];
 

@@ -1,5 +1,13 @@
 import { Questionnaire } from "./Questionnaire";
-import { Code, Question, QuestionnaireQuestion } from "./QuestionnaireQuestion";
+import {
+    ASTResultsQuestion,
+    AddNewAntibioticQuestion,
+    AntibioticQuestion,
+    AntibioticValueQuestion,
+    Code,
+    Question,
+    QuestionnaireQuestion,
+} from "./QuestionnaireQuestion";
 import { QuestionnaireRule } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
 
@@ -13,6 +21,13 @@ export interface QuestionnaireSection {
     stageId: string;
     isSpeciesSection: boolean;
     isAntibioticSection: boolean;
+}
+
+export interface AntibioticSection {
+    antibioticQuestion: AntibioticQuestion;
+    astResultsQuestion: ASTResultsQuestion;
+    valueQuestion: AntibioticValueQuestion;
+    addNewAntibioticQuestion: AddNewAntibioticQuestion;
 }
 
 export class QuestionnaireSectionM {

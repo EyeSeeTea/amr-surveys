@@ -1,73 +1,51 @@
 import SearchableSelect from "../survey-questions/widgets/SearchableSelect";
 import {
+    ASTResultsQuestion,
+    AddNewAntibioticQuestion,
     AntibioticQuestion,
-    BooleanQuestion,
+    AntibioticValueQuestion,
     Question,
     QuestionOption,
     QuestionnaireQuestion,
-    SelectQuestion,
-    TextQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import TextWidget from "../survey-questions/widgets/TextWidget";
 import styled from "styled-components";
-import { useCallback } from "react";
 import { Typography } from "@material-ui/core";
+import { useGridRow } from "./hook/useGridRow";
 
 interface GridRowProps {
     option: string;
     antibiotic: AntibioticQuestion;
-    astResults: SelectQuestion;
-    valueQuestion: TextQuestion;
-    addNewAntibioticQuestion: BooleanQuestion;
+    astResults: ASTResultsQuestion;
+    valueQuestion: AntibioticValueQuestion;
+    addNewAntibioticQuestion: AddNewAntibioticQuestion;
     updateAstResults: (question: Question) => void;
     updateValue: (question: Question) => void;
     updateAntibitoticQuestion: (question: Question) => void;
     updateAddNewAntibiotic: (question: Question) => void;
 }
 
-export const GridRow: React.FC<GridRowProps> = ({
-    option,
-    antibiotic,
-    astResults,
-    valueQuestion,
-    addNewAntibioticQuestion,
-    updateAstResults,
-    updateValue,
-    updateAntibitoticQuestion,
-    updateAddNewAntibiotic,
-}) => {
+export const GridRow: React.FC<GridRowProps> = props => {
+    const {
+        option,
+        antibiotic,
+        astResults,
+        valueQuestion,
+        addNewAntibioticQuestion,
+        updateAstResults,
+        updateValue,
+        updateAntibitoticQuestion,
+        updateAddNewAntibiotic,
+    } = props;
     const { update } = QuestionnaireQuestion;
-
-    const updateGridRow = useCallback(
-        (question: Question) => {
-            if (question.type === "select") {
-                updateAstResults(question);
-            } else if (question.type === "text") {
-                updateValue(question);
-            }
-            const updatedAntibiotic: AntibioticQuestion = {
-                ...antibiotic,
-                value: antibiotic.options.find(op => op.name === option),
-            };
-
-            updateAntibitoticQuestion(updatedAntibiotic);
-
-            const newAddNewAntibiotic: BooleanQuestion = {
-                ...addNewAntibioticQuestion,
-                value: true,
-            };
-
-            updateAddNewAntibiotic(newAddNewAntibiotic);
-        },
-        [
-            antibiotic,
-            option,
-            updateAstResults,
-            updateValue,
-            updateAntibitoticQuestion,
-            addNewAntibioticQuestion,
-            updateAddNewAntibiotic,
-        ]
+    const { updateGridRow } = useGridRow(
+        updateAstResults,
+        updateValue,
+        antibiotic,
+        option,
+        updateAntibitoticQuestion,
+        addNewAntibioticQuestion,
+        updateAddNewAntibiotic
     );
 
     return (

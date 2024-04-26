@@ -33,12 +33,40 @@ export interface AntibioticQuestion extends SelectQuestion {
     subType: "select-antibiotic";
 }
 
-export const isSpeciesQuestion = (question: SelectQuestion): question is SpeciesQuestion => {
+export interface ASTResultsQuestion extends SelectQuestion {
+    subType: "select-ast-results";
+}
+
+export interface AntibioticValueQuestion extends TextQuestion {
+    subType: "text-antibiotic-value";
+}
+
+export interface AddNewAntibioticQuestion extends BooleanQuestion {
+    subType: "text-add-new-antibiotic";
+}
+
+export const isSpeciesQuestion = (question: Question): question is SpeciesQuestion => {
     return (question as SpeciesQuestion).subType === "select-species";
 };
 
-export const isAntibioticQuestion = (question: SelectQuestion): question is AntibioticQuestion => {
+export const isAntibioticQuestion = (question: Question): question is AntibioticQuestion => {
     return (question as AntibioticQuestion).subType === "select-antibiotic";
+};
+
+export const isASTResultsQuestion = (question: Question): question is ASTResultsQuestion => {
+    return question.type === "select" && question.text === "AST results";
+};
+
+export const isAntibioticValueQuestion = (
+    question: Question
+): question is AntibioticValueQuestion => {
+    return question.type === "text" && question.text === "Value (unit)";
+};
+
+export const isAddNewAntibioticQuestion = (
+    question: Question
+): question is AddNewAntibioticQuestion => {
+    return question.type === "boolean" && question.text === "Add new antibiotic";
 };
 
 const ANTIBIOTIC_QUESTION_FORM_NAME = "Specify the antibiotic";
