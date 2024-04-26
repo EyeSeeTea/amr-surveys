@@ -36,20 +36,23 @@ function App(props: AppProps) {
             if (!currentUser) throw new Error("User not logged in");
 
             setAppContext({ currentUser, compositionRoot, api });
-            //set some default value for hospital,astguidelines context until its loaded.
-            setHospitalContext({ userHospitalsAccess: [] });
-
+            //set some default value for hospital context until its loaded.
+            setHospitalContext({ hospitalState: "loading", userHospitalsAccess: [] });
             setShowShareButton(isShareButtonVisible);
 
             compositionRoot.users.getAccessibleOUByLevel
                 .execute(currentUser.organisationUnits, currentUser.dataViewOrganisationUnits)
                 .run(
                     hospitalData => {
-                        setHospitalContext({ userHospitalsAccess: hospitalData });
+                        setHospitalContext({
+                            hospitalState: "loaded",
+                            userHospitalsAccess: hospitalData,
+                        });
                         console.debug("Hospital data fetched successfully, hospital data set");
                     },
                     err => {
                         console.debug(` No hospital data could be fetched : ${err}`);
+                        setHospitalContext({ hospitalState: "error", userHospitalsAccess: [] });
                     }
                 );
 

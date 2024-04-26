@@ -73,6 +73,11 @@ export interface TrackedEntityAttibute {
     optionSet?: { id: string };
     value?: string;
 }
+
+export interface ProgramTrackedEntityAttibute {
+    trackedEntityAttribute: { id: string };
+    sortOrder: number;
+}
 export interface ProgramMetadata {
     programs: Program[];
     programStageDataElements: ProgramStageDataElement[];
@@ -81,6 +86,7 @@ export interface ProgramMetadata {
     optionSets: OptionSet[];
     options: Option[];
     trackedEntityAttributes?: TrackedEntityAttibute[];
+    programTrackedEntityAttributes: ProgramTrackedEntityAttibute[];
     programStages: ProgramStage[];
     programRules: D2ProgramRule[];
     programRuleVariables: D2ProgramRuleVariable[];
