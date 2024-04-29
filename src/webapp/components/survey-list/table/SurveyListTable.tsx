@@ -1,4 +1,8 @@
-import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    Survey,
+    SURVEY_FORM_TYPES,
+    SURVEYS_WITH_CHILD_COUNT,
+} from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -20,23 +24,13 @@ import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
+import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
     surveyFormType: SURVEY_FORM_TYPES;
     refreshSurveys: Dispatch<SetStateAction<{}>>;
 }
-
-const getChildrenName = (surveyFormType: SURVEY_FORM_TYPES): string => {
-    switch (surveyFormType) {
-        case "PrevalenceSurveyForm":
-            return i18n.t("Facilities");
-        case "PrevalenceFacilityLevelForm":
-            return i18n.t("Patients");
-        default:
-            throw new Error("Invalid survey form type");
-    }
-};
 
 export type SurveyColumns = keyof Survey;
 export const SurveyListTable: React.FC<SurveyListTableProps> = ({
@@ -236,10 +230,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </TableCell>
                                     )}
 
-                                    {[
-                                        "PrevalenceSurveyForm",
-                                        "PrevalenceFacilityLevelForm",
-                                    ].includes(surveyFormType) && (
+                                    {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
                                         <TableCell
                                             onClick={() => {
                                                 childrenSortDirection === "asc"
@@ -298,10 +289,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 <TableCell>{survey.name}</TableCell>
                                             )}
 
-                                            {[
-                                                "PrevalenceSurveyForm",
-                                                "PrevalenceFacilityLevelForm",
-                                            ].includes(surveyFormType) && (
+                                            {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
                                                 <TableCell>{survey.childCount}</TableCell>
                                             )}
 

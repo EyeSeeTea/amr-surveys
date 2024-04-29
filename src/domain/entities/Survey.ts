@@ -18,6 +18,11 @@ export type SURVEY_FORM_TYPES =
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
 
+export const SURVEYS_WITH_CHILD_COUNT: SURVEY_FORM_TYPES[] = [
+    "PrevalenceSurveyForm",
+    "PrevalenceFacilityLevelForm",
+];
+
 export interface SurveyBase extends NamedRef {
     surveyType: string;
     astGuideline?: ASTGUIDELINE_TYPES;
