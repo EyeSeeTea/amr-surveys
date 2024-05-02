@@ -25,7 +25,7 @@ import {
     SURVEY_NAME_DATAELEMENT_ID,
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
 } from "../entities/D2Survey";
-import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
+import { ProgramMetadata } from "../entities/D2Program";
 import {
     mapProgramToQuestionnaire,
     mapQuestionnaireToEvent,
@@ -35,6 +35,7 @@ import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListM
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { getSurveyChildCount } from "../utils/surveyCountHelper";
 
+const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
@@ -46,7 +47,7 @@ export class SurveyD2Repository implements SurveyRepository {
         return apiToFuture(
             this.api.request<ProgramMetadata>({
                 method: "get",
-                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements,programStageSections,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
+                url: `/programs/${programId}/metadata.json?fields=programs,dataElements,programStageDataElements.dataElement,programStageSections,programTrackedEntityAttributes,trackedEntityAttributes,programStages,programRules,programRuleVariables,programRuleActions`,
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
@@ -54,16 +55,20 @@ export class SurveyD2Repository implements SurveyRepository {
                     psde => psde.dataElement
                 );
 
-                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
-                    de => {
-                        return {
-                            ...de,
-                            sortOrder: resp.programStageDataElements.find(
-                                psde => psde.dataElement.id === de.id
-                            )?.sortOrder,
-                        };
-                    }
-                );
+                const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
+                    ? _(
+                          _(resp.programTrackedEntityAttributes)
+                              .sortBy(te => te.sortOrder)
+                              .value()
+                              .map(pste =>
+                                  resp.trackedEntityAttributes?.find(
+                                      te => te.id === pste.trackedEntityAttribute.id
+                                  )
+                              )
+                      )
+                          .compact()
+                          .value()
+                    : resp.trackedEntityAttributes;
 
                 //If event specified,populate the form
                 if (eventId) {
@@ -78,11 +83,11 @@ export class SurveyD2Repository implements SurveyRepository {
                                             undefined,
                                             trackedEntity,
                                             programDataElements,
-                                            dataElementsWithSortOrder,
+                                            resp.dataElements,
                                             resp.options,
                                             resp.programStages,
                                             resp.programStageSections,
-                                            resp.trackedEntityAttributes,
+                                            sortedTrackedentityAttr,
                                             resp.programRules,
                                             resp.programRuleVariables,
                                             resp.programRuleActions
@@ -104,11 +109,11 @@ export class SurveyD2Repository implements SurveyRepository {
                                         event,
                                         undefined,
                                         programDataElements,
-                                        dataElementsWithSortOrder,
+                                        resp.dataElements,
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
-                                        resp.trackedEntityAttributes,
+                                        sortedTrackedentityAttr,
                                         resp.programRules,
                                         resp.programRuleVariables,
                                         resp.programRuleActions
@@ -128,11 +133,11 @@ export class SurveyD2Repository implements SurveyRepository {
                             undefined,
                             undefined,
                             programDataElements,
-                            dataElementsWithSortOrder,
+                            resp.dataElements,
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
-                            resp.trackedEntityAttributes,
+                            sortedTrackedentityAttr,
                             resp.programRules,
                             resp.programRuleVariables,
                             resp.programRuleActions
@@ -187,15 +192,27 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        chunked = false
     ): FutureData<Survey[]> {
         return isTrackerProgram(programId)
-            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId)
+            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked)
             : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
     }
 
     //Currently tracker programs are only in Prevalence module
     private getTrackerProgramSurveys(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id,
+        chunked = false
+    ): FutureData<Survey[]> {
+        return chunked
+            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId)
+            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId);
+    }
+
+    private getTrackerProgramSurveysUnchunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id
@@ -216,6 +233,35 @@ export class SurveyD2Repository implements SurveyRepository {
             const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
             return Future.success(surveys);
         });
+    }
+
+    private getTrackerProgramSurveysChunked(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnits: string
+    ): FutureData<Survey[]> {
+        const orgUnitIds = orgUnits.split(";");
+        const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
+
+        return Future.sequential(
+            chunkedOUs.flatMap(ouChunk => {
+                return apiToFuture(
+                    this.api.tracker.trackedEntities.get({
+                        fields: {
+                            attributes: true,
+                            enrollments: true,
+                            trackedEntity: true,
+                            orgUnit: true,
+                        },
+                        program: programId,
+                        orgUnit: ouChunk.join(";"),
+                    })
+                ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
+                    const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
+                    return Future.success(surveys);
+                });
+            })
+        ).flatMap(listOfSurveys => Future.success(_(listOfSurveys).flatten().value()));
     }
 
     private getEventProgramSurveys(

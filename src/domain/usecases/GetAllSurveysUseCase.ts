@@ -14,7 +14,8 @@ export class GetAllSurveysUseCase {
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
         orgUnitId: Id,
-        parentSurveyId: Id | undefined
+        parentSurveyId: Id | undefined,
+        chunked = false
     ): FutureData<Survey[]> {
         const programId = getProgramId(surveyFormType);
 
@@ -22,12 +23,13 @@ export class GetAllSurveysUseCase {
         const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
         return this.surveyReporsitory
-            .getSurveys(surveyFormType, programId, ouId)
+            .getSurveys(surveyFormType, programId, ouId, chunked)
             .flatMap(surveys => {
                 const filteredSurveys =
                     surveyFormType === "PPSSurveyForm" ||
                     (surveyFormType === "PPSHospitalForm" && !parentSurveyId) ||
-                    surveyFormType === "PrevalenceSurveyForm"
+                    surveyFormType === "PrevalenceSurveyForm" ||
+                    (surveyFormType === "PrevalenceFacilityLevelForm" && !parentSurveyId)
                         ? surveys
                         : _(
                               surveys.map(survey => {
@@ -66,6 +68,7 @@ export class GetAllSurveysUseCase {
                                 survey.rootSurvey.name === ""
                                     ? parentSurveyName
                                     : survey.rootSurvey.name,
+                            astGuideline: survey.rootSurvey.astGuideline,
                         };
 
                         const updatedSurvey: Survey = {

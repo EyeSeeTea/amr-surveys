@@ -1,7 +1,7 @@
 import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { ProgramOptionCountMap } from "../entities/Program";
-import { SURVEY_FORM_TYPES } from "../entities/Survey";
+import { SURVEYS_WITH_CHILD_COUNT, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "./PPSProgramsHelper";
 import {
@@ -11,6 +11,7 @@ import {
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
 } from "../../data/entities/D2Survey";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
+import { Future } from "../entities/generic/Future";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -27,6 +28,8 @@ export const getChildCount = ({
     secondaryparentId,
     surveyReporsitory,
 }: GetChildCountType): FutureData<number | ProgramOptionCountMap> => {
+    if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType)) return Future.success(0);
+
     const programId = getProgramId(surveyFormType);
     const programCountMap = surveyReporsitory.getSurveyChildCount(
         programId,

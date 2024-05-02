@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { OrgUnitAccess } from "../../domain/entities/User";
 
 export interface HospitalContextState {
+    hospitalState: "loading" | "error" | "loaded";
     userHospitalsAccess: OrgUnitAccess[];
 }
 

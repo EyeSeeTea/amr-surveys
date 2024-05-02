@@ -50,4 +50,5 @@ export interface Survey extends SurveyBase {
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
     childCount?: number | ProgramOptionCountMap;
+    uniqueSurveyPatientId?: string;
 }
