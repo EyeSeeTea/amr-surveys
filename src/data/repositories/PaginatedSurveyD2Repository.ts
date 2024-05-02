@@ -15,6 +15,8 @@ import {
 } from "../entities/D2Survey";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import { getSurveyChildCount } from "../utils/surveyCountHelper";
+import { ProgramCountMap } from "../../domain/entities/Program";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -153,5 +155,22 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
 
             return Future.success(paginatedSurveys);
         });
+    }
+
+    getSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> } {
+        return getSurveyChildCount(
+            parentProgram,
+            orgUnitId,
+            parentSurveyId,
+            secondaryparentId,
+            this.api
+        );
     }
 }

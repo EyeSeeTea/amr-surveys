@@ -10,13 +10,14 @@ import {
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
 } from "../../data/entities/D2Survey";
+import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
     orgUnitId: Id;
     parentSurveyId: Id;
     secondaryparentId?: Id;
-    surveyReporsitory: SurveyRepository;
+    surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
 };
 
 export const getChildCount = ({

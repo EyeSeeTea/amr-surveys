@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { ProgramCountMap } from "../../../domain/entities/Program";
 import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
@@ -19,6 +20,16 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
+        throw new Error("Method not implemented.");
+    }
+    getSurveyChildCount(
+        parentProgram: string,
+        orgUnitId: string,
+        parentSurveyId: string,
+        secondaryparentId: string | undefined
+    ):
+        | { type: "value"; value: FutureData<number> }
+        | { type: "map"; value: FutureData<ProgramCountMap> } {
         throw new Error("Method not implemented.");
     }
 }

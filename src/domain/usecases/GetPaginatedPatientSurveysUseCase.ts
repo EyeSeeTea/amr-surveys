@@ -7,6 +7,7 @@ import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
+import { getChildCount } from "../utils/getChildCount";
 
 //This use case fetched only patient surveys for both Prevalence and PPS modules
 export class GetPaginatedPatientSurveysUseCase {
@@ -32,24 +33,34 @@ export class GetPaginatedPatientSurveysUseCase {
             .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
             .flatMap(surveys => {
                 const surveysWithName = surveys.objects.map(survey => {
-                    return this.surveyReporsitory
-                        .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
-                        .map((parentSurveyName): Survey => {
-                            const newRootSurvey: SurveyBase = {
-                                surveyType: survey.rootSurvey.surveyType,
-                                id: survey.rootSurvey.id,
-                                name:
-                                    survey.rootSurvey.name === ""
-                                        ? parentSurveyName
-                                        : survey.rootSurvey.name,
-                            };
+                    return Future.join2(
+                        this.surveyReporsitory.getSurveyNameFromId(
+                            survey.rootSurvey.id,
+                            survey.surveyFormType
+                        ),
+                        getChildCount({
+                            surveyFormType: surveyFormType,
+                            orgUnitId: survey.assignedOrgUnit.id,
+                            parentSurveyId: survey.rootSurvey.id,
+                            surveyReporsitory: this.paginatedSurveyRepo,
+                        })
+                    ).map(([parentSurveyName, childCount]): Survey => {
+                        const newRootSurvey: SurveyBase = {
+                            surveyType: survey.rootSurvey.surveyType,
+                            id: survey.rootSurvey.id,
+                            name:
+                                survey.rootSurvey.name === ""
+                                    ? parentSurveyName
+                                    : survey.rootSurvey.name,
+                        };
 
-                            const updatedSurvey: Survey = {
-                                ...survey,
-                                rootSurvey: newRootSurvey,
-                            };
-                            return updatedSurvey;
-                        });
+                        const updatedSurvey: Survey = {
+                            ...survey,
+                            rootSurvey: newRootSurvey,
+                            childCount: childCount,
+                        };
+                        return updatedSurvey;
+                    });
                 });
 
                 return Future.sequential(surveysWithName).map(updatedSurveys => {

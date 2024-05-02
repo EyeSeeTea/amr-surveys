@@ -111,53 +111,33 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             setOptionLoading(false);
             return;
         }
+        const { childCount } = survey;
 
-        compositionRoot.surveys.getChildCount
-            .execute(
-                surveyFormType,
-                survey.assignedOrgUnit.id,
-                survey.rootSurvey.id,
-                surveyFormType === "PPSWardRegister" ? survey.id : ""
-            )
-            .run(
-                childCountMap => {
-                    if (typeof childCountMap === "number") {
-                        const optionsWithChildCount = currentOptions.map(option => {
-                            if (option.label.startsWith("List")) {
-                                const updatedLabel = `${option.label} (${childCountMap})`;
-                                return { ...option, label: updatedLabel };
-                            }
-                            return option;
-                        });
-                        if (survey) survey.childCount = childCountMap;
-                        setOptions(optionsWithChildCount);
-                        setOptionLoading(false);
-                    } else {
-                        const optionsWithChildCount = currentOptions.map(option => {
-                            const updatedChilsOptionMap = childCountMap.find(childMap =>
-                                childMap.option.label.startsWith(option.label)
-                            );
-                            if (updatedChilsOptionMap) {
-                                return updatedChilsOptionMap.option;
-                            } else {
-                                return option;
-                            }
-                        });
-                        if (survey)
-                            survey.childCount = childCountMap.reduce((agg, childCount) => {
-                                return agg + childCount.count;
-                            }, 0);
-
-                        setOptions(optionsWithChildCount);
-                        setOptionLoading(false);
-                    }
-                },
-                err => {
-                    console.debug(`Could not get child count, error : ${err}`);
-                    setOptions(currentOptions);
-                    setOptionLoading(false);
+        if (typeof childCount === "number") {
+            const optionsWithChildCount = currentOptions.map(option => {
+                if (option.label.startsWith("List")) {
+                    const updatedLabel = `${option.label} (${childCount})`;
+                    return { ...option, label: updatedLabel };
                 }
-            );
+                return option;
+            });
+            setOptions(optionsWithChildCount);
+            setOptionLoading(false);
+        } else {
+            const optionsWithChildCount = currentOptions.map(option => {
+                const updatedChilsOptionMap = childCount?.find(childMap =>
+                    childMap.option.label.startsWith(option.label)
+                );
+                if (updatedChilsOptionMap) {
+                    return updatedChilsOptionMap.option;
+                } else {
+                    return option;
+                }
+            });
+
+            setOptions(optionsWithChildCount);
+            setOptionLoading(false);
+        }
     };
 
     const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {

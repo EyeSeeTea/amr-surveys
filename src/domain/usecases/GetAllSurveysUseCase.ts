@@ -48,6 +48,8 @@ export class GetAllSurveysUseCase {
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
                             surveyReporsitory: this.surveyReporsitory,
+                            secondaryparentId:
+                                surveyFormType === "PPSWardRegister" ? survey.id : "",
                         })
                     ).map(([parentSurveyName, childCount]): Survey => {
                         const count =

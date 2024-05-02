@@ -1,4 +1,8 @@
-import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    Survey,
+    SURVEY_FORM_TYPES,
+    SURVEYS_WITH_CHILD_COUNT,
+} from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -15,12 +19,13 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { useSurveyListActions } from "../hook/useSurveyListActions";
+import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
 interface PaginatedSurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -33,7 +38,6 @@ interface PaginatedSurveyListTableProps {
 }
 
 export type SortDirection = "asc" | "desc";
-export type SurveyColumns = keyof Survey;
 export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> = ({
     surveys,
     surveyFormType,
@@ -48,6 +52,14 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
     const [patientNameSortDirection, setPatientNameSortDirection] = useState<SortDirection>("asc");
+    const [sampleShipmentsSortDirection, setSampleShipmentsSortDirection] =
+        useState<SortDirection>("asc");
+    const [centralRefLabsResultsSortDirection, setCentralRefLabsResultsSortDirection] =
+        useState<SortDirection>("asc");
+    const [pathogenIsolatesLogsSortDirection, setPathogenIsolatesLogsSortDirection] =
+        useState<SortDirection>("asc");
+    const [supranationalRefsResultsSortDirection, setSupranationalRefsResultsSortDirection] =
+        useState<SortDirection>("asc");
 
     const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
@@ -75,6 +87,56 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
             snackbar.error(deleteCompleteState.message);
         }
     }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
+
+    const getCurrentSortDirection = (childOptionName: string): SortDirection => {
+        switch (childOptionName) {
+            case "Sample Shipment":
+                return sampleShipmentsSortDirection;
+            case "Central Ref Lab Results":
+                return centralRefLabsResultsSortDirection;
+            case "Pathogen Isolates Logs":
+                return pathogenIsolatesLogsSortDirection;
+            case "Supranational Ref Results":
+                return supranationalRefsResultsSortDirection;
+            default:
+                throw new Error(`Invalid child option name: ${childOptionName}`);
+        }
+    };
+
+    const childOnClick = (childOptionName: string): MouseEventHandler | undefined => {
+        switch (childOptionName) {
+            case "Sample Shipment":
+                return () => {
+                    sampleShipmentsSortDirection === "asc"
+                        ? setSampleShipmentsSortDirection("desc")
+                        : setSampleShipmentsSortDirection("asc");
+                    sortByColumn("childCount", sampleShipmentsSortDirection);
+                };
+            case "Central Ref Lab Results":
+                return () => {
+                    centralRefLabsResultsSortDirection === "asc"
+                        ? setCentralRefLabsResultsSortDirection("desc")
+                        : setCentralRefLabsResultsSortDirection("asc");
+                    sortByColumn("childCount", centralRefLabsResultsSortDirection);
+                };
+            case "Pathogen Isolates Logs":
+                return () => {
+                    pathogenIsolatesLogsSortDirection === "asc"
+                        ? setPathogenIsolatesLogsSortDirection("desc")
+                        : setPathogenIsolatesLogsSortDirection("asc");
+                    sortByColumn("childCount", pathogenIsolatesLogsSortDirection);
+                };
+            case "Supranational Ref Results":
+                return () => {
+                    supranationalRefsResultsSortDirection === "asc"
+                        ? setSupranationalRefsResultsSortDirection("desc")
+                        : setSupranationalRefsResultsSortDirection("asc");
+                    sortByColumn("childCount", supranationalRefsResultsSortDirection);
+                };
+            default:
+                return undefined;
+        }
+    };
 
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
@@ -145,6 +207,26 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         </TableCell>
                                     </>
 
+                                    {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
+                                        getChildrenName(surveyFormType).map(childName => (
+                                            <TableCell
+                                                onClick={childOnClick(childName)}
+                                                key={childName}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {childName}
+                                                    </Typography>
+                                                    {childName &&
+                                                    getCurrentSortDirection(childName) === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
+                                            </TableCell>
+                                        ))}
+
                                     <TableCell>
                                         <Typography variant="caption">
                                             {i18n.t("Action")}
@@ -162,6 +244,15 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                 <TableCell>{survey.id}</TableCell>
                                                 <TableCell>{survey.name}</TableCell>
                                             </>
+                                            {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
+                                                typeof survey.childCount !== "number" &&
+                                                survey.childCount?.map((option, index) => {
+                                                    return (
+                                                        <TableCell key={index}>
+                                                            {option.count}
+                                                        </TableCell>
+                                                    );
+                                                })}
 
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton
