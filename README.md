@@ -1,3 +1,48 @@
+# AMR Surveys
+AMR Surveys is an app to manage data input and configuration of surveys for AMR.
+
+## User guide
+
+### Hide elements or sections by survey
+1. Based on the rules defined in datastore for each parent survey instance, apply HIDEFIELD/HIDESECTION rule for each child form.
+2. refactor code in src/domain/usecases/GetSurveyUseCase.ts to break up into functions.
+
+NOTE : datastore structure for survey rules
+ ```
+"rulesBySurvey": [
+      {
+        "surveyId": "p91asa2vebZ",
+        "surveyRules": [
+          {
+            "formId": "mesnCzaLc7u",
+            "rules": [
+              {
+                "id": "1",
+                "toHide": [
+                  "SCYImStXDHM"
+                ],
+                "type": "HIDEFIELD"
+              },
+              {
+                "id": "2",
+                "toHide": [
+                  "mIHOCwjHtyu"
+                ],
+                "type": "HIDESECTION"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+
+```
+### :video_camera: Screenshots/Screen capture
+
+https://github.com/EyeSeeTea/amr-surveys/assets/83749675/1c200566-dabf-4e43-aa9a-b40910448c93
+
+# Developer guide
+
 ## Setup
 
 ```
@@ -75,3 +120,5 @@ Check the example script, entry `"script-example"`in `package.json`->scripts and
 -   Requests to DHIS2 will be transparently proxied (see `vite.config.ts` -> `server.proxy`) from `http://localhost:8081/dhis2/xyz` to `${VITE_DHIS2_BASE_URL}/xyz`. This prevents CORS and cross-domain problems.
 
 -   You can use `.env` variables within the React app: `const value = import.meta.env.NAME;`
+
+
