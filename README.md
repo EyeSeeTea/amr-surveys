@@ -39,7 +39,7 @@ NOTE : datastore structure for survey rules
 ```
 ### :video_camera: Screenshots/Screen capture
 
-https://github.com/EyeSeeTea/amr-surveys/assets/83749675/1c200566-dabf-4e43-aa9a-b40910448c93
+[video](https://github.com/EyeSeeTea/amr-surveys/assets/83749675/1c200566-dabf-4e43-aa9a-b40910448c93)
 
 # Developer guide
 
