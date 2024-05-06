@@ -72,6 +72,10 @@ export class SurveyD2Repository implements SurveyRepository {
                           .value()
                     : resp.trackedEntityAttributes;
 
+                const sortedOptions = _(resp.options)
+                    .sortBy(option => option.sortOrder)
+                    .value();
+
                 //If event specified,populate the form
                 if (eventId) {
                     if (isTrackerProgram(programId)) {
@@ -86,7 +90,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                             trackedEntity,
                                             programDataElements,
                                             resp.dataElements,
-                                            resp.options,
+                                            sortedOptions,
                                             resp.programStages,
                                             resp.programStageSections,
                                             sortedTrackedentityAttr,

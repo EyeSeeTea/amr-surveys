@@ -61,6 +61,7 @@ export interface Option {
     name: string;
     code: string;
     optionSet: { id: string };
+    sortOrder: number;
 }
 
 export interface TrackedEntityAttibute {
