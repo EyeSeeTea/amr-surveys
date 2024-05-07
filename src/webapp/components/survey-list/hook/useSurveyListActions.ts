@@ -217,7 +217,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 //when current astGuideline changes, fetch the corresponding ast guidelines from datstore
                 if (rootSurvey.astGuideline)
                     compositionRoot.astGuidelines.getGuidelines
-                        .execute(rootSurvey.astGuideline, survey.id)
+                        .execute(rootSurvey.astGuideline, rootSurvey.id)
                         .run(
                             astGuidelines => {
                                 changeCurrentASTGuidelines(astGuidelines);
