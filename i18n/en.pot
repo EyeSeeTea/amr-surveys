@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-01T18:30:50.736Z\n"
-"PO-Revision-Date: 2024-04-01T18:30:50.736Z\n"
+"POT-Creation-Date: 2024-05-07T16:05:47.006Z\n"
+"PO-Revision-Date: 2024-05-07T16:05:47.006Z\n"
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -106,9 +106,6 @@ msgid "Root Survey Name"
 msgstr ""
 
 msgid "Patient Id"
-msgstr ""
-
-msgid "Patient Name"
 msgstr ""
 
 msgid "Action"

@@ -40,16 +40,21 @@ export class GetAllSurveysUseCase {
 
                 const surveysWithName = filteredSurveys.map(survey => {
                     return this.surveyReporsitory
-                        .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
-                        .map((parentSurveyName): Survey => {
+                        .getSurveyNameAndASTGuidelineFromId(
+                            survey.rootSurvey.id,
+                            survey.surveyFormType
+                        )
+                        .map((parentDetails): Survey => {
                             const newRootSurvey: SurveyBase = {
                                 surveyType: survey.rootSurvey.surveyType,
                                 id: survey.rootSurvey.id,
                                 name:
                                     survey.rootSurvey.name === ""
-                                        ? parentSurveyName
+                                        ? parentDetails.name
                                         : survey.rootSurvey.name,
-                                astGuideline: survey.rootSurvey.astGuideline,
+                                astGuideline: survey.rootSurvey.astGuideline
+                                    ? survey.rootSurvey.astGuideline
+                                    : parentDetails.astGuidelineType,
                             };
 
                             const updatedSurvey: Survey = {

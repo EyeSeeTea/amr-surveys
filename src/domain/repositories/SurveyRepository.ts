@@ -1,4 +1,5 @@
 import { FutureData } from "../../data/api-futures";
+import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { ImportStrategy, ProgramCountMap } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
@@ -31,7 +32,10 @@ export interface SurveyRepository {
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 
-    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string>;
+    getSurveyNameAndASTGuidelineFromId(
+        id: Id,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }>;
 
     getSurveyChildCount(
         parentProgram: Id,
