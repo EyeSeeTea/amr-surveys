@@ -47,6 +47,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
+    const [patientCodeSortDirection, setPatientCodeSortDirection] = useState<SortDirection>("asc");
 
     const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
@@ -103,13 +104,17 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         </span>
                                     </TableCell>
 
-                                    <>
+                                    {(surveyFormType === "PPSPatientRegister" ||
+                                        surveyFormType === "PrevalenceCaseReportForm") && (
                                         <TableCell
                                             onClick={() => {
                                                 patientIdSortDirection === "asc"
                                                     ? setPatientIdSortDirection("desc")
                                                     : setPatientIdSortDirection("asc");
-                                                sortByColumn("id", patientIdSortDirection);
+                                                sortByColumn(
+                                                    "uniquePatient.id" as keyof Survey,
+                                                    patientIdSortDirection
+                                                );
                                             }}
                                         >
                                             <span>
@@ -123,7 +128,31 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                 )}
                                             </span>
                                         </TableCell>
-                                    </>
+                                    )}
+                                    {surveyFormType === "PPSPatientRegister" && (
+                                        <TableCell
+                                            onClick={() => {
+                                                patientCodeSortDirection === "asc"
+                                                    ? setPatientCodeSortDirection("desc")
+                                                    : setPatientCodeSortDirection("asc");
+                                                sortByColumn(
+                                                    "uniquePatient.code" as keyof Survey,
+                                                    patientCodeSortDirection
+                                                );
+                                            }}
+                                        >
+                                            <span>
+                                                <Typography variant="caption">
+                                                    {i18n.t("Patient Code")}
+                                                </Typography>
+                                                {patientCodeSortDirection === "asc" ? (
+                                                    <ArrowUpward fontSize="small" />
+                                                ) : (
+                                                    <ArrowDownward fontSize="small" />
+                                                )}
+                                            </span>
+                                        </TableCell>
+                                    )}
 
                                     <TableCell>
                                         <Typography variant="caption">
@@ -137,8 +166,13 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     {sortedSurveys.map(survey => (
                                         <TableRow key={survey.id}>
                                             <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
-
-                                            <TableCell>{survey.uniqueSurveyPatientId}</TableCell>
+                                            {(surveyFormType === "PPSPatientRegister" ||
+                                                surveyFormType === "PrevalenceCaseReportForm") && (
+                                                <TableCell>{survey.uniquePatient?.id}</TableCell>
+                                            )}
+                                            {surveyFormType === "PPSPatientRegister" && (
+                                                <TableCell>{survey.uniquePatient?.code}</TableCell>
+                                            )}
 
                                             <TableCell style={{ opacity: 0.5 }}>
                                                 <ActionMenuButton

@@ -44,7 +44,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         page,
         setPage,
         pageSize,
-        setPageSize,
         total,
         setTotal,
         setRefreshSurveys,
@@ -60,11 +59,14 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
 
     const {
         searchResultSurveys,
-        patientSearchKeyword,
-        setPatientSearchKeyword,
-        handleKeyPress,
+        patientIdSearchKeyword,
+        setPatientIdSearchKeyword,
+        handlePatientIdSearch,
+        patientCodeSearchKeyword,
+        setPatientCodeSearchKeyword,
+        handlePatientCodeSearch,
         isLoading,
-    } = usePatientSearch(filteredSurveys, surveyFormType, setPageSize, setTotal);
+    } = usePatientSearch(filteredSurveys, surveyFormType, page, setTotal);
 
     return (
         <ContentWrapper>
@@ -83,13 +85,26 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         ) && (
                             <ButtonWrapper>
                                 {surveyFormType === "PPSPatientRegister" && (
-                                    <TextField
-                                        label={i18n.t("Search Patient")}
-                                        helperText={i18n.t("Filter by patient id or code")}
-                                        value={patientSearchKeyword}
-                                        onChange={e => setPatientSearchKeyword(e.target.value)}
-                                        onKeyDown={handleKeyPress}
-                                    />
+                                    <>
+                                        <TextField
+                                            label={i18n.t("Search Patient ID")}
+                                            helperText={i18n.t("Filter by patient id")}
+                                            value={patientIdSearchKeyword}
+                                            onChange={e =>
+                                                setPatientIdSearchKeyword(e.target.value)
+                                            }
+                                            onKeyDown={handlePatientIdSearch}
+                                        />
+                                        <TextField
+                                            label={i18n.t("Search Patient Code")}
+                                            helperText={i18n.t("Filter by patientcode")}
+                                            value={patientCodeSearchKeyword}
+                                            onChange={e =>
+                                                setPatientCodeSearchKeyword(e.target.value)
+                                            }
+                                            onKeyDown={handlePatientCodeSearch}
+                                        />
+                                    </>
                                 )}
                                 <Button
                                     variant="contained"

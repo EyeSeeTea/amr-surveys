@@ -74,7 +74,8 @@ function getCompositionRoot(repositories: Repositories) {
             ),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
             getFilteredPatients: new GetFilteredPatientsUseCase(
-                repositories.paginatedSurveyRepository
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
             ),
             getPaginatedSurveys: new GetPaginatedPatientSurveysUseCase(
                 repositories.paginatedSurveyRepository,
