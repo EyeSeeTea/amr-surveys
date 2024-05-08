@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-04-01T18:30:50.736Z\n"
+"POT-Creation-Date: 2024-05-08T14:56:54.547Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -52,10 +52,16 @@ msgid ""
 "your administrator"
 msgstr ""
 
-msgid "Search Patient"
+msgid "Search Patient ID"
 msgstr ""
 
-msgid "Filter by patient id or code"
+msgid "Filter by patient id"
+msgstr ""
+
+msgid "Search Patient Code"
+msgstr ""
+
+msgid "Filter by patientcode"
 msgstr ""
 
 msgid "Country"
@@ -108,7 +114,7 @@ msgstr ""
 msgid "Patient Id"
 msgstr ""
 
-msgid "Patient Name"
+msgid "Patient Code"
 msgstr ""
 
 msgid "Action"
