@@ -21,6 +21,12 @@ type GetChildCountType = {
     surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
 };
 
+const isPaginatedSurveyRepository = (
+    survey: SurveyRepository | PaginatedSurveyRepository
+): survey is PaginatedSurveyRepository => {
+    return (survey as PaginatedSurveyRepository).getPaginatedSurveyChildCount !== undefined;
+};
+
 export const getChildCount = ({
     surveyFormType,
     orgUnitId,
@@ -31,12 +37,19 @@ export const getChildCount = ({
     if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType)) return Future.success(0);
 
     const programId = getProgramId(surveyFormType);
-    const programCountMap = surveyReporsitory.getSurveyChildCount(
-        programId,
-        orgUnitId,
-        parentSurveyId,
-        secondaryparentId
-    );
+    const programCountMap = isPaginatedSurveyRepository(surveyReporsitory)
+        ? surveyReporsitory.getPaginatedSurveyChildCount(
+              programId,
+              orgUnitId,
+              parentSurveyId,
+              secondaryparentId
+          )
+        : surveyReporsitory.getNonPaginatedSurveyChildCount(
+              programId,
+              orgUnitId,
+              parentSurveyId,
+              secondaryparentId
+          );
 
     if (programCountMap.type === "value") {
         return programCountMap.value;

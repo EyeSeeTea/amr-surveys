@@ -4,7 +4,7 @@ import { Id } from "../entities/Ref";
 
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { ProgramOptionCountMap } from "../entities/Program";
-import { getChildCount } from "../utils/getChildCount";
+import { getChildCount } from "../utils/getChildCountHelper";
 
 export class GetChildCountUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}

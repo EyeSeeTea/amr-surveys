@@ -5,7 +5,7 @@ import { Id } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import { ImportStrategy, ProgramCountMap } from "../../domain/entities/Program";
+import { ImportStrategy } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import {
     D2TrackerTrackedEntity,
@@ -33,7 +33,7 @@ import {
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
-import { getSurveyChildCount } from "../utils/surveyCountHelper";
+import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
@@ -352,14 +352,12 @@ export class SurveyD2Repository implements SurveyRepository {
             .flatMapError(_err => Future.success(""));
     }
 
-    getSurveyChildCount(
+    getNonPaginatedSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ):
-        | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> } {
+    ): SurveyChildCountType {
         return getSurveyChildCount(
             parentProgram,
             orgUnitId,

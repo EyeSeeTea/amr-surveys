@@ -15,15 +15,17 @@ import {
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
+export type SurveyChildCountType =
+    | { type: "value"; value: FutureData<number> }
+    | { type: "map"; value: FutureData<ProgramCountMap> };
+
 export const getSurveyChildCount = (
     parentProgram: Id,
     orgUnitId: Id,
     parentSurveyId: Id,
     secondaryparentId: Id | undefined,
     api: D2Api
-):
-    | { type: "value"; value: FutureData<number> }
-    | { type: "map"; value: FutureData<ProgramCountMap> } => {
+): SurveyChildCountType => {
     const childIds = getChildProgramId(parentProgram);
 
     //As of now, all child programs for a given program are of the same type,

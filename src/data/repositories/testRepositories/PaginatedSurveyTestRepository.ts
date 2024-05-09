@@ -4,6 +4,7 @@ import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
 import { FutureData } from "../../api-futures";
+import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
     getFilteredPPSPatientSurveys(
@@ -22,14 +23,12 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
     ): FutureData<PaginatedReponse<Survey[]>> {
         throw new Error("Method not implemented.");
     }
-    getSurveyChildCount(
+    getPaginatedSurveyChildCount(
         parentProgram: string,
         orgUnitId: string,
         parentSurveyId: string,
         secondaryparentId: string | undefined
-    ):
-        | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> } {
+    ): SurveyChildCountType {
         throw new Error("Method not implemented.");
     }
 }

@@ -7,7 +7,7 @@ import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
-import { getChildCount } from "../utils/getChildCount";
+import { getChildCount } from "../utils/getChildCountHelper";
 
 //This use case fetched only patient surveys for both Prevalence and PPS modules
 export class GetPaginatedPatientSurveysUseCase {

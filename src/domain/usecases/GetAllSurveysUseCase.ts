@@ -6,7 +6,7 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 import _ from "../entities/generic/Collection";
-import { getChildCount } from "../utils/getChildCount";
+import { getChildCount } from "../utils/getChildCountHelper";
 
 export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
