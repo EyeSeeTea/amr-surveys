@@ -7,10 +7,10 @@ export const CurrentModuleContextProvider: React.FC<PropsWithChildren> = ({ chil
 
     useEffect(() => {
         const module = window.sessionStorage.getItem("currentModule");
-        if (module) {
+        if (module && !currentModule) {
             setCurrentModule(JSON.parse(module));
         }
-    }, []);
+    }, [currentModule]);
 
     const changeCurrentModule = (module: AMRSurveyModule | undefined) => {
         setCurrentModule(module);
@@ -19,6 +19,7 @@ export const CurrentModuleContextProvider: React.FC<PropsWithChildren> = ({ chil
 
     const resetCurrentModule = () => {
         setCurrentModule(undefined);
+        window.sessionStorage.removeItem("currentModule");
     };
 
     return (
