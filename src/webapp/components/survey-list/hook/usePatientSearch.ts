@@ -4,6 +4,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "../../../../utils/i18n";
+import { SURVEYS_WITH_FILTER_ENABLED } from "../SurveyList";
 
 export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
@@ -34,7 +35,7 @@ export const usePatientSearch = (
     const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (
             patientSearchKeyword &&
-            ["PPSPatientRegister", "PrevalenceCaseReportForm"].includes(surveyFormType) &&
+            SURVEYS_WITH_FILTER_ENABLED.includes(surveyFormType) &&
             event.key === "Enter"
         ) {
             setIsLoading(true);

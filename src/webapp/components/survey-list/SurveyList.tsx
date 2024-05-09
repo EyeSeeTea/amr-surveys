@@ -27,6 +27,12 @@ import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
 }
+
+export const SURVEYS_WITH_FILTER_ENABLED: SURVEY_FORM_TYPES[] = [
+    "PPSPatientRegister",
+    "PrevalenceCaseReportForm",
+];
+
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
@@ -82,9 +88,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             surveys
                         ) && (
                             <ButtonWrapper>
-                                {["PPSPatientRegister", "PrevalenceCaseReportForm"].includes(
-                                    surveyFormType
-                                ) && (
+                                {SURVEYS_WITH_FILTER_ENABLED.includes(surveyFormType) && (
                                     <TextField
                                         label={i18n.t("Search Patient")}
                                         helperText={
