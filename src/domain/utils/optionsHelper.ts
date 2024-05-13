@@ -1,6 +1,8 @@
 export type OptionType = {
     label: string;
     isHidden?: boolean;
+    isSubMenu?: boolean;
+    subMenu?: OptionType[];
 };
 
 export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
@@ -117,32 +119,65 @@ export const PrevalenceCaseReportFormOptions = (
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Sample Shipment",
-            isHidden: hasReadAccess,
+            label: "Shipments and Lab results",
+            isSubMenu: true,
+            subMenu: [
+                {
+                    label: "Add New Sample Shipment",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Sample Shipments",
+                },
+                {
+                    label: "Add New Central Ref Lab Results",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Central Ref Labs Results",
+                },
+                {
+                    label: "Add New Pathogen Isolates Log",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Pathogen Isolates Logs",
+                },
+                {
+                    label: "Add New Supranational Ref Results",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Supranational Refs Results",
+                },
+            ],
         },
         {
-            label: "List Sample Shipments",
-        },
-        {
-            label: "Add New Central Ref Lab Results",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "List Central Ref Labs Results",
-        },
-        {
-            label: "Add New Pathogen Isolates Log",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "List Pathogen Isolates Logs",
-        },
-        {
-            label: "Add New Supranational Ref Results",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "List Supranational Refs Results",
+            label: "Mortality",
+            isSubMenu: true,
+            subMenu: [
+                {
+                    label: "Add D28 Follow-up",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List D28 Follow-up",
+                },
+                {
+                    label: "Add Discharge",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Discharge",
+                },
+                {
+                    label: "Add Cohort enrolment",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Cohort enrolment",
+                },
+            ],
         },
     ];
 };
