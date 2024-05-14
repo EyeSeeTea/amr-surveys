@@ -9,17 +9,15 @@ export const getPaginatedSurveysWithParentName = (
 ) => {
     const surveysWithName = surveys.objects.map(survey => {
         return surveyReporsitory
-            .getSurveyNameFromId(survey.rootSurvey.id, survey.surveyFormType)
-            .map((parentSurveyName): Survey => {
+            .getSurveyNameAndASTGuidelineFromId(survey.rootSurvey.id, survey.surveyFormType)
+            .map(({ name, astGuidelineType }): Survey => {
                 const updatedSurvey: Survey = {
                     ...survey,
                     rootSurvey: {
                         surveyType: survey.rootSurvey.surveyType,
                         id: survey.rootSurvey.id,
-                        name:
-                            survey.rootSurvey.name === ""
-                                ? parentSurveyName
-                                : survey.rootSurvey.name,
+                        name: survey.rootSurvey.name === "" ? name : survey.rootSurvey.name,
+                        astGuideline: astGuidelineType,
                     },
                 };
                 return updatedSurvey;

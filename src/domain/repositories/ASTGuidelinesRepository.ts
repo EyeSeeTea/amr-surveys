@@ -9,4 +9,5 @@ export interface ASTGuidelinesRepository {
     ): FutureData<CurrentASTGuidelines>;
 
     saveByASTGuidelineType(astGuidelineType: ASTGUIDELINE_TYPES, surveyId: Id): FutureData<void>;
+    deleteCustomASTGuideline(surveyId: Id): FutureData<boolean>;
 }

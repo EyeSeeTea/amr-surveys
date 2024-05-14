@@ -6,6 +6,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Id } from "../../../../domain/entities/Ref";
 import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
+import { ASTGUIDELINE_TYPES } from "../../../../domain/entities/ASTGuidelines";
 
 export function useDeleteSurvey(
     formType: SURVEY_FORM_TYPES,
@@ -17,7 +18,14 @@ export function useDeleteSurvey(
     const { currentHospitalForm } = useCurrentSurveys();
 
     const showDeleteErrorMsg = (survey: Survey) => {
-        if (survey.childCount && survey.childCount > 0) {
+        const count =
+            typeof survey.childCount === "number"
+                ? survey.childCount
+                : survey.childCount
+                      ?.map(child => child.count)
+                      .reduce((agg, childCount) => agg + childCount, 0) || 0;
+
+        if (survey.childCount && count > 0) {
             setDeleteCompleteState({
                 status: "error",
                 message: i18n.t(
@@ -25,33 +33,35 @@ export function useDeleteSurvey(
                 ),
             });
         } else {
-            deleteSurvey(survey.id, survey.assignedOrgUnit.id);
+            deleteSurvey(survey.id, survey.assignedOrgUnit.id, survey.astGuideline);
         }
     };
 
-    const deleteSurvey = (surveyId: Id, orgUnitId: Id) => {
+    const deleteSurvey = (surveyId: Id, orgUnitId: Id, astGuidelineType?: ASTGUIDELINE_TYPES) => {
         setLoading(true);
 
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
-        compositionRoot.surveys.deleteSurvey.execute(formType, orgUnitId, surveyId).run(
-            () => {
-                setDeleteCompleteState({
-                    status: "success",
-                    message: i18n.t("Survey deleted!"),
-                });
-                refreshSurveys({});
-                setLoading(false);
-            },
-            err => {
-                setDeleteCompleteState({
-                    status: "error",
-                    message: err ? err.message : i18n.t("Error deleting the survery"),
-                });
+        compositionRoot.surveys.deleteSurvey
+            .execute(formType, orgUnitId, surveyId, astGuidelineType)
+            .run(
+                () => {
+                    setDeleteCompleteState({
+                        status: "success",
+                        message: i18n.t("Survey deleted!"),
+                    });
+                    refreshSurveys({});
+                    setLoading(false);
+                },
+                err => {
+                    setDeleteCompleteState({
+                        status: "error",
+                        message: err ? err.message : i18n.t("Error deleting the survery"),
+                    });
 
-                setLoading(false);
-            }
-        );
+                    setLoading(false);
+                }
+            );
     };
 
     return {

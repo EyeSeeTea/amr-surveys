@@ -14,6 +14,7 @@ import {
     WARD_ID_DATAELEMENT_ID,
 } from "../entities/D2Survey";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -185,5 +186,20 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
 
             return Future.success(paginatedSurveys);
         });
+    }
+
+    getPaginatedSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ): SurveyChildCountType {
+        return getSurveyChildCount(
+            parentProgram,
+            orgUnitId,
+            parentSurveyId,
+            secondaryparentId,
+            this.api
+        );
     }
 }

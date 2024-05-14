@@ -112,53 +112,33 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             setOptionLoading(false);
             return;
         }
+        const { childCount } = survey;
 
-        compositionRoot.surveys.getChildCount
-            .execute(
-                surveyFormType,
-                survey.assignedOrgUnit.id,
-                survey.rootSurvey.id,
-                surveyFormType === "PPSWardRegister" ? survey.id : ""
-            )
-            .run(
-                childCountMap => {
-                    if (typeof childCountMap === "number") {
-                        const optionsWithChildCount = currentOptions.map(option => {
-                            if (option.label.startsWith("List")) {
-                                const updatedLabel = `${option.label} (${childCountMap})`;
-                                return { ...option, label: updatedLabel };
-                            }
-                            return option;
-                        });
-                        if (survey) survey.childCount = childCountMap;
-                        setOptions(optionsWithChildCount);
-                        setOptionLoading(false);
-                    } else {
-                        const optionsWithChildCount = currentOptions.map(option => {
-                            const updatedChilsOptionMap = childCountMap.find(childMap =>
-                                childMap.option.label.startsWith(option.label)
-                            );
-                            if (updatedChilsOptionMap) {
-                                return updatedChilsOptionMap.option;
-                            } else {
-                                return option;
-                            }
-                        });
-                        if (survey)
-                            survey.childCount = childCountMap.reduce((agg, childCount) => {
-                                return agg + childCount.count;
-                            }, 0);
-
-                        setOptions(optionsWithChildCount);
-                        setOptionLoading(false);
-                    }
-                },
-                err => {
-                    console.debug(`Could not get child count, error : ${err}`);
-                    setOptions(currentOptions);
-                    setOptionLoading(false);
+        if (typeof childCount === "number") {
+            const optionsWithChildCount = currentOptions.map(option => {
+                if (option.label.startsWith("List")) {
+                    const updatedLabel = `${option.label} (${childCount})`;
+                    return { ...option, label: updatedLabel };
                 }
-            );
+                return option;
+            });
+            setOptions(optionsWithChildCount);
+            setOptionLoading(false);
+        } else {
+            const optionsWithChildCount = currentOptions.map(option => {
+                const updatedChilsOptionMap = childCount?.find(childMap =>
+                    childMap.option.label.startsWith(option.label)
+                );
+                if (updatedChilsOptionMap) {
+                    return updatedChilsOptionMap.option;
+                } else {
+                    return option;
+                }
+            });
+
+            setOptions(optionsWithChildCount);
+            setOptionLoading(false);
+        }
     };
 
     const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
@@ -214,6 +194,21 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     GLOBAL_OU_ID,
                     rootSurvey.astGuideline
                 );
+                //when current astGuideline changes, fetch the corresponding ast guidelines from datstore
+                if (rootSurvey.astGuideline)
+                    compositionRoot.astGuidelines.getGuidelines
+                        .execute(rootSurvey.astGuideline, rootSurvey.id)
+                        .run(
+                            astGuidelines => {
+                                changeCurrentASTGuidelines(astGuidelines);
+                                console.debug(
+                                    "AST Guidelines data fetched successfully, AST guidelines data set"
+                                );
+                            },
+                            err => {
+                                console.debug(` No AST guidelines data could be fetched : ${err}`);
+                            }
+                        );
             }
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
         } else if (surveyFormType === "PrevalenceCaseReportForm")

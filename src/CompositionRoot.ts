@@ -81,7 +81,10 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),
-            deleteSurvey: new DeleteSurveyUseCase(repositories.surveyFormRepository),
+            deleteSurvey: new DeleteSurveyUseCase(
+                repositories.surveyFormRepository,
+                repositories.astGuidelinesRepository
+            ),
             getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
         },

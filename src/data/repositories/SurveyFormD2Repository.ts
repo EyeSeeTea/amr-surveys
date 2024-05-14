@@ -5,7 +5,7 @@ import { Id } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import { ImportStrategy, ProgramCountMap } from "../../domain/entities/Program";
+import { ImportStrategy } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import {
     D2TrackerTrackedEntity,
@@ -13,8 +13,6 @@ import {
     TrackedEntitiesGetResponse,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import {
-    getChildProgramId,
-    getParentDataElementForProgram,
     getSurveyType,
     getTrackedEntityAttributeType,
     isTrackerProgram,
@@ -26,7 +24,8 @@ import {
     PPS_PATIENT_REGISTER_ID,
     SURVEY_NAME_DATAELEMENT_ID,
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
-    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
+    AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
 } from "../entities/D2Survey";
 import { ProgramMetadata } from "../entities/D2Program";
 import {
@@ -36,6 +35,8 @@ import {
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
+import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
+import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
@@ -72,6 +73,10 @@ export class SurveyD2Repository implements SurveyRepository {
                           .value()
                     : resp.trackedEntityAttributes;
 
+                const sortedOptions = _(resp.options)
+                    .sortBy(option => option.sortOrder)
+                    .value();
+
                 //If event specified,populate the form
                 if (eventId) {
                     if (isTrackerProgram(programId)) {
@@ -86,7 +91,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                             trackedEntity,
                                             programDataElements,
                                             resp.dataElements,
-                                            resp.options,
+                                            sortedOptions,
                                             resp.programStages,
                                             resp.programStageSections,
                                             sortedTrackedentityAttr,
@@ -332,7 +337,10 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string> {
+    getSurveyNameAndASTGuidelineFromId(
+        id: Id,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }> {
         const parentSurveyType = getSurveyType(surveyFormType);
 
         return this.getEventProgramById(id)
@@ -342,136 +350,48 @@ export class SurveyD2Repository implements SurveyRepository {
                         const ppsSurveyName = survey.dataValues?.find(
                             dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
-                        return Future.success(ppsSurveyName ?? "");
+                        return Future.success({ name: ppsSurveyName ?? "" });
                     } else {
                         const prevalenceSurveyName = survey.dataValues?.find(
                             dv => dv.dataElement === PREVALENCE_SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
-                        return Future.success(prevalenceSurveyName ?? "");
+                        const customASTGuideline = survey.dataValues?.find(
+                            dv => dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE
+                        )?.value;
+
+                        const astGuidelineType = survey.dataValues?.find(
+                            dv => dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES
+                        )?.value;
+
+                        return Future.success({
+                            name: prevalenceSurveyName ?? "",
+                            astGuidelineType: !customASTGuideline
+                                ? astGuidelineType === "CLSI"
+                                    ? "CLSI"
+                                    : astGuidelineType === "EUCAST"
+                                    ? "EUCAST"
+                                    : undefined
+                                : "CUSTOM",
+                        });
                     }
-                } else return Future.success("");
+                } else return Future.success({ name: "" });
             })
-            .flatMapError(_err => Future.success(""));
+            .flatMapError(_err => Future.success({ name: "" }));
     }
 
-    getSurveyChildCount(
+    getNonPaginatedSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ):
-        | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> } {
-        const childIds = getChildProgramId(parentProgram);
-
-        //As of now, all child programs for a given program are of the same type,
-        //so we will check only the first child
-
-        const childId = childIds.type === "singleChild" ? childIds.value : childIds.value[0];
-
-        if (childId) {
-            const isTracker = isTrackerProgram(childId);
-
-            if (isTracker) {
-                if (childIds.type === "singleChild") {
-                    const eventCount = this.getTrackerSurveyCount(
-                        childId,
-                        orgUnitId,
-                        parentSurveyId
-                    );
-
-                    return { type: "value", value: eventCount };
-                } else {
-                    const eventCounts = childIds.value.map(id => {
-                        return this.getTrackerSurveyCount(id, orgUnitId, parentSurveyId).map(
-                            count => {
-                                return { id: id, count: count };
-                            }
-                        );
-                    });
-
-                    return { type: "map", value: Future.sequential(eventCounts) };
-                }
-            } else {
-                if (childIds.type === "singleChild") {
-                    const eventCount = this.getEventSurveyCount(
-                        childIds.value,
-                        orgUnitId,
-                        parentSurveyId,
-                        secondaryparentId
-                    );
-
-                    return { type: "value", value: eventCount };
-                } else {
-                    return {
-                        type: "map",
-                        value: Future.error(
-                            new Error(
-                                "Event programs in AMR Surveys have single child. It should not contain multiple children"
-                            )
-                        ),
-                    };
-                }
-            }
-        } else {
-            return {
-                type: "value",
-                value: Future.error(new Error("Unknown Child program ")),
-            };
-        }
-    }
-
-    private getEventSurveyCount(
-        programId: Id,
-        orgUnitId: Id,
-        parentSurveyId: Id,
-        secondaryParentId: Id | undefined
-    ): FutureData<number> {
-        const ouId = programId === PPS_COUNTRY_QUESTIONNAIRE_ID ? "" : orgUnitId;
-        const ouMode = programId === PPS_HOSPITAL_FORM_ID ? "DESCENDANTS" : undefined;
-        const filterParentDEId = getParentDataElementForProgram(programId);
-
-        const filterStr =
-            secondaryParentId === ""
-                ? `${filterParentDEId}:eq:${parentSurveyId}`
-                : `${filterParentDEId}:eq:${secondaryParentId} `;
-
-        return apiToFuture(
-            this.api.tracker.events.get({
-                fields: { event: true },
-                program: programId,
-                orgUnit: ouId,
-                ouMode: ouMode,
-                filter: filterStr,
-            })
-        ).flatMap(response => {
-            return Future.success(response.instances.length);
-        });
-    }
-
-    private getTrackerSurveyCount(
-        programId: Id,
-        orgUnitId: Id,
-        parentSurveyId: Id
-    ): FutureData<number> {
-        const filterParentDEId = getParentDataElementForProgram(programId);
-
-        const ouMode =
-            orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID
-                ? "DESCENDANTS"
-                : undefined;
-
-        return apiToFuture(
-            this.api.tracker.trackedEntities.get({
-                fields: { trackedEntity: true },
-                program: programId,
-                orgUnit: orgUnitId,
-                ouMode: ouMode,
-                filter: `${filterParentDEId}:eq:${parentSurveyId}`,
-            })
-        ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-            return Future.success(trackedEntities.instances.length);
-        });
+    ): SurveyChildCountType {
+        return getSurveyChildCount(
+            parentProgram,
+            orgUnitId,
+            parentSurveyId,
+            secondaryparentId,
+            this.api
+        );
     }
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void> {
