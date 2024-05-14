@@ -13,8 +13,8 @@ import {
     SURVEY_PATIENT_ID_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
 } from "../entities/D2Survey";
-import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -124,19 +124,20 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         });
     }
 
-    getFilteredPPSPatientSurveys(
+    getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
-        orgUnitId: Id
+        orgUnitId: Id,
+        parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
-            this.api.get<TrackerEventsResponse>(
-                `/tracker/events?filter=${SURVEY_PATIENT_ID_DATAELEMENT_ID}:like:${keyword}&filter=${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}&rootJunction=OR`,
-                {
-                    fields: ":all",
-                    orgUnit: orgUnitId,
-                    program: PPS_PATIENT_REGISTER_ID,
-                }
-            )
+            this.api.tracker.events.get({
+                fields: { $all: true },
+                orgUnit: orgUnitId,
+                program: PPS_PATIENT_REGISTER_ID,
+                pageSize: 10,
+                totalPages: true,
+                filter: ` ${SURVEY_PATIENT_ID_DATAELEMENT_ID}:like:${keyword}, ${WARD_ID_DATAELEMENT_ID}:eq:${parentId}`,
+            })
         ).flatMap(response => {
             const events = response.instances;
 
@@ -153,5 +154,52 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
 
             return Future.success(paginatedSurveys);
         });
+    }
+
+    getFilteredPPSPatientByPatientCodeSurveys(
+        keyword: string,
+        orgUnitId: Id,
+        parentId: Id
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        return apiToFuture(
+            this.api.tracker.events.get({
+                fields: { $all: true },
+                orgUnit: orgUnitId,
+                program: PPS_PATIENT_REGISTER_ID,
+                pageSize: 10,
+                totalPages: true,
+                filter: ` ${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}, ${WARD_ID_DATAELEMENT_ID}:eq:${parentId}`,
+            })
+        ).flatMap(response => {
+            const events = response.instances;
+
+            const surveys = mapEventToSurvey(events, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID);
+
+            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                pager: {
+                    page: response.page,
+                    pageSize: response.pageSize,
+                    total: surveys.length,
+                },
+                objects: surveys,
+            };
+
+            return Future.success(paginatedSurveys);
+        });
+    }
+
+    getPaginatedSurveyChildCount(
+        parentProgram: Id,
+        orgUnitId: Id,
+        parentSurveyId: Id,
+        secondaryparentId: Id | undefined
+    ): SurveyChildCountType {
+        return getSurveyChildCount(
+            parentProgram,
+            orgUnitId,
+            parentSurveyId,
+            secondaryparentId,
+            this.api
+        );
     }
 }

@@ -5,8 +5,35 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-04-01T18:30:50.736Z\n"
-"PO-Revision-Date: 2024-04-01T18:30:50.736Z\n"
+"POT-Creation-Date: 2024-04-30T16:29:46.275Z\n"
+"PO-Revision-Date: 2024-04-30T16:29:46.275Z\n"
+
+msgid "Facilities"
+msgstr ""
+
+msgid "Sample Shipment"
+msgstr ""
+
+msgid "Central Ref Lab Results"
+msgstr ""
+
+msgid "Pathogen Isolates Logs"
+msgstr ""
+
+msgid "Supranational Ref Results"
+msgstr ""
+
+msgid "Countries"
+msgstr ""
+
+msgid "Hospitals"
+msgstr ""
+
+msgid "Wards"
+msgstr ""
+
+msgid "Patients"
+msgstr ""
 
 msgid "WHO privacy policy"
 msgstr ""
@@ -32,18 +59,6 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
-msgid "Countries"
-msgstr ""
-
-msgid "Hospitals"
-msgstr ""
-
-msgid "Wards"
-msgstr ""
-
-msgid "Patients"
-msgstr ""
-
 msgid "Submission Success!"
 msgstr ""
 
@@ -52,10 +67,16 @@ msgid ""
 "contact your administrator"
 msgstr ""
 
-msgid "Search Patient"
+msgid "Search Patient ID"
 msgstr ""
 
-msgid "Filter by patient id or code"
+msgid "Filter by patient id"
+msgstr ""
+
+msgid "Search Patient Code"
+msgstr ""
+
+msgid "Filter by patientcode"
 msgstr ""
 
 msgid "Country"
@@ -108,7 +129,7 @@ msgstr ""
 msgid "Patient Id"
 msgstr ""
 
-msgid "Patient Name"
+msgid "Patient Code"
 msgstr ""
 
 msgid "Action"

@@ -1,4 +1,8 @@
-import { Survey, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    Survey,
+    SURVEY_FORM_TYPES,
+    SURVEYS_WITH_CHILD_COUNT,
+} from "../../../../domain/entities/Survey";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
@@ -20,6 +24,7 @@ import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
+import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -38,6 +43,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
+    const [childrenSortDirection, setChildrenSortDirection] = useState<SortDirection>("asc");
     const [statusSortDirection, setStatusSortDirection] = useState<SortDirection>("asc");
     const [surveyTypeSortDirection, setSurveyTypeSortDirection] = useState<SortDirection>("asc");
     const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
@@ -224,6 +230,28 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </TableCell>
                                     )}
 
+                                    {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
+                                        <TableCell
+                                            onClick={() => {
+                                                childrenSortDirection === "asc"
+                                                    ? setChildrenSortDirection("desc")
+                                                    : setChildrenSortDirection("asc");
+                                                sortByColumn("childCount", childrenSortDirection);
+                                            }}
+                                        >
+                                            <span>
+                                                <Typography variant="caption">
+                                                    {getChildrenName(surveyFormType)}
+                                                </Typography>
+                                                {childrenSortDirection === "asc" ? (
+                                                    <ArrowUpward fontSize="small" />
+                                                ) : (
+                                                    <ArrowDownward fontSize="small" />
+                                                )}
+                                            </span>
+                                        </TableCell>
+                                    )}
+
                                     <TableCell>
                                         <Typography variant="caption">
                                             {i18n.t("Action")}
@@ -259,6 +287,10 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             )}
                                             {surveyFormType === "PPSHospitalForm" && (
                                                 <TableCell>{survey.name}</TableCell>
+                                            )}
+
+                                            {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
+                                                <TableCell>{survey.childCount as number}</TableCell>
                                             )}
 
                                             <TableCell style={{ opacity: 0.5 }}>

@@ -86,7 +86,7 @@ const PaddedDiv = styled.div`
 
 const StyledSection = styled.div``;
 
-const StyledTitle = styled.span`
+export const StyledTitle = styled.span`
     fontweight: "bold" as const;
 `;
 

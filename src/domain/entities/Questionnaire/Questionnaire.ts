@@ -2,14 +2,7 @@ import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
-import {
-    AntibioticQuestion,
-    Code,
-    Question,
-    isAntibioticQuestion,
-    isSectionAntibioticQuestion,
-    isSpeciesQuestion,
-} from "./QuestionnaireQuestion";
+import { Code, Question } from "./QuestionnaireQuestion";
 import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
@@ -221,8 +214,7 @@ export class Questionnaire {
     static updateQuestionnaire(
         questionnaire: Questionnaire,
         updatedQuestion: Question,
-        stageId?: string,
-        updatedOptions?: string[]
+        stageId?: string
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
         const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
@@ -241,7 +233,7 @@ export class Questionnaire {
             question => question.id === updatedQuestion.id
         );
 
-        const updatedRulesQuestionnaire = Questionnaire.create({
+        return Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
                 if (stageId && stage.id !== stageId) return stage;
@@ -260,144 +252,6 @@ export class Questionnaire {
                     ? this.updateEntityQuestion(questionnaire.entity, updatedQuestion)
                     : questionnaire.entity,
         });
-
-        return this.handleSpeciesAntibioticQuestionUpdate(
-            updatedRulesQuestionnaire,
-            updatedQuestion,
-            stageId,
-            updatedOptions
-        );
-    }
-
-    static handleSpeciesAntibioticQuestionUpdate(
-        questionnaire: Questionnaire,
-        updatedQuestion: Question,
-        stageId?: string,
-        updatedOptions?: string[]
-    ): Questionnaire {
-        if (updatedQuestion.type === "select") {
-            const stageToUpdate = questionnaire.stages.find(stage => stage.id === stageId);
-
-            if (!stageToUpdate || !stageId) return questionnaire;
-            if (!isSpeciesQuestion(updatedQuestion) && !isAntibioticQuestion(updatedQuestion))
-                return questionnaire;
-
-            const currentSectionIdentifier = isSpeciesQuestion(updatedQuestion)
-                ? updatedQuestion.code.substring(updatedQuestion.code.length - 1)
-                : updatedQuestion.code.substring(
-                      updatedQuestion.code.length - 2,
-                      updatedQuestion.code.length - 1
-                  );
-
-            const updatedSections = isSpeciesQuestion(updatedQuestion)
-                ? this.updatedSectionsOnSpeciesChange(
-                      stageToUpdate,
-                      currentSectionIdentifier,
-                      updatedOptions
-                  )
-                : this.updatedSectionsOnAntibioticChange(
-                      updatedQuestion,
-                      currentSectionIdentifier,
-                      stageToUpdate,
-                      updatedOptions
-                  );
-
-            return Questionnaire.updateQuestionnaireSections(
-                questionnaire,
-                stageId,
-                {
-                    ...stageToUpdate,
-                    sections: updatedSections,
-                },
-                updatedSections
-            );
-        } else return questionnaire;
-    }
-
-    static updatedSectionsOnSpeciesChange(
-        stageToUpdate: QuestionnaireStage,
-        currentSectionIdentifier: string,
-        updatedOptions?: string[]
-    ): QuestionnaireSection[] {
-        const updatedSections = stageToUpdate.sections.map(section => {
-            return {
-                ...section,
-                questions: section.questions.map(question => {
-                    if (isSectionAntibioticQuestion(question, currentSectionIdentifier)) {
-                        const filteredOptions = question.options?.filter(
-                            op => op.code && updatedOptions?.includes(op.code)
-                        );
-                        return {
-                            ...question,
-                            filteredOptions: filteredOptions,
-                            value:
-                                question.value &&
-                                filteredOptions?.find(
-                                    option => option.code === question.value?.code
-                                )
-                                    ? question.value
-                                    : undefined, //reset the antibiotic, if species has changed and the antibiotic is not in the new species options
-                        };
-                    } else return question;
-                }),
-            };
-        });
-
-        return updatedSections;
-    }
-
-    static updatedSectionsOnAntibioticChange(
-        updatedQuestion: AntibioticQuestion,
-        currentSectionIdentifier: string,
-        stageToUpdate: QuestionnaireStage,
-        updatedOptions?: string[]
-    ): QuestionnaireSection[] {
-        const alreadyUsedOptions = _(
-            stageToUpdate.sections.flatMap(section => {
-                return section.questions.map(question => {
-                    if (isSectionAntibioticQuestion(question, currentSectionIdentifier)) {
-                        return question.value?.code;
-                    }
-                });
-            })
-        )
-            .compact()
-            .value();
-
-        const updatedSections = stageToUpdate.sections.map(section => {
-            return {
-                ...section,
-                questions: section.questions.map(question => {
-                    if (isSectionAntibioticQuestion(question, currentSectionIdentifier)) {
-                        if (updatedQuestion.value) {
-                            //Antiobiotice option has been set
-                            const updatedFilteredOptions = question.filteredOptions?.filter(
-                                op => op.code && updatedQuestion.value?.code !== op.code
-                            );
-                            return {
-                                ...question,
-                                filteredOptions: updatedQuestion.value
-                                    ? updatedFilteredOptions
-                                    : question.filteredOptions,
-                            };
-                        } else {
-                            const filteredOptions = question.options?.filter(
-                                op =>
-                                    op.code &&
-                                    updatedOptions?.includes(op.code) &&
-                                    !alreadyUsedOptions.includes(op.code)
-                            );
-                            //Antibiotic option has been reset
-                            return {
-                                ...question,
-                                filteredOptions: filteredOptions,
-                            };
-                        }
-                    } else return question;
-                }),
-            };
-        });
-        return updatedSections;
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {

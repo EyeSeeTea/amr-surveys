@@ -71,6 +71,7 @@ type SURVEY_DATA_ELEMENT_KEYS =
     | "surveyName"
     | "hospitalCode"
     | "wardCode"
+    | "patientId"
     | "patientCode"
     | "parentWardRegisterId"
     | "uniqueSurveyPatientId"
@@ -104,6 +105,7 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
     },
     { key: "hospitalCode", dataElements: [SURVEY_HOSPITAL_CODE_DATAELEMENT_ID] },
     { key: "wardCode", dataElements: [SURVEY_WARD_CODE_DATAELEMENT_ID] },
+    { key: "patientId", dataElements: [SURVEY_PATIENT_ID_DATAELEMENT_ID] },
     { key: "patientCode", dataElements: [SURVEY_PATIENT_CODE_DATAELEMENT_ID] },
     { key: "parentWardRegisterId", dataElements: [WARD_ID_DATAELEMENT_ID] },
     { key: "uniqueSurveyPatientId", dataElements: [AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID] },
