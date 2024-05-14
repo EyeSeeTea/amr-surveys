@@ -8,6 +8,33 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
+msgid "Facilities"
+msgstr ""
+
+msgid "Sample Shipment"
+msgstr ""
+
+msgid "Central Ref Lab Results"
+msgstr ""
+
+msgid "Pathogen Isolates Logs"
+msgstr ""
+
+msgid "Supranational Ref Results"
+msgstr ""
+
+msgid "Countries"
+msgstr ""
+
+msgid "Hospitals"
+msgstr ""
+
+msgid "Wards"
+msgstr ""
+
+msgid "Patients"
+msgstr ""
+
 msgid "WHO privacy policy"
 msgstr ""
 
@@ -30,18 +57,6 @@ msgid "PPS Surveys"
 msgstr ""
 
 msgid "New Survey"
-msgstr ""
-
-msgid "Countries"
-msgstr ""
-
-msgid "Hospitals"
-msgstr ""
-
-msgid "Wards"
-msgstr ""
-
-msgid "Patients"
 msgstr ""
 
 msgid "Submission Success!"

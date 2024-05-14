@@ -1,5 +1,5 @@
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
-import { ImportStrategy, ProgramCountMap } from "../../../domain/entities/Program";
+import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
@@ -7,16 +7,15 @@ import { Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
+import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class SurveyTestRepository implements SurveyRepository {
-    getSurveyChildCount(
+    getNonPaginatedSurveyChildCount(
         _parentProgram: string,
         _orgUnitId: string,
         _parentSurveyId: string,
         _secondaryparentId: string | undefined
-    ):
-        | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> } {
+    ): SurveyChildCountType {
         throw new Error("Method not implemented.");
     }
     deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
