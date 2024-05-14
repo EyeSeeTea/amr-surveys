@@ -208,6 +208,36 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
+                                                        {
+                                                            option: "Add New D28 Follow-up",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List D28 Follow-up",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "Add New Discharge",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List Discharge",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "Add New Cohort enrolment",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List Cohort enrolment",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
                                                     ]}
                                                 />
                                             </TableCell>

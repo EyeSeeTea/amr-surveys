@@ -157,21 +157,21 @@ export const PrevalenceCaseReportFormOptions = (
             isSubMenu: true,
             subMenu: [
                 {
-                    label: "Add D28 Follow-up",
+                    label: "Add New D28 Follow-up",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List D28 Follow-up",
                 },
                 {
-                    label: "Add Discharge",
+                    label: "Add New Discharge",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List Discharge",
                 },
                 {
-                    label: "Add Cohort enrolment",
+                    label: "Add New Cohort enrolment",
                     isHidden: hasReadAccess,
                 },
                 {
