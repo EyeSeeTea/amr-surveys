@@ -1,13 +1,13 @@
 import { FutureData } from "../../data/api-futures";
-import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
-import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
+import { Future } from "../entities/generic/Future";
 
 //This use case fetched only patient surveys for both Prevalence and PPS modules
 export class GetPaginatedPatientSurveysUseCase {

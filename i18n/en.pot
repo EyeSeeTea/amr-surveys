@@ -67,10 +67,16 @@ msgid ""
 "contact your administrator"
 msgstr ""
 
-msgid "Search Patient"
+msgid "Search Patient ID"
 msgstr ""
 
-msgid "Filter by patient id or code"
+msgid "Filter by patient id"
+msgstr ""
+
+msgid "Search Patient Code"
+msgstr ""
+
+msgid "Filter by patientcode"
 msgstr ""
 
 msgid "Country"
@@ -121,6 +127,9 @@ msgid "Root Survey Name"
 msgstr ""
 
 msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Code"
 msgstr ""
 
 msgid "Action"

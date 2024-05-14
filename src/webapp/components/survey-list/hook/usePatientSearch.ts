@@ -8,16 +8,26 @@ import i18n from "../../../../utils/i18n";
 export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
     surveyFormType: SURVEY_FORM_TYPES,
-    setPageSize: Dispatch<SetStateAction<number>>,
+    page: number,
     setTotal: Dispatch<SetStateAction<number | undefined>>
 ) => {
     const { compositionRoot } = useAppContext();
-    const { currentHospitalForm } = useCurrentSurveys();
+    const { currentHospitalForm, currentWardRegister } = useCurrentSurveys();
     const snackbar = useSnackbar();
 
-    const [patientSearchKeyword, setPatientSearchKeyword] = useState("");
+    const [patientIdSearchKeyword, setPatientIdSearchKeyword] = useState("");
+    const [patientCodeSearchKeyword, setPatientCodeSearchKeyword] = useState("");
+
     const [searchResultSurveys, setSearchResultSurveys] = useState<Survey[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    //Reset the search keyword for non patient lists
+    useEffect(() => {
+        if (surveyFormType !== "PPSPatientRegister") {
+            setPatientCodeSearchKeyword("");
+            setPatientIdSearchKeyword("");
+        }
+    }, [surveyFormType]);
 
     // Start with the default surveys to begin with, if they exist
     useEffect(() => {
@@ -26,20 +36,23 @@ export const usePatientSearch = (
 
     // Every time the patient filter is blank, reset to the default surveys
     useEffect(() => {
-        if (!patientSearchKeyword && filteredSurveys) {
+        if (!patientIdSearchKeyword && !patientCodeSearchKeyword && filteredSurveys) {
             setSearchResultSurveys(filteredSurveys);
         }
-    }, [filteredSurveys, patientSearchKeyword]);
+    }, [filteredSurveys, patientCodeSearchKeyword, patientIdSearchKeyword]);
 
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>) => {
-        if (
-            patientSearchKeyword &&
-            surveyFormType === "PPSPatientRegister" &&
-            event.key === "Enter"
-        ) {
+    const filterSurveys = (searchBy: "patientId" | "patientCode") => {
+        const searchKeyword =
+            searchBy === "patientId" ? patientIdSearchKeyword : patientCodeSearchKeyword;
+        if (surveyFormType === "PPSPatientRegister" && searchKeyword) {
             setIsLoading(true);
             compositionRoot.surveys.getFilteredPatients
-                .execute(patientSearchKeyword, currentHospitalForm?.orgUnitId ?? "")
+                .execute(
+                    searchKeyword,
+                    currentHospitalForm?.orgUnitId ?? "",
+                    currentWardRegister?.id ?? "",
+                    searchBy
+                )
                 .run(
                     response => {
                         setSearchResultSurveys(response.objects);
@@ -54,11 +67,28 @@ export const usePatientSearch = (
         }
     };
 
+    const handlePatientIdSearch = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        setPatientCodeSearchKeyword("");
+        if (event.key === "Enter") {
+            filterSurveys("patientId");
+        }
+    };
+
+    const handlePatientCodeSearch = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        setPatientIdSearchKeyword("");
+        if (event.key === "Enter") {
+            filterSurveys("patientCode");
+        }
+    };
+
     return {
         searchResultSurveys,
-        patientSearchKeyword,
-        setPatientSearchKeyword,
-        handleKeyPress,
+        patientIdSearchKeyword,
+        setPatientIdSearchKeyword,
+        handlePatientIdSearch,
+        patientCodeSearchKeyword,
+        setPatientCodeSearchKeyword,
+        handlePatientCodeSearch,
         isLoading,
     };
 };

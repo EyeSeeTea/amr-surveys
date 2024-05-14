@@ -7,7 +7,15 @@ import { FutureData } from "../../api-futures";
 import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
-    getFilteredPPSPatientSurveys(
+    getFilteredPPSPatientByPatientCodeSurveys(
+        keyword: string,
+        orgUnitId: string,
+        parentId: string
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        console.debug(keyword, orgUnitId, parentId);
+        throw new Error("Method not implemented.");
+    }
+    getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
         orgUnitId: string
     ): FutureData<PaginatedReponse<Survey[]>> {

@@ -49,6 +49,6 @@ export interface Survey extends SurveyBase {
     assignedOrgUnit: NamedRef;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
+    uniquePatient?: { id: string; code: string };
     childCount?: number | ProgramOptionCountMap;
-    uniqueSurveyPatientId?: string;
 }
