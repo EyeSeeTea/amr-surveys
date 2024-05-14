@@ -185,11 +185,11 @@ export class SurveyD2Repository implements SurveyRepository {
                             : result.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
                         return Future.success(surveyId);
                     } else {
-                        return Future.error(
-                            new Error(
-                                `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
-                            )
-                        );
+                        return this.getErrorMessageWithNames(
+                            result?.validationReport?.errorReports?.at(0)?.message
+                        ).flatMap(errorMessage => {
+                            return Future.error(new Error(`Error: ${errorMessage} `));
+                        });
                     }
                 });
             });
@@ -420,11 +420,11 @@ export class SurveyD2Repository implements SurveyRepository {
                 if (result && result.status !== "ERROR") {
                     return Future.success(undefined);
                 } else {
-                    return Future.error(
-                        new Error(
-                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
-                        )
-                    );
+                    return this.getErrorMessageWithNames(
+                        result?.validationReport?.errorReports?.at(0)?.message
+                    ).flatMap(errorMessage => {
+                        return Future.error(new Error(`Error: ${errorMessage} `));
+                    });
                 }
             });
         });
@@ -450,13 +450,128 @@ export class SurveyD2Repository implements SurveyRepository {
                 if (result && result.status !== "ERROR") {
                     return Future.success(undefined);
                 } else {
-                    return Future.error(
-                        new Error(
-                            `Error: ${result?.validationReport?.errorReports?.at(0)?.message} `
-                        )
-                    );
+                    return this.getErrorMessageWithNames(
+                        result?.validationReport?.errorReports?.at(0)?.message
+                    ).flatMap(errorMessage => {
+                        return Future.error(new Error(`Error: ${errorMessage} `));
+                    });
                 }
             });
         });
     }
+
+    private getErrorMessageWithNames(errMsg?: string): FutureData<string> {
+        if (!errMsg) return Future.success("");
+
+        let errorMessageWithNames = errMsg;
+
+        //DataElement: `{dataElementId}`
+        const dataElementPattern = /(?<=DataElement(:*) )`([A-Za-z0-9]{11})`/g;
+        const dataelementIds = dataElementPattern.exec(errMsg);
+
+        //Program: `{programId}`
+        const programPattern = /(?<=Program(:*) )`([A-Za-z0-9]{11})`/g;
+        const programIds = programPattern.exec(errMsg);
+
+        //OrgUnit: `{orgUnitId}`
+        const orgUnitPattern = /(?<=OrganisationUnit(:*) )`([A-Za-z0-9]{11})`/g;
+        const orgUnitIds = orgUnitPattern.exec(errMsg);
+
+        return this.fetchNames({
+            dataElementId: dataelementIds?.[2],
+            programId: programIds?.[2],
+            orgUnitId: orgUnitIds?.[2],
+        }).flatMap(({ dataElementName, programName, orgUnitName }) => {
+            if (dataelementIds && dataelementIds[2] && dataElementName) {
+                errorMessageWithNames = this.parseErrorMessage(
+                    errorMessageWithNames,
+                    dataelementIds[2],
+                    dataElementName
+                );
+            }
+
+            if (programIds && programIds[2] && programName) {
+                errorMessageWithNames = this.parseErrorMessage(
+                    errorMessageWithNames,
+                    programIds[2],
+                    programName
+                );
+            }
+
+            if (orgUnitIds && orgUnitIds[2] && orgUnitName) {
+                errorMessageWithNames = this.parseErrorMessage(
+                    errorMessageWithNames,
+                    orgUnitIds[2],
+                    orgUnitName
+                );
+            }
+
+            return Future.success(errorMessageWithNames);
+        });
+    }
+
+    private parseErrorMessage = (errMsg: string, id: string, name: string): string => {
+        return (
+            errMsg.slice(0, errMsg.indexOf(id) - 1) +
+            `${name} ` +
+            errMsg.slice(errMsg.indexOf(id) - 1)
+        );
+    };
+
+    private fetchNames = ({
+        dataElementId,
+        programId,
+        orgUnitId,
+    }: {
+        dataElementId?: Id;
+        programId?: Id;
+        orgUnitId?: Id;
+    }): FutureData<{
+        dataElementName?: string;
+        programName?: string;
+        orgUnitName?: string;
+    }> => {
+        if (!dataElementId && !programId && !orgUnitId) return Future.success({});
+
+        return apiToFuture(
+            this.api.metadata
+                .get({
+                    ...(dataElementId && {
+                        dataElements: {
+                            fields: { shortName: true },
+                            filter: { id: { eq: dataElementId } },
+                        },
+                    }),
+                    ...(programId && {
+                        programs: {
+                            fields: { shortName: true },
+                            filter: { id: { eq: programId } },
+                        },
+                    }),
+                    ...(orgUnitId && {
+                        organisationUnits: {
+                            fields: { shortName: true },
+                            filter: { id: { eq: orgUnitId } },
+                        },
+                    }),
+                })
+                .map(response => {
+                    const fetchedNames: {
+                        dataElementName?: string;
+                        programName?: string;
+                        orgUnitName?: string;
+                    } = {};
+                    if (response?.data?.dataElements) {
+                        fetchedNames.dataElementName = `${response.data.dataElements?.[0]?.shortName}`;
+                    }
+                    if (response?.data?.programs) {
+                        fetchedNames.programName = `${response.data.programs?.[0]?.shortName}`;
+                    }
+                    if (response?.data?.organisationUnits) {
+                        fetchedNames.orgUnitName = `${response.data.organisationUnits?.[0]?.shortName}`;
+                    }
+                    return fetchedNames;
+                })
+        );
+    };
 }
