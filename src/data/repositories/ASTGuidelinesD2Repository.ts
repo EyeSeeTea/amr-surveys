@@ -160,4 +160,14 @@ export class ASTGuidelinesD2Repository implements ASTGuidelinesRepository {
             }
         }
     }
+
+    deleteCustomASTGuideline(surveyId: Id): FutureData<boolean> {
+        return this.dataStoreClient.removeObject(`CUSTOM_lists_${surveyId}`).flatMap(() => {
+            return this.dataStoreClient
+                .removeObject(`CUSTOM_matrix_${surveyId}`)
+                .flatMap((deleted: boolean) => {
+                    return Future.success(deleted);
+                });
+        });
+    }
 }

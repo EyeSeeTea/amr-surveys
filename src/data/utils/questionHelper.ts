@@ -131,7 +131,6 @@ export const getQuestion = (
                     const antibioticQ: AntibioticQuestion = {
                         ...selectBase,
                         subType: "select-antibiotic",
-                        filteredOptions: [],
                     };
                     return antibioticQ;
                 } else {

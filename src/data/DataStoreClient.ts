@@ -20,4 +20,8 @@ export class DataStoreClient {
     public saveObject<T extends object>(key: string, value: T): FutureData<void> {
         return apiToFuture(this.dataStore.save(key, value));
     }
+
+    public removeObject(key: string): FutureData<boolean> {
+        return apiToFuture(this.dataStore.delete(key));
+    }
 }

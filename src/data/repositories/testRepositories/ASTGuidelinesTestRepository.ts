@@ -4,6 +4,10 @@ import { ASTGUIDELINE_TYPES, CurrentASTGuidelines } from "../../../domain/entiti
 import { FutureData } from "../../api-futures";
 
 export class ASTGuidelinesTestRepository implements ASTGuidelinesRepository {
+    deleteCustomASTGuideline(surveyId: string): FutureData<boolean> {
+        console.debug("deleteCustomASTGuideline", surveyId);
+        throw new Error("Method not implemented.");
+    }
     saveByASTGuidelineType(
         astGuidelineType: ASTGUIDELINE_TYPES,
         surveyId: string

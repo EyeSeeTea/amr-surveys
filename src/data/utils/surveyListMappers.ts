@@ -32,7 +32,7 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
             )?.value ?? "";
 
-        const uniqueSurveyPatientId =
+        const patientId =
             trackedEntity.attributes?.find(
                 attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID
             )?.value ?? "";
@@ -55,7 +55,7 @@ export const mapTrackedEntityToSurvey = (
             parentWardRegisterId: undefined,
             surveyFormType: surveyFormType,
             childCount: undefined,
-            uniqueSurveyPatientId: uniqueSurveyPatientId,
+            uniquePatient: { id: patientId, code: "" },
         };
         return survey;
     });
@@ -82,6 +82,7 @@ export const mapEventToSurvey = (
         const surveyCompleted = surveyProperties.get("surveyCompleted") ?? "";
         const hospitalCode = surveyProperties.get("hospitalCode") ?? "";
         const wardCode = surveyProperties.get("wardCode") ?? "";
+        const patientId = surveyProperties.get("patientId") ?? "";
         const patientCode = surveyProperties.get("patientCode") ?? "";
         const parentPPSSurveyId = surveyProperties.get("parentPPSSurveyId") ?? "";
         const surveyType = surveyProperties.get("surveyType") ?? "";
@@ -134,6 +135,7 @@ export const mapEventToSurvey = (
                 : astGuideline === "EUCAST"
                 ? "EUCAST"
                 : "CLSI",
+            uniquePatient: { id: patientId, code: patientCode },
         };
         return survey;
     });

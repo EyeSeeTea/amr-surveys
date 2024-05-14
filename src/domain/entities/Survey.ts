@@ -1,4 +1,5 @@
 import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
+import { ProgramOptionCountMap } from "./Program";
 import { NamedRef, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
@@ -17,6 +18,16 @@ export type SURVEY_FORM_TYPES =
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
+
+export const SURVEYS_WITH_CHILD_COUNT: SURVEY_FORM_TYPES[] = [
+    "PrevalenceSurveyForm",
+    "PrevalenceFacilityLevelForm",
+    "PrevalenceCaseReportForm",
+    "PPSSurveyForm",
+    "PPSCountryQuestionnaire",
+    "PPSHospitalForm",
+    "PPSWardRegister",
+];
 
 export interface SurveyBase extends NamedRef {
     surveyType: string;
@@ -38,6 +49,6 @@ export interface Survey extends SurveyBase {
     assignedOrgUnit: NamedRef;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
-    childCount?: number;
-    uniqueSurveyPatientId?: string;
+    uniquePatient?: { id: string; code: string };
+    childCount?: number | ProgramOptionCountMap;
 }

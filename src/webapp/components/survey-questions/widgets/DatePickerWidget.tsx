@@ -1,8 +1,9 @@
-import { DatePicker } from "@eyeseetea/d2-ui-components";
 import React from "react";
 // @ts-ignore
 import { Maybe } from "../../../../types/utils";
 import { BaseWidgetProps } from "./BaseWidget";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 export interface DatePickerWidgetProps extends BaseWidgetProps<Date> {
     value: Maybe<Date>;
@@ -23,13 +24,14 @@ const DatePickerWidget: React.FC<DatePickerWidgetProps> = props => {
         [onValueChange]
     );
     return (
-        <DatePicker
-            key={props.name}
-            name={props.name}
-            value={stateValue}
-            disabled={props.disabled}
-            onChange={newValue => notifyChange(newValue)}
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+                key={props.name}
+                value={stateValue}
+                disabled={props.disabled}
+                onChange={newValue => notifyChange(newValue)}
+            />
+        </LocalizationProvider>
     );
 };
 
