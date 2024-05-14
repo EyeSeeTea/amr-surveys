@@ -33,6 +33,38 @@ export class SaveFormDataUseCase {
         const ouId =
             surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
+        //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
+        if (surveyFormType === "PrevalenceFacilityLevelForm") {
+            return this.surveyReporsitory
+                .getSurveys(surveyFormType, programId, ouId, false)
+                .flatMap(surveys => {
+                    if (surveys.length > 0) {
+                        return Future.error(
+                            new Error(
+                                "Prevalence Facility Level Form already exists for this facility."
+                            )
+                        );
+                    } else
+                        return this.saveFormData(
+                            surveyFormType,
+                            questionnaire,
+                            ouId,
+                            programId,
+                            eventId
+                        );
+                });
+        }
+
+        return this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId);
+    }
+
+    saveFormData = (
+        surveyFormType: SURVEY_FORM_TYPES,
+        questionnaire: Questionnaire,
+        ouId: string,
+        programId: string,
+        eventId: string | undefined = undefined
+    ): FutureData<void> => {
         return this.surveyReporsitory
             .saveFormData(questionnaire, "CREATE_AND_UPDATE", ouId, eventId, programId)
             .flatMap((surveyId: Id | undefined) => {
@@ -46,7 +78,7 @@ export class SaveFormDataUseCase {
                     return Future.success(undefined);
                 }
             });
-    }
+    };
 
     saveCustomASTGuidelineToDatastore = (
         surveyId: Id,

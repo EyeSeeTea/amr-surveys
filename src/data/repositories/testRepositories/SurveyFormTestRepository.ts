@@ -3,13 +3,21 @@ import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
-import { Survey } from "../../../domain/entities/Survey";
+import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
+import { ASTGUIDELINE_TYPES } from "../../../domain/entities/ASTGuidelines";
 import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class SurveyTestRepository implements SurveyRepository {
+    getSurveyNameAndASTGuidelineFromId(
+        id: string,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES | undefined }> {
+        console.debug(id, surveyFormType);
+        throw new Error("Method not implemented.");
+    }
     getNonPaginatedSurveyChildCount(
         _parentProgram: string,
         _orgUnitId: string,
@@ -19,9 +27,6 @@ export class SurveyTestRepository implements SurveyRepository {
         throw new Error("Method not implemented.");
     }
     deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
-        throw new Error("Method not implemented.");
-    }
-    getSurveyNameFromId(_id: string): FutureData<string> {
         throw new Error("Method not implemented.");
     }
 

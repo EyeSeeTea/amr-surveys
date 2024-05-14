@@ -34,7 +34,7 @@ export class GetPaginatedPatientSurveysUseCase {
             .flatMap(surveys => {
                 const surveysWithName = surveys.objects.map(survey => {
                     return Future.join2(
-                        this.surveyReporsitory.getSurveyNameFromId(
+                        this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                             survey.rootSurvey.id,
                             survey.surveyFormType
                         ),
@@ -44,13 +44,13 @@ export class GetPaginatedPatientSurveysUseCase {
                             parentSurveyId: survey.rootSurvey.id,
                             surveyReporsitory: this.paginatedSurveyRepo,
                         })
-                    ).map(([parentSurveyName, childCount]): Survey => {
+                    ).map(([parentDetails, childCount]): Survey => {
                         const newRootSurvey: SurveyBase = {
                             surveyType: survey.rootSurvey.surveyType,
                             id: survey.rootSurvey.id,
                             name:
                                 survey.rootSurvey.name === ""
-                                    ? parentSurveyName
+                                    ? parentDetails.name
                                     : survey.rootSurvey.name,
                         };
 

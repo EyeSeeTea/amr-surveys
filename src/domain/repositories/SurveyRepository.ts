@@ -1,4 +1,5 @@
 import { FutureData } from "../../data/api-futures";
+import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SurveyChildCountType } from "../../data/utils/surveyChildCountHelper";
 import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
@@ -32,7 +33,10 @@ export interface SurveyRepository {
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 
-    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string>;
+    getSurveyNameAndASTGuidelineFromId(
+        id: Id,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }>;
 
     getNonPaginatedSurveyChildCount(
         parentProgram: Id,

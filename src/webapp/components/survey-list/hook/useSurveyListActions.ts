@@ -194,6 +194,21 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     GLOBAL_OU_ID,
                     rootSurvey.astGuideline
                 );
+                //when current astGuideline changes, fetch the corresponding ast guidelines from datstore
+                if (rootSurvey.astGuideline)
+                    compositionRoot.astGuidelines.getGuidelines
+                        .execute(rootSurvey.astGuideline, rootSurvey.id)
+                        .run(
+                            astGuidelines => {
+                                changeCurrentASTGuidelines(astGuidelines);
+                                console.debug(
+                                    "AST Guidelines data fetched successfully, AST guidelines data set"
+                                );
+                            },
+                            err => {
+                                console.debug(` No AST guidelines data could be fetched : ${err}`);
+                            }
+                        );
             }
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
         } else if (surveyFormType === "PrevalenceCaseReportForm")

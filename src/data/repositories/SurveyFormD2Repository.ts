@@ -24,6 +24,8 @@ import {
     PPS_PATIENT_REGISTER_ID,
     SURVEY_NAME_DATAELEMENT_ID,
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
+    AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
+    AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
 } from "../entities/D2Survey";
 import { ProgramMetadata } from "../entities/D2Program";
 import {
@@ -33,6 +35,7 @@ import {
 } from "../utils/surveyFormMappers";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
+import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 const OU_CHUNK_SIZE = 500;
@@ -334,7 +337,10 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    getSurveyNameFromId(id: Id, surveyFormType: SURVEY_FORM_TYPES): FutureData<string> {
+    getSurveyNameAndASTGuidelineFromId(
+        id: Id,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }> {
         const parentSurveyType = getSurveyType(surveyFormType);
 
         return this.getEventProgramById(id)
@@ -344,16 +350,33 @@ export class SurveyD2Repository implements SurveyRepository {
                         const ppsSurveyName = survey.dataValues?.find(
                             dv => dv.dataElement === SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
-                        return Future.success(ppsSurveyName ?? "");
+                        return Future.success({ name: ppsSurveyName ?? "" });
                     } else {
                         const prevalenceSurveyName = survey.dataValues?.find(
                             dv => dv.dataElement === PREVALENCE_SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
-                        return Future.success(prevalenceSurveyName ?? "");
+                        const customASTGuideline = survey.dataValues?.find(
+                            dv => dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE
+                        )?.value;
+
+                        const astGuidelineType = survey.dataValues?.find(
+                            dv => dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES
+                        )?.value;
+
+                        return Future.success({
+                            name: prevalenceSurveyName ?? "",
+                            astGuidelineType: !customASTGuideline
+                                ? astGuidelineType === "CLSI"
+                                    ? "CLSI"
+                                    : astGuidelineType === "EUCAST"
+                                    ? "EUCAST"
+                                    : undefined
+                                : "CUSTOM",
+                        });
                     }
-                } else return Future.success("");
+                } else return Future.success({ name: "" });
             })
-            .flatMapError(_err => Future.success(""));
+            .flatMapError(_err => Future.success({ name: "" }));
     }
 
     getNonPaginatedSurveyChildCount(

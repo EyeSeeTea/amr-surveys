@@ -41,7 +41,7 @@ export class GetAllSurveysUseCase {
 
                 const surveysWithName = filteredSurveys.map(survey => {
                     return Future.join2(
-                        this.surveyReporsitory.getSurveyNameFromId(
+                        this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                             survey.rootSurvey.id,
                             survey.surveyFormType
                         ),
@@ -53,7 +53,7 @@ export class GetAllSurveysUseCase {
                             secondaryparentId:
                                 surveyFormType === "PPSWardRegister" ? survey.id : "",
                         })
-                    ).map(([parentSurveyName, childCount]): Survey => {
+                    ).map(([parentDetails, childCount]): Survey => {
                         const count =
                             typeof childCount === "number"
                                 ? childCount
@@ -66,9 +66,11 @@ export class GetAllSurveysUseCase {
                             id: survey.rootSurvey.id,
                             name:
                                 survey.rootSurvey.name === ""
-                                    ? parentSurveyName
+                                    ? parentDetails.name
                                     : survey.rootSurvey.name,
-                            astGuideline: survey.rootSurvey.astGuideline,
+                            astGuideline: survey.rootSurvey.astGuideline
+                                ? survey.rootSurvey.astGuideline
+                                : parentDetails.astGuidelineType,
                         };
 
                         const updatedSurvey: Survey = {
