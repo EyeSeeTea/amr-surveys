@@ -1,6 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
-import { ImportStrategy, ProgramCountMap } from "../entities/Program";
+import { SurveyChildCountType } from "../../data/utils/surveyChildCountHelper";
+import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
@@ -37,12 +38,10 @@ export interface SurveyRepository {
         surveyFormType: SURVEY_FORM_TYPES
     ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }>;
 
-    getSurveyChildCount(
+    getNonPaginatedSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ):
-        | { type: "value"; value: FutureData<number> }
-        | { type: "map"; value: FutureData<ProgramCountMap> };
+    ): SurveyChildCountType;
 }

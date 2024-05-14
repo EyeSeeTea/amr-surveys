@@ -14,6 +14,8 @@ import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
+import { GridSection } from "./GridSection";
+import _c from "../../../domain/entities/generic/Collection";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -132,9 +134,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     )}
                                 </RightAlignedDiv>
                             )}
-
                             {stage.sections.map(section => {
-                                if (!section.isVisible) return null;
+                                if (!section.isVisible || section.isAntibioticSection) return null;
+
+                                if (section.isSpeciesSection)
+                                    return (
+                                        <GridSection
+                                            speciesSection={section}
+                                            antibioticStage={stage}
+                                            updateQuestion={question =>
+                                                updateQuestion(question, stage.id)
+                                            }
+                                            viewOnly={hasReadOnlyAccess}
+                                        />
+                                    );
 
                                 return (
                                     <SurveySection

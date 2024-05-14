@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { ProgramCountMap } from "../../../domain/entities/Program";
 import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
 import { FutureData } from "../../api-futures";
+import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
     getFilteredPPSPatientSurveys(
@@ -19,6 +21,14 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
+        throw new Error("Method not implemented.");
+    }
+    getPaginatedSurveyChildCount(
+        parentProgram: string,
+        orgUnitId: string,
+        parentSurveyId: string,
+        secondaryparentId: string | undefined
+    ): SurveyChildCountType {
         throw new Error("Method not implemented.");
     }
 }

@@ -6,6 +6,7 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 import _ from "../entities/generic/Collection";
+import { getChildCount } from "../utils/getChildCountHelper";
 
 export class GetAllSurveysUseCase {
     constructor(private surveyReporsitory: SurveyRepository) {}
@@ -39,30 +40,46 @@ export class GetAllSurveysUseCase {
                               .value();
 
                 const surveysWithName = filteredSurveys.map(survey => {
-                    return this.surveyReporsitory
-                        .getSurveyNameAndASTGuidelineFromId(
+                    return Future.join2(
+                        this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                             survey.rootSurvey.id,
                             survey.surveyFormType
-                        )
-                        .map((parentDetails): Survey => {
-                            const newRootSurvey: SurveyBase = {
-                                surveyType: survey.rootSurvey.surveyType,
-                                id: survey.rootSurvey.id,
-                                name:
-                                    survey.rootSurvey.name === ""
-                                        ? parentDetails.name
-                                        : survey.rootSurvey.name,
-                                astGuideline: survey.rootSurvey.astGuideline
-                                    ? survey.rootSurvey.astGuideline
-                                    : parentDetails.astGuidelineType,
-                            };
+                        ),
+                        getChildCount({
+                            surveyFormType: surveyFormType,
+                            orgUnitId: survey.assignedOrgUnit.id,
+                            parentSurveyId: survey.rootSurvey.id,
+                            surveyReporsitory: this.surveyReporsitory,
+                            secondaryparentId:
+                                surveyFormType === "PPSWardRegister" ? survey.id : "",
+                        })
+                    ).map(([parentDetails, childCount]): Survey => {
+                        const count =
+                            typeof childCount === "number"
+                                ? childCount
+                                : childCount
+                                      .map(child => child.count)
+                                      .reduce((agg, childCount) => agg + childCount, 0);
 
-                            const updatedSurvey: Survey = {
-                                ...survey,
-                                rootSurvey: newRootSurvey,
-                            };
-                            return updatedSurvey;
-                        });
+                        const newRootSurvey: SurveyBase = {
+                            surveyType: survey.rootSurvey.surveyType,
+                            id: survey.rootSurvey.id,
+                            name:
+                                survey.rootSurvey.name === ""
+                                    ? parentDetails.name
+                                    : survey.rootSurvey.name,
+                            astGuideline: survey.rootSurvey.astGuideline
+                                ? survey.rootSurvey.astGuideline
+                                : parentDetails.astGuidelineType,
+                        };
+
+                        const updatedSurvey: Survey = {
+                            ...survey,
+                            rootSurvey: newRootSurvey,
+                            childCount: count,
+                        };
+                        return updatedSurvey;
+                    });
                 });
 
                 return Future.sequential(surveysWithName);

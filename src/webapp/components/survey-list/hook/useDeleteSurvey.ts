@@ -18,7 +18,14 @@ export function useDeleteSurvey(
     const { currentHospitalForm } = useCurrentSurveys();
 
     const showDeleteErrorMsg = (survey: Survey) => {
-        if (survey.childCount && survey.childCount > 0) {
+        const count =
+            typeof survey.childCount === "number"
+                ? survey.childCount
+                : survey.childCount
+                      ?.map(child => child.count)
+                      .reduce((agg, childCount) => agg + childCount, 0) || 0;
+
+        if (survey.childCount && count > 0) {
             setDeleteCompleteState({
                 status: "error",
                 message: i18n.t(
