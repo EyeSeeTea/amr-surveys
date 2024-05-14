@@ -48,6 +48,8 @@ export class SurveyTestRepository implements SurveyRepository {
                             questions: [],
                             stageId: "S1",
                             sortOrder: 1,
+                            isAntibioticSection: false,
+                            isSpeciesSection: false,
                         },
                     ],
                     sortOrder: 1,

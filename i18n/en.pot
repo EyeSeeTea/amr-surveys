@@ -123,9 +123,6 @@ msgstr ""
 msgid "Patient Id"
 msgstr ""
 
-msgid "Patient Name"
-msgstr ""
-
 msgid "Action"
 msgstr ""
 
