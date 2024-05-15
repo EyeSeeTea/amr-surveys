@@ -41,14 +41,23 @@ export const getSurveyChildCount = (
                 const eventCount = getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api);
 
                 return { type: "value", value: eventCount };
-            } else {
+            } else if (secondaryparentId) {
                 const eventCounts = childIds.value.map(id => {
-                    return getTrackerSurveyCount(id, orgUnitId, parentSurveyId, api).map(count => {
-                        return { id: id, count: count };
-                    });
+                    return getTrackerSurveyCount(id, orgUnitId, secondaryparentId, api).map(
+                        count => {
+                            return { id: id, count: count };
+                        }
+                    );
                 });
 
                 return { type: "map", value: Future.sequential(eventCounts) };
+            } else {
+                return {
+                    type: "map",
+                    value: Future.error(
+                        new Error("secondaryparentId not provided for multichild program")
+                    ),
+                };
             }
         } else {
             if (childIds.type === "singleChild") {

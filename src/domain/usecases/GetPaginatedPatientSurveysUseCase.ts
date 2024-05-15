@@ -46,6 +46,7 @@ export class GetPaginatedPatientSurveysUseCase {
                             surveyFormType: surveyFormType,
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
+                            secondaryparentId: survey.id,
                             surveyReporsitory: this.paginatedSurveyRepo,
                         })
                     ).map(([parentDetails, childCount]): Survey => {
