@@ -23,6 +23,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentWardRegister,
         currentPrevalenceSurveyForm,
         currentFacilityLevelForm,
+        currentCaseReportForm,
     } = useCurrentSurveys();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
@@ -46,7 +47,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     formType,
                     currentPPSSurveyForm?.id,
                     currentWardRegister?.id,
-                    currentPrevalenceSurveyForm?.id
+                    currentPrevalenceSurveyForm?.id,
+                    currentCaseReportForm?.id
                 )
                 .run(
                     questionnaireForm => {
@@ -146,6 +148,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
         currentModule,
+        currentCaseReportForm?.id,
     ]);
 
     const updateQuestion = useCallback((question: Question, stageId?: string) => {
