@@ -31,6 +31,7 @@ const DateTimePickerWidget: React.FC<DateTimePickerWidgetProps> = props => {
                 value={new Date(stateValue)}
                 disabled={props.disabled}
                 onChange={newValue => notifyChange(newValue?.toISOString() ?? "")}
+                ampm={false}
             />
         </LocalizationProvider>
     );
