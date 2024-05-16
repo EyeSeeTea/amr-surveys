@@ -114,6 +114,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         </TableCell>
                                     )}
 
+                                    {surveyFormType === "PrevalenceFacilityLevelForm" && (
+                                        <TableCell>
+                                            <Typography variant="caption">
+                                                {i18n.t("Facility Code")}
+                                            </Typography>
+                                        </TableCell>
+                                    )}
+
                                     {(surveyFormType === "PPSSurveyForm" ||
                                         surveyFormType === "PrevalenceSurveyForm") && (
                                         <>
@@ -267,6 +275,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {(surveyFormType === "PrevalenceFacilityLevelForm" ||
                                                 surveyFormType === "PPSCountryQuestionnaire") && (
                                                 <TableCell>{survey.assignedOrgUnit.name}</TableCell>
+                                            )}
+                                            {surveyFormType === "PrevalenceFacilityLevelForm" && (
+                                                <TableCell>{survey.id}</TableCell>
                                             )}
 
                                             {(surveyFormType === "PPSSurveyForm" ||
