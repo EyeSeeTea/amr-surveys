@@ -24,6 +24,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentWardRegister,
         currentPrevalenceSurveyForm,
         currentFacilityLevelForm,
+        currentCaseReportForm,
     } = useCurrentSurveys();
 
     const { currentModule } = useCurrentModule();
@@ -105,6 +106,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                     orgUnitId,
                     parentSurveyId,
                     currentWardRegister?.id,
+                    currentCaseReportForm?.id,
                     page,
                     PAGE_SIZE
                 )
@@ -149,6 +151,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         getOrgUnitByFormType,
         isAdmin,
         hospitalState,
+        currentCaseReportForm?.id,
     ]);
 
     return {

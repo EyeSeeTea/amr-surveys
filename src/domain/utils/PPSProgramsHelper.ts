@@ -273,3 +273,15 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
             return false;
     }
 };
+
+export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boolean => {
+    switch (surveyFormType) {
+        case "PrevalenceCentralRefLabForm":
+        case "PrevalencePathogenIsolatesLog":
+        case "PrevalenceSampleShipTrackForm":
+        case "PrevalenceSupranationalRefLabForm":
+            return true;
+        default:
+            return false;
+    }
+};

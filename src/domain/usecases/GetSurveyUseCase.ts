@@ -1,5 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import {
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
@@ -30,13 +32,18 @@ export class GetSurveyUseCase {
         surveyFormType: SURVEY_FORM_TYPES,
         parentPPSSurveyId: Id | undefined,
         parentWardRegisterId: Id | undefined,
-        parentPrevalenceSurveyId: Id | undefined
+        parentPrevalenceSurveyId: Id | undefined,
+        parentCaseReportId: Id | undefined
     ): FutureData<Questionnaire> {
         const programId = getProgramId(surveyFormType);
         if (parentPPSSurveyId) {
             return this.getPPSSurveyForm(programId, parentPPSSurveyId, parentWardRegisterId);
         } else if (parentPrevalenceSurveyId) {
-            return this.getPrevalenceSurveyForm(programId, parentPrevalenceSurveyId);
+            return this.getPrevalenceSurveyForm(
+                programId,
+                parentPrevalenceSurveyId,
+                parentCaseReportId
+            );
         } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
     }
 
@@ -116,7 +123,8 @@ export class GetSurveyUseCase {
 
     getPrevalenceSurveyForm(
         programId: Id,
-        parentPrevalenceSurveyId: Id
+        parentPrevalenceSurveyId: Id,
+        parentCaseReportId: Id | undefined
     ): FutureData<Questionnaire> {
         return this.surveyReporsitory
             .getForm(programId, undefined, undefined)
@@ -136,10 +144,19 @@ export class GetSurveyUseCase {
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF;
 
+                        const isPatientIdQuestion =
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19;
+
                         if (isSurveyIdQuestion && question.type === "text") {
                             return {
                                 ...question,
                                 value: parentPrevalenceSurveyId,
+                            };
+                        } else if (isPatientIdQuestion && question.type === "text") {
+                            return {
+                                ...question,
+                                value: parentCaseReportId,
                             };
                         } else {
                             return question;

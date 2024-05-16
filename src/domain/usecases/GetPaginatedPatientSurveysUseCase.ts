@@ -1,7 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
-import { getProgramId } from "../utils/PPSProgramsHelper";
+import { getProgramId, isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
@@ -21,13 +21,17 @@ export class GetPaginatedPatientSurveysUseCase {
         orgUnitId: Id,
         parentSurveyId: Id | undefined,
         parentWardRegisterId: Id | undefined,
+        parentPatientId: Id | undefined,
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
         const programId = getProgramId(surveyFormType);
 
-        const parentId =
-            surveyFormType === "PPSPatientRegister" ? parentWardRegisterId : parentSurveyId;
+        const parentId = isPrevalencePatientChild(surveyFormType)
+            ? parentPatientId
+            : surveyFormType === "PPSPatientRegister"
+            ? parentWardRegisterId
+            : parentSurveyId;
 
         return this.paginatedSurveyRepo
             .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
@@ -42,6 +46,7 @@ export class GetPaginatedPatientSurveysUseCase {
                             surveyFormType: surveyFormType,
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
+                            secondaryparentId: survey.id,
                             surveyReporsitory: this.paginatedSurveyRepo,
                         })
                     ).map(([parentDetails, childCount]): Survey => {
