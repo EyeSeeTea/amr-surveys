@@ -280,6 +280,9 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
+        case "PrevalenceD28FollowUp":
+        case "PrevalenceDischarge":
+        case "PrevalenceCohortEnrolment":
             return true;
         default:
             return false;

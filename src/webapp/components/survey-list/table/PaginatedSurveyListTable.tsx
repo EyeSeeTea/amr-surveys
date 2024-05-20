@@ -218,7 +218,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                     })}
                                             </>
 
-                                            <TableCell style={{ opacity: 0.5 }}>
+                                            <TableCell style={{ opacity: 0.5, width: "30%" }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>
                                                         actionClick(survey.surveyType, survey)
