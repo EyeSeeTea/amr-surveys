@@ -366,7 +366,7 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
-                    currentQuestion.id ===  AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
