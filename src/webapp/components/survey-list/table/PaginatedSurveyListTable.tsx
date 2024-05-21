@@ -27,6 +27,7 @@ import { ContentLoader } from "../../content-loader/ContentLoader";
 import { useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 import { useMultipleChildCount } from "../hook/useMultipleChildCount";
+import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
 
 interface PaginatedSurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -112,7 +113,8 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     </TableCell>
 
                                     {(surveyFormType === "PPSPatientRegister" ||
-                                        surveyFormType === "PrevalenceCaseReportForm") && (
+                                        surveyFormType === "PrevalenceCaseReportForm" ||
+                                        isPrevalencePatientChild(surveyFormType)) && (
                                         <TableCell
                                             onClick={() => {
                                                 patientIdSortDirection === "asc"
@@ -197,7 +199,8 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         <TableRow key={survey.id}>
                                             <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
                                             {(surveyFormType === "PPSPatientRegister" ||
-                                                surveyFormType === "PrevalenceCaseReportForm") && (
+                                                surveyFormType === "PrevalenceCaseReportForm" ||
+                                                isPrevalencePatientChild(surveyFormType)) && (
                                                 <TableCell>{survey.uniquePatient?.id}</TableCell>
                                             )}
                                             {surveyFormType === "PPSPatientRegister" && (
