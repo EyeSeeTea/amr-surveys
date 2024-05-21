@@ -225,12 +225,14 @@ export class QuestionnaireQuestion {
         if (!applicableRules || applicableRules.length === 0) return question.isVisible;
 
         const updatedQuestionVisibility = applicableRules.flatMap(rule => {
-            return rule.actions.flatMap(action => {
-                if (action.programRuleActionType === "HIDEFIELD") {
-                    if (rule.parsedResult === true) return false;
-                    else return;
-                } else return question.isVisible;
-            });
+            return rule.actions
+                .filter(action => action.programRuleActionType === "HIDEFIELD")
+                .flatMap(action => {
+                    if (action.programRuleActionType === "HIDEFIELD") {
+                        if (rule.parsedResult === true) return false;
+                        else return;
+                    } else return question.isVisible;
+                });
         });
 
         //If even one of the rules asks to hide the field, hide the question
