@@ -9,7 +9,6 @@ export function useRedirectHome() {
     const {
         currentPPSSurveyForm,
         currentPrevalenceSurveyForm,
-        currentCountryQuestionnaire,
         currentHospitalForm,
         currentWardRegister,
         currentFacilityLevelForm,
