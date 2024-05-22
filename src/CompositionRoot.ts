@@ -37,6 +37,7 @@ import { ASTGuidelinesRepository } from "./domain/repositories/ASTGuidelinesRepo
 import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCase";
 import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Repository";
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
+import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -87,6 +88,9 @@ function getCompositionRoot(repositories: Repositories) {
             ),
             getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
+            removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(
+                repositories.surveyFormRepository
+            ),
         },
         astGuidelines: {
             getGuidelines: new GetASTGuidelinesUseCase(repositories.astGuidelinesRepository),

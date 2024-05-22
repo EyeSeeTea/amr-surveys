@@ -212,7 +212,7 @@ const getRepeatedStageEvents = (
     dataElements: ProgramDataElement[],
     options: Option[],
     programStageSections?: ProgramStageSection[]
-) => {
+): QuestionnaireStage[] | undefined => {
     const repeatedStageEvents = trackedEntity?.enrollments
         ?.at(0)
         ?.events.filter(e => e.programStage === stage.id);
@@ -254,7 +254,7 @@ const getRepeatedStageEvents = (
             instanceId: repeatedStageEvt.event,
             sortOrder: stage.sortOrder,
             repeatable: stage.repeatable,
-            userAdded: index === 0 ? false : true,
+            isAddedByUser: index === 0 ? false : true,
         };
     });
 };

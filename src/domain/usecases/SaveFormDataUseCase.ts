@@ -34,7 +34,7 @@ export class SaveFormDataUseCase {
             surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
         //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
-        if (surveyFormType === "PrevalenceFacilityLevelForm") {
+        if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
             return this.surveyReporsitory
                 .getSurveys(surveyFormType, programId, ouId, false)
                 .flatMap(surveys => {
