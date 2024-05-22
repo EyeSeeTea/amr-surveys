@@ -4,7 +4,7 @@ export type SURVEY_TYPE = "NationalSurvey" | "HospitalSurvey" | "SupranationalSu
 
 type UserGroups = { captureAccess: NamedRef[]; readAccess: NamedRef[]; adminAccess: NamedRef[] };
 
-type SurveyRuleType = "HIDEFIELD" | "HIDESECTION";
+type SurveyRuleType = "HIDEFIELD" | "HIDESECTION" | "HIDESTAGE";
 
 type Rule = {
     id: Id;
