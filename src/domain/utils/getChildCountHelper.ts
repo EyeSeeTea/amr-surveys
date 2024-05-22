@@ -6,6 +6,9 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "./PPSProgramsHelper";
 import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
+    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_FORM,
+    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
@@ -74,6 +77,21 @@ export const getChildCount = ({
                 } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
                     return {
                         option: { label: `List Supranational Refs Results (${pc.count})` },
+                        count: pc.count,
+                    };
+                } else if (pc.id === PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28) {
+                    return {
+                        option: { label: `List D28 Follow-up (${pc.count})` },
+                        count: pc.count,
+                    };
+                } else if (pc.id === PREVALENCE_MORTALITY_DISCHARGE_FORM) {
+                    return {
+                        option: { label: `List Discharge (${pc.count})` },
+                        count: pc.count,
+                    };
+                } else if (pc.id === PREVALENCE_MORTALITY_COHORT_ENORL_FORM) {
+                    return {
+                        option: { label: `List Cohort enrolment (${pc.count})` },
                         count: pc.count,
                     };
                 } else {

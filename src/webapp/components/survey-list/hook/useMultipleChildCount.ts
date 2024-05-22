@@ -24,6 +24,11 @@ export const useMultipleChildCount = (
                 return pathogenIsolatesLogsSortDirection;
             case "Supranational Ref Results":
                 return supranationalRefsResultsSortDirection;
+            case "D28 Follow-up":
+            case "Discharge":
+            case "Cohort enrolment":
+                return "asc";
+
             default:
                 throw new Error(`Invalid child option name: ${childOptionName}`);
         }

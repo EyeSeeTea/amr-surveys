@@ -218,7 +218,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                     })}
                                             </>
 
-                                            <TableCell style={{ opacity: 0.5 }}>
+                                            <TableCell style={{ opacity: 0.5, width: "30%" }}>
                                                 <ActionMenuButton
                                                     onClickHandler={() =>
                                                         actionClick(survey.surveyType, survey)
@@ -246,83 +246,73 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 ),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "Add New Sample Shipment"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "Add New Sample Shipment",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "List Sample Shipments"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "List Sample Shipments",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "Add New Central Ref Lab Results"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "Add New Central Ref Lab Results",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "List Central Ref Labs Results"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "List Central Ref Labs Results",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
 
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "Add New Pathogen Isolates Log"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "Add New Pathogen Isolates Log",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "List Pathogen Isolates Logs"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "List Pathogen Isolates Logs",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "Add New Supranational Ref Results"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "Add New Supranational Ref Results",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option:
-                                                                options.find(op =>
-                                                                    op.label.startsWith(
-                                                                        "List Supranational Refs Results"
-                                                                    )
-                                                                )?.label ?? "",
+                                                            option: "List Supranational Refs Results",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "Add New D28 Follow-up",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List D28 Follow-up",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "Add New Discharge",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List Discharge",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "Add New Cohort enrolment",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List Cohort enrolment",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
