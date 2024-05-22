@@ -170,7 +170,7 @@ export const getQuestion = (
             const dateQ: DateQuestion = {
                 ...base,
                 type: "date",
-                value: dataValue ? new Date(dataValue as string) : new Date(),
+                value: dataValue ? new Date(dataValue as string) : undefined,
             };
             return dateQ;
         }
@@ -179,9 +179,7 @@ export const getQuestion = (
             const dateQ: DateTimeQuestion = {
                 ...base,
                 type: "datetime",
-                value: dataValue
-                    ? new Date(dataValue as string).toISOString()
-                    : new Date().toISOString(),
+                value: dataValue ? new Date(dataValue as string).toISOString() : undefined,
             };
             return dateQ;
         }
