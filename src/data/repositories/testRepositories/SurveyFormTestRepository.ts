@@ -11,6 +11,9 @@ import { ASTGUIDELINE_TYPES } from "../../../domain/entities/ASTGuidelines";
 import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class SurveyTestRepository implements SurveyRepository {
+    deleteEventSurvey(_eventId: string, _orgUnitId: string, _programId: string): FutureData<void> {
+        throw new Error("Method not implemented.");
+    }
     getSurveyNameAndASTGuidelineFromId(
         id: string,
         surveyFormType: SURVEY_FORM_TYPES
