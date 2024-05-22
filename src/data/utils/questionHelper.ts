@@ -14,7 +14,14 @@ import {
 import { Id } from "../../domain/entities/Ref";
 import { Option, ProgramDataElement, TrackedEntityAttibute } from "../entities/D2Program";
 import {
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -163,7 +170,7 @@ export const getQuestion = (
             const dateQ: DateQuestion = {
                 ...base,
                 type: "date",
-                value: dataValue ? new Date(dataValue as string) : new Date(),
+                value: dataValue ? new Date(dataValue as string) : undefined,
             };
             return dateQ;
         }
@@ -172,9 +179,7 @@ export const getQuestion = (
             const dateQ: DateTimeQuestion = {
                 ...base,
                 type: "datetime",
-                value: dataValue
-                    ? new Date(dataValue as string).toISOString()
-                    : new Date().toISOString(),
+                value: dataValue ? new Date(dataValue as string).toISOString() : undefined,
             };
             return dateQ;
         }
@@ -355,8 +360,15 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19)
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2)
             ) {
                 currentQuestion.disabled = true;
             }

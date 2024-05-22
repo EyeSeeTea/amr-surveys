@@ -94,12 +94,14 @@ export class QuestionnaireSectionM {
         if (!applicableRules || applicableRules.length === 0) return section.isVisible;
 
         const updatedSectionVisibility = applicableRules.flatMap(rule => {
-            return rule.actions.flatMap(action => {
-                if (action.programRuleActionType === "HIDESECTION") {
-                    if (rule.parsedResult === true) return false;
-                    else return true;
-                } else return section.isVisible;
-            });
+            return rule.actions
+                .filter(action => action.programRuleActionType === "HIDESECTION")
+                .flatMap(action => {
+                    if (action.programRuleActionType === "HIDESECTION") {
+                        if (rule.parsedResult === true) return false;
+                        else return true;
+                    } else return section.isVisible;
+                });
         });
 
         // If even one of the rules asks to hide the section, hide the section

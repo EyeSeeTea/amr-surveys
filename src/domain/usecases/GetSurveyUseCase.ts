@@ -1,5 +1,12 @@
 import { FutureData } from "../../data/api-futures";
 import {
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
+    AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -142,11 +149,18 @@ export class GetSurveyUseCase {
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF;
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH;
 
                         const isPatientIdQuestion =
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19;
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
 
                         if (isSurveyIdQuestion && question.type === "text") {
                             return {
