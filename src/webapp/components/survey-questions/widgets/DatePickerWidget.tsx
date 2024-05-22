@@ -30,6 +30,7 @@ const DatePickerWidget: React.FC<DatePickerWidgetProps> = props => {
                 value={stateValue}
                 disabled={props.disabled}
                 onChange={newValue => notifyChange(newValue)}
+                format="dd-MM-yyyy"
             />
         </LocalizationProvider>
     );
