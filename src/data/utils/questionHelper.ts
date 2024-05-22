@@ -15,6 +15,8 @@ import { Id } from "../../domain/entities/Ref";
 import { Option, ProgramDataElement, TrackedEntityAttibute } from "../entities/D2Program";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
@@ -352,7 +354,9 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF)
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19)
             ) {
                 currentQuestion.disabled = true;
             }
