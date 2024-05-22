@@ -288,6 +288,7 @@ export const mapProgramDataElementToQuestions = (
         })
     )
         .compact()
+        .sortBy(q => q.sortOrder)
         .value();
 
     return questions;
