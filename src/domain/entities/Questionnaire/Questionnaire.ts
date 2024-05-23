@@ -152,7 +152,12 @@ export class Questionnaire {
 
             const updatedQuestionnaire = allQsInQuestionnaire.reduce(
                 (questionnaireAcc, question) => {
-                    return this.updateQuestionnaire(questionnaireAcc, question, question.stageId);
+                    return this.updateQuestionnaire(
+                        questionnaireAcc,
+                        question,
+                        question.stageId,
+                        true
+                    );
                 },
                 questionnaire
             );
@@ -240,7 +245,8 @@ export class Questionnaire {
     static updateQuestionnaire(
         questionnaire: Questionnaire,
         updatedQuestion: Question,
-        stageId?: string
+        stageId?: string,
+        initialLoad = false
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
         const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
@@ -254,6 +260,8 @@ export class Questionnaire {
             questionnaire.rules,
             allQsInQuestionnaire
         );
+
+        if (initialLoad && applicableRules.length === 0) return questionnaire;
 
         const isEntityQuestionUpdated = questionnaire.entity?.questions.find(
             question => question.id === updatedQuestion.id

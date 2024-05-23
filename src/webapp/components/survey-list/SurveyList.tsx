@@ -106,6 +106,19 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                                         />
                                     </>
                                 )}
+                                {surveyFormType === "PrevalenceCaseReportForm" && (
+                                    <>
+                                        <TextField
+                                            label={i18n.t("Search Patient ID")}
+                                            helperText={i18n.t("Filter by patient id")}
+                                            value={patientIdSearchKeyword}
+                                            onChange={e =>
+                                                setPatientIdSearchKeyword(e.target.value)
+                                            }
+                                            onKeyDown={handlePatientIdSearch}
+                                        />
+                                    </>
+                                )}
                                 <Button
                                     variant="contained"
                                     color="primary"

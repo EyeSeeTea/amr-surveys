@@ -23,6 +23,11 @@ export interface PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>>;
+    getFilteredPrevalencePatientSurveysByPatientId(
+        keyword: string,
+        orgUnitId: Id,
+        parentId: Id
+    ): FutureData<PaginatedReponse<Survey[]>>;
     getPaginatedSurveyChildCount(
         parentProgram: Id,
         orgUnitId: Id,
