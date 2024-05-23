@@ -274,9 +274,19 @@ export const mapProgramDataElementToQuestions = (
                         currentQuestion.id === WARD2_ID_DATAELEMENT_ID ||
                         currentQuestion.id === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID)
                 ) {
-                    currentQuestion.value = event?.event;
                     currentQuestion.disabled = true;
                 }
+
+                // Set SurveyId to the value of the eventId.
+                if (
+                    currentQuestion &&
+                    (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||
+                        currentQuestion.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
+                        currentQuestion.id === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID)
+                ) {
+                    currentQuestion.value = event?.event;
+                }
+
                 return currentQuestion;
             }
         })
