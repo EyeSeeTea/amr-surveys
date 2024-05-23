@@ -20,6 +20,7 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
     AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
     AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
+    AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID,
 } from "../entities/D2Survey";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
@@ -56,6 +57,11 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2
             )?.value ?? "";
 
+        const facilityCode =
+            trackedEntity.attributes?.find(
+                attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID
+            )?.value ?? "";
+
         const survey: Survey = {
             id: trackedEntity.trackedEntity ?? "",
             name: trackedEntity.trackedEntity ?? "",
@@ -75,6 +81,7 @@ export const mapTrackedEntityToSurvey = (
             surveyFormType: surveyFormType,
             childCount: undefined,
             uniquePatient: { id: patientId, code: "" },
+            facilityCode: facilityCode,
         };
         return survey;
     });

@@ -277,7 +277,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                 <TableCell>{survey.assignedOrgUnit.name}</TableCell>
                                             )}
                                             {surveyFormType === "PrevalenceFacilityLevelForm" && (
-                                                <TableCell>{survey.id}</TableCell>
+                                                <TableCell>{survey.facilityCode}</TableCell>
                                             )}
 
                                             {(surveyFormType === "PPSSurveyForm" ||
