@@ -29,7 +29,13 @@ export const useGridSection = (
         const speciesQuestion = speciesSection.questions.find(isSpeciesQuestion);
         if (speciesQuestion) {
             const options = getAntibioticOptions(speciesQuestion);
-            setGridOptions(options);
+            const optionsWithoutBlacklistedAntibiotics = options?.filter(
+                option =>
+                    !antibioticsBlackList.some(blacklistedAntibiotic =>
+                        option.toLowerCase().includes(blacklistedAntibiotic.toLowerCase())
+                    )
+            );
+            setGridOptions(optionsWithoutBlacklistedAntibiotics);
         }
 
         const antibioticSections = antibioticStage.sections.filter(
@@ -43,16 +49,12 @@ export const useGridSection = (
                 const addNewAntibioticQuestion = section?.questions.find(
                     isAddNewAntibioticQuestion
                 );
-                const isAntibioticBlacklisted = antibioticsBlackList.some(blacklist =>
-                    antibioticQuestion?.name.toLowerCase().includes(blacklist.toLowerCase())
-                );
 
                 if (
                     !antibioticQuestion ||
                     !astQuestion ||
                     !valueQuestion ||
-                    !addNewAntibioticQuestion ||
-                    isAntibioticBlacklisted
+                    !addNewAntibioticQuestion
                 )
                     return null;
 
@@ -70,7 +72,12 @@ export const useGridSection = (
             .value();
 
         setAntibioticSets(antibioticGroups);
-    }, [antibioticStage.sections, getAntibioticOptions, gridOptions, speciesSection.questions]);
+    }, [
+        antibioticStage.sections,
+        antibioticsBlackList,
+        getAntibioticOptions,
+        speciesSection.questions,
+    ]);
 
     const updateSpeciesQuestion = useCallback(
         (question: Question) => {

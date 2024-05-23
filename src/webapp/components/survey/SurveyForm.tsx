@@ -16,6 +16,7 @@ import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
+import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -38,6 +39,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
+    const { currentPrevalenceSurveyForm } = useCurrentSurveys();
 
     const {
         questionnaire,
@@ -51,7 +53,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         addProgramStage,
         removeProgramStage,
         antibioticsBlacklist,
-    } = useSurveyForm(props.formType, props.currentSurveyId);
+    } = useSurveyForm(props.formType, props.currentSurveyId, currentPrevalenceSurveyForm?.id);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
         props.formType,

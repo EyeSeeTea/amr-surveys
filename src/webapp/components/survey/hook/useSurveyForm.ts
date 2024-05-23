@@ -10,7 +10,11 @@ import { useCurrentModule } from "../../../contexts/current-module-context";
 import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../../../domain/entities/Ref";
 
-export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
+export function useSurveyForm(
+    formType: SURVEY_FORM_TYPES,
+    eventId: string | undefined,
+    prevalenceCurrentFormId: string | undefined
+) {
     const { compositionRoot, currentUser } = useAppContext();
     const { userHospitalsAccess } = useHospitalContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
@@ -153,17 +157,19 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     ]);
 
     useEffect(() => {
-        if (eventId) {
-            compositionRoot.surveys.getSurveyAntibioticsBlacklist.execute(eventId).run(
-                antibioticsBlacklist => {
-                    setAntibioticsBlacklist(antibioticsBlacklist);
-                },
-                err => {
-                    setError(err.message);
-                }
-            );
+        if (prevalenceCurrentFormId) {
+            compositionRoot.surveys.getSurveyAntibioticsBlacklist
+                .execute(prevalenceCurrentFormId)
+                .run(
+                    antibioticsBlacklist => {
+                        setAntibioticsBlacklist(antibioticsBlacklist);
+                    },
+                    err => {
+                        setError(err.message);
+                    }
+                );
         }
-    }, [compositionRoot.surveys.getSurveyAntibioticsBlacklist, eventId]);
+    }, [compositionRoot.surveys.getSurveyAntibioticsBlacklist, prevalenceCurrentFormId]);
 
     const updateQuestion = useCallback((question: Question, stageId?: string) => {
         setQuestionnaire(prevQuestionniare => {
