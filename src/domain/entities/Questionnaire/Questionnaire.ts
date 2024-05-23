@@ -174,6 +174,9 @@ export class Questionnaire {
         const updatedStages = questionnaire.stages.map(stage => {
             return {
                 ...stage,
+                isVisible: !surveyRule.rules.find(rule =>
+                    rule.toHide?.find(ruleStage => ruleStage === stage.id)
+                ),
                 sections: stage.sections.map(section => {
                     const currentSectionRule = surveyRule.rules.find(rule =>
                         rule.toHide?.find(de => de === section.code)
@@ -207,6 +210,29 @@ export class Questionnaire {
             questionnaire,
             updatedStages
         );
+
+        const hideEntityQuestionRule = surveyRule.rules.find(
+            rule =>
+                rule.type === "HIDEFIELD" &&
+                rule.toHide.find(id =>
+                    updatedQuestionnaire.entity?.questions.find(q => q.id === id)
+                )
+        );
+        if (hideEntityQuestionRule && questionnaire.entity) {
+            const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
+                question => {
+                    return {
+                        ...question,
+                        isVisible: hideEntityQuestionRule.toHide.find(id => id === question.id)
+                            ? false
+                            : true,
+                    };
+                }
+            );
+
+            const updatedEntity = { ...questionnaire.entity, questions: updatedEntityQuestions };
+            return Questionnaire.updateQuestionnaireEntity(updatedQuestionnaire, updatedEntity);
+        }
 
         return updatedQuestionnaire;
     }

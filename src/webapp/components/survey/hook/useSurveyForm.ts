@@ -200,14 +200,20 @@ export function useSurveyForm(
     const removeProgramStage = useCallback(
         (stageId: Id) => {
             if (questionnaire) {
-                const updatedQuestionnaire = Questionnaire.removeProgramStage(
-                    questionnaire,
-                    stageId
+                setLoading(true);
+                compositionRoot.surveys.removeRepeatableStage.execute(questionnaire, stageId).run(
+                    updatedQuestionnaire => {
+                        setQuestionnaire(updatedQuestionnaire);
+                        setLoading(false);
+                    },
+                    err => {
+                        setLoading(false);
+                        setError(err.message);
+                    }
                 );
-                setQuestionnaire(updatedQuestionnaire);
             }
         },
-        [questionnaire]
+        [compositionRoot.surveys, questionnaire]
     );
 
     return {

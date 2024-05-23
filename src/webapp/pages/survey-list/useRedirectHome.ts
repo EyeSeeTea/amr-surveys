@@ -9,7 +9,6 @@ export function useRedirectHome() {
     const {
         currentPPSSurveyForm,
         currentPrevalenceSurveyForm,
-        currentCountryQuestionnaire,
         currentHospitalForm,
         currentWardRegister,
         currentFacilityLevelForm,
@@ -30,9 +29,6 @@ export function useRedirectHome() {
 
             if (
                 (formType === "PPSCountryQuestionnaire" && !currentPPSSurveyForm) ||
-                (hasAdminAccess &&
-                    formType === "PPSHospitalForm" &&
-                    !currentCountryQuestionnaire) ||
                 (formType === "PPSWardRegister" && !currentHospitalForm) ||
                 (formType === "PPSPatientRegister" && !currentWardRegister) ||
                 (hasAdminAccess &&
@@ -52,7 +48,6 @@ export function useRedirectHome() {
             currentModule,
             userGroups,
             currentPPSSurveyForm,
-            currentCountryQuestionnaire,
             currentHospitalForm,
             currentWardRegister,
             currentPrevalenceSurveyForm,
