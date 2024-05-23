@@ -7,8 +7,8 @@ import { SURVEY_STATUSES, SURVEY_TYPES } from "../../../domain/entities/Survey";
 interface SurveyListFilterProps {
     status: SURVEY_STATUSES | undefined;
     setStatus: Dispatch<SetStateAction<SURVEY_STATUSES | undefined>>;
-    surveyType: SURVEY_TYPES | undefined;
-    setSurveyType: Dispatch<SetStateAction<SURVEY_TYPES | undefined>>;
+    surveyType?: SURVEY_TYPES | undefined;
+    setSurveyType?: Dispatch<SetStateAction<SURVEY_TYPES | undefined>>;
 }
 export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
     status,
@@ -18,7 +18,7 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
 }) => {
     return (
         <FilterContainer>
-            <FormControl fullWidth>
+            <FormControl style={{ width: "50%" }}>
                 <InputLabel id="status-label">{i18n.t("Filter by Status")}</InputLabel>
                 <Select
                     labelId="status-label"
@@ -44,29 +44,31 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                 </Select>
             </FormControl>
 
-            <FormControl fullWidth>
-                <InputLabel id="status-label">{i18n.t("Filter by Survey Type")}</InputLabel>
-                <Select
-                    value={surveyType}
-                    onChange={e => {
-                        if (e.target.value === "ALL") setSurveyType(undefined);
-                        else setSurveyType(e.target.value as SURVEY_TYPES);
-                    }}
-                >
-                    <MenuItem key="SUPRANATIONAL" value="SUPRANATIONAL">
-                        {i18n.t("SUPRANATIONAL")}
-                    </MenuItem>
-                    <MenuItem key="NATIONAL" value="NATIONAL">
-                        {i18n.t("NATIONAL")}
-                    </MenuItem>
-                    <MenuItem key="HOSP" value="HOSP">
-                        {i18n.t("HOSP")}
-                    </MenuItem>
-                    <MenuItem key="ALL-SurveyType" value="ALL">
-                        {i18n.t("ALL")}
-                    </MenuItem>
-                </Select>
-            </FormControl>
+            {setSurveyType && (
+                <FormControl style={{ width: "50%" }}>
+                    <InputLabel id="status-label">{i18n.t("Filter by Survey Type")}</InputLabel>
+                    <Select
+                        value={surveyType}
+                        onChange={e => {
+                            if (e.target.value === "ALL") setSurveyType(undefined);
+                            else setSurveyType(e.target.value as SURVEY_TYPES);
+                        }}
+                    >
+                        <MenuItem key="SUPRANATIONAL" value="SUPRANATIONAL">
+                            {i18n.t("SUPRANATIONAL")}
+                        </MenuItem>
+                        <MenuItem key="NATIONAL" value="NATIONAL">
+                            {i18n.t("NATIONAL")}
+                        </MenuItem>
+                        <MenuItem key="HOSP" value="HOSP">
+                            {i18n.t("HOSP")}
+                        </MenuItem>
+                        <MenuItem key="ALL-SurveyType" value="ALL">
+                            {i18n.t("ALL")}
+                        </MenuItem>
+                    </Select>
+                </FormControl>
+            )}
         </FilterContainer>
     );
 };
