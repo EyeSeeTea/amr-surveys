@@ -50,6 +50,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         updateQuestion,
         addProgramStage,
         removeProgramStage,
+        antibioticsBlacklist,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
@@ -146,6 +147,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                 updateQuestion(question, stage.id)
                                             }
                                             viewOnly={hasReadOnlyAccess}
+                                            antibioticsBlacklist={antibioticsBlacklist}
                                         />
                                     );
 
@@ -158,6 +160,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         }
                                         questions={section.questions}
                                         viewOnly={hasReadOnlyAccess}
+                                        antibioticsBlacklist={antibioticsBlacklist}
                                     />
                                 );
                             })}

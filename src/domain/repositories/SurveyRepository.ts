@@ -44,4 +44,6 @@ export interface SurveyRepository {
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
     ): SurveyChildCountType;
+
+    getSurveyAntibioticsBlacklist(surveyId: Id): FutureData<string[]>;
 }

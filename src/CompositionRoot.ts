@@ -37,6 +37,7 @@ import { ASTGuidelinesRepository } from "./domain/repositories/ASTGuidelinesRepo
 import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCase";
 import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Repository";
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
+import { GetSurveyAntibioticsBlacklistUseCase } from "./domain/usecases/GetSurveyAntibioticsBlacklistUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -87,6 +88,9 @@ function getCompositionRoot(repositories: Repositories) {
             ),
             getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
+            getSurveyAntibioticsBlacklist: new GetSurveyAntibioticsBlacklistUseCase(
+                repositories.surveyFormRepository
+            ),
         },
         astGuidelines: {
             getGuidelines: new GetASTGuidelinesUseCase(repositories.astGuidelinesRepository),
@@ -100,7 +104,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         usersRepository: new UserD2Repository(api),
         localeRepository: new LocalesD2Repository(api),
         moduleRepository: new ModuleD2Repository(dataStoreClient, api),
-        surveyFormRepository: new SurveyD2Repository(api),
+        surveyFormRepository: new SurveyD2Repository(api, dataStoreClient),
         paginatedSurveyRepository: new PaginatedSurveyD2Repository(api),
         astGuidelinesRepository: new ASTGuidelinesD2Repository(dataStoreClient),
     };

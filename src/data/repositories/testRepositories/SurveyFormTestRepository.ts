@@ -128,4 +128,7 @@ export class SurveyTestRepository implements SurveyRepository {
             return Future.error(new Error("Error in getSurveyById"));
         }
     }
+    getSurveyAntibioticsBlacklist(_surveyId: string): FutureData<string[]> {
+        throw new Error("Method not implemented.");
+    }
 }

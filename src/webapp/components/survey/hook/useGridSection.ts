@@ -18,7 +18,8 @@ import _c from "../../../../domain/entities/generic/Collection";
 export const useGridSection = (
     speciesSection: QuestionnaireSection,
     antibioticStage: QuestionnaireStage,
-    updateQuestion: (question: Question) => void
+    updateQuestion: (question: Question) => void,
+    antibioticsBlackList: string[]
 ) => {
     const { getAntibioticOptions } = useASTGuidelinesOptions();
     const [gridOptions, setGridOptions] = useState<string[]>();
@@ -42,12 +43,16 @@ export const useGridSection = (
                 const addNewAntibioticQuestion = section?.questions.find(
                     isAddNewAntibioticQuestion
                 );
+                const isAntibioticBlacklisted = antibioticsBlackList.some(blacklist =>
+                    antibioticQuestion?.name.toLowerCase().includes(blacklist.toLowerCase())
+                );
 
                 if (
                     !antibioticQuestion ||
                     !astQuestion ||
                     !valueQuestion ||
-                    !addNewAntibioticQuestion
+                    !addNewAntibioticQuestion ||
+                    isAntibioticBlacklisted
                 )
                     return null;
 

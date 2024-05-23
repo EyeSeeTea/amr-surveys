@@ -37,10 +37,13 @@ import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListM
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
+import { DataStoreClient } from "../DataStoreClient";
+import { DataStoreKeys } from "../DataStoreKeys";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
-    constructor(private api: D2Api) {}
+    constructor(private api: D2Api, private dataStoreClient: DataStoreClient) {}
 
     getForm(
         programId: Id,
@@ -574,4 +577,19 @@ export class SurveyD2Repository implements SurveyRepository {
                 })
         );
     };
+
+    getSurveyAntibioticsBlacklist(surveyId: string): FutureData<string[]> {
+        return this.dataStoreClient
+            .listCollection<AMRSurveyModule>(DataStoreKeys.MODULES)
+            .flatMap(modules => {
+                //Blacklist is for prevalence surveys only
+                const prevalenceModule = modules.find(module => module.name === "Prevalence");
+
+                const antibioticBlacklist = prevalenceModule?.rulesBySurvey.find(
+                    rules => rules.surveyId === surveyId
+                )?.antibioticBlacklist;
+
+                return Future.success(antibioticBlacklist || []);
+            });
+    }
 }

@@ -17,6 +17,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
     const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
+    const [antibioticsBlacklist, setAntibioticsBlacklist] = useState<string[]>([]);
     const {
         currentPPSSurveyForm,
         currentHospitalForm,
@@ -151,6 +152,19 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentCaseReportForm?.id,
     ]);
 
+    useEffect(() => {
+        if (eventId) {
+            compositionRoot.surveys.getSurveyAntibioticsBlacklist.execute(eventId).run(
+                antibioticsBlacklist => {
+                    setAntibioticsBlacklist(antibioticsBlacklist);
+                },
+                err => {
+                    setError(err.message);
+                }
+            );
+        }
+    }, [compositionRoot.surveys.getSurveyAntibioticsBlacklist, eventId]);
+
     const updateQuestion = useCallback((question: Question, stageId?: string) => {
         setQuestionnaire(prevQuestionniare => {
             if (prevQuestionniare) {
@@ -202,5 +216,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         updateQuestion,
         addProgramStage,
         removeProgramStage,
+        antibioticsBlacklist,
     };
 }
