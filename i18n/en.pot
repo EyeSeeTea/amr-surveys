@@ -153,6 +153,9 @@ msgstr ""
 msgid "Org Unit"
 msgstr ""
 
+msgid "Facility Code"
+msgstr ""
+
 msgid "Start Date"
 msgstr ""
 
