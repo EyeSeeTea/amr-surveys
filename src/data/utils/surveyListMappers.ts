@@ -11,6 +11,15 @@ import {
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     keyToDataElementMap,
     AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
+    AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
+    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
+    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
 } from "../entities/D2Survey";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
@@ -29,12 +38,22 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF
+                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH
             )?.value ?? "";
 
         const patientId =
             trackedEntity.attributes?.find(
-                attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID
+                attribute =>
+                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID ||
+                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
+                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
+                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2
             )?.value ?? "";
 
         const survey: Survey = {

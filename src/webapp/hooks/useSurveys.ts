@@ -56,6 +56,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             case "PrevalencePathogenIsolatesLog":
             case "PrevalenceSampleShipTrackForm":
             case "PrevalenceSupranationalRefLabForm":
+            case "PrevalenceD28FollowUp":
+            case "PrevalenceCohortEnrolment":
+            case "PrevalenceDischarge":
                 return currentFacilityLevelForm?.orgUnitId ?? "";
             default:
                 return "";

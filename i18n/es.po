@@ -23,6 +23,15 @@ msgstr ""
 msgid "Supranational Ref Results"
 msgstr ""
 
+msgid "D28 Follow-up"
+msgstr ""
+
+msgid "Discharge"
+msgstr ""
+
+msgid "Cohort enrolment"
+msgstr ""
+
 msgid "Countries"
 msgstr ""
 

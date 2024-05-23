@@ -11,6 +11,9 @@ export const getChildrenName = (surveyFormType: SURVEY_FORM_TYPES): string[] => 
                 i18n.t("Central Ref Lab Results"),
                 i18n.t("Pathogen Isolates Logs"),
                 i18n.t("Supranational Ref Results"),
+                i18n.t("D28 Follow-up"),
+                i18n.t("Discharge"),
+                i18n.t("Cohort enrolment"),
             ];
         case "PPSSurveyForm":
             return [i18n.t("Countries")];

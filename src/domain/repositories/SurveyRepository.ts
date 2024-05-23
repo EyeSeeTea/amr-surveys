@@ -32,6 +32,7 @@ export interface SurveyRepository {
     ): FutureData<Questionnaire>;
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void>;
+    deleteEventSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void>;
 
     getSurveyNameAndASTGuidelineFromId(
         id: Id,

@@ -23,8 +23,16 @@ import {
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
+    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
+    PREVALENCE_MORTALITY_DISCHARGE_FORM,
+    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
+    PREVALENCE_MORTALITY_FOLLOW_UP_TET,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
 } from "../entities/D2Survey";
 
 export const isTrackerProgram = (programId: Id) => {
@@ -35,6 +43,9 @@ export const isTrackerProgram = (programId: Id) => {
         case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
         case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
         case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
+        case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
+        case PREVALENCE_MORTALITY_DISCHARGE_FORM:
+        case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
             return true;
         default:
             return false;
@@ -55,6 +66,10 @@ export const getTrackedEntityAttributeType = (programId: Id) => {
             return PREVALENCE_SUPRANATIONAL_TET;
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
             return PREVALENCE_FACILITY_LEVEL_TET;
+        case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
+        case PREVALENCE_MORTALITY_DISCHARGE_FORM:
+        case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
+            return PREVALENCE_MORTALITY_FOLLOW_UP_TET;
 
         default:
             return "";
@@ -92,14 +107,22 @@ export const getSurveyNameBySurveyFormType = (
 
 export const getParentDataElementForProgram = (programId: Id): Id => {
     switch (programId) {
+        case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
+            return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2;
+        case PREVALENCE_MORTALITY_DISCHARGE_FORM:
+            return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2;
+        case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
+            return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
+
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
             return SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID;
         case PREVALENCE_CASE_REPORT_FORM_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF;
         case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
         case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
-        case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID;
+        case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
+            return AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE;
         case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
             return AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19;
         case PPS_COUNTRY_QUESTIONNAIRE_ID:
@@ -139,6 +162,9 @@ export const getChildProgramId = (
                     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
                     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
                     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
+                    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
+                    PREVALENCE_MORTALITY_DISCHARGE_FORM,
+                    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
                 ],
             };
         default:
@@ -161,6 +187,9 @@ export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Preva
         case "PrevalenceCentralRefLabForm":
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSupranationalRefLabForm":
+        case "PrevalenceD28FollowUp":
+        case "PrevalenceDischarge":
+        case "PrevalenceCohortEnrolment":
         default:
             return "Prevalence";
     }

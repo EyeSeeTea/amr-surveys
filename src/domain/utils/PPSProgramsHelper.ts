@@ -7,6 +7,9 @@ import {
     PREVALENCE_CASE_REPORT_FORM_ID,
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
+    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_FORM,
+    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
@@ -64,6 +67,12 @@ export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
             return PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID;
         case "PrevalenceSupranationalRefLabForm":
             return PREVALENCE_SUPRANATIONAL_REF_LAB_ID;
+        case "PrevalenceD28FollowUp":
+            return PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28;
+        case "PrevalenceDischarge":
+            return PREVALENCE_MORTALITY_DISCHARGE_FORM;
+        case "PrevalenceCohortEnrolment":
+            return PREVALENCE_MORTALITY_COHORT_ENORL_FORM;
 
         default:
             throw new Error("Unknown Survey Type");
@@ -113,6 +122,19 @@ export const getChildSurveyType = (
                 case option === "Add New Supranational Ref Results":
                 case option?.startsWith("List Supranational Refs Results"):
                     return "PrevalenceSupranationalRefLabForm";
+
+                case option === "Add New D28 Follow-up":
+                case option?.startsWith("List D28 Follow-up"):
+                    return "PrevalenceD28FollowUp";
+
+                case option === "Add New Discharge":
+                case option?.startsWith("List Discharge"):
+                    return "PrevalenceDischarge";
+
+                case option === "Add New Cohort enrolment":
+                case option?.startsWith("List Cohort enrolment"):
+                    return "PrevalenceCohortEnrolment";
+
                 default:
                     return undefined;
             }
@@ -161,6 +183,9 @@ export const getSurveyOptions = (
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSupranationalRefLabForm":
         case "PPSPatientRegister":
+        case "PrevalenceD28FollowUp":
+        case "PrevalenceDischarge":
+        case "PrevalenceCohortEnrolment":
         default:
             return DefaultFormOptions(hasReadAccess, hasCaptureAccess);
     }
@@ -194,6 +219,12 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Pathogen Isolate";
         case "PrevalenceSupranationalRefLabForm":
             return "Supranational Result";
+        case "PrevalenceD28FollowUp":
+            return "D28 Follow-up";
+        case "PrevalenceDischarge":
+            return "Discharge";
+        case "PrevalenceCohortEnrolment":
+            return "Cohort Enrolment";
         default:
             return "Survey";
     }
@@ -234,6 +265,9 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
+        case "PrevalenceD28FollowUp":
+        case "PrevalenceCohortEnrolment":
+        case "PrevalenceDischarge":
             return true;
         default:
             return false;
@@ -246,6 +280,9 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
+        case "PrevalenceD28FollowUp":
+        case "PrevalenceDischarge":
+        case "PrevalenceCohortEnrolment":
             return true;
         default:
             return false;

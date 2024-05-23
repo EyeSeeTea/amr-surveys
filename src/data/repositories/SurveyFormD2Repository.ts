@@ -27,7 +27,7 @@ import {
     AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
 } from "../entities/D2Survey";
-import { ProgramMetadata } from "../entities/D2Program";
+import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
 import {
     mapProgramToQuestionnaire,
     mapQuestionnaireToEvent,
@@ -56,6 +56,16 @@ export class SurveyD2Repository implements SurveyRepository {
             if (resp.programs[0]) {
                 const programDataElements = resp.programStageDataElements.map(
                     psde => psde.dataElement
+                );
+                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
+                    de => {
+                        return {
+                            ...de,
+                            sortOrder: resp.programStageDataElements.find(
+                                psde => psde.dataElement.id === de.id
+                            )?.sortOrder,
+                        };
+                    }
                 );
 
                 const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
@@ -90,7 +100,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                             undefined,
                                             trackedEntity,
                                             programDataElements,
-                                            resp.dataElements,
+                                            dataElementsWithSortOrder,
                                             sortedOptions,
                                             resp.programStages,
                                             resp.programStageSections,
@@ -116,7 +126,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                         event,
                                         undefined,
                                         programDataElements,
-                                        resp.dataElements,
+                                        dataElementsWithSortOrder,
                                         resp.options,
                                         resp.programStages,
                                         resp.programStageSections,
@@ -140,7 +150,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             undefined,
                             undefined,
                             programDataElements,
-                            resp.dataElements,
+                            dataElementsWithSortOrder,
                             resp.options,
                             resp.programStages,
                             resp.programStageSections,
