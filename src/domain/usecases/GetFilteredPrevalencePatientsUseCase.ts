@@ -1,49 +1,34 @@
+import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
-import { Id } from "../entities/Ref";
-import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
-import { getProgramId, isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
+import { Survey, SurveyBase } from "../entities/Survey";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import _ from "../entities/generic/Collection";
-import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
+import { getChildCount } from "../utils/getChildCountHelper";
 
-//This use case fetched only patient surveys for both Prevalence and PPS modules
-export class GetPaginatedPatientSurveysUseCase {
+export class GetFilteredPrevalencePatientsUseCase {
     constructor(
         private paginatedSurveyRepo: PaginatedSurveyRepository,
         private surveyReporsitory: SurveyRepository
     ) {}
 
     public execute(
-        surveyFormType: SURVEY_FORM_TYPES,
+        keyword: string,
         orgUnitId: Id,
-        parentSurveyId: Id | undefined,
-        parentWardRegisterId: Id | undefined,
-        parentPatientId: Id | undefined,
-        page: number,
-        pageSize: number
+        parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const programId = getProgramId(surveyFormType);
-
-        const parentId = isPrevalencePatientChild(surveyFormType)
-            ? parentPatientId
-            : surveyFormType === "PPSPatientRegister"
-            ? parentWardRegisterId
-            : parentSurveyId;
-
         return this.paginatedSurveyRepo
-            .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
-            .flatMap(surveys => {
-                const surveysWithName = surveys.objects.map(survey => {
+            .getFilteredPrevalencePatientSurveysByPatientId(keyword, orgUnitId, parentId)
+            .flatMap(filteredSurveys => {
+                const surveysWithName = filteredSurveys.objects.map(survey => {
                     return Future.join2(
                         this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                             survey.rootSurvey.id,
                             survey.surveyFormType
                         ),
                         getChildCount({
-                            surveyFormType: surveyFormType,
+                            surveyFormType: "PrevalenceCaseReportForm",
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
                             secondaryparentId: survey.id,
@@ -68,9 +53,9 @@ export class GetPaginatedPatientSurveysUseCase {
                     });
                 });
 
-                return Future.sequential(surveysWithName).map(updatedSurveys => {
+                return Future.parallel(surveysWithName, { concurrency: 5 }).map(updatedSurveys => {
                     const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                        pager: surveys.pager,
+                        pager: filteredSurveys.pager,
                         objects: updatedSurveys,
                     };
                     return paginatedSurveys;

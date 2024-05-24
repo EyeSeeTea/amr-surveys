@@ -16,13 +16,13 @@ import { ModuleD2Repository } from "./data/repositories/ModuleD2Repository";
 import { DataStoreClient } from "./data/DataStoreClient";
 import { ModulesTestRepository } from "./data/repositories/testRepositories/ModuleTestRepository";
 import { GetSurveyUseCase } from "./domain/usecases/GetSurveyUseCase";
-import { GetFilteredPatientsUseCase } from "./domain/usecases/GetFilteredPatientsUseCase";
+import { GetFilteredPPSPatientsUseCase } from "./domain/usecases/GetFilteredPPSPatientsUseCase";
 import { SurveyRepository } from "./domain/repositories/SurveyRepository";
 import { UserD2Repository } from "./data/repositories/UserD2Repository";
 import { SurveyD2Repository } from "./data/repositories/SurveyFormD2Repository";
 import { SurveyTestRepository } from "./data/repositories/testRepositories/SurveyFormTestRepository";
 import { SaveFormDataUseCase } from "./domain/usecases/SaveFormDataUseCase";
-import { GetPaginatedPatientSurveysUseCase } from "./domain/usecases/GetPaginatedPatientSurveysUseCase";
+import { GetPaginatedSurveysUseCase } from "./domain/usecases/GetPaginatedSurveysUseCase";
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
@@ -38,6 +38,7 @@ import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCa
 import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Repository";
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
+import { GetFilteredPrevalencePatientsUseCase } from "./domain/usecases/GetFilteredPrevalencePatientsUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -74,11 +75,15 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.astGuidelinesRepository
             ),
             getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
-            getFilteredPatients: new GetFilteredPatientsUseCase(
+            getFilteredPPSPatients: new GetFilteredPPSPatientsUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),
-            getPaginatedSurveys: new GetPaginatedPatientSurveysUseCase(
+            getFilteredPrevalencePatients: new GetFilteredPrevalencePatientsUseCase(
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
+            ),
+            getPaginatedSurveys: new GetPaginatedSurveysUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),

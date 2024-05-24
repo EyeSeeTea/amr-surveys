@@ -115,10 +115,8 @@ const handleRuleFunctions = (condition: string): boolean => {
             if (match) {
                 const innerString = match[1];
                 if (innerString?.trim() === "") {
-                    console.debug('The string between "fn:hasValue(" and ")" is empty.');
                     return false;
                 } else {
-                    console.debug(`The string between "fn:hasValue(" and ")" is: ${innerString}`);
                     return true;
                 }
             } else return false;

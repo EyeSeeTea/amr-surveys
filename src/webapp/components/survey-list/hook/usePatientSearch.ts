@@ -12,7 +12,12 @@ export const usePatientSearch = (
     setTotal: Dispatch<SetStateAction<number | undefined>>
 ) => {
     const { compositionRoot } = useAppContext();
-    const { currentHospitalForm, currentWardRegister } = useCurrentSurveys();
+    const {
+        currentHospitalForm,
+        currentWardRegister,
+        currentFacilityLevelForm,
+        currentPrevalenceSurveyForm,
+    } = useCurrentSurveys();
     const snackbar = useSnackbar();
 
     const [patientIdSearchKeyword, setPatientIdSearchKeyword] = useState("");
@@ -46,12 +51,31 @@ export const usePatientSearch = (
             searchBy === "patientId" ? patientIdSearchKeyword : patientCodeSearchKeyword;
         if (surveyFormType === "PPSPatientRegister" && searchKeyword) {
             setIsLoading(true);
-            compositionRoot.surveys.getFilteredPatients
+            compositionRoot.surveys.getFilteredPPSPatients
                 .execute(
                     searchKeyword,
                     currentHospitalForm?.orgUnitId ?? "",
                     currentWardRegister?.id ?? "",
                     searchBy
+                )
+                .run(
+                    response => {
+                        setSearchResultSurveys(response.objects);
+                        setTotal(response.pager.total);
+                        setIsLoading(false);
+                    },
+                    () => {
+                        snackbar.error(i18n.t("Error fetching surveys"));
+                        setIsLoading(false);
+                    }
+                );
+        } else if (surveyFormType === "PrevalenceCaseReportForm" && searchKeyword) {
+            setIsLoading(true);
+            compositionRoot.surveys.getFilteredPrevalencePatients
+                .execute(
+                    searchKeyword,
+                    currentFacilityLevelForm?.orgUnitId ?? "",
+                    currentPrevalenceSurveyForm?.id ?? ""
                 )
                 .run(
                     response => {
