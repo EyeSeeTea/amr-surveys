@@ -38,6 +38,7 @@ import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCa
 import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Repository";
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 import { GetSurveyAntibioticsBlacklistUseCase } from "./domain/usecases/GetSurveyAntibioticsBlacklistUseCase";
+import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -89,6 +90,9 @@ function getCompositionRoot(repositories: Repositories) {
             getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
             getSurveyAntibioticsBlacklist: new GetSurveyAntibioticsBlacklistUseCase(
+                repositories.surveyFormRepository
+            ),
+            removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(
                 repositories.surveyFormRepository
             ),
         },

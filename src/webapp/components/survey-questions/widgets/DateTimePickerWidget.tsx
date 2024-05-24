@@ -32,6 +32,7 @@ const DateTimePickerWidget: React.FC<DateTimePickerWidgetProps> = props => {
                 disabled={props.disabled}
                 onChange={newValue => notifyChange(newValue?.toISOString() ?? "")}
                 ampm={false}
+                format="dd-MM-yyyy HH:mm"
             />
         </LocalizationProvider>
     );
