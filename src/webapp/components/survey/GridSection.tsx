@@ -15,16 +15,14 @@ interface GridSectionProps {
     antibioticStage: QuestionnaireStage;
     updateQuestion: (question: Question) => void;
     viewOnly?: boolean;
-    antibioticsBlacklist: string[];
 }
 
 export const GridSection: React.FC<GridSectionProps> = React.memo(
-    ({ speciesSection, antibioticStage, updateQuestion, viewOnly, antibioticsBlacklist }) => {
+    ({ speciesSection, antibioticStage, updateQuestion, viewOnly }) => {
         const { updateSpeciesQuestion, gridOptions, antibioticSets } = useGridSection(
             speciesSection,
             antibioticStage,
-            updateQuestion,
-            antibioticsBlacklist
+            updateQuestion
         );
 
         return (

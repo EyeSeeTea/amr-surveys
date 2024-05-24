@@ -18,8 +18,7 @@ import _c from "../../../../domain/entities/generic/Collection";
 export const useGridSection = (
     speciesSection: QuestionnaireSection,
     antibioticStage: QuestionnaireStage,
-    updateQuestion: (question: Question) => void,
-    antibioticsBlackList: string[]
+    updateQuestion: (question: Question) => void
 ) => {
     const { getAntibioticOptions } = useASTGuidelinesOptions();
     const [gridOptions, setGridOptions] = useState<string[]>();
@@ -29,13 +28,7 @@ export const useGridSection = (
         const speciesQuestion = speciesSection.questions.find(isSpeciesQuestion);
         if (speciesQuestion) {
             const options = getAntibioticOptions(speciesQuestion);
-            const optionsWithoutBlacklistedAntibiotics = options?.filter(
-                option =>
-                    !antibioticsBlackList.some(blacklistedAntibiotic =>
-                        option.toLowerCase().includes(blacklistedAntibiotic.toLowerCase())
-                    )
-            );
-            setGridOptions(optionsWithoutBlacklistedAntibiotics);
+            setGridOptions(options);
         }
 
         const antibioticSections = antibioticStage.sections.filter(
@@ -72,12 +65,7 @@ export const useGridSection = (
             .value();
 
         setAntibioticSets(antibioticGroups);
-    }, [
-        antibioticStage.sections,
-        antibioticsBlackList,
-        getAntibioticOptions,
-        speciesSection.questions,
-    ]);
+    }, [antibioticStage.sections, getAntibioticOptions, speciesSection.questions]);
 
     const updateSpeciesQuestion = useCallback(
         (question: Question) => {

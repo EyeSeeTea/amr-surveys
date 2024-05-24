@@ -39,7 +39,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const snackbar = useSnackbar();
     const history = useHistory();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
-    const { currentPrevalenceSurveyForm } = useCurrentSurveys();
 
     const {
         questionnaire,
@@ -52,8 +51,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         updateQuestion,
         addProgramStage,
         removeProgramStage,
-        antibioticsBlacklist,
-    } = useSurveyForm(props.formType, props.currentSurveyId, currentPrevalenceSurveyForm?.id);
+    } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey } = useSaveSurvey(
         props.formType,
@@ -149,7 +147,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                 updateQuestion(question, stage.id)
                                             }
                                             viewOnly={hasReadOnlyAccess}
-                                            antibioticsBlacklist={antibioticsBlacklist}
                                         />
                                     );
 
