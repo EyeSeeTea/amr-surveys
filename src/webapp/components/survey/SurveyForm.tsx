@@ -16,7 +16,6 @@ import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
-import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 
 export interface SurveyFormProps {
     hideForm: () => void;
