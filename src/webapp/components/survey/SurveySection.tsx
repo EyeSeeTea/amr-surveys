@@ -18,7 +18,6 @@ import { Typography } from "@material-ui/core";
 import styled from "styled-components";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
 import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { useEffect, useState } from "react";
 
 interface SurveySectionProps {
     title: string;
@@ -32,26 +31,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     questions,
     updateQuestion,
     viewOnly,
-    antibioticsBlacklist,
 }) => {
-    const [updatedQuestions, setUpdatedQuestions] = useState<Question[]>(questions);
-
-    useEffect(() => {
-        if (antibioticsBlacklist) {
-            const updatedQuestions = questions.map(question => {
-                if (
-                    antibioticsBlacklist.some(blacklist =>
-                        question.text.toLowerCase().includes(blacklist.toLowerCase())
-                    )
-                ) {
-                    question.isVisible = false;
-                }
-                return question;
-            });
-            setUpdatedQuestions(updatedQuestions);
-        }
-    }, [antibioticsBlacklist, questions]);
-
     return (
         <StyledSection key={title}>
             <DataTable>
@@ -64,7 +44,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                 </TableHead>
 
                 <TableBody>
-                    {updatedQuestions.map(question => {
+                    {questions.map(question => {
                         if (!question.isVisible) return null;
                         return (
                             <DataTableRow key={question.id}>

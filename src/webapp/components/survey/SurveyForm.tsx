@@ -162,7 +162,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         }
                                         questions={section.questions}
                                         viewOnly={hasReadOnlyAccess}
-                                        antibioticsBlacklist={antibioticsBlacklist}
                                     />
                                 );
                             })}

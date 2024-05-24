@@ -9,8 +9,9 @@ export class ApplyInitialRulesToSurveyUseCase {
         currentPPSSurveyForm: Id | undefined,
         currentPrevalenceSurveyForm: Id | undefined
     ): Questionnaire {
+        let updatedQuestionnaire: Questionnaire;
         //1. Apply program rules defined in metadata
-        const questionnaireWithProgramRules =
+        updatedQuestionnaire =
             Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(questionnaire);
 
         //2. Apply survey rules defined in the datastore
@@ -26,15 +27,24 @@ export class ApplyInitialRulesToSurveyUseCase {
             surveyRule => surveyRule.formId === questionnaire.id
         );
 
-        //no rules to apply, return questionnaire with program rules
-        if (!currentFormRule) return questionnaireWithProgramRules;
-        else {
-            const questionnaireWithSurveyRules =
-                Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
-                    questionnaire,
-                    currentFormRule
-                );
-            return questionnaireWithSurveyRules;
+        const currentSurveyAntibioticBlacklist = module?.rulesBySurvey?.find(
+            rule => rule.surveyId === currentParentId
+        )?.antibioticBlacklist;
+
+        if (currentFormRule) {
+            updatedQuestionnaire = Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
+                updatedQuestionnaire,
+                currentFormRule
+            );
         }
+
+        if (currentSurveyAntibioticBlacklist) {
+            updatedQuestionnaire = Questionnaire.applyAntibioticsBlacklist(
+                updatedQuestionnaire,
+                currentSurveyAntibioticBlacklist
+            );
+        }
+
+        return updatedQuestionnaire;
     }
 }

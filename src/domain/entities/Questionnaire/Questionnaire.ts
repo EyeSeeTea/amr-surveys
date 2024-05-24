@@ -2,7 +2,7 @@ import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
-import { Code, Question } from "./QuestionnaireQuestion";
+import { Code, Question, isAntibioticQuestion } from "./QuestionnaireQuestion";
 import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
@@ -319,5 +319,53 @@ export class Questionnaire {
             ...questionnaireEntity,
             questions: updatedEntityQuestions,
         };
+    }
+
+    static applyAntibioticsBlacklist(
+        questionnaire: Questionnaire,
+        antibioticsBlacklist: string[]
+    ): Questionnaire {
+        const updatedStages = questionnaire.stages.map(stage => {
+            return {
+                ...stage,
+                sections: stage.sections.map(section => {
+                    return {
+                        ...section,
+                        questions: section.questions.map(question => {
+                            if (isAntibioticQuestion(question)) {
+                                const options = question.options.filter(
+                                    option =>
+                                        !antibioticsBlacklist.some(blacklist =>
+                                            option.name
+                                                .toLowerCase()
+                                                .includes(blacklist.toLowerCase())
+                                        )
+                                );
+
+                                return {
+                                    ...question,
+                                    options: options,
+                                };
+                            } else {
+                                if (
+                                    antibioticsBlacklist.some(blacklist =>
+                                        question.text
+                                            .toLowerCase()
+                                            .includes(blacklist.toLowerCase())
+                                    )
+                                ) {
+                                    return {
+                                        ...question,
+                                        isVisible: false,
+                                    };
+                                } else return question;
+                            }
+                        }),
+                    };
+                }),
+            };
+        });
+
+        return Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages);
     }
 }
