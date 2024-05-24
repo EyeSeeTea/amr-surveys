@@ -37,11 +37,10 @@ import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListM
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
-import { DataStoreClient } from "../DataStoreClient";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
-    constructor(private api: D2Api, private dataStoreClient: DataStoreClient) {}
+    constructor(private api: D2Api) {}
 
     getForm(
         programId: Id,

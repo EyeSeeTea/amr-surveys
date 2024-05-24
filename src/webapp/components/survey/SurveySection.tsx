@@ -24,7 +24,6 @@ interface SurveySectionProps {
     questions: Question[];
     updateQuestion: (question: Question) => void;
     viewOnly?: boolean;
-    antibioticsBlacklist?: string[];
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
