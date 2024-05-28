@@ -23,5 +23,5 @@ export interface AMRSurveyModule {
     color: string;
     surveyPrograms: NamedRef[];
     userGroups: UserGroups;
-    rulesBySurvey: { surveyId: Id; surveyRules: SurveyRule[] }[];
+    rulesBySurvey: { surveyId: Id; surveyRules: SurveyRule[]; antibioticBlacklist: string[] }[];
 }

@@ -3,10 +3,12 @@ import { useCurrentASTGuidelinesContext } from "../contexts/current-ast-guidelin
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { SpeciesQuestion } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import _ from "../../domain/entities/generic/Collection";
+import { useCurrentModule } from "../contexts/current-module-context";
 
 export function useASTGuidelinesOptions() {
     const { currentASTGuidelines } = useCurrentASTGuidelinesContext();
     const { currentPrevalenceSurveyForm } = useCurrentSurveys();
+    const { currentModule } = useCurrentModule();
 
     const [currentASTMatrix, setCurrentASTMatrix] = useState<Map<string, string[]>>(new Map());
     const [currentASTList, setCurrentASTList] = useState<Map<string, string[]>>(new Map());
@@ -33,9 +35,27 @@ export function useASTGuidelinesOptions() {
                 keyVal => question.value?.code && keyVal[1].includes(question.value.code)
             )?.[0];
 
-            return matrixKey ? currentASTMatrix.get(matrixKey) : undefined;
+            if (matrixKey) {
+                const antibioticsBlacklist = currentModule?.rulesBySurvey?.find(
+                    rule => rule.surveyId === currentPrevalenceSurveyForm?.id
+                )?.antibioticBlacklist;
+
+                return currentASTMatrix
+                    .get(matrixKey)
+                    ?.filter(
+                        antibioticOption =>
+                            !antibioticsBlacklist?.some(blacklist =>
+                                antibioticOption.toLowerCase().includes(blacklist.toLowerCase())
+                            )
+                    );
+            } else return undefined;
         },
-        [currentASTList, currentASTMatrix]
+        [
+            currentASTList,
+            currentASTMatrix,
+            currentModule?.rulesBySurvey,
+            currentPrevalenceSurveyForm?.id,
+        ]
     );
 
     return { getAntibioticOptions };

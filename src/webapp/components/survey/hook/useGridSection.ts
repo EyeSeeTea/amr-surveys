@@ -65,7 +65,7 @@ export const useGridSection = (
             .value();
 
         setAntibioticSets(antibioticGroups);
-    }, [antibioticStage.sections, getAntibioticOptions, gridOptions, speciesSection.questions]);
+    }, [antibioticStage.sections, getAntibioticOptions, speciesSection.questions]);
 
     const updateSpeciesQuestion = useCallback(
         (question: Question) => {
