@@ -133,6 +133,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         />
                     )}
 
+                    {surveyFormType === "PrevalenceSurveyForm" && (
+                        <SurveyListFilters status={statusFilter} setStatus={setStatusFilter} />
+                    )}
+
                     {isPaginatedSurveyList(surveyFormType) ? (
                         <PaginatedSurveyListTable
                             surveys={searchResultSurveys}

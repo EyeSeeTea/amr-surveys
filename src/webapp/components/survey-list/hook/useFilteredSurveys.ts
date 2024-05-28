@@ -26,7 +26,7 @@ export function useFilteredSurveys(
 
     useEffect(() => {
         //filters apply only to PPSSurveyForm
-        if (surveyFormType !== "PPSSurveyForm") {
+        if (surveyFormType !== "PPSSurveyForm" && surveyFormType !== "PrevalenceSurveyForm") {
             setStatusFilter(undefined);
             setSurveyTypeFilter(undefined);
         }
