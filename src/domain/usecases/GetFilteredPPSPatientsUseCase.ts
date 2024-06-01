@@ -6,7 +6,7 @@ import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyReposi
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getPaginatedSurveysWithParentName } from "../utils/surveyParentNameHelper";
 
-export class GetFilteredPatientsUseCase {
+export class GetFilteredPPSPatientsUseCase {
     constructor(
         private paginatedSurveyRepo: PaginatedSurveyRepository,
         private surveyReporsitory: SurveyRepository

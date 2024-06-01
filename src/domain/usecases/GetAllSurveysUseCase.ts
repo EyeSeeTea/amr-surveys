@@ -82,7 +82,7 @@ export class GetAllSurveysUseCase {
                     });
                 });
 
-                return Future.sequential(surveysWithName);
+                return Future.parallel(surveysWithName, { concurrency: 5 });
             });
     }
 }

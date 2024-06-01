@@ -8,7 +8,10 @@ import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSu
 import { PaginatedReponse } from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
 import {
+    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
+    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     PPS_PATIENT_REGISTER_ID,
+    PREVALENCE_CASE_REPORT_FORM_ID,
     SURVEY_PATIENT_CODE_DATAELEMENT_ID,
     SURVEY_PATIENT_ID_DATAELEMENT_ID,
     WARD_ID_DATAELEMENT_ID,
@@ -180,6 +183,36 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                     page: response.page,
                     pageSize: response.pageSize,
                     total: surveys.length,
+                },
+                objects: surveys,
+            };
+
+            return Future.success(paginatedSurveys);
+        });
+    }
+
+    getFilteredPrevalencePatientSurveysByPatientId(
+        keyword: string,
+        orgUnitId: Id,
+        parentId: Id
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        return apiToFuture(
+            this.api.tracker.trackedEntities.get({
+                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                program: PREVALENCE_CASE_REPORT_FORM_ID,
+                orgUnit: orgUnitId,
+                pageSize: 10,
+                totalPages: true,
+                filter: ` ${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}, ${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+            })
+        ).flatMap(trackedEntities => {
+            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PrevalenceCaseReportForm");
+
+            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                pager: {
+                    page: trackedEntities.page,
+                    pageSize: trackedEntities.pageSize,
+                    total: trackedEntities.total,
                 },
                 objects: surveys,
             };
