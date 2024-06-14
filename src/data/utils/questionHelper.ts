@@ -111,11 +111,14 @@ export const getQuestion = (
         }
 
         case "NUMBER":
-        case "INTEGER": {
+        case "INTEGER":
+        case "INTEGER_ZERO_OR_POSITIVE":
+        case "INTEGER_NEGATIVE":
+        case "INTEGER_POSITIVE": {
             const intQ: NumberQuestion = {
                 ...base,
                 type: "number",
-                numberType: "INTEGER",
+                numberType: valueType,
                 value: dataValue ? dataValue : "",
             };
             return intQ;
