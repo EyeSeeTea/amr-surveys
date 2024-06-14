@@ -252,6 +252,13 @@ export class QuestionnaireQuestion {
                     if (rule.parsedResult === true)
                         return { errorMsg: action.content, dataElementId: action.dataElement?.id };
                     else return;
+                } else if (action.programRuleActionType === "SETMANDATORYFIELD") {
+                    if (rule.parsedResult === true) {
+                        return {
+                            errorMsg: "This field is mandatory",
+                            dataElementId: action.dataElement?.id,
+                        };
+                    } else return;
                 }
             });
         });

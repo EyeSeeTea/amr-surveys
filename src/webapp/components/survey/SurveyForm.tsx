@@ -102,6 +102,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     <PaddedDiv>
                         <Typography>{i18n.t(`Stage - Profile`)}</Typography>
                         <SurveySection
+                            key={questionnaire.entity.code}
                             title={questionnaire.entity.title}
                             updateQuestion={updateQuestion}
                             questions={questionnaire.entity.questions}
@@ -140,6 +141,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                 if (section.isSpeciesSection)
                                     return (
                                         <GridSection
+                                            key={section.code}
                                             speciesSection={section}
                                             antibioticStage={stage}
                                             updateQuestion={question =>

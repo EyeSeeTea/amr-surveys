@@ -38,7 +38,7 @@ const NumberWidget: React.FC<NumberWidgetProps> = props => {
     return (
         <>
             <Input
-                type="number"
+                type={"number"}
                 onBlur={notifyChange}
                 onChange={updateState}
                 value={stateValue || ""}
