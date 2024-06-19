@@ -57,16 +57,36 @@ export class SurveyD2Repository implements SurveyRepository {
                 const programDataElements = resp.programStageDataElements.map(
                     psde => psde.dataElement
                 );
-                const dataElementsWithSortOrder: ProgramDataElement[] = resp.dataElements.map(
-                    de => {
-                        return {
-                            ...de,
-                            sortOrder: resp.programStageDataElements.find(
-                                psde => psde.dataElement.id === de.id
-                            )?.sortOrder,
-                        };
-                    }
-                );
+
+                const dataElementsWithSortOrder: ProgramDataElement[] = resp.programStageSections
+                    ? resp.programStageSections.flatMap(section => {
+                          const sortedSectionDataElements: ProgramDataElement[] = _(
+                              section.dataElements.map((sectionDataElement, index) => {
+                                  const currentDataElement: ProgramDataElement | undefined =
+                                      resp.dataElements.find(de => de.id === sectionDataElement.id);
+
+                                  if (!currentDataElement) return null;
+                                  const sectionDataElementWithSortOrder: ProgramDataElement = {
+                                      ...currentDataElement,
+                                      sortOrder: index,
+                                  };
+
+                                  return sectionDataElementWithSortOrder;
+                              })
+                          )
+                              .compact()
+                              .value();
+
+                          return sortedSectionDataElements;
+                      })
+                    : resp.dataElements.map(de => {
+                          return {
+                              ...de,
+                              sortOrder: resp.programStageDataElements.find(
+                                  psde => psde.dataElement.id === de.id
+                              )?.sortOrder,
+                          };
+                      });
 
                 const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
                     ? _(
