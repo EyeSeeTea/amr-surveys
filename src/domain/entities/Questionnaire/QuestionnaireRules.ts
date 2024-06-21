@@ -244,7 +244,7 @@ export const parseCondition = (
     // Split condition into sub-conditions based on logical operators
     const andConditions = newCondition.split("&&").map(subCondition1 => {
         const orConditions = subCondition1.split("||").map(subCondition2 => {
-            const notCondition = subCondition2.trim().startsWith("!");
+            const notCondition = subCondition2.trim().replace("(", "").startsWith("!");
             const trimmedSubCondition = notCondition
                 ? subCondition2.trim().substring(1)
                 : subCondition2;
