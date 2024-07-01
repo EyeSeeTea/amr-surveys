@@ -173,7 +173,7 @@ export const getQuestion = (
             const dateQ: DateQuestion = {
                 ...base,
                 type: "date",
-                value: dataValue ? new Date(dataValue as string) : undefined,
+                value: dataValue ? new Date(dataValue) : undefined,
             };
             return dateQ;
         }
@@ -182,7 +182,7 @@ export const getQuestion = (
             const dateQ: DateTimeQuestion = {
                 ...base,
                 type: "datetime",
-                value: dataValue ? new Date(dataValue as string).toISOString() : undefined,
+                value: dataValue ? new Date(dataValue) : undefined,
             };
             return dateQ;
         }
@@ -198,10 +198,13 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
                         dataElement: question.id,
                         value: question.value.code,
                     };
-                } else if (question.type === "date" && question.value) {
+                } else if (
+                    (question.type === "date" || question.type === "datetime") &&
+                    question.value
+                ) {
                     return {
                         dataElement: question.id,
-                        value: question.value.toISOString().split("T")?.at(0) || "",
+                        value: question.value.toISOString(),
                     };
                 } else if (question.type === "boolean" && question.storeFalse === false) {
                     return {

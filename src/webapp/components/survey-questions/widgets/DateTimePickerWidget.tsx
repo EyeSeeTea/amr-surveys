@@ -6,21 +6,21 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 
-export interface DateTimePickerWidgetProps extends BaseWidgetProps<string> {
-    value: Maybe<string>;
+export interface DateTimePickerWidgetProps extends BaseWidgetProps<Date> {
+    value: Maybe<Date>;
     name: string;
 }
 
 const DateTimePickerWidget: React.FC<DateTimePickerWidgetProps> = props => {
     const { onChange: onValueChange, value } = props;
 
-    const [stateValue, setStateValue] = React.useState(value);
+    const [stateValue, setStateValue] = React.useState<string>(value);
     React.useEffect(() => setStateValue(value), [value]);
 
     const notifyChange = React.useCallback(
-        (newValue: string) => {
+        (newValue: Maybe<Date>) => {
             setStateValue(newValue);
-            onValueChange(newValue);
+            onValueChange(newValue || "");
         },
         [onValueChange]
     );
@@ -28,9 +28,9 @@ const DateTimePickerWidget: React.FC<DateTimePickerWidgetProps> = props => {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
                 key={props.name}
-                value={new Date(stateValue)}
+                value={stateValue ? new Date(stateValue) : undefined}
                 disabled={props.disabled}
-                onChange={newValue => notifyChange(newValue?.toISOString() ?? "")}
+                onChange={newValue => notifyChange(newValue)}
                 ampm={false}
                 format="dd-MM-yyyy HH:mm"
             />

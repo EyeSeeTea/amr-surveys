@@ -13,13 +13,13 @@ export interface DatePickerWidgetProps extends BaseWidgetProps<Date> {
 const DatePickerWidget: React.FC<DatePickerWidgetProps> = props => {
     const { onChange: onValueChange, value } = props;
 
-    const [stateValue, setStateValue] = React.useState(value);
+    const [stateValue, setStateValue] = React.useState<string>(value);
     React.useEffect(() => setStateValue(value), [value]);
 
     const notifyChange = React.useCallback(
-        (newValue: Date) => {
+        (newValue: Maybe<Date>) => {
             setStateValue(newValue);
-            onValueChange(newValue);
+            onValueChange(newValue || "");
         },
         [onValueChange]
     );
@@ -27,7 +27,7 @@ const DatePickerWidget: React.FC<DatePickerWidgetProps> = props => {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
                 key={props.name}
-                value={stateValue}
+                value={stateValue ? new Date(stateValue) : undefined}
                 disabled={props.disabled}
                 onChange={newValue => notifyChange(newValue)}
                 format="dd-MM-yyyy"
