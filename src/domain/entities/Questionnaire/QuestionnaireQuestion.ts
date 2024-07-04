@@ -118,7 +118,7 @@ export interface DateQuestion extends QuestionBase {
 
 export interface DateTimeQuestion extends QuestionBase {
     type: "datetime";
-    value: Maybe<string>;
+    value: Maybe<Date>;
 }
 
 export interface QuestionOption extends NamedRef {
