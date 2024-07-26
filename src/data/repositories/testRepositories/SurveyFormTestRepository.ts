@@ -58,6 +58,7 @@ export class SurveyTestRepository implements SurveyRepository {
                             sortOrder: 1,
                             isAntibioticSection: false,
                             isSpeciesSection: false,
+                            isAntibioticTreatmentHospitalEpisodeSection: false,
                         },
                     ],
                     sortOrder: 1,
