@@ -193,8 +193,29 @@ export class QuestionnaireQuestion {
 
             return parsedAndUpdatedQuestion;
         });
+        //If any of the updated question has been changed to hidden, then reset its value
+        //When it is shown again, the user can enter a "fresh" value
+        const hiddenQuestions = parsedAndUpdatedQuestions.filter(
+            q =>
+                q.isVisible === false &&
+                updatedQuestions.find(uq => uq.id === q.id)?.isVisible === true
+        );
 
-        return _(parsedAndUpdatedQuestions)
+        if (hiddenQuestions.length === 0)
+            return _(parsedAndUpdatedQuestions)
+                .sortBy(question => question.sortOrder)
+                .value();
+
+        const resetQuestions = hiddenQuestions.reduce((acc, hiddenQuestion) => {
+            return this.updateQuestions(
+                acc,
+                { ...hiddenQuestion, value: undefined },
+                rules,
+                questionnaire
+            );
+        }, parsedAndUpdatedQuestions);
+
+        return _(resetQuestions)
             .sortBy(question => question.sortOrder)
             .value();
     }
