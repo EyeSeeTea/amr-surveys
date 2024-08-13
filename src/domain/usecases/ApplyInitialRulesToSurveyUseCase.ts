@@ -9,13 +9,6 @@ export class ApplyInitialRulesToSurveyUseCase {
         currentPPSSurveyForm: Id | undefined,
         currentPrevalenceSurveyForm: Id | undefined
     ): Questionnaire {
-        let updatedQuestionnaire: Questionnaire;
-        //1. Apply program rules defined in metadata
-        updatedQuestionnaire =
-            Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(questionnaire);
-
-        //2. Apply survey rules defined in the datastore
-
         const currentParentId =
             module?.name === "PPS" ? currentPPSSurveyForm : currentPrevalenceSurveyForm;
 
@@ -31,20 +24,28 @@ export class ApplyInitialRulesToSurveyUseCase {
             rule => rule.surveyId === currentParentId
         )?.antibioticBlacklist;
 
-        if (currentFormRule) {
-            updatedQuestionnaire = Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
-                updatedQuestionnaire,
-                currentFormRule
-            );
-        }
+        //1. Apply survey rules defined in the datastore
+        const surveyRuleUpdatedQuestionnaire = currentFormRule
+            ? Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
+                  questionnaire,
+                  currentFormRule
+              )
+            : questionnaire;
 
-        if (currentSurveyAntibioticBlacklist) {
-            updatedQuestionnaire = Questionnaire.applyAntibioticsBlacklist(
-                updatedQuestionnaire,
-                currentSurveyAntibioticBlacklist
-            );
-        }
+        //2. Apply antibiotic blacklist rules defined in the datastore
+        const antibioticBlacklistUpdatedQuestionnaire = currentSurveyAntibioticBlacklist
+            ? Questionnaire.applyAntibioticsBlacklist(
+                  surveyRuleUpdatedQuestionnaire,
+                  currentSurveyAntibioticBlacklist
+              )
+            : surveyRuleUpdatedQuestionnaire;
 
-        return updatedQuestionnaire;
+        //3. Apply program rules defined in metadata
+        const programRuleUpdatedQuestionnaire =
+            Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(
+                antibioticBlacklistUpdatedQuestionnaire
+            );
+
+        return programRuleUpdatedQuestionnaire;
     }
 }
