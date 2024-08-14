@@ -16,6 +16,7 @@ import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
+import { TableSection } from "./TableSection";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -142,6 +143,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         <GridSection
                                             speciesSection={section}
                                             antibioticStage={stage}
+                                            updateQuestion={question =>
+                                                updateQuestion(question, stage.id)
+                                            }
+                                            viewOnly={hasReadOnlyAccess}
+                                        />
+                                    );
+                                if (section.isAntibioticTreatmentHospitalEpisodeSection)
+                                    return (
+                                        <TableSection
+                                            section={section}
                                             updateQuestion={question =>
                                                 updateQuestion(question, stage.id)
                                             }

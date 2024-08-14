@@ -12,6 +12,7 @@ import { QuestionnaireRule } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
 
 const SPECIES_TITLE = "Specie";
+export const AMR_SURVEYS_MORTALITY_DET_SPECIFY_INN = "AMR_SURVEYS_MORTALITY_DET_SPECIFY_INN";
 export interface QuestionnaireSection {
     title: string;
     code: Code;
@@ -21,6 +22,7 @@ export interface QuestionnaireSection {
     stageId: string;
     isSpeciesSection: boolean;
     isAntibioticSection: boolean;
+    isAntibioticTreatmentHospitalEpisodeSection: boolean;
 }
 
 export interface AntibioticSection {

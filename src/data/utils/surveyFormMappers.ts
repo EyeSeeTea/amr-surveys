@@ -43,6 +43,9 @@ import {
 import { DataValue } from "@eyeseetea/d2-api";
 import { generateUid } from "../../utils/uid";
 
+const AntibioticTreatmentHospitalEpisodeSectionName =
+    `Antibiotic treatments during hospital episode`.toLowerCase();
+
 export const mapProgramToQuestionnaire = (
     program: Program,
     event: D2TrackerEvent | undefined,
@@ -78,6 +81,8 @@ export const mapProgramToQuestionnaire = (
                   sortOrder: section.sortOrder,
                   isAntibioticSection: questions.some(isAntibioticQuestion),
                   isSpeciesSection: questions.some(isSpeciesQuestion),
+                  isAntibioticTreatmentHospitalEpisodeSection:
+                      section.name.toLowerCase() === AntibioticTreatmentHospitalEpisodeSectionName,
               };
           })
         : //If the Program has no sections, create a single section
@@ -98,6 +103,7 @@ export const mapProgramToQuestionnaire = (
                   sortOrder: 1,
                   isAntibioticSection: false,
                   isSpeciesSection: false,
+                  isAntibioticTreatmentHospitalEpisodeSection: false,
               },
           ];
 
@@ -240,6 +246,9 @@ const getRepeatedStageEvents = (
                     sortOrder: section.sortOrder,
                     isAntibioticSection: currentRepeatablequestions.some(isAntibioticQuestion),
                     isSpeciesSection: currentRepeatablequestions.some(isSpeciesQuestion),
+                    isAntibioticTreatmentHospitalEpisodeSection:
+                        section.name.toLowerCase() ===
+                        AntibioticTreatmentHospitalEpisodeSectionName,
                 };
             }) ?? [];
 

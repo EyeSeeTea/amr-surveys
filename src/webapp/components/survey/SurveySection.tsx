@@ -80,7 +80,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     );
 };
 
-const PaddedDiv = styled.div`
+export const PaddedDiv = styled.div`
     padding: 5px;
 `;
 
@@ -90,10 +90,10 @@ export const StyledTitle = styled.span`
     fontweight: "bold" as const;
 `;
 
-const StyledWrapper = styled.div`
+export const StyledWrapper = styled.div`
     display: "flex";
 `;
 
-const StyledInput = styled.div`
+export const StyledInput = styled.div`
     flexgrow: 1;
 `;
