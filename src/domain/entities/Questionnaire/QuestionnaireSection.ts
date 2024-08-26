@@ -62,7 +62,8 @@ export class QuestionnaireSectionM {
                     updatedSection.questions,
                     updatedQuestion,
                     rules,
-                    questionnaire
+                    questionnaire,
+                    updatedSection.isVisible === false && section.isVisible === true
                 ),
             };
         });

@@ -108,12 +108,18 @@ export interface D2ProgramRuleVariable {
     dataElement: {
         id: Id;
     };
+    trackedEntityAttribute?: {
+        id: Id;
+    };
 }
 
 export interface D2ProgramRuleAction {
     id: Id;
     programRuleActionType: ProgramRuleActionType;
     dataElement?: {
+        id: Id | undefined;
+    };
+    trackedEntityAttribute: {
         id: Id | undefined;
     };
     data?: string;

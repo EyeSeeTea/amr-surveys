@@ -10,8 +10,10 @@ export const getProgramRules = (
 ): QuestionnaireRule[] => {
     return (
         programRulesResponse?.map(({ id, condition, programRuleActions: actions }) => {
+            const dataElementVariablePattern = /#{(.*?)}/g;
+            const attributeVariablePattern = /A{(.*?)}/g;
             const dataElementIds =
-                condition.match(/#{(.*?)}/g)?.map(programRuleVariableName => {
+                condition.match(dataElementVariablePattern)?.map(programRuleVariableName => {
                     const variableName = programRuleVariableName.replace(/#{|}/g, "");
 
                     const dataElementId = programRuleVariables?.find(
@@ -23,14 +25,41 @@ export const getProgramRules = (
                     }
                     return dataElementId;
                 }) || [];
+            const teaIds =
+                condition.match(attributeVariablePattern)?.map(programRuleVariableName => {
+                    const variableName = programRuleVariableName.replace(/A{|}/g, "");
 
-            const parsedCondition = condition.replace(/#{(.*?)}/g, (match, programRuleVar) => {
-                const dataElementId = programRuleVariables?.find(
-                    programRuleVariable => programRuleVariable.name === programRuleVar
-                )?.dataElement?.id;
+                    const attributeId = programRuleVariables?.find(
+                        programRuleVariable => variableName === programRuleVariable.name
+                    )?.trackedEntityAttribute?.id;
 
-                return `#{${dataElementId}}`;
-            });
+                    if (!attributeId) {
+                        console.debug(`Could not find attributeId for variable: ${variableName}`);
+                    }
+                    return attributeId;
+                }) || [];
+
+            const parsedCondition = condition.replace(
+                dataElementVariablePattern,
+                (match, programRuleVar) => {
+                    const dataElementId = programRuleVariables?.find(
+                        programRuleVariable => programRuleVariable.name === programRuleVar
+                    )?.dataElement?.id;
+
+                    return `#{${dataElementId}}`;
+                }
+            );
+
+            const attributeParsedCondition = parsedCondition.replace(
+                attributeVariablePattern,
+                (match, programRuleVar) => {
+                    const attributeId = programRuleVariables?.find(
+                        programRuleVariable => programRuleVariable.name === programRuleVar
+                    )?.trackedEntityAttribute?.id;
+
+                    return `#{${attributeId}}`;
+                }
+            );
 
             const programRuleActionIds: string[] = actions.map(action => action.id);
 
@@ -42,6 +71,7 @@ export const getProgramRules = (
                         programRuleActionType: programRuleAction.programRuleActionType,
                         data: programRuleAction.data,
                         dataElement: programRuleAction.dataElement,
+                        trackedEntityAttribute: programRuleAction.trackedEntityAttribute,
                         programStageSection: {
                             id: programRuleAction.programStageSection?.id,
                         },
@@ -54,8 +84,9 @@ export const getProgramRules = (
 
             return {
                 id: id,
-                condition: parsedCondition.replace(/d2:/g, "fn:"), //replace d2: with fn: to decouple entity from DHIS
+                condition: attributeParsedCondition.replace(/d2:/g, "fn:"), //replace d2: with fn: to decouple entity from DHIS
                 dataElementIds: _(dataElementIds).uniq().compact().value(),
+                teAttributeIds: _(teaIds).uniq().compact().value(),
                 actions: programRuleActions || [],
             };
         }) || []
