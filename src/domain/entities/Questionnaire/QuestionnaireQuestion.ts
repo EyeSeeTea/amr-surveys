@@ -155,11 +155,25 @@ export class QuestionnaireQuestion {
         questions: Question[],
         updatedQuestion: Question,
         rules: QuestionnaireRule[],
-        questionnaire: Questionnaire
+        questionnaire: Questionnaire,
+        parentSectionHidden?: boolean
     ): Question[] {
         //1. Update the question value before anything else, the updated value needs to be used to parse rule conditions
         const updatedQuestions = questions.map(question => {
-            return question.id === updatedQuestion.id ? updatedQuestion : question;
+            if (question.id === updatedQuestion.id) {
+                return updatedQuestion;
+            } else if (
+                parentSectionHidden &&
+                question.text.includes("Add another") &&
+                question.type === "boolean"
+            ) {
+                return {
+                    ...question,
+                    value: false,
+                };
+            } else {
+                return question;
+            }
         });
 
         //2. Now, apply all possible side effects of the updated value to the rest of the questionnaire.
@@ -167,9 +181,12 @@ export class QuestionnaireQuestion {
         //Get list question ids that require update
         const allQuestionsRequiringUpdate = _(
             rules.flatMap(rule => {
-                const actionUpdates = rule.actions.flatMap(action => action?.dataElement?.id);
+                const actionUpdates = rule.actions.flatMap(
+                    action => action?.dataElement?.id || action.trackedEntityAttribute?.id
+                );
                 const dataElementUpdates = rule.dataElementIds;
-                return [...actionUpdates, ...dataElementUpdates];
+                const teaUpdates = rule.teAttributeIds;
+                return [...actionUpdates, ...dataElementUpdates, ...teaUpdates];
             })
         )
             .compact()
@@ -238,9 +255,11 @@ export class QuestionnaireQuestion {
             rule =>
                 rule.actions.filter(
                     action =>
-                        action.programRuleActionType === "HIDEFIELD" &&
-                        action.dataElement &&
-                        action.dataElement.id === question.id
+                        (action.programRuleActionType === "HIDEFIELD" &&
+                            action.dataElement &&
+                            action.dataElement.id === question.id) ||
+                        (action.trackedEntityAttribute &&
+                            action.trackedEntityAttribute.id === question.id)
                 ).length > 0
         );
         if (!applicableRules || applicableRules.length === 0) return question.isVisible;

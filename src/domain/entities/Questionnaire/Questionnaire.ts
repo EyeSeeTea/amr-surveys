@@ -2,7 +2,12 @@ import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
-import { Code, Question, isAntibioticQuestion } from "./QuestionnaireQuestion";
+import {
+    Code,
+    Question,
+    QuestionnaireQuestion,
+    isAntibioticQuestion,
+} from "./QuestionnaireQuestion";
 import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
@@ -142,13 +147,18 @@ export class Questionnaire {
         try {
             if (!questionnaire.rules || questionnaire.rules.length === 0) return questionnaire;
 
-            const allQsInQuestionnaire: Question[] = questionnaire.stages.flatMap(stage => {
+            const allQsInQuestionnaireStages: Question[] = questionnaire.stages.flatMap(stage => {
                 return stage.sections.flatMap(section => {
                     return section.questions.map(question => {
                         return { ...question, stageId: stage.id };
                     });
                 });
             });
+
+            const allQsInQuestionnaire = [
+                ...(questionnaire.entity?.questions || []),
+                ...allQsInQuestionnaireStages,
+            ];
 
             const updatedQuestionnaire = allQsInQuestionnaire.reduce(
                 (questionnaireAcc, question) => {
@@ -249,11 +259,18 @@ export class Questionnaire {
         initialLoad = false
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
-        const allQsInQuestionnaire = questionnaire.stages.flatMap((stage: QuestionnaireStage) => {
-            return stage.sections.flatMap(section => {
-                return section.questions.map(question => question);
-            });
-        });
+        const allQsInQuestionnaireStages = questionnaire.stages.flatMap(
+            (stage: QuestionnaireStage) => {
+                return stage.sections.flatMap(section => {
+                    return section.questions.map(question => question);
+                });
+            }
+        );
+
+        const allQsInQuestionnaire = [
+            ...(questionnaire.entity?.questions || []),
+            ...allQsInQuestionnaireStages,
+        ];
 
         const applicableRules = getApplicableRules(
             updatedQuestion,
@@ -283,7 +300,12 @@ export class Questionnaire {
             }),
             entity:
                 isEntityQuestionUpdated && questionnaire.entity
-                    ? this.updateEntityQuestion(questionnaire.entity, updatedQuestion)
+                    ? this.updateEntityQuestion(
+                          questionnaire.entity,
+                          updatedQuestion,
+                          questionnaire,
+                          applicableRules
+                      )
                     : questionnaire.entity,
         });
     }
@@ -343,11 +365,16 @@ export class Questionnaire {
 
     static updateEntityQuestion(
         questionnaireEntity: QuestionnaireEntity,
-        updatedQuestion: Question
+        updatedQuestion: Question,
+        questionnaire: Questionnaire,
+        rules: QuestionnaireRule[]
     ): QuestionnaireEntity | undefined {
-        const updatedEntityQuestions = questionnaireEntity.questions.map(question => {
-            return question.id === updatedQuestion.id ? updatedQuestion : question;
-        });
+        const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions(
+            questionnaireEntity.questions,
+            updatedQuestion,
+            rules,
+            questionnaire
+        );
 
         return {
             ...questionnaireEntity,

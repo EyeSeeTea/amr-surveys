@@ -31,6 +31,9 @@ export interface QuestionnaireRuleAction {
     dataElement?: {
         id: Id | undefined; // to hide
     };
+    trackedEntityAttribute?: {
+        id: Id | undefined; // to hide
+    };
     data?: string; // to assign
     programStageSection?: {
         id: Id | undefined; // to hide/show
@@ -44,6 +47,7 @@ export interface QuestionnaireRule {
     id: Id;
     condition: string; //condition is parsed with dataelementId e.g: #{dataElementId} == 'Yes'
     dataElementIds: Id[]; // all dataElements in condition (there could be mutiple conditions)
+    teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be mutiple conditions)
     actions: QuestionnaireRuleAction[];
     parsedResult?: boolean; //calculate the condition and store the result
 }
@@ -57,7 +61,9 @@ export const getApplicableRules = (
     const applicableRules = questionnaireRules.filter(
         rule =>
             rule.dataElementIds.includes(updatedQuestion.id) ||
-            rule.actions.some(action => action.dataElement?.id === updatedQuestion.id)
+            rule.teAttributeIds.includes(updatedQuestion.id) ||
+            rule.actions.some(action => action.dataElement?.id === updatedQuestion.id) ||
+            rule.actions.some(action => action.trackedEntityAttribute?.id === updatedQuestion.id)
     );
 
     //2. Run the rule conditions and return rules with parsed results
