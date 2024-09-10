@@ -111,7 +111,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 if (eventId) {
                     if (isTrackerProgram(programId)) {
                         if (!orgUnitId) return Future.error(new Error("Survey not found"));
-                        return this.getTrackerProgramById(eventId, programId, orgUnitId).flatMap(
+                        return this.getTrackerProgramById(eventId, programId).flatMap(
                             trackedEntity => {
                                 if (resp.programs[0] && trackedEntity) {
                                     return Future.success(
@@ -350,16 +350,15 @@ export class SurveyD2Repository implements SurveyRepository {
 
     private getTrackerProgramById(
         trackedEntityId: Id,
-        programId: Id,
-        orgUnitId: Id
+        programId: Id
     ): FutureData<TrackedEntity | void> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
-                orgUnit: orgUnitId,
                 program: programId,
                 trackedEntity: trackedEntityId,
                 ouMode: "DESCENDANTS",
+                enrollmentEnrolledBefore: new Date().toISOString(),
             })
         ).flatMap(resp => {
             if (resp) return Future.success(resp.instances[0]);
