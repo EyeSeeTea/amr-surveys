@@ -154,7 +154,7 @@ export class QuestionnaireQuestion {
     static updateQuestions(
         questions: Question[],
         updatedQuestion: Question,
-        rules: QuestionnaireRule[],
+        _rules: QuestionnaireRule[],
         questionnaire: Questionnaire,
         parentSectionHidden?: boolean
     ): Question[] {
@@ -180,7 +180,7 @@ export class QuestionnaireQuestion {
 
         //Get list question ids that require update
         const allQuestionsRequiringUpdate = _(
-            rules.flatMap(rule => {
+            questionnaire.rules.flatMap(rule => {
                 const actionUpdates = rule.actions.flatMap(
                     action => action?.dataElement?.id || action.trackedEntityAttribute?.id
                 );
@@ -196,10 +196,15 @@ export class QuestionnaireQuestion {
         const parsedAndUpdatedQuestions = updatedQuestions.map(question => {
             //Get the rules that are applicable for the current question
             //this is done to take care of any "side-effects" of an updated question.
-            const rulesApplicableForCurrentQuestion =
-                question.id !== updatedQuestion.id
-                    ? getApplicableRules(question, questionnaire.rules, updatedQuestions)
-                    : rules;
+            // const rulesApplicableForCurrentQuestion =
+            //     question.id !== updatedQuestion.id
+            //         ? getApplicableRules(question, questionnaire.rules, updatedQuestions)
+            //         : rules;
+            const rulesApplicableForCurrentQuestion = getApplicableRules(
+                question,
+                questionnaire.rules,
+                updatedQuestions
+            );
 
             //If the question is part of any of the rule actions, update the section
             const parsedAndUpdatedQuestion =
@@ -227,7 +232,7 @@ export class QuestionnaireQuestion {
             return this.updateQuestions(
                 acc,
                 { ...hiddenQuestion, value: undefined },
-                rules,
+                questionnaire.rules,
                 questionnaire
             );
         }, parsedAndUpdatedQuestions);

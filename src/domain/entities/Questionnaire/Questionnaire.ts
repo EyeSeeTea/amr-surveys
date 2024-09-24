@@ -8,7 +8,7 @@ import {
     QuestionnaireQuestion,
     isAntibioticQuestion,
 } from "./QuestionnaireQuestion";
-import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
+import { QuestionnaireRule } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
 export interface QuestionnaireBase {
@@ -259,23 +259,33 @@ export class Questionnaire {
         initialLoad = false
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
-        const allQsInQuestionnaireStages = questionnaire.stages.flatMap(
-            (stage: QuestionnaireStage) => {
-                return stage.sections.flatMap(section => {
-                    return section.questions.map(question => question);
-                });
-            }
-        );
+        // const allQsInQuestionnaireStages = questionnaire.stages.flatMap(
+        //     (stage: QuestionnaireStage) => {
+        //         return stage.sections.flatMap(section => {
+        //             return section.questions.map(question => question);
+        //         });
+        //     }
+        // );
 
-        const allQsInQuestionnaire = [
-            ...(questionnaire.entity?.questions || []),
-            ...allQsInQuestionnaireStages,
-        ];
+        // const allQsInQuestionnaire = [
+        //     ...(questionnaire.entity?.questions || []),
+        //     ...allQsInQuestionnaireStages,
+        // ];
 
-        const applicableRules = getApplicableRules(
-            updatedQuestion,
-            questionnaire.rules,
-            allQsInQuestionnaire
+        // const applicableRules = getApplicableRules(
+        //     updatedQuestion,
+        //     questionnaire.rules,
+        //     allQsInQuestionnaire
+        // );
+
+        const applicableRules = questionnaire.rules.filter(
+            rule =>
+                rule.dataElementIds.includes(updatedQuestion.id) ||
+                rule.teAttributeIds.includes(updatedQuestion.id) ||
+                rule.actions.some(action => action.dataElement?.id === updatedQuestion.id) ||
+                rule.actions.some(
+                    action => action.trackedEntityAttribute?.id === updatedQuestion.id
+                )
         );
 
         if (initialLoad && applicableRules.length === 0) return questionnaire;

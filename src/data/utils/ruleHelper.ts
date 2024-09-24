@@ -85,9 +85,12 @@ export const getProgramRules = (
             return {
                 id: id,
                 condition: attributeParsedCondition.replace(/d2:/g, "fn:"), //replace d2: with fn: to decouple entity from DHIS
+                d2Condition: attributeParsedCondition,
+                originalCondition: condition,
                 dataElementIds: _(dataElementIds).uniq().compact().value(),
                 teAttributeIds: _(teaIds).uniq().compact().value(),
                 actions: programRuleActions || [],
+                programRuleVariables: programRuleVariables || [],
             };
         }) || []
     );
