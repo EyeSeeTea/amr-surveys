@@ -336,9 +336,6 @@ const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: 
                     value: new xp.VariableValueJs(xp.ValueType.STRING, null, [], null),
                 };
             const value = getQuestionValueByType(currentQuestion);
-            //SNEHA DEBUG : This is my guess.
-            // const candidates = currentQuestion.type === "select" ? currentQuestion.options : [];
-            // const eventDate = new Date();
 
             const variableValue = getVariableValueByType(
                 currentQuestion,

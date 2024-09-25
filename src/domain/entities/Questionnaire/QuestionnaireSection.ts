@@ -41,13 +41,11 @@ export class QuestionnaireSectionM {
         sections: QuestionnaireSection[],
         updatedQuestion: Question,
         questionnaire: Questionnaire,
-        _rules: QuestionnaireRule[]
+        rules: QuestionnaireRule[]
     ): QuestionnaireSection[] {
         //Get all the sections that require update
         const allSectionsRequiringUpdate = _(
-            questionnaire.rules.flatMap(rule =>
-                rule.actions.flatMap(action => action.programStageSection?.id)
-            )
+            rules.flatMap(rule => rule.actions.flatMap(action => action.programStageSection?.id))
         )
             .compact()
             .value();
@@ -55,7 +53,7 @@ export class QuestionnaireSectionM {
         const updatedSections = sections.map(section => {
             //If the section is part of any of the rule actions, update the section
             const updatedSection = allSectionsRequiringUpdate.includes(section.code)
-                ? this.updateSection(section, questionnaire.rules)
+                ? this.updateSection(section, rules)
                 : section;
 
             return {
@@ -63,7 +61,7 @@ export class QuestionnaireSectionM {
                 questions: QuestionnaireQuestion.updateQuestions(
                     updatedSection.questions,
                     updatedQuestion,
-                    questionnaire.rules,
+                    rules,
                     questionnaire,
                     updatedSection.isVisible === false && section.isVisible === true
                 ),
