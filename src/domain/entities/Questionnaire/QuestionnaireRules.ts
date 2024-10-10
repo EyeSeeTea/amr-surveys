@@ -1,9 +1,13 @@
+import {
+    D2ExpressionParser,
+    D2ExpressionParserProgramRuleVariableName,
+    D2ExpressionParserProgramRuleVariableValue,
+} from "../../../data/entities/D2ExpressionParser";
 import { D2ProgramRuleVariable } from "../../../data/entities/D2Program";
+import { Maybe } from "../../../utils/ts-utils";
 import { Id } from "../Ref";
 import _ from "../generic/Collection";
 import { Question } from "./QuestionnaireQuestion";
-
-import * as xp from "@dhis2/expression-parser";
 
 const RULE_FUNCTIONS = ["fn:hasValue", "fn:daysBetween", "fn:yearsBetween"];
 const RULE_OPERATORS = [
@@ -97,7 +101,7 @@ export const getApplicableRules = (
     return parsedApplicableRules;
 };
 
-const getQuestionValueByType = (question: Question): string => {
+export const getQuestionValueByType = (question: Question): string => {
     switch (question.type) {
         case "select":
             return question.value?.code ?? "";
@@ -293,97 +297,51 @@ const parseCondition = (
     return andConditions.every(condition => condition);
 };
 
-const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: Question[]) => {
-    try {
-        const dataItemsExpressionParser = new xp.ExpressionJs(
-            rule.d2Condition,
-            xp.ExpressionMode.RULE_ENGINE_CONDITION
-        );
-
-        const dataItems = dataItemsExpressionParser.collectDataItems();
-        const dataItemValueMap = dataItems.map((dataItem: xp.DataItemJs) => {
-            const currentQuestion = questions.find(question => question.id === dataItem.uid0.value);
-            if (!currentQuestion) return { dataItem: dataItem, value: "" };
-
-            const value = getQuestionValueByType(currentQuestion);
-            return {
-                dataItem: dataItem,
-                value: value,
-            };
-        });
-        const dataItemsMap = new Map(dataItemValueMap.map(a => [a.dataItem, a.value]));
-
-        const programRuleVariableExpressionParser = new xp.ExpressionJs(
-            rule.originalCondition,
-            xp.ExpressionMode.RULE_ENGINE_CONDITION
-        );
-
-        const programRuleVariables =
-            programRuleVariableExpressionParser.collectProgramRuleVariableNames();
-        const programRuleVariablesValueMap = programRuleVariables.map(programRuleVariable => {
-            const currentProgramRuleVariable = rule.programRuleVariables?.find(
-                prv => prv.name === programRuleVariable
-            );
+function getProgramRuleVariableValues(
+    programRuleVariables: Maybe<D2ProgramRuleVariable[]>,
+    questions: Question[]
+): Map<string, D2ExpressionParserProgramRuleVariableValue> {
+    const programRuleVariableValues: Map<
+        D2ExpressionParserProgramRuleVariableName,
+        D2ExpressionParserProgramRuleVariableValue
+    > = new Map(
+        programRuleVariables?.map(prv => {
             const currentQuestion = questions.find(
                 question =>
-                    question.id === currentProgramRuleVariable?.dataElement?.id ||
-                    question.id === currentProgramRuleVariable?.trackedEntityAttribute?.id
+                    question.id === prv?.dataElement?.id ||
+                    question.id === prv?.trackedEntityAttribute?.id
             );
 
-            if (!currentQuestion)
-                return {
-                    programRuleVariable: programRuleVariable,
-                    value: new xp.VariableValueJs(xp.ValueType.STRING, null, [], null),
-                };
+            if (!currentQuestion) return [prv.name, { type: "text", value: "" }];
             const value = getQuestionValueByType(currentQuestion);
 
-            const variableValue = getVariableValueByType(
-                currentQuestion,
-                value === "" ? null : value
-            );
+            return [
+                prv.name,
+                {
+                    type: currentQuestion.type,
+                    value: value,
+                },
+            ];
+        })
+    );
 
-            return {
-                programRuleVariable: programRuleVariable,
-                value: variableValue,
-            };
-        });
-        const programRuleVariablesMap = new Map(
-            programRuleVariablesValueMap.map(a => [a.programRuleVariable, a.value])
+    return programRuleVariableValues;
+}
+
+const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: Question[]) => {
+    try {
+        const programRuleVariableValues = getProgramRuleVariableValues(
+            rule.programRuleVariables,
+            questions
         );
 
-        const expressionData = new xp.ExpressionDataJs(
-            programRuleVariablesMap,
-            undefined,
-            undefined,
-            dataItemsMap,
-            undefined
+        return new D2ExpressionParser().evaluateRuleEngineCondtion(
+            rule.originalCondition,
+
+            programRuleVariableValues
         );
-        const parsedResult: boolean = programRuleVariableExpressionParser.evaluate(
-            a => console.debug("ABC" + a), //SNEGHA DEBUG : what is this?
-            expressionData
-        );
-        return parsedResult;
     } catch (error) {
         console.error(`Error parsing rule condition: ${rule.condition} with error : ${error}`);
         return false;
-    }
-};
-
-const getVariableValueByType = (
-    question: Question,
-    stringValue: xp.Nullable<string>
-): xp.VariableValueJs => {
-    switch (question.type) {
-        case "select":
-        case "text":
-            return new xp.VariableValueJs(xp.ValueType.STRING, stringValue, [], null);
-        case "boolean":
-            return new xp.VariableValueJs(xp.ValueType.BOOLEAN, stringValue, [], null);
-        case "date":
-        case "datetime":
-            return new xp.VariableValueJs(xp.ValueType.DATE, stringValue, [], null);
-
-        case "number":
-            return new xp.VariableValueJs(xp.ValueType.NUMBER, stringValue, [], null);
     }
 };
