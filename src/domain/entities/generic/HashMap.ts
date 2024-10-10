@@ -123,6 +123,8 @@ export class HashMap<K, V> {
     toObject(): ToObject<K, V> {
         return imap.toObject(this._map) as ToObject<K, V>;
     }
+    //TO DO
+    // toMap()
 }
 
 type ToObject<K, V> = K extends keyof any ? Record<K, V> : Record<string, V>;
