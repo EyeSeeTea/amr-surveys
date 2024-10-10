@@ -1,7 +1,7 @@
 import {
     D2ExpressionParser,
-    D2ExpressionParserProgramRuleVariableName,
-    D2ExpressionParserProgramRuleVariableValue,
+    ProgramRuleVariableName,
+    ProgramRuleVariableValue,
 } from "../../../data/entities/D2ExpressionParser";
 import { D2ProgramRuleVariable } from "../../../data/entities/D2Program";
 import { Maybe } from "../../../utils/ts-utils";
@@ -98,30 +98,33 @@ export const getQuestionValueByType = (question: Question): string => {
 function getProgramRuleVariableValues(
     programRuleVariables: Maybe<D2ProgramRuleVariable[]>,
     questions: Question[]
-): Map<string, D2ExpressionParserProgramRuleVariableValue> {
-    const programRuleVariableValues: Map<
-        D2ExpressionParserProgramRuleVariableName,
-        D2ExpressionParserProgramRuleVariableValue
-    > = new Map(
-        programRuleVariables?.map(prv => {
-            const currentQuestion = questions.find(
-                question =>
-                    question.id === prv?.dataElement?.id ||
-                    question.id === prv?.trackedEntityAttribute?.id
-            );
+): Map<string, ProgramRuleVariableValue> {
+    const programRuleVariableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue> =
+        new Map(
+            programRuleVariables?.map(prv => {
+                const currentQuestion = questions.find(
+                    question =>
+                        question.id === prv?.dataElement?.id ||
+                        question.id === prv?.trackedEntityAttribute?.id
+                );
 
-            if (!currentQuestion) return [prv.name, { type: "text", value: "" }];
-            const value = getQuestionValueByType(currentQuestion);
+                if (!currentQuestion) return [prv.name, { type: "text", value: "" }];
+                const value = getQuestionValueByType(currentQuestion);
 
-            return [
-                prv.name,
-                {
-                    type: currentQuestion.type,
-                    value: value,
-                },
-            ];
-        })
-    );
+                return [
+                    prv.name,
+                    {
+                        type:
+                            currentQuestion.type === "datetime"
+                                ? "date"
+                                : currentQuestion.type === "select"
+                                ? "text"
+                                : currentQuestion.type,
+                        value: value,
+                    },
+                ];
+            })
+        );
 
     return programRuleVariableValues;
 }
@@ -133,9 +136,8 @@ const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: 
             questions
         );
 
-        return new D2ExpressionParser().evaluateRuleEngineCondtion(
+        return new D2ExpressionParser().evaluateRuleEngineCondition(
             rule.originalCondition,
-
             programRuleVariableValues
         );
     } catch (error) {

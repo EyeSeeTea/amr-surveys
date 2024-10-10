@@ -1,38 +1,84 @@
 import * as xp from "@dhis2/expression-parser";
 import _c from "../../domain/entities/generic/Collection";
 
-export type D2ExpressionParserProgramRuleVariableTypes =
-    | "text"
-    | "number"
-    | "date"
-    | "datetime"
-    | "boolean"
-    | "select";
+export type ProgramRuleVariableType = "text" | "number" | "date" | "boolean";
 
-export type D2ExpressionParserProgramRuleVariableName = string;
-export type D2ExpressionParserProgramRuleVariableValue = {
-    type: D2ExpressionParserProgramRuleVariableTypes;
-    value: string | null;
+export type ProgramRuleVariableName = string;
+export type ProgramRuleVariableValue = {
+    type: ProgramRuleVariableType;
+    value: string;
 };
 
 export class D2ExpressionParser {
-    public evaluateRuleEngineCondtion(
+    public evaluateRuleEngineCondition(
         ruleCondtion: string,
-        ruleVariables: Map<
-            D2ExpressionParserProgramRuleVariableName,
-            D2ExpressionParserProgramRuleVariableValue
-        >
+        ruleVariables: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
     ): boolean {
-        const programRuleVariableExpressionParser = new xp.ExpressionJs(
+        const expressionParser = new xp.ExpressionJs(
             ruleCondtion,
             xp.ExpressionMode.RULE_ENGINE_CONDITION
         );
 
         //Mapper function for program rule variables
-        const programRuleVariables =
-            programRuleVariableExpressionParser.collectProgramRuleVariableNames();
+        const variables = expressionParser.collectProgramRuleVariableNames();
 
-        const programRuleVariablesValueMap = programRuleVariables.map(programRuleVariable => {
+        const variablesValueMap = this.mapProgramVariables(variables, ruleVariables);
+
+        const variablesMap = new Map(
+            variablesValueMap.map(variable => [variable.programRuleVariable, variable.value])
+        );
+
+        // const programVariables = expressionParser.collectProgramVariablesNames();
+        // const programVariablesValues = _c(
+        //     programVariables.map(programVariable => {
+        //         if (programVariable === "current_date")
+        //             return {
+        //                 programVariable: xp.ProgramVariable.current_date.name,
+        //                 value: new Date(),
+        //             };
+        //     })
+        // )
+        //     .compact()
+        //     .value();
+        // const programVariablesMap = new Map(
+        //     programVariablesValues.map(a => [a.programVariable, a.value])
+        // );
+        const expressionData = new xp.ExpressionDataJs(
+            variablesMap,
+            undefined,
+            undefined,
+            undefined,
+            undefined
+        );
+
+        const parsedResult: boolean = expressionParser.evaluate(
+            a => console.debug("ABC" + a), //SNEHA DEBUG : what is this?
+            expressionData
+        );
+        return parsedResult;
+    }
+
+    private getVariableValueByType = (
+        type: ProgramRuleVariableType,
+        stringValue: xp.Nullable<string>
+    ): xp.VariableValueJs => {
+        switch (type) {
+            case "text":
+                return new xp.VariableValueJs(xp.ValueType.STRING, stringValue, [], null); //Use record mapping
+            case "boolean":
+                return new xp.VariableValueJs(xp.ValueType.BOOLEAN, stringValue, [], null);
+            case "date":
+                return new xp.VariableValueJs(xp.ValueType.DATE, stringValue, [], null);
+            case "number":
+                return new xp.VariableValueJs(xp.ValueType.NUMBER, stringValue, [], null);
+        }
+    };
+
+    private mapProgramVariables(
+        programRuleVariables: string[],
+        ruleVariables: Map<string, ProgramRuleVariableValue>
+    ) {
+        return programRuleVariables.map(programRuleVariable => {
             const currentProgramRuleVariableValue = ruleVariables.get(programRuleVariable);
 
             if (!currentProgramRuleVariableValue)
@@ -53,57 +99,5 @@ export class D2ExpressionParser {
                 value: variableValue,
             };
         });
-
-        const programRuleVariablesMap = new Map(
-            programRuleVariablesValueMap.map(a => [a.programRuleVariable, a.value])
-        );
-
-        const programVariables = programRuleVariableExpressionParser.collectProgramVariablesNames();
-        const programVariablesValues = _c(
-            programVariables.map(programVariable => {
-                if (programVariable === "current_date")
-                    return {
-                        programVariable: xp.ProgramVariable.current_date.name,
-                        value: new Date(),
-                    };
-            })
-        )
-            .compact()
-            .value();
-        const programVariablesMap = new Map(
-            programVariablesValues.map(a => [a.programVariable, a.value])
-        );
-        const expressionData = new xp.ExpressionDataJs(
-            programRuleVariablesMap,
-            programVariablesMap,
-            undefined,
-            undefined,
-            undefined
-        );
-
-        const parsedResult: boolean = programRuleVariableExpressionParser.evaluate(
-            a => console.debug("ABC" + a), //SNEHA DEBUG : what is this?
-            expressionData
-        );
-        return parsedResult;
     }
-
-    private getVariableValueByType = (
-        type: D2ExpressionParserProgramRuleVariableTypes,
-        stringValue: xp.Nullable<string>
-    ): xp.VariableValueJs => {
-        switch (type) {
-            case "select":
-            case "text":
-                return new xp.VariableValueJs(xp.ValueType.STRING, stringValue, [], null);
-            case "boolean":
-                return new xp.VariableValueJs(xp.ValueType.BOOLEAN, stringValue, [], null);
-            case "date":
-            case "datetime":
-                return new xp.VariableValueJs(xp.ValueType.DATE, stringValue, [], null);
-
-            case "number":
-                return new xp.VariableValueJs(xp.ValueType.NUMBER, stringValue, [], null);
-        }
-    };
 }
