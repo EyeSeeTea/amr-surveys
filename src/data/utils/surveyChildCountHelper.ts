@@ -14,6 +14,7 @@ import {
 } from "../entities/D2Survey";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 
 export type SurveyChildCountType =
     | { type: "value"; value: FutureData<number> }
@@ -89,6 +90,37 @@ export const getSurveyChildCount = (
     }
 };
 
+const asyncGetEventSurveyChildCount = async (
+    page: number,
+    programId: Id,
+    api: D2Api,
+    ouId: string,
+    ouMode: "SELECTED" | "CHILDREN" | "DESCENDANTS" | undefined,
+    filterStr: string
+) => {
+    let response: TrackerEventsResponse;
+    let count = 0;
+    const pageSize = 250;
+
+    do {
+        response = await api.tracker.events
+            .get({
+                fields: { event: true },
+                pageSize: pageSize,
+                page: page,
+                totalPages: true,
+                program: programId,
+                orgUnit: ouId,
+                ouMode: ouMode,
+                filter: filterStr,
+            })
+            .getData();
+        count += response.instances.length;
+        page++;
+    } while (response.page < Math.ceil((response.total as number) / pageSize));
+
+    return count;
+};
 const getEventSurveyCount = (
     programId: Id,
     orgUnitId: Id,
@@ -105,17 +137,16 @@ const getEventSurveyCount = (
             ? `${filterParentDEId}:eq:${parentSurveyId}`
             : `${filterParentDEId}:eq:${secondaryParentId} `;
 
-    return apiToFuture(
-        api.tracker.events.get({
-            fields: { event: true },
-            program: programId,
-            orgUnit: ouId,
-            ouMode: ouMode,
-            filter: filterStr,
-        })
-    ).flatMap(response => {
-        return Future.success(response.instances.length);
-    });
+    const childEventCount = asyncGetEventSurveyChildCount(
+        1,
+        programId,
+        api,
+        ouId,
+        ouMode,
+        filterStr
+    );
+
+    return Future.fromPromise(childEventCount);
 };
 
 const getTrackerSurveyCount = (
@@ -134,12 +165,15 @@ const getTrackerSurveyCount = (
     return apiToFuture(
         api.tracker.trackedEntities.get({
             fields: { trackedEntity: true },
+            pageSize: 250,
+            totalPages: true,
             program: programId,
             orgUnit: orgUnitId,
             ouMode: ouMode,
             filter: `${filterParentDEId}:eq:${parentSurveyId}`,
         })
     ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-        return Future.success(trackedEntities.instances.length);
+        if (trackedEntities.total) return Future.success(trackedEntities.total);
+        else return Future.success(trackedEntities.instances.length);
     });
 };
