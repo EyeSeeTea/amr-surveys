@@ -162,24 +162,23 @@ export class QuestionnaireQuestion {
         const updatedQuestions = questions.map(question => {
             if (question.id === updatedQuestion.id) {
                 return updatedQuestion;
-            } else if (
-                parentSectionHidden &&
-                question.text.includes("Add another") &&
-                question.type === "boolean"
-            ) {
-                return {
-                    ...question,
-                    value: false,
-                };
-            } else {
+            }
+            // else if (
+            //     parentSectionHidden &&
+            //     question.text.includes("Add another") &&
+            //     question.type === "boolean"
+            // ) {
+            //     return {
+            //         ...question,
+            //         value: false,
+            //     };
+            // }
+            else {
                 return question;
             }
         });
 
-        //2. Now, apply all possible side effects of the updated value to the rest of the questionnaire.
-
-        //Get list question ids that require update
-        const allQuestionsRequiringUpdate = _(
+        const allSectionQuestionIdsRequiringUpdate = _(
             rules.flatMap(rule => {
                 const actionUpdates = rule.actions.flatMap(
                     action => action?.dataElement?.id || action.trackedEntityAttribute?.id
@@ -187,8 +186,10 @@ export class QuestionnaireQuestion {
                 const dataElementUpdates = rule.dataElementIds;
                 const teaUpdates = rule.teAttributeIds;
                 return [...actionUpdates, ...dataElementUpdates, ...teaUpdates];
+                // return actionUpdates;
             })
         )
+            .filter(id => id !== updatedQuestion.id)
             .compact()
             .uniq()
             .value();
@@ -196,16 +197,16 @@ export class QuestionnaireQuestion {
         const parsedAndUpdatedQuestions = updatedQuestions.map(question => {
             //Get the rules that are applicable for the current question
             //this is done to take care of any "side-effects" of an updated question.
-            const rulesApplicableForCurrentQuestion =
-                question.id !== updatedQuestion.id
-                    ? getApplicableRules(question, questionnaire.rules, updatedQuestions)
-                    : rules;
+            // const rulesApplicableForCurrentQuestion =
+            //     question.id !== updatedQuestion.id
+            //         ? getApplicableRules(question, questionnaire.rules, updatedQuestions)
+            //         : rules;
 
             //If the question is part of any of the rule actions, update the section
             const parsedAndUpdatedQuestion =
-                allQuestionsRequiringUpdate.includes(question.id) ||
-                question.id === updatedQuestion.id
-                    ? this.updateQuestion(question, rulesApplicableForCurrentQuestion)
+                question.id === updatedQuestion.id ||
+                allSectionQuestionIdsRequiringUpdate.includes(question.id)
+                    ? this.updateQuestion(question, rules)
                     : question;
 
             return parsedAndUpdatedQuestion;
@@ -218,23 +219,90 @@ export class QuestionnaireQuestion {
                 updatedQuestions.find(uq => uq.id === q.id)?.isVisible === true
         );
 
-        if (hiddenQuestions.length === 0)
-            return _(parsedAndUpdatedQuestions)
-                .sortBy(question => question.sortOrder)
-                .value();
-
-        const resetQuestions = hiddenQuestions.reduce((acc, hiddenQuestion) => {
-            return this.updateQuestions(
-                acc,
-                { ...hiddenQuestion, value: undefined },
-                rules,
-                questionnaire
-            );
-        }, parsedAndUpdatedQuestions);
-
-        return _(resetQuestions)
+        const sortedUpdatedQuestions = _(parsedAndUpdatedQuestions)
             .sortBy(question => question.sortOrder)
             .value();
+
+        // if (hiddenQuestions.length === 0) return sortedUpdatedQuestions;
+
+        const resetQuestions = hiddenQuestions.reduce((acc, hiddenQuestion) => {
+            const resetQuestion =
+                hiddenQuestion.type === "boolean"
+                    ? { ...hiddenQuestion, value: false }
+                    : { ...hiddenQuestion, value: undefined };
+            return this.updateQuestions(acc, resetQuestion, rules, questionnaire);
+        }, parsedAndUpdatedQuestions);
+
+        const sortedResetUpdatedQuestions = _(resetQuestions)
+            .sortBy(question => question.sortOrder)
+            .value();
+
+        // return sortedResetUpdatedQuestions;
+
+        const finalUpdatedQuestions =
+            hiddenQuestions.length === 0 ? sortedUpdatedQuestions : sortedResetUpdatedQuestions;
+
+        //Get list question ids that require update
+
+        // const allQuestionIdsRequiringUpdate = _(
+        //     rules.flatMap(rule => {
+        //         const actionUpdates = rule.actions.flatMap(
+        //             action => action?.dataElement?.id || action.trackedEntityAttribute?.id
+        //         );
+        //         // const dataElementUpdates = rule.dataElementIds;
+        //         // const teaUpdates = rule.teAttributeIds;
+        //         // return [...actionUpdates, ...dataElementUpdates, ...teaUpdates];
+        //         return actionUpdates;
+        //     })
+        // )
+        //     .filter(id => id !== updatedQuestion.id)
+        //     .compact()
+        //     .uniq()
+        //     .value();
+
+        const allQuestionIdsRequiringUpdate = _(
+            questionnaire.rules.flatMap(rule => {
+                if (
+                    rule.dataElementIds.includes(updatedQuestion.id) ||
+                    rule.teAttributeIds.includes(updatedQuestion.id)
+                    //sneha : check that the rule is "applicable"also i.e. the condition is true
+                ) {
+                    const actionUpdates = rule.actions.flatMap(
+                        action => action?.dataElement?.id || action.trackedEntityAttribute?.id
+                    );
+
+                    return actionUpdates;
+                }
+            })
+        )
+            .compact()
+            .uniq()
+            .value();
+
+        const allQuestionsRequiringUpdate = finalUpdatedQuestions.filter(question =>
+            allQuestionIdsRequiringUpdate.includes(question.id)
+        );
+        if (allQuestionsRequiringUpdate.length === 0) return finalUpdatedQuestions;
+
+        const finalUpdatesWithSideEffects = allQuestionsRequiringUpdate.reduce(
+            (acc, questionRequiringUpdate) => {
+                console.log("updatedQuestion", updatedQuestion);
+                console.log("questionRequiringUpdate", questionRequiringUpdate);
+                console.log("rules", rules);
+                console.log("acc", acc);
+                const updates = this.updateQuestions(
+                    acc,
+                    questionRequiringUpdate,
+                    rules,
+                    questionnaire
+                );
+                console.log("updates", updates);
+                return updates;
+            },
+            finalUpdatedQuestions
+        );
+
+        return finalUpdatesWithSideEffects;
     }
 
     private static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
