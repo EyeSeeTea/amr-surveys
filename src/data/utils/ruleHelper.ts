@@ -62,7 +62,7 @@ export const getProgramRules = (
 
             return {
                 id: id,
-                originalCondition: condition,
+                condition: condition,
                 dataElementIds: _(dataElementIds).uniq().compact().value(),
                 teAttributeIds: _(teaIds).uniq().compact().value(),
                 actions: programRuleActions || [],

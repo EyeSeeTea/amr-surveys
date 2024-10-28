@@ -9,6 +9,13 @@ export type ProgramRuleVariableValue = {
     value: string;
 };
 
+const VariableValueTypeMap: Record<ProgramRuleVariableType, xp.ValueType> = {
+    text: xp.ValueType.STRING,
+    boolean: xp.ValueType.BOOLEAN,
+    date: xp.ValueType.DATE,
+    number: xp.ValueType.NUMBER,
+};
+
 export class D2ExpressionParser {
     public evaluateRuleEngineCondition(
         ruleCondtion: string,
@@ -52,7 +59,7 @@ export class D2ExpressionParser {
         );
 
         const parsedResult: boolean = expressionParser.evaluate(
-            a => console.debug("ABC" + a), //SNEHA DEBUG : what is this?
+            () => console.debug(""),
             expressionData
         );
         return parsedResult;
@@ -62,16 +69,8 @@ export class D2ExpressionParser {
         type: ProgramRuleVariableType,
         stringValue: xp.Nullable<string>
     ): xp.VariableValueJs => {
-        switch (type) {
-            case "text":
-                return new xp.VariableValueJs(xp.ValueType.STRING, stringValue, [], null); //Use record mapping
-            case "boolean":
-                return new xp.VariableValueJs(xp.ValueType.BOOLEAN, stringValue, [], null);
-            case "date":
-                return new xp.VariableValueJs(xp.ValueType.DATE, stringValue, [], null);
-            case "number":
-                return new xp.VariableValueJs(xp.ValueType.NUMBER, stringValue, [], null);
-        }
+        const valueType = VariableValueTypeMap[type];
+        return new xp.VariableValueJs(valueType, stringValue, [], null);
     };
 
     private mapProgramVariables(

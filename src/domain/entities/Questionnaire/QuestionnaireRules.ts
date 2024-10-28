@@ -42,9 +42,7 @@ export interface QuestionnaireRuleAction {
 }
 export interface QuestionnaireRule {
     id: Id;
-    // condition: string; //condition is parsed with dataelementId e.g: #{dataElementId} == 'Yes'
-    // d2Condition: string; //SNEHA TO DO : remove above condition and use this condition after testing
-    originalCondition: string;
+    condition: string;
     dataElementIds: Id[]; // all dataElements in condition (there could be mutiple conditions)
     teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be mutiple conditions)
     actions: QuestionnaireRuleAction[];
@@ -137,13 +135,11 @@ const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: 
         );
 
         return new D2ExpressionParser().evaluateRuleEngineCondition(
-            rule.originalCondition,
+            rule.condition,
             programRuleVariableValues
         );
     } catch (error) {
-        console.error(
-            `Error parsing rule condition: ${rule.originalCondition} with error : ${error}`
-        );
+        console.error(`Error parsing rule condition: ${rule.condition} with error : ${error}`);
         return false;
     }
 };
