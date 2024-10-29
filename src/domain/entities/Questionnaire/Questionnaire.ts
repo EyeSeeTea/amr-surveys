@@ -272,7 +272,7 @@ export class Questionnaire {
             ...allQsInQuestionnaireStages,
         ];
 
-        const updatedAllQsInQuestionnaire = allQsInQuestionnaire.map(question => {
+        const allQsInQuestionnaireWithUpdatedQ = allQsInQuestionnaire.map(question => {
             if (question.id === updatedQuestion.id) return updatedQuestion;
             else return question;
         });
@@ -280,7 +280,7 @@ export class Questionnaire {
         const applicableRules = getApplicableRules(
             updatedQuestion,
             questionnaire.rules,
-            updatedAllQsInQuestionnaire
+            allQsInQuestionnaireWithUpdatedQ
         );
 
         if (initialLoad && applicableRules.length === 0) return questionnaire;
@@ -375,6 +375,7 @@ export class Questionnaire {
         rules: QuestionnaireRule[]
     ): QuestionnaireEntity | undefined {
         const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions(
+            [],
             questionnaireEntity.questions,
             updatedQuestion,
             rules,

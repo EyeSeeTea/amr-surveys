@@ -59,6 +59,7 @@ export class QuestionnaireSectionM {
             return {
                 ...updatedSection,
                 questions: QuestionnaireQuestion.updateQuestions(
+                    [],
                     updatedSection.questions,
                     updatedQuestion,
                     rules,
