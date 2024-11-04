@@ -1,5 +1,6 @@
 import * as xp from "@dhis2/expression-parser";
 import _c from "../../domain/entities/generic/Collection";
+import { Either } from "../../domain/entities/generic/Either";
 
 export type ProgramRuleVariableType = "text" | "number" | "date" | "boolean";
 
@@ -20,49 +21,60 @@ export class D2ExpressionParser {
     public evaluateRuleEngineCondition(
         ruleCondtion: string,
         ruleVariables: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
-    ): boolean {
-        const expressionParser = new xp.ExpressionJs(
-            ruleCondtion,
-            xp.ExpressionMode.RULE_ENGINE_CONDITION
-        );
+    ): Either<Error, boolean> {
+        try {
+            const expressionParser = new xp.ExpressionJs(
+                ruleCondtion,
+                xp.ExpressionMode.RULE_ENGINE_CONDITION
+            );
 
-        //Mapper function for program rule variables
-        const variables = expressionParser.collectProgramRuleVariableNames();
+            //Mapper function for program rule variables
+            const variables = expressionParser.collectProgramRuleVariableNames();
 
-        const variablesValueMap = this.mapProgramVariables(variables, ruleVariables);
+            const variablesValueMap = this.mapProgramVariables(variables, ruleVariables);
 
-        const variablesMap = new Map(
-            variablesValueMap.map(variable => [variable.programRuleVariable, variable.value])
-        );
+            const variablesMap = new Map(
+                variablesValueMap.map(variable => [variable.programRuleVariable, variable.value])
+            );
 
-        // const programVariables = expressionParser.collectProgramVariablesNames();
-        // const programVariablesValues = _c(
-        //     programVariables.map(programVariable => {
-        //         if (programVariable === "current_date")
-        //             return {
-        //                 programVariable: xp.ProgramVariable.current_date.name,
-        //                 value: new Date(),
-        //             };
-        //     })
-        // )
-        //     .compact()
-        //     .value();
-        // const programVariablesMap = new Map(
-        //     programVariablesValues.map(a => [a.programVariable, a.value])
-        // );
-        const expressionData = new xp.ExpressionDataJs(
-            variablesMap,
-            undefined,
-            undefined,
-            undefined,
-            undefined
-        );
+            //TO DO : use switch instead of If
 
-        const parsedResult: boolean = expressionParser.evaluate(
-            () => console.debug(""),
-            expressionData
-        );
-        return parsedResult;
+            // const programVariables = expressionParser.collectProgramVariablesNames();
+            // const programVariablesValues = _c(
+            //     programVariables.map(programVariable => {
+            //
+            //         if (programVariable === "current_date")
+            //             return {
+            //                 programVariable: xp.ProgramVariable.current_date.name,
+            //                 value: new Date(),
+            //             };
+            //     })
+            // )
+            //     .compact()
+            //     .value();
+            // const programVariablesMap = new Map(
+            //     programVariablesValues.map(a => [a.programVariable, a.value])
+            // );
+            const expressionData = new xp.ExpressionDataJs(
+                variablesMap,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+            );
+
+            const parsedResult: boolean = expressionParser.evaluate(
+                () => console.debug(""),
+                expressionData
+            );
+            return Either.success(parsedResult);
+        } catch (error) {
+            return Either.error(
+                new Error(
+                    `An error occurred while evaluating the rule in D2ExpressionParser::evaluateRuleEngineCondition: ${error}`
+                )
+            );
+        }
     }
 
     private getVariableValueByType = (

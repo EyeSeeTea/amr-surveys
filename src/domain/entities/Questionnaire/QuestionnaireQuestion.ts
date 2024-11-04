@@ -234,18 +234,12 @@ export class QuestionnaireQuestion {
 
         const finalUpdatesWithSideEffects = allQuestionsRequiringUpdate.reduce(
             (acc, questionRequiringUpdate) => {
-                console.debug("updatedQuestion", updatedQuestion);
-                console.debug("questionRequiringUpdate", questionRequiringUpdate);
-                console.debug("acc", acc);
-
                 const currentApplicableRules = getApplicableRules(
                     questionRequiringUpdate,
                     questionnaire.rules,
                     acc
                 );
-                console.debug("rules", currentApplicableRules);
                 processedQuestions.push(questionRequiringUpdate);
-                console.debug("processedQuestions", processedQuestions);
                 const updates = this.updateQuestions(
                     processedQuestions,
                     acc,
@@ -253,8 +247,6 @@ export class QuestionnaireQuestion {
                     currentApplicableRules,
                     questionnaire
                 );
-
-                console.debug("updates", updates);
                 return updates;
             },
             finalUpdatedQuestions

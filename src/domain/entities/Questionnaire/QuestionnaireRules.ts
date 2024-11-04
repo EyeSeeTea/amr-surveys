@@ -127,19 +127,16 @@ function getProgramRuleVariableValues(
     return programRuleVariableValues;
 }
 
-const parseConditionWithExpressionParser = (rule: QuestionnaireRule, questions: Question[]) => {
-    try {
-        const programRuleVariableValues = getProgramRuleVariableValues(
-            rule.programRuleVariables,
-            questions
-        );
+const parseConditionWithExpressionParser = (
+    rule: QuestionnaireRule,
+    questions: Question[]
+): boolean => {
+    const programRuleVariableValues = getProgramRuleVariableValues(
+        rule.programRuleVariables,
+        questions
+    );
 
-        return new D2ExpressionParser().evaluateRuleEngineCondition(
-            rule.condition,
-            programRuleVariableValues
-        );
-    } catch (error) {
-        console.error(`Error parsing rule condition: ${rule.condition} with error : ${error}`);
-        return false;
-    }
+    return new D2ExpressionParser()
+        .evaluateRuleEngineCondition(rule.condition, programRuleVariableValues)
+        .match({ success: x => x, error: () => false });
 };
