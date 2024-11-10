@@ -28,17 +28,13 @@ export class D2ExpressionParser {
                 xp.ExpressionMode.RULE_ENGINE_CONDITION
             );
 
-            //Mapper function for program rule variables
             const variables = expressionParser.collectProgramRuleVariableNames();
-
             const variablesValueMap = this.mapProgramVariables(variables, ruleVariables);
-
             const variablesMap = new Map(
                 variablesValueMap.map(variable => [variable.programRuleVariable, variable.value])
             );
 
             const programVariables = expressionParser.collectProgramVariablesNames();
-
             programVariables.forEach(programVariable => {
                 switch (programVariable) {
                     case "current_date": {
@@ -70,6 +66,7 @@ export class D2ExpressionParser {
                 () => console.debug(""),
                 expressionData
             );
+
             return Either.success(parsedResult);
         } catch (error) {
             return Either.error(

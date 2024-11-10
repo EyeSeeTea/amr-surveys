@@ -156,8 +156,7 @@ export class QuestionnaireQuestion {
         questions: Question[],
         updatedQuestion: Question,
         rules: QuestionnaireRule[],
-        questionnaire: Questionnaire,
-        _parentSectionHidden?: boolean
+        questionnaire: Questionnaire
     ): Question[] {
         //1. Update the question value before anything else, the updated value needs to be used to parse rule conditions
         const updatedQuestions = questions.map(question => {
@@ -169,7 +168,6 @@ export class QuestionnaireQuestion {
         });
 
         const parsedAndUpdatedQuestions = updatedQuestions.map(question => {
-            //If the question is part of any of the rule actions, update the section
             const parsedAndUpdatedQuestion =
                 question.id === updatedQuestion.id
                     ? this.updateQuestion(question, rules)
@@ -177,42 +175,17 @@ export class QuestionnaireQuestion {
 
             return parsedAndUpdatedQuestion;
         });
-        processedQuestions.push(updatedQuestion);
-        //If any of the updated question has been changed to hidden, then reset its value
-        //When it is shown again, the user can enter a "fresh" value
-        const hiddenQuestions = parsedAndUpdatedQuestions.filter(
-            q =>
-                q.isVisible === true &&
-                updatedQuestions.find(uq => uq.id === q.id)?.isVisible === false
-        );
-
         const sortedUpdatedQuestions = _(parsedAndUpdatedQuestions)
             .sortBy(question => question.sortOrder)
             .value();
+        processedQuestions.push(updatedQuestion);
 
-        const resetQuestions = hiddenQuestions.reduce((acc, hiddenQuestion) => {
-            return this.updateQuestions(
-                processedQuestions,
-                acc,
-                { ...hiddenQuestion, value: undefined },
-                rules,
-                questionnaire
-            );
-        }, parsedAndUpdatedQuestions);
-
-        const sortedResetUpdatedQuestions = _(resetQuestions)
-            .sortBy(question => question.sortOrder)
-            .value();
-
-        const finalUpdatedQuestions =
-            hiddenQuestions.length === 0 ? sortedUpdatedQuestions : sortedResetUpdatedQuestions;
-
+        //3. Get all questions that need to be updated as a side effect of the current question update
         const allQuestionIdsRequiringUpdate = _(
             questionnaire.rules.flatMap(rule => {
                 if (
                     rule.dataElementIds.includes(updatedQuestion.id) ||
                     rule.teAttributeIds.includes(updatedQuestion.id)
-                    //sneha : check that the rule is "applicable"also i.e. the condition is true
                 ) {
                     const actionUpdates = rule.actions.flatMap(
                         action => action?.dataElement?.id || action.trackedEntityAttribute?.id
@@ -227,11 +200,12 @@ export class QuestionnaireQuestion {
             .uniq()
             .value();
 
-        const allQuestionsRequiringUpdate = finalUpdatedQuestions.filter(question =>
+        const allQuestionsRequiringUpdate = sortedUpdatedQuestions.filter(question =>
             allQuestionIdsRequiringUpdate.includes(question.id)
         );
-        if (allQuestionsRequiringUpdate.length === 0) return finalUpdatedQuestions;
+        if (allQuestionsRequiringUpdate.length === 0) return sortedUpdatedQuestions;
 
+        //4. Recursively update all questions that need to be updated as a side effect of the current question update
         const finalUpdatesWithSideEffects = allQuestionsRequiringUpdate.reduce(
             (acc, questionRequiringUpdate) => {
                 const currentApplicableRules = getApplicableRules(
@@ -239,6 +213,8 @@ export class QuestionnaireQuestion {
                     questionnaire.rules,
                     acc
                 );
+                //5. Maintain a dependency graph to avoid infinite recursive calls,
+                // once a question has been processed, it should not be processed again
                 processedQuestions.push(questionRequiringUpdate);
                 const updates = this.updateQuestions(
                     processedQuestions,
@@ -247,11 +223,13 @@ export class QuestionnaireQuestion {
                     currentApplicableRules,
                     questionnaire
                 );
+                //6. If "side-effect" question is hidden, reset its value
+                // const updatedQuestion = updates.find(q => q.id === questionRequiringUpdate.id);
+
                 return updates;
             },
-            finalUpdatedQuestions
+            sortedUpdatedQuestions
         );
-
         return finalUpdatesWithSideEffects;
     }
 
@@ -259,11 +237,19 @@ export class QuestionnaireQuestion {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
 
-        return {
-            ...question,
-            isVisible: updatedIsVisible,
-            errors: updatedErrors,
-        };
+        if (question.isVisible !== updatedIsVisible) {
+            return {
+                ...question,
+                isVisible: updatedIsVisible,
+                errors: updatedErrors,
+                value: undefined,
+            };
+        } else
+            return {
+                ...question,
+                isVisible: updatedIsVisible,
+                errors: updatedErrors,
+            };
     }
 
     private static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {

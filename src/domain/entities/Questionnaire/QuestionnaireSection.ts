@@ -56,17 +56,34 @@ export class QuestionnaireSectionM {
                 ? this.updateSection(section, rules)
                 : section;
 
-            return {
-                ...updatedSection,
-                questions: QuestionnaireQuestion.updateQuestions(
-                    [],
-                    updatedSection.questions,
-                    updatedQuestion,
-                    rules,
-                    questionnaire,
-                    updatedSection.isVisible === false && section.isVisible === true
-                ),
-            };
+            if (section.isVisible === false && updatedSection.isVisible === true) {
+                //reset all questions in the section
+
+                const resetQuestions = section.questions.reduce((acc, hiddenQuestion) => {
+                    return QuestionnaireQuestion.updateQuestions(
+                        section.questions,
+                        acc,
+                        { ...hiddenQuestion, value: undefined },
+                        rules,
+                        questionnaire
+                    );
+                }, section.questions);
+
+                return {
+                    ...updatedSection,
+                    questions: resetQuestions,
+                };
+            } else
+                return {
+                    ...updatedSection,
+                    questions: QuestionnaireQuestion.updateQuestions(
+                        [],
+                        updatedSection.questions,
+                        updatedQuestion,
+                        rules,
+                        questionnaire
+                    ),
+                };
         });
 
         return updatedSections;
