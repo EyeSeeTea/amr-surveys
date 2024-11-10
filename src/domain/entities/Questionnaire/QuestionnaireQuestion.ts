@@ -180,7 +180,7 @@ export class QuestionnaireQuestion {
             .value();
         processedQuestions.push(updatedQuestion);
 
-        //3. Get all questions that need to be updated as a side effect of the current question update
+        //2. Get all questions that need to be updated as a side effect of the current question update
         const allQuestionIdsRequiringUpdate = _(
             questionnaire.rules.flatMap(rule => {
                 if (
@@ -205,7 +205,7 @@ export class QuestionnaireQuestion {
         );
         if (allQuestionsRequiringUpdate.length === 0) return sortedUpdatedQuestions;
 
-        //4. Recursively update all questions that need to be updated as a side effect of the current question update
+        //3. Recursively update all questions that need to be updated as a side effect of the current question update
         const finalUpdatesWithSideEffects = allQuestionsRequiringUpdate.reduce(
             (acc, questionRequiringUpdate) => {
                 const currentApplicableRules = getApplicableRules(
@@ -213,7 +213,7 @@ export class QuestionnaireQuestion {
                     questionnaire.rules,
                     acc
                 );
-                //5. Maintain a dependency graph to avoid infinite recursive calls,
+                //4. Maintain a dependency graph to avoid infinite recursive calls,
                 // once a question has been processed, it should not be processed again
                 processedQuestions.push(questionRequiringUpdate);
                 const updates = this.updateQuestions(
@@ -223,9 +223,6 @@ export class QuestionnaireQuestion {
                     currentApplicableRules,
                     questionnaire
                 );
-                //6. If "side-effect" question is hidden, reset its value
-                // const updatedQuestion = updates.find(q => q.id === questionRequiringUpdate.id);
-
                 return updates;
             },
             sortedUpdatedQuestions
