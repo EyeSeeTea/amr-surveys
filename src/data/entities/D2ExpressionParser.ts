@@ -37,24 +37,27 @@ export class D2ExpressionParser {
                 variablesValueMap.map(variable => [variable.programRuleVariable, variable.value])
             );
 
-            //TO DO : use switch instead of If
+            const programVariables = expressionParser.collectProgramVariablesNames();
 
-            // const programVariables = expressionParser.collectProgramVariablesNames();
-            // const programVariablesValues = _c(
-            //     programVariables.map(programVariable => {
-            //
-            //         if (programVariable === "current_date")
-            //             return {
-            //                 programVariable: xp.ProgramVariable.current_date.name,
-            //                 value: new Date(),
-            //             };
-            //     })
-            // )
-            //     .compact()
-            //     .value();
-            // const programVariablesMap = new Map(
-            //     programVariablesValues.map(a => [a.programVariable, a.value])
-            // );
+            programVariables.forEach(programVariable => {
+                switch (programVariable) {
+                    case "current_date": {
+                        variablesMap.set(
+                            programVariable,
+                            this.getVariableValueByType(
+                                "date",
+                                new Date().toISOString().split("T")[0]
+                            )
+                        );
+                        break;
+                    }
+                    default:
+                        throw new Error(
+                            `Unhandled Program variable of type : ${programVariable}. Please contact developer`
+                        );
+                }
+            });
+
             const expressionData = new xp.ExpressionDataJs(
                 variablesMap,
                 undefined,

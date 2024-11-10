@@ -81,6 +81,7 @@ export const getQuestionValueByType = (question: Question): string => {
         case "boolean":
             return question.value === undefined ? "false" : question.value.toString();
         case "date":
+            return question.value?.toISOString().split("T")[0] ?? "";
         case "datetime":
             return question.value?.toString() ?? "";
 
@@ -138,5 +139,11 @@ const parseConditionWithExpressionParser = (
 
     return new D2ExpressionParser()
         .evaluateRuleEngineCondition(rule.condition, programRuleVariableValues)
-        .match({ success: x => x, error: () => false });
+        .match({
+            success: parsedResult => parsedResult,
+            error: errMsg => {
+                console.error(errMsg);
+                return false;
+            },
+        });
 };
