@@ -57,8 +57,7 @@ export class QuestionnaireSectionM {
                 : section;
 
             if (section.isVisible === false && updatedSection.isVisible === true) {
-                //reset all questions in the section
-
+                //reset all questions in the section that was hidden
                 const resetQuestions = section.questions.reduce((acc, hiddenQuestion) => {
                     return QuestionnaireQuestion.updateQuestions(
                         section.questions,

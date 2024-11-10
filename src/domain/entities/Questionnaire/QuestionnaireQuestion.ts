@@ -238,6 +238,7 @@ export class QuestionnaireQuestion {
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
 
         if (question.isVisible !== updatedIsVisible) {
+            //If a question is hidden, reset its value
             return {
                 ...question,
                 isVisible: updatedIsVisible,
