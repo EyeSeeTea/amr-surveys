@@ -6,12 +6,19 @@ import { FutureData } from "../../api-futures";
 import { NamedRef } from "../../../domain/entities/Ref";
 
 export class UserTestRepository implements UserRepository {
-    getCurrentOUByLevel(
+    getPPSAccessibleHospitals(
         _organisationUnits: NamedRef[],
         _dataViewOrganisationUnits: NamedRef[]
     ): FutureData<OrgUnitAccess[]> {
         return Future.success([]);
     }
+    getPrevalenceAccessibleHospitals(
+        _organisationUnits: NamedRef[],
+        _dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        return Future.success([]);
+    }
+
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void> {
         if (locale) return Future.success(undefined);
         else

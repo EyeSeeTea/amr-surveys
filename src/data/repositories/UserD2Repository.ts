@@ -5,7 +5,8 @@ import { D2Api, MetadataPick } from "../../types/d2-api";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { OrgUnit } from "../../domain/entities/OrgUnit";
-import { NamedRef } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
+import { PPS_HOSPITAL_FORM_ID, PREVALENCE_FACILITY_LEVEL_FORM_ID } from "../entities/D2Survey";
 
 const NA_OU_ID = "zXAaAXzwt4M";
 export const COUNTRY_OU_LEVEL = 3;
@@ -21,26 +22,6 @@ export class UserD2Repository implements UserRepository {
         ).flatMap(d2User => {
             const res = this.buildUser(d2User);
             return res;
-        });
-    }
-
-    public getCurrentOUByLevel(
-        organisationUnits: NamedRef[],
-        dataViewOrganisationUnits: NamedRef[]
-    ): FutureData<OrgUnitAccess[]> {
-        const hospital$ = this.getAllOrgUnitsByLevels(
-            organisationUnits,
-            dataViewOrganisationUnits,
-            HOSPITAL_OU_LEVELS
-        );
-
-        return hospital$.flatMap(hospitals => {
-            const currentAccessibleHospitals = this.mapUserOrgUnitsAccess(
-                hospitals.userOrgUnits,
-                hospitals.userDataViewOrgUnits
-            );
-
-            return Future.success(currentAccessibleHospitals);
         });
     }
 
@@ -161,54 +142,6 @@ export class UserD2Repository implements UserRepository {
         });
     };
 
-    //TO DO : TEMP FIX for multi level hospitals.
-    getAllOrgUnitsByLevels = (
-        organisationUnits: NamedRef[],
-        dataViewOrganisationUnits: NamedRef[],
-        level: number[]
-    ): FutureData<{ userOrgUnits: OrgUnit[]; userDataViewOrgUnits: OrgUnit[] }> => {
-        //1. Get all OUs
-        return apiToFuture(
-            this.api.models.organisationUnits.get({
-                filter: {
-                    level: { in: [level.toString()] },
-                },
-                fields: {
-                    id: true,
-                    shortName: true,
-                    path: true,
-                    level: true,
-                },
-                paging: false,
-            })
-        ).flatMap(res => {
-            const allLevelOUs: OrgUnit[] = _(
-                res.objects.map(ou => {
-                    if (!ou.path.includes(NA_OU_ID))
-                        return {
-                            id: ou.id,
-                            shortName: ou.shortName,
-
-                            path: ou.path,
-                        };
-                })
-            )
-                .compact()
-                .value();
-
-            //2. Filter OUs which the user has access to.
-            //If the user has access to any parent of the OU, then they have access to the OU.
-            //So, check the path to see if it contains any OU  user has access to.
-            const userOrgUnits = allLevelOUs.filter(levelOU =>
-                organisationUnits.some(userOU => levelOU.path.includes(userOU.id))
-            );
-            const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
-                dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
-            );
-
-            return Future.success({ userOrgUnits, userDataViewOrgUnits });
-        });
-    };
     mapUserOrgUnitsAccess = (
         organisationUnits: OrgUnit[],
         dataViewOrganisationUnits: OrgUnit[]
@@ -249,6 +182,81 @@ export class UserD2Repository implements UserRepository {
                 const error = new Error(res.status);
                 return Future.error(error);
             }
+        });
+    }
+
+    public getPrevalenceAccessibleHospitals(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        return this.getAccessibleHospitals(
+            organisationUnits,
+            dataViewOrganisationUnits,
+            PREVALENCE_FACILITY_LEVEL_FORM_ID
+        );
+    }
+
+    public getPPSAccessibleHospitals(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]> {
+        return this.getAccessibleHospitals(
+            organisationUnits,
+            dataViewOrganisationUnits,
+            PPS_HOSPITAL_FORM_ID
+        );
+    }
+
+    private getAccessibleHospitals(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[],
+        programId: Id
+    ): FutureData<OrgUnitAccess[]> {
+        return apiToFuture(
+            this.api.models.programs.get({
+                fields: {
+                    organisationUnits: {
+                        id: true,
+                        shortName: true,
+                        path: true,
+                        level: true,
+                    },
+                },
+                filter: { id: { eq: programId } },
+            })
+        ).flatMap(res => {
+            const programOUs = res.objects[0]?.organisationUnits;
+            if (!programOUs) return Future.success([]);
+
+            const allLevelOUs: OrgUnit[] = _(
+                programOUs?.map(ou => {
+                    if (!ou.path.includes(NA_OU_ID))
+                        return {
+                            id: ou.id,
+                            shortName: ou.shortName,
+                            path: ou.path,
+                        };
+                })
+            )
+                .compact()
+                .value();
+
+            //Filter OUs which the user has access to.
+            //If the user has access to any parent of the OU, then they have access to the OU.
+            //So, check the path to see if it contains any OU  user has access to.
+            const userOrgUnits = allLevelOUs.filter(levelOU =>
+                organisationUnits.some(userOU => levelOU.path.includes(userOU.id))
+            );
+            const userDataViewOrgUnits = allLevelOUs.filter(levelOU =>
+                dataViewOrganisationUnits.some(userOU => levelOU.path.includes(userOU.id))
+            );
+
+            const prevalenceAccessibleHospitals = this.mapUserOrgUnitsAccess(
+                userOrgUnits,
+                userDataViewOrgUnits
+            );
+
+            return Future.success(prevalenceAccessibleHospitals);
         });
     }
 }

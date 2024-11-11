@@ -14,7 +14,6 @@ import { Router } from "../Router";
 import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
-import { HospitalContext, HospitalContextState } from "../../contexts/hospital-context";
 import { ASTGuidelinesContextProvider } from "../../contexts/CurrentASTGuidelinesContextProvider";
 
 export interface AppProps {
@@ -27,34 +26,26 @@ function App(props: AppProps) {
     const [showShareButton, setShowShareButton] = useState(false);
     const [loading, setLoading] = useState(true);
     const [appContext, setAppContext] = useState<AppContextState | null>(null);
-    const [hospitalContext, setHospitalContext] = useState<HospitalContextState | null>(null);
 
     useEffect(() => {
         async function setup() {
             const isShareButtonVisible = appConfig.appearance.showShareButton;
             const currentUser = await compositionRoot.users.getCurrent.execute().toPromise();
             if (!currentUser) throw new Error("User not logged in");
+            const { prevalenceHospitals, ppsHospitals } =
+                await compositionRoot.users.getAccessibleHospitals
+                    .execute(currentUser.organisationUnits, currentUser.dataViewOrganisationUnits)
+                    .toPromise();
 
-            setAppContext({ currentUser, compositionRoot, api });
-            //set some default value for hospital context until its loaded.
-            setHospitalContext({ hospitalState: "loading", userHospitalsAccess: [] });
+            setAppContext({
+                currentUser,
+                compositionRoot,
+                api,
+                prevalenceHospitals: prevalenceHospitals,
+                ppsHospitals: ppsHospitals,
+            });
+
             setShowShareButton(isShareButtonVisible);
-
-            compositionRoot.users.getAccessibleOUByLevel
-                .execute(currentUser.organisationUnits, currentUser.dataViewOrganisationUnits)
-                .run(
-                    hospitalData => {
-                        setHospitalContext({
-                            hospitalState: "loaded",
-                            userHospitalsAccess: hospitalData,
-                        });
-                        console.debug("Hospital data fetched successfully, hospital data set");
-                    },
-                    err => {
-                        console.debug(` No hospital data could be fetched : ${err}`);
-                        setHospitalContext({ hospitalState: "error", userHospitalsAccess: [] });
-                    }
-                );
 
             setLoading(false);
         }
@@ -76,13 +67,11 @@ function App(props: AppProps) {
 
                     <div id="app" className="content">
                         <AppContext.Provider value={appContext}>
-                            <HospitalContext.Provider value={hospitalContext}>
-                                <ASTGuidelinesContextProvider>
-                                    <CurrentModuleContextProvider>
-                                        <Router />
-                                    </CurrentModuleContextProvider>
-                                </ASTGuidelinesContextProvider>
-                            </HospitalContext.Provider>
+                            <ASTGuidelinesContextProvider>
+                                <CurrentModuleContextProvider>
+                                    <Router />
+                                </CurrentModuleContextProvider>
+                            </ASTGuidelinesContextProvider>
                         </AppContext.Provider>
                     </div>
 
