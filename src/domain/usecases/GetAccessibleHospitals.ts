@@ -11,16 +11,19 @@ export class GetAccessibleHospitals {
         organisationUnits: NamedRef[],
         dataViewOrganisationUnits: NamedRef[]
     ): FutureData<{ ppsHospitals: OrgUnitAccess[]; prevalenceHospitals: OrgUnitAccess[] }> {
-        return Future.joinObj({
-            ppsHospitals: this.usersRepository.getPPSAccessibleHospitals(
-                organisationUnits,
-                dataViewOrganisationUnits
-            ),
-            prevalenceHospitals: this.usersRepository.getPrevalenceAccessibleHospitals(
-                organisationUnits,
-                dataViewOrganisationUnits
-            ),
-        }).flatMap(({ ppsHospitals, prevalenceHospitals }) => {
+        return Future.joinObj(
+            {
+                ppsHospitals: this.usersRepository.getPPSAccessibleHospitals(
+                    organisationUnits,
+                    dataViewOrganisationUnits
+                ),
+                prevalenceHospitals: this.usersRepository.getPrevalenceAccessibleHospitals(
+                    organisationUnits,
+                    dataViewOrganisationUnits
+                ),
+            },
+            { concurrency: 2 }
+        ).flatMap(({ ppsHospitals, prevalenceHospitals }) => {
             return Future.success({
                 ppsHospitals: ppsHospitals,
                 prevalenceHospitals: prevalenceHospitals,
