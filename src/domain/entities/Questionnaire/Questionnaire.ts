@@ -272,10 +272,9 @@ export class Questionnaire {
             ...allQsInQuestionnaireStages,
         ];
 
-        const allQsInQuestionnaireWithUpdatedQ = allQsInQuestionnaire.map(question => {
-            if (question.id === updatedQuestion.id) return updatedQuestion;
-            else return question;
-        });
+        const allQsInQuestionnaireWithUpdatedQ = allQsInQuestionnaire.map(question =>
+            question.id === updatedQuestion.id ? updatedQuestion : question
+        );
 
         const applicableRules = getApplicableRules(
             updatedQuestion,
@@ -374,13 +373,13 @@ export class Questionnaire {
         questionnaire: Questionnaire,
         rules: QuestionnaireRule[]
     ): QuestionnaireEntity | undefined {
-        const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions(
-            [],
-            questionnaireEntity.questions,
-            updatedQuestion,
-            rules,
-            questionnaire
-        );
+        const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions({
+            processedQuestions: [],
+            questions: questionnaireEntity.questions,
+            updatedQuestion: updatedQuestion,
+            rules: rules,
+            questionnaire: questionnaire,
+        });
 
         return {
             ...questionnaireEntity,

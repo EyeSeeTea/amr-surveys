@@ -125,6 +125,14 @@ export interface QuestionOption extends NamedRef {
     code?: string;
 }
 
+export type UpdateQuestionOptions = {
+    processedQuestions: Question[];
+    questions: Question[];
+    updatedQuestion: Question;
+    rules: QuestionnaireRule[];
+    questionnaire: Questionnaire;
+};
+
 export class QuestionnaireQuestion {
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
@@ -151,14 +159,29 @@ export class QuestionnaireQuestion {
         return { ...question, value };
     }
 
-    static updateQuestions(
-        processedQuestions: Question[],
-        questions: Question[],
-        updatedQuestion: Question,
-        rules: QuestionnaireRule[],
-        questionnaire: Questionnaire
+    static updateQuestions(updateQuestionOptions: UpdateQuestionOptions): Question[] {
+        const sortedUpdatedQuestions = this.getSortedUpdatedQuestions(updateQuestionOptions);
+
+        updateQuestionOptions.processedQuestions.push(updateQuestionOptions.updatedQuestion);
+
+        const allQuestionsRequiringUpdate = this.getQuestionsToUpdateAsSideEffect(
+            updateQuestionOptions,
+            sortedUpdatedQuestions
+        );
+
+        return allQuestionsRequiringUpdate.length === 0
+            ? sortedUpdatedQuestions
+            : this.recursivelyApplySideEffects(
+                  updateQuestionOptions,
+                  allQuestionsRequiringUpdate,
+                  sortedUpdatedQuestions
+              );
+    }
+
+    private static getSortedUpdatedQuestions(
+        updateQuestionOptions: UpdateQuestionOptions
     ): Question[] {
-        //1. Update the question value before anything else, the updated value needs to be used to parse rule conditions
+        const { questions, updatedQuestion, rules } = updateQuestionOptions;
         const updatedQuestions = questions.map(question => {
             if (question.id === updatedQuestion.id) {
                 return updatedQuestion;
@@ -178,9 +201,15 @@ export class QuestionnaireQuestion {
         const sortedUpdatedQuestions = _(parsedAndUpdatedQuestions)
             .sortBy(question => question.sortOrder)
             .value();
-        processedQuestions.push(updatedQuestion);
 
-        //2. Get all questions that need to be updated as a side effect of the current question update
+        return sortedUpdatedQuestions;
+    }
+
+    private static getQuestionsToUpdateAsSideEffect(
+        updateQuestionOptions: UpdateQuestionOptions,
+        sortedUpdatedQuestions: Question[]
+    ): Question[] {
+        const { questionnaire, updatedQuestion, processedQuestions } = updateQuestionOptions;
         const allQuestionIdsRequiringUpdate = _(
             questionnaire.rules.flatMap(rule => {
                 if (
@@ -203,9 +232,16 @@ export class QuestionnaireQuestion {
         const allQuestionsRequiringUpdate = sortedUpdatedQuestions.filter(question =>
             allQuestionIdsRequiringUpdate.includes(question.id)
         );
-        if (allQuestionsRequiringUpdate.length === 0) return sortedUpdatedQuestions;
 
-        //3. Recursively update all questions that need to be updated as a side effect of the current question update
+        return allQuestionsRequiringUpdate;
+    }
+
+    private static recursivelyApplySideEffects(
+        updateQuestionOptions: UpdateQuestionOptions,
+        allQuestionsRequiringUpdate: Question[],
+        sortedUpdatedQuestions: Question[]
+    ) {
+        const { questionnaire, processedQuestions } = updateQuestionOptions;
         const finalUpdatesWithSideEffects = allQuestionsRequiringUpdate.reduce(
             (acc, questionRequiringUpdate) => {
                 const currentApplicableRules = getApplicableRules(
@@ -213,16 +249,17 @@ export class QuestionnaireQuestion {
                     questionnaire.rules,
                     acc
                 );
-                //4. Maintain a dependency graph to avoid infinite recursive calls,
-                // once a question has been processed, it should not be processed again
+                //Maintain a dependency graph to avoid infinite recursive calls,
+                //once a question has been processed, it should not be processed again
                 processedQuestions.push(questionRequiringUpdate);
-                const updates = this.updateQuestions(
+                const updates = this.updateQuestions({
                     processedQuestions,
-                    acc,
-                    questionRequiringUpdate,
-                    currentApplicableRules,
-                    questionnaire
-                );
+                    questions: acc,
+                    updatedQuestion: questionRequiringUpdate,
+                    rules: currentApplicableRules,
+                    questionnaire,
+                });
+
                 return updates;
             },
             sortedUpdatedQuestions

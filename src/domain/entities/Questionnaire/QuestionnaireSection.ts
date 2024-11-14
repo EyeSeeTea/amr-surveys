@@ -56,16 +56,16 @@ export class QuestionnaireSectionM {
                 ? this.updateSection(section, rules)
                 : section;
 
-            if (section.isVisible === false && updatedSection.isVisible === true) {
+            if (!section.isVisible && updatedSection.isVisible) {
                 //reset all questions in the section that was hidden
                 const resetQuestions = section.questions.reduce((acc, hiddenQuestion) => {
-                    return QuestionnaireQuestion.updateQuestions(
-                        section.questions,
-                        acc,
-                        { ...hiddenQuestion, value: undefined },
-                        rules,
-                        questionnaire
-                    );
+                    return QuestionnaireQuestion.updateQuestions({
+                        processedQuestions: section.questions,
+                        questions: acc,
+                        updatedQuestion: { ...hiddenQuestion, value: undefined },
+                        rules: rules,
+                        questionnaire: questionnaire,
+                    });
                 }, section.questions);
 
                 return {
@@ -75,13 +75,13 @@ export class QuestionnaireSectionM {
             } else
                 return {
                     ...updatedSection,
-                    questions: QuestionnaireQuestion.updateQuestions(
-                        [],
-                        updatedSection.questions,
-                        updatedQuestion,
-                        rules,
-                        questionnaire
-                    ),
+                    questions: QuestionnaireQuestion.updateQuestions({
+                        processedQuestions: [],
+                        questions: updatedSection.questions,
+                        updatedQuestion: updatedQuestion,
+                        rules: rules,
+                        questionnaire: questionnaire,
+                    }),
                 };
         });
 

@@ -42,9 +42,9 @@ export interface QuestionnaireRuleAction {
 }
 export interface QuestionnaireRule {
     id: Id;
-    condition: string;
-    dataElementIds: Id[]; // all dataElements in condition (there could be mutiple conditions)
-    teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be mutiple conditions)
+    condition: string; //dhis2 program rule condition. https://docs.dhis2.org/en/full/develop/dhis-core-version-master/developer-manual.html#webapi_program_rules
+    dataElementIds: Id[]; // all dataElements in condition (there could be multiple conditions)
+    teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be multiple conditions)
     actions: QuestionnaireRuleAction[];
     parsedResult?: boolean; //calculate the condition and store the result
     programRuleVariables: D2ProgramRuleVariable[] | undefined;
