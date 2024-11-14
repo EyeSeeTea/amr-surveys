@@ -271,20 +271,12 @@ export class QuestionnaireQuestion {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
 
-        if (question.isVisible !== updatedIsVisible) {
-            //If a question is hidden, reset its value
-            return {
-                ...question,
-                isVisible: updatedIsVisible,
-                errors: updatedErrors,
-                value: undefined,
-            };
-        } else
-            return {
-                ...question,
-                isVisible: updatedIsVisible,
-                errors: updatedErrors,
-            };
+        return {
+            ...question,
+            isVisible: updatedIsVisible,
+            errors: updatedErrors,
+            ...(question.isVisible !== updatedIsVisible ? { value: undefined } : {}),
+        };
     }
 
     private static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {
