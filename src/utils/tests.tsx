@@ -9,6 +9,8 @@ export function getAdminTestContext() {
     const context: AppContextState = {
         currentUser: createAdminUser(),
         compositionRoot: getTestCompositionRoot(),
+        prevalenceHospitals: [],
+        ppsHospitals: [],
     };
 
     return context;
@@ -18,6 +20,8 @@ export function getHospitalDataEntryTestContext() {
     const context: AppContextState = {
         currentUser: createNonAdminUser(),
         compositionRoot: getTestCompositionRoot(true),
+        prevalenceHospitals: [],
+        ppsHospitals: [],
     };
 
     return context;

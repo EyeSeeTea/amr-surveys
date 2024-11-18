@@ -5,11 +5,10 @@ import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
-import { useHospitalContext } from "../contexts/hospital-context";
 
 const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
-    const { compositionRoot } = useAppContext();
+    const { compositionRoot, prevalenceHospitals } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loadingSurveys, setLoadingSurveys] = useState(false);
     const [surveysError, setSurveysError] = useState<string>();
@@ -31,11 +30,11 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const {
         currentUser: { userGroups },
     } = useAppContext();
-    const { hospitalState, userHospitalsAccess } = useHospitalContext();
+
     const isAdmin = currentModule ? getUserAccess(currentModule, userGroups).hasAdminAccess : false;
 
     const getOrgUnitByFormType = useCallback(() => {
-        const currentUserHospitals = userHospitalsAccess
+        const currentPrevalenceHospitals = prevalenceHospitals
             .filter(hospitals => hospitals.readAccess && hospitals.captureAccess)
             .map(hospital => hospital.orgUnitId)
             .join(";");
@@ -50,7 +49,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             case "PrevalenceFacilityLevelForm":
                 return isAdmin
                     ? currentPrevalenceSurveyForm?.orgUnitId ?? ""
-                    : currentUserHospitals;
+                    : currentPrevalenceHospitals;
             case "PrevalenceCaseReportForm":
             case "PrevalenceCentralRefLabForm":
             case "PrevalencePathogenIsolatesLog":
@@ -69,21 +68,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentHospitalForm?.orgUnitId,
         currentPrevalenceSurveyForm?.orgUnitId,
         isAdmin,
+        prevalenceHospitals,
         surveyFormType,
-        userHospitalsAccess,
     ]);
 
     useEffect(() => {
         setLoadingSurveys(true);
-
-        if (
-            !isAdmin &&
-            surveyFormType === "PrevalenceFacilityLevelForm" &&
-            hospitalState === "loading"
-        ) {
-            console.debug("Ensure hospital context is loaded before fetching surveys.");
-            return;
-        }
 
         const parentSurveyId =
             !isAdmin &&
@@ -153,7 +143,6 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         page,
         getOrgUnitByFormType,
         isAdmin,
-        hospitalState,
         currentCaseReportForm?.id,
     ]);
 

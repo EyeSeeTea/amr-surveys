@@ -30,7 +30,7 @@ import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurveyRepository";
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
-import { GetUserAccessibleOUByLevel } from "./domain/usecases/GetUserAccessibleOUByLevel";
+import { GetAccessibleHospitals } from "./domain/usecases/GetAccessibleHospitals";
 import { GetChildCountUseCase } from "./domain/usecases/GetChildCountUseCase";
 import { ApplyInitialRulesToSurveyUseCase } from "./domain/usecases/ApplyInitialRulesToSurveyUseCase";
 import { ASTGuidelinesRepository } from "./domain/repositories/ASTGuidelinesRepository";
@@ -62,7 +62,7 @@ function getCompositionRoot(repositories: Repositories) {
         },
         users: {
             getCurrent: new GetCurrentUserUseCase(repositories.usersRepository),
-            getAccessibleOUByLevel: new GetUserAccessibleOUByLevel(repositories.usersRepository),
+            getAccessibleHospitals: new GetAccessibleHospitals(repositories.usersRepository),
             savePassword: new SavePasswordUseCase(repositories.usersRepository),
             saveKeyUiLocale: new SaveKeyUiLocaleUseCase(repositories.usersRepository),
             saveKeyDbLocale: new SaveKeyDbLocaleUseCase(repositories.usersRepository),

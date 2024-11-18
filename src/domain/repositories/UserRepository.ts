@@ -6,7 +6,11 @@ export interface UserRepository {
     getCurrent(): FutureData<User>;
     savePassword(password: string): FutureData<string>;
     saveLocale(isUiLocale: boolean, locale: string): FutureData<void>;
-    getCurrentOUByLevel(
+    getPrevalenceAccessibleHospitals(
+        organisationUnits: NamedRef[],
+        dataViewOrganisationUnits: NamedRef[]
+    ): FutureData<OrgUnitAccess[]>;
+    getPPSAccessibleHospitals(
         organisationUnits: NamedRef[],
         dataViewOrganisationUnits: NamedRef[]
     ): FutureData<OrgUnitAccess[]>;
