@@ -121,7 +121,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                         setLoadingSurveys(false);
                     },
                     err => {
-                        setSurveysError(err.message);
+                        //@ts-ignore
+                        setSurveysError(err?.response.data.message || err.message);
                         setLoadingSurveys(false);
                     }
                 );
@@ -137,7 +138,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                         setLoadingSurveys(false);
                     },
                     err => {
-                        setSurveysError(err.message);
+                        //@ts-ignore
+                        setSurveysError(err?.response.data.message || err.message);
                         setLoadingSurveys(false);
                     }
                 );
