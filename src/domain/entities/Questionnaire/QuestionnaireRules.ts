@@ -1,16 +1,13 @@
+import {
+    D2ExpressionParser,
+    ProgramRuleVariableName,
+    ProgramRuleVariableValue,
+} from "../../../data/entities/D2ExpressionParser";
+import { D2ProgramRuleVariable } from "../../../data/entities/D2Program";
+import { Maybe } from "../../../utils/ts-utils";
 import { Id } from "../Ref";
 import _ from "../generic/Collection";
 import { Question } from "./QuestionnaireQuestion";
-
-const RULE_FUNCTIONS = ["fn:hasValue", "fn:daysBetween", "fn:yearsBetween"];
-const RULE_OPERATORS = [
-    ">" as const,
-    ">=" as const,
-    "<" as const,
-    "<=" as const,
-    "==" as const,
-    "!=" as const,
-];
 
 export type QuestionnaireRuleActionType =
     | "DISPLAYTEXT"
@@ -45,11 +42,12 @@ export interface QuestionnaireRuleAction {
 }
 export interface QuestionnaireRule {
     id: Id;
-    condition: string; //condition is parsed with dataelementId e.g: #{dataElementId} == 'Yes'
-    dataElementIds: Id[]; // all dataElements in condition (there could be mutiple conditions)
-    teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be mutiple conditions)
+    condition: string; //dhis2 program rule condition. https://docs.dhis2.org/en/full/develop/dhis-core-version-master/developer-manual.html#webapi_program_rules
+    dataElementIds: Id[]; // all dataElements in condition (there could be multiple conditions)
+    teAttributeIds: Id[]; // all trackedEntityAttributes in condition (there could be multiple conditions)
     actions: QuestionnaireRuleAction[];
     parsedResult?: boolean; //calculate the condition and store the result
+    programRuleVariables: D2ProgramRuleVariable[] | undefined;
 }
 
 export const getApplicableRules = (
@@ -68,20 +66,22 @@ export const getApplicableRules = (
 
     //2. Run the rule conditions and return rules with parsed results
     const parsedApplicableRules = applicableRules.map(rule => {
-        const parsedResult = parseCondition(rule.condition, updatedQuestion, questions);
-        return { ...rule, parsedResult };
+        const expressionParserResult = parseConditionWithExpressionParser(rule, questions);
+
+        return { ...rule, parsedResult: expressionParserResult };
     });
 
     return parsedApplicableRules;
 };
 
-const getQuestionValueByType = (question: Question): string => {
+export const getQuestionValueByType = (question: Question): string => {
     switch (question.type) {
         case "select":
             return question.value?.code ?? "";
         case "boolean":
             return question.value === undefined ? "false" : question.value.toString();
         case "date":
+            return question.value?.toISOString().split("T")[0] ?? "";
         case "datetime":
             return question.value?.toString() ?? "";
 
@@ -94,179 +94,56 @@ const getQuestionValueByType = (question: Question): string => {
     }
 };
 
-const parseConditionValues = (
-    condition: string,
-    updatedQuestion: Question,
+function getProgramRuleVariableValues(
+    programRuleVariables: Maybe<D2ProgramRuleVariable[]>,
     questions: Question[]
-) => {
-    return condition.replace(/#\{(.*?)\}/g, (_i, dataElementId) => {
-        const isDataElementInUpdatedQuestion = updatedQuestion.id === dataElementId;
-        if (isDataElementInUpdatedQuestion) {
-            return getQuestionValueByType(updatedQuestion);
-        } else {
-            const currentQuestion = questions.find(
-                (question: Question) => question.id === dataElementId
-            );
-            return currentQuestion ? getQuestionValueByType(currentQuestion) : "";
-        }
-    });
-};
+): Map<string, ProgramRuleVariableValue> {
+    const programRuleVariableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue> =
+        new Map(
+            programRuleVariables?.map(prv => {
+                const currentQuestion = questions.find(
+                    question =>
+                        question.id === prv?.dataElement?.id ||
+                        question.id === prv?.trackedEntityAttribute?.id
+                );
 
-const handleRuleFunctions = (condition: string): boolean => {
-    const ruleFunction = RULE_FUNCTIONS.find(rulefunc => condition.includes(rulefunc));
+                if (!currentQuestion) return [prv.name, { type: "text", value: "" }];
+                const value = getQuestionValueByType(currentQuestion);
 
-    switch (ruleFunction) {
-        case "fn:hasValue": {
-            const match = condition.match(/fn:hasValue\((.*?)\)/);
-            if (match) {
-                const innerString = match[1];
-                if (innerString?.trim() === "") {
-                    return false;
-                } else {
-                    return true;
-                }
-            } else return false;
-        }
+                return [
+                    prv.name,
+                    {
+                        type:
+                            currentQuestion.type === "datetime"
+                                ? "date"
+                                : currentQuestion.type === "select"
+                                ? "text"
+                                : currentQuestion.type,
+                        value: value,
+                    },
+                ];
+            })
+        );
 
-        default:
-            console.debug(`Unkown rule function: ${ruleFunction}`);
-            return false;
-    }
-};
+    return programRuleVariableValues;
+}
 
-const handleCondition = (condition: string): boolean => {
-    const operator = RULE_OPERATORS.find(ruleOperator => condition.includes(ruleOperator));
-
-    if (!operator || !RULE_OPERATORS.includes(operator))
-        throw new Error(`Operator ${operator} is either undefined or not handled`);
-
-    const leftOperand = condition
-        .substring(0, condition.indexOf(operator))
-        .replaceAll("'", "")
-        .trim();
-
-    const rightOperandStr = condition
-        .substring(condition.indexOf(operator))
-        .replace(operator, "")
-        .replaceAll("'", "")
-        .trim();
-
-    // Handle right operands boolean values of "1" and "0" for true and false
-    const rightOperand =
-        leftOperand === "true" && rightOperandStr === "1"
-            ? "true"
-            : leftOperand === "false" && rightOperandStr === "0"
-            ? "false"
-            : rightOperandStr;
-
-    switch (operator) {
-        case "!=": {
-            return leftOperand !== rightOperand;
-        }
-        case "==": {
-            return leftOperand === rightOperand;
-        }
-        case ">": {
-            try {
-                return parseFloat(leftOperand) > parseFloat(rightOperand);
-            } catch {
-                return false;
-            }
-        }
-        case ">=": {
-            try {
-                return parseFloat(leftOperand) >= parseFloat(rightOperand);
-            } catch {
-                return false;
-            }
-        }
-        case "<": {
-            try {
-                return parseFloat(leftOperand) < parseFloat(rightOperand);
-            } catch {
-                return false;
-            }
-        }
-        case "<=": {
-            try {
-                return parseFloat(leftOperand) <= parseFloat(rightOperand);
-            } catch {
-                return false;
-            }
-        }
-        default:
-            throw new Error(`Operator ${operator} not handled`);
-    }
-};
-
-const parseAndEvaluateSubCondition = (
-    subCondition: string,
-    updatedQuestion: Question,
+const parseConditionWithExpressionParser = (
+    rule: QuestionnaireRule,
     questions: Question[]
 ): boolean => {
-    // Replace #{dataElementId} with actual value from questionnaire
-    const parsedConditionWithValues = parseConditionValues(
-        subCondition,
-        updatedQuestion,
+    const programRuleVariableValues = getProgramRuleVariableValues(
+        rule.programRuleVariables,
         questions
     );
 
-    // Evaluate the condition
-    try {
-        if (RULE_FUNCTIONS.some(ruleFunction => parsedConditionWithValues.includes(ruleFunction))) {
-            return handleRuleFunctions(parsedConditionWithValues);
-        } else {
-            return handleCondition(parsedConditionWithValues);
-        }
-    } catch (error) {
-        console.error(
-            `Error evaluating condition: ${parsedConditionWithValues} with error : ${error}`
-        );
-        return false;
-    }
-};
-
-export const parseCondition = (
-    condition: string,
-    updatedQuestion: Question,
-    questions: Question[]
-): boolean => {
-    // Create a regular expression from RULE_FUNCTIONS array
-    const ruleFunctionsRegex = new RegExp(`(?<!${RULE_FUNCTIONS.join("|")})\\(`);
-
-    // Handle parentheses as long as they are not immediately preceded by a value in RULE_FUNCTIONS array
-    const newCondition =
-        condition.search(ruleFunctionsRegex) !== -1
-            ? condition.replace(
-                  new RegExp(`(?<!${RULE_FUNCTIONS.join("|")})\\(([^()]+)\\)`, "g"),
-                  (_, subCondition) => {
-                      return parseCondition(subCondition, updatedQuestion, questions)
-                          ? "true"
-                          : "false";
-                  }
-              )
-            : condition;
-
-    // Split condition into sub-conditions based on logical operators
-    const andConditions = newCondition.split("&&").map(subCondition1 => {
-        const orConditions = subCondition1.split("||").map(subCondition2 => {
-            const notCondition = subCondition2.trim().replace("(", "").startsWith("!");
-            const trimmedSubCondition = notCondition
-                ? subCondition2.trim().substring(1)
-                : subCondition2;
-
-            const result =
-                trimmedSubCondition.replace(/\s/g, "") === "true"
-                    ? true
-                    : trimmedSubCondition.replace(/\s/g, "") === "false"
-                    ? false
-                    : parseAndEvaluateSubCondition(trimmedSubCondition, updatedQuestion, questions);
-
-            return notCondition ? !result : result;
+    return new D2ExpressionParser()
+        .evaluateRuleEngineCondition(rule.condition, programRuleVariableValues)
+        .match({
+            success: parsedResult => parsedResult,
+            error: errMsg => {
+                console.error(errMsg);
+                return false;
+            },
         });
-
-        return orConditions.some(condition => condition);
-    });
-
-    return andConditions.every(condition => condition);
 };

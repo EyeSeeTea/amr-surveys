@@ -8,7 +8,7 @@ import {
     QuestionnaireQuestion,
     isAntibioticQuestion,
 } from "./QuestionnaireQuestion";
-import { QuestionnaireRule, getApplicableRules } from "./QuestionnaireRules";
+import { getApplicableRules, QuestionnaireRule } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
 
 export interface QuestionnaireBase {
@@ -272,10 +272,14 @@ export class Questionnaire {
             ...allQsInQuestionnaireStages,
         ];
 
+        const allQsInQuestionnaireWithUpdatedQ = allQsInQuestionnaire.map(question =>
+            question.id === updatedQuestion.id ? updatedQuestion : question
+        );
+
         const applicableRules = getApplicableRules(
             updatedQuestion,
             questionnaire.rules,
-            allQsInQuestionnaire
+            allQsInQuestionnaireWithUpdatedQ
         );
 
         if (initialLoad && applicableRules.length === 0) return questionnaire;
@@ -369,12 +373,13 @@ export class Questionnaire {
         questionnaire: Questionnaire,
         rules: QuestionnaireRule[]
     ): QuestionnaireEntity | undefined {
-        const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions(
-            questionnaireEntity.questions,
-            updatedQuestion,
-            rules,
-            questionnaire
-        );
+        const updatedEntityQuestions = QuestionnaireQuestion.updateQuestions({
+            processedQuestions: [],
+            questions: questionnaireEntity.questions,
+            updatedQuestion: updatedQuestion,
+            rules: rules,
+            questionnaire: questionnaire,
+        });
 
         return {
             ...questionnaireEntity,

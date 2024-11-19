@@ -4,15 +4,14 @@ import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questio
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
-import { useHospitalContext } from "../../../contexts/hospital-context";
+
 import useReadOnlyAccess from "./useReadOnlyAccess";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../../../domain/entities/Ref";
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
-    const { compositionRoot, currentUser } = useAppContext();
-    const { userHospitalsAccess } = useHospitalContext();
+    const { compositionRoot, currentUser, ppsHospitals, prevalenceHospitals } = useAppContext();
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
@@ -118,11 +117,15 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                             if (currentOrgUnitAccess) {
                                 setCurrentOrgUnit(currentOrgUnitAccess);
                             }
-                        } else if (
-                            formType === "PPSHospitalForm" ||
-                            formType === "PrevalenceFacilityLevelForm"
-                        ) {
-                            const currentHospital = userHospitalsAccess.find(
+                        } else if (formType === "PPSHospitalForm") {
+                            const currentHospital = ppsHospitals.find(
+                                hospital => hospital.orgUnitId === questionnaireWithData.orgUnit.id
+                            );
+                            if (currentHospital) {
+                                setCurrentOrgUnit(currentHospital);
+                            }
+                        } else if (formType === "PrevalenceFacilityLevelForm") {
+                            const currentHospital = prevalenceHospitals.find(
                                 hospital => hospital.orgUnitId === questionnaireWithData.orgUnit.id
                             );
                             if (currentHospital) {
@@ -144,7 +147,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         formType,
         currentPPSSurveyForm,
         currentUser.userCountriesAccess,
-        userHospitalsAccess,
         setError,
         currentHospitalForm,
         currentWardRegister,
@@ -152,6 +154,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentPrevalenceSurveyForm,
         currentModule,
         currentCaseReportForm?.id,
+        ppsHospitals,
+        prevalenceHospitals,
     ]);
 
     const updateQuestion = useCallback((question: Question, stageId?: string) => {

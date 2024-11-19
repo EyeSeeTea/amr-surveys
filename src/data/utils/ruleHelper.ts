@@ -39,28 +39,6 @@ export const getProgramRules = (
                     return attributeId;
                 }) || [];
 
-            const parsedCondition = condition.replace(
-                dataElementVariablePattern,
-                (match, programRuleVar) => {
-                    const dataElementId = programRuleVariables?.find(
-                        programRuleVariable => programRuleVariable.name === programRuleVar
-                    )?.dataElement?.id;
-
-                    return `#{${dataElementId}}`;
-                }
-            );
-
-            const attributeParsedCondition = parsedCondition.replace(
-                attributeVariablePattern,
-                (match, programRuleVar) => {
-                    const attributeId = programRuleVariables?.find(
-                        programRuleVariable => programRuleVariable.name === programRuleVar
-                    )?.trackedEntityAttribute?.id;
-
-                    return `#{${attributeId}}`;
-                }
-            );
-
             const programRuleActionIds: string[] = actions.map(action => action.id);
 
             const programRuleActions: D2ProgramRuleAction[] | undefined = programRuleActionsResponse
@@ -84,10 +62,11 @@ export const getProgramRules = (
 
             return {
                 id: id,
-                condition: attributeParsedCondition.replace(/d2:/g, "fn:"), //replace d2: with fn: to decouple entity from DHIS
+                condition: condition,
                 dataElementIds: _(dataElementIds).uniq().compact().value(),
                 teAttributeIds: _(teaIds).uniq().compact().value(),
                 actions: programRuleActions || [],
+                programRuleVariables: programRuleVariables || [],
             };
         }) || []
     );

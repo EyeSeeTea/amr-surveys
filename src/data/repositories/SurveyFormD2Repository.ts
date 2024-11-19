@@ -200,28 +200,23 @@ export class SurveyD2Repository implements SurveyRepository {
             : mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, this.api, eventId);
 
         return $payload.flatMap(payload => {
-            return apiToFuture(
-                this.api.tracker.postAsync({ importStrategy: action }, payload)
-            ).flatMap(response => {
-                return apiToFuture(
-                    // eslint-disable-next-line testing-library/await-async-utils
-                    this.api.system.waitFor("TRACKER_IMPORT_JOB", response.response.id)
-                ).flatMap(result => {
-                    if (result && result.status !== "ERROR") {
+            return apiToFuture(this.api.tracker.post({ importStrategy: action }, payload)).flatMap(
+                response => {
+                    if (response && response.status !== "ERROR") {
                         //return the saved survey id.
 
                         const surveyId = isTrackerProgram(programId)
-                            ? result.bundleReport?.typeReportMap?.TRACKED_ENTITY?.objectReports[0]
+                            ? response.bundleReport?.typeReportMap?.TRACKED_ENTITY?.objectReports[0]
                                   ?.uid
-                            : result.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
+                            : response.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
                         return Future.success(surveyId);
                     } else {
-                        return this.getErrorMessageWithNames(result).flatMap(errorMessage => {
+                        return this.getErrorMessageWithNames(response).flatMap(errorMessage => {
                             return Future.error(new Error(`Error: ${errorMessage} `));
                         });
                     }
-                });
-            });
+                }
+            );
         });
     }
 
