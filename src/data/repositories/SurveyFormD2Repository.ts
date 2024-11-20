@@ -37,6 +37,7 @@ import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListM
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
+import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
@@ -210,9 +211,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             : response.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
                         return Future.success(surveyId);
                     } else {
-                        return this.getErrorMessageWithNames(
-                            response?.validationReport?.errorReports?.at(0)?.message
-                        ).flatMap(errorMessage => {
+                        return this.getErrorMessageWithNames(response).flatMap(errorMessage => {
                             return Future.error(new Error(`Error: ${errorMessage} `));
                         });
                     }
@@ -444,9 +443,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 if (result && result.status !== "ERROR") {
                     return Future.success(undefined);
                 } else {
-                    return this.getErrorMessageWithNames(
-                        result?.validationReport?.errorReports?.at(0)?.message
-                    ).flatMap(errorMessage => {
+                    return this.getErrorMessageWithNames(result).flatMap(errorMessage => {
                         return Future.error(new Error(`Error: ${errorMessage} `));
                     });
                 }
@@ -474,9 +471,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 if (result && result.status !== "ERROR") {
                     return Future.success(undefined);
                 } else {
-                    return this.getErrorMessageWithNames(
-                        result?.validationReport?.errorReports?.at(0)?.message
-                    ).flatMap(errorMessage => {
+                    return this.getErrorMessageWithNames(result).flatMap(errorMessage => {
                         return Future.error(new Error(`Error: ${errorMessage} `));
                     });
                 }
@@ -484,8 +479,16 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    private getErrorMessageWithNames(errMsg?: string): FutureData<string> {
-        if (!errMsg) return Future.success("");
+    private getErrorMessageWithNames(result: TrackerPostResponse | null): FutureData<string> {
+        if (!result) return Future.success("");
+
+        //All possible values where DHIS would populate error messages.
+        //So far, DHIS only populates one of them.
+
+        const errMsg =
+            result.validationReport?.warningReports[0]?.message ||
+            result.validationReport?.errorReports[0]?.message ||
+            result.message;
 
         let errorMessageWithNames = errMsg;
 
@@ -501,11 +504,20 @@ export class SurveyD2Repository implements SurveyRepository {
         const orgUnitPattern = /(?<=OrganisationUnit(:*) )`([A-Za-z0-9]{11})`/g;
         const orgUnitIds = orgUnitPattern.exec(errMsg);
 
+        //Attribute: `{attributeId}`
+        const teaPattern = /(?<=attribute(:*) )`([A-Za-z0-9]{11})`/g;
+        const teaIds = teaPattern.exec(errMsg);
+
+        //User: `{userId}`
+        const userPattern = /(?<=User(:*) )`([A-Za-z0-9]{11})`/g;
+        const userIds = userPattern.exec(errMsg);
+
         return this.fetchNames({
             dataElementId: dataelementIds?.[2],
             programId: programIds?.[2],
             orgUnitId: orgUnitIds?.[2],
-        }).flatMap(({ dataElementName, programName, orgUnitName }) => {
+            teaId: teaIds?.[2],
+        }).flatMap(({ dataElementName, programName, orgUnitName, teaName }) => {
             if (dataelementIds && dataelementIds[2] && dataElementName) {
                 errorMessageWithNames = this.parseErrorMessage(
                     errorMessageWithNames,
@@ -529,6 +541,21 @@ export class SurveyD2Repository implements SurveyRepository {
                     orgUnitName
                 );
             }
+            if (teaIds && teaIds[2] && teaName) {
+                errorMessageWithNames = this.parseErrorMessage(
+                    errorMessageWithNames,
+                    teaIds[2],
+                    teaName
+                );
+            }
+
+            if (userIds && userIds[2]) {
+                errorMessageWithNames = this.parseErrorMessage(
+                    errorMessageWithNames,
+                    userIds[2],
+                    "This User"
+                );
+            }
 
             return Future.success(errorMessageWithNames);
         });
@@ -546,16 +573,19 @@ export class SurveyD2Repository implements SurveyRepository {
         dataElementId,
         programId,
         orgUnitId,
+        teaId,
     }: {
         dataElementId?: Id;
         programId?: Id;
         orgUnitId?: Id;
+        teaId?: Id;
     }): FutureData<{
         dataElementName?: string;
         programName?: string;
         orgUnitName?: string;
+        teaName?: string;
     }> => {
-        if (!dataElementId && !programId && !orgUnitId) return Future.success({});
+        if (!dataElementId && !programId && !orgUnitId && !teaId) return Future.success({});
 
         return apiToFuture(
             this.api.metadata
@@ -578,12 +608,19 @@ export class SurveyD2Repository implements SurveyRepository {
                             filter: { id: { eq: orgUnitId } },
                         },
                     }),
+                    ...(teaId && {
+                        trackedEntityAttributes: {
+                            fields: { shortName: true },
+                            filter: { id: { eq: teaId } },
+                        },
+                    }),
                 })
                 .map(response => {
                     const fetchedNames: {
                         dataElementName?: string;
                         programName?: string;
                         orgUnitName?: string;
+                        teaName?: string;
                     } = {};
                     if (response?.data?.dataElements) {
                         fetchedNames.dataElementName = `${response.data.dataElements?.[0]?.shortName}`;
@@ -593,6 +630,9 @@ export class SurveyD2Repository implements SurveyRepository {
                     }
                     if (response?.data?.organisationUnits) {
                         fetchedNames.orgUnitName = `${response.data.organisationUnits?.[0]?.shortName}`;
+                    }
+                    if (response?.data?.trackedEntityAttributes) {
+                        fetchedNames.teaName = `${response.data.trackedEntityAttributes?.[0]?.shortName}`;
                     }
                     return fetchedNames;
                 })
