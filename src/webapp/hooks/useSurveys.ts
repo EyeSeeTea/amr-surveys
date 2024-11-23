@@ -122,8 +122,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             compositionRoot.surveys.getSurveys
                 .execute(surveyFormType, orgUnitId, parentSurveyId, makeChunkedCall)
                 .run(
-                    surveys => {
-                        setSurveys(surveys);
+                    nonPaginatedSurveys => {
+                        setSurveys(nonPaginatedSurveys);
                         setLoadingSurveys(false);
                     },
                     err => {
