@@ -12,9 +12,9 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     PPS_PATIENT_REGISTER_ID,
     PREVALENCE_CASE_REPORT_FORM_ID,
-    SURVEY_PATIENT_CODE_DATAELEMENT_ID,
-    SURVEY_PATIENT_ID_DATAELEMENT_ID,
-    WARD_ID_DATAELEMENT_ID,
+    SURVEY_PATIENT_CODE_TEA_ID,
+    SURVEY_PATIENT_ID_TEA_ID,
+    WARD_ID_TEA_ID,
 } from "../entities/D2Survey";
 import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
@@ -49,7 +49,6 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
               );
     }
 
-    //Currently tracker programs are only in Prevalence module
     getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
@@ -107,7 +106,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 page: page + 1,
                 pageSize,
                 totalPages: true,
-                filter: `${WARD_ID_DATAELEMENT_ID}:eq:${parentId}`,
+                filter: `${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(response => {
             const events = response.instances;
@@ -133,24 +132,22 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
-            this.api.tracker.events.get({
-                fields: { $all: true },
-                orgUnit: orgUnitId,
+            this.api.tracker.trackedEntities.get({
+                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
                 program: PPS_PATIENT_REGISTER_ID,
+                orgUnit: orgUnitId,
                 pageSize: 10,
                 totalPages: true,
-                filter: ` ${SURVEY_PATIENT_ID_DATAELEMENT_ID}:like:${keyword}, ${WARD_ID_DATAELEMENT_ID}:eq:${parentId}`,
+                filter: ` ${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
-        ).flatMap(response => {
-            const events = response.instances;
-
-            const surveys = mapEventToSurvey(events, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID);
+        ).flatMap(trackedEntities => {
+            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PPSPatientRegister");
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
-                    page: response.page,
-                    pageSize: response.pageSize,
-                    total: surveys.length,
+                    page: trackedEntities.page,
+                    pageSize: trackedEntities.pageSize,
+                    total: trackedEntities.total,
                 },
                 objects: surveys,
             };
@@ -165,24 +162,22 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
-            this.api.tracker.events.get({
-                fields: { $all: true },
-                orgUnit: orgUnitId,
+            this.api.tracker.trackedEntities.get({
+                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
                 program: PPS_PATIENT_REGISTER_ID,
+                orgUnit: orgUnitId,
                 pageSize: 10,
                 totalPages: true,
-                filter: ` ${SURVEY_PATIENT_CODE_DATAELEMENT_ID}:like:${keyword}, ${WARD_ID_DATAELEMENT_ID}:eq:${parentId}`,
+                filter: ` ${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
-        ).flatMap(response => {
-            const events = response.instances;
-
-            const surveys = mapEventToSurvey(events, "PPSPatientRegister", PPS_PATIENT_REGISTER_ID);
+        ).flatMap(trackedEntities => {
+            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PPSPatientRegister");
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
-                    page: response.page,
-                    pageSize: response.pageSize,
-                    total: surveys.length,
+                    page: trackedEntities.page,
+                    pageSize: trackedEntities.pageSize,
+                    total: trackedEntities.total,
                 },
                 objects: surveys,
             };

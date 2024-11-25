@@ -250,7 +250,8 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: Id
     ): FutureData<Survey[]> {
         const ouMode =
-            orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID
+            (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
+            programId === PPS_PATIENT_REGISTER_ID
                 ? "DESCENDANTS"
                 : undefined;
 
@@ -303,9 +304,7 @@ export class SurveyD2Repository implements SurveyRepository {
     ): FutureData<Survey[]> {
         const ouMode =
             orgUnitId !== "" &&
-            (programId === PPS_WARD_REGISTER_ID ||
-                programId === PPS_HOSPITAL_FORM_ID ||
-                programId === PPS_PATIENT_REGISTER_ID)
+            (programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID)
                 ? "DESCENDANTS"
                 : undefined;
         return apiToFuture(

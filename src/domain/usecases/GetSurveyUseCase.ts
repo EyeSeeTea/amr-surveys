@@ -16,9 +16,10 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
-    SURVEY_ID_PATIENT_DATAELEMENT_ID,
-    WARD_ID_DATAELEMENT_ID,
+    SURVEY_ID_PATIENT_TEA_ID,
+    WARD_ID_TEA_ID,
 } from "../../data/entities/D2Survey";
+import { isTrackerProgram } from "../../data/utils/surveyProgramHelper";
 import { Future } from "../entities/generic/Future";
 import {
     Questionnaire,
@@ -62,26 +63,53 @@ export class GetSurveyUseCase {
         return this.surveyReporsitory
             .getForm(programId, undefined, undefined)
             .flatMap(questionnaire => {
-                if (questionnaire.stages && questionnaire.stages[0]) {
+                if (isTrackerProgram(programId) && questionnaire.entity) {
+                    const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
+                        question => {
+                            if (
+                                question.id === WARD_ID_TEA_ID &&
+                                parentWardRegisterId &&
+                                question.type === "text"
+                            ) {
+                                return {
+                                    ...question,
+                                    value: parentWardRegisterId,
+                                };
+                            } else if (
+                                question.id === SURVEY_ID_PATIENT_TEA_ID &&
+                                question.type === "text" &&
+                                parentPPSSurveyId
+                            ) {
+                                return {
+                                    ...question,
+                                    value: parentPPSSurveyId,
+                                };
+                            } else return question;
+                        }
+                    );
+
+                    const updatedEntity: QuestionnaireEntity = {
+                        ...questionnaire.entity,
+                        questions: updatedEntityQuestions,
+                    };
+
+                    return Future.success(
+                        Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
+                    );
+                } else if (questionnaire.stages && questionnaire.stages[0]) {
                     const updatedSections: QuestionnaireSection[] =
                         questionnaire.stages[0].sections.map(section => {
-                            //PPS Questionnaires have only 1 stage
-                            const isSurveyIdOrWardIdSection =
+                            //PPS Event Program Questionnaires have only 1 stage
+                            const isSurveyIdSection =
                                 section.questions.find(
-                                    question =>
-                                        question.id === SURVEY_ID_DATAELEMENT_ID ||
-                                        question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
-                                        question.id === WARD_ID_DATAELEMENT_ID
+                                    question => question.id === SURVEY_ID_DATAELEMENT_ID
                                 ) !== undefined;
 
-                            if (isSurveyIdOrWardIdSection) {
+                            if (isSurveyIdSection) {
                                 const updatedQuestions: Question[] = section.questions.map(
                                     question => {
                                         const isSurveyIdQuestion =
-                                            question.id === SURVEY_ID_DATAELEMENT_ID ||
-                                            question.id === SURVEY_ID_PATIENT_DATAELEMENT_ID;
-                                        const isWardIdQuestion =
-                                            question.id === WARD_ID_DATAELEMENT_ID;
+                                            question.id === SURVEY_ID_DATAELEMENT_ID;
 
                                         if (isSurveyIdQuestion && question.type === "text") {
                                             //Survey Id Question, pre-populate value to parent survey id
@@ -90,13 +118,6 @@ export class GetSurveyUseCase {
                                                 value: parentPPSSurveyId,
                                             };
                                             return updatedSurveyIdQuestion;
-                                        } else if (isWardIdQuestion && question.type === "text") {
-                                            //Survey Id Question, pre-populate value to parent survey id
-                                            const updatedWardIdQuestion: Question = {
-                                                ...question,
-                                                value: parentWardRegisterId,
-                                            };
-                                            return updatedWardIdQuestion;
                                         } else {
                                             //Not survey id question, return without any update
                                             return question;
@@ -120,7 +141,10 @@ export class GetSurveyUseCase {
                     };
 
                     return Future.success(
-                        Questionnaire.updateQuestionnaireStages(questionnaire, [updatedStage])
+                        Questionnaire.updateQuestionnaireStages(questionnaire, [
+                            ...questionnaire.stages,
+                            updatedStage,
+                        ])
                     );
                 } else {
                     return Future.success(questionnaire);

@@ -87,6 +87,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                   surveyFormType === "PrevalenceSampleShipTrackForm" ||
                   surveyFormType === "PrevalenceSupranationalRefLabForm"
                 ? currentPrevalenceSurveyForm?.id
+                : surveyFormType === "PPSPatientRegister"
+                ? currentWardRegister?.id
                 : currentPPSSurveyForm?.id;
 
         const orgUnitId = getOrgUnitByFormType();
