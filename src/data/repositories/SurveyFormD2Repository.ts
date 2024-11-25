@@ -110,7 +110,8 @@ export class SurveyD2Repository implements SurveyRepository {
                 //If event specified,populate the form
                 if (eventId) {
                     if (isTrackerProgram(programId)) {
-                        if (!orgUnitId) return Future.error(new Error("Survey not found"));
+                        if (!orgUnitId && programId !== PPS_PATIENT_REGISTER_ID)
+                            return Future.error(new Error("Survey not found"));
                         return this.getTrackerProgramById(eventId, programId).flatMap(
                             trackedEntity => {
                                 if (resp.programs[0] && trackedEntity) {
@@ -326,7 +327,7 @@ export class SurveyD2Repository implements SurveyRepository {
         programId: Id,
         orgUnitId: Id | undefined
     ): FutureData<Questionnaire> {
-        if (isTrackerProgram(programId) && !orgUnitId)
+        if (isTrackerProgram(programId) && !orgUnitId && programId !== PPS_PATIENT_REGISTER_ID)
             return Future.error(new Error("Unable to find survey"));
         return this.getForm(programId, eventId, orgUnitId);
     }
