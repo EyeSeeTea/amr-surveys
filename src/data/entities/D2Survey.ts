@@ -5,7 +5,7 @@ import { Id } from "../../domain/entities/Ref";
 export const PPS_SURVEY_FORM_ID = "OGOw5Kt3ytv";
 export const PPS_COUNTRY_QUESTIONNAIRE_ID = "a4aYe2Eoaul";
 export const PPS_HOSPITAL_FORM_ID = "mesnCzaLc7u";
-export const PPS_PATIENT_REGISTER_ID = "GWcT6PN9NmI";
+export const PPS_PATIENT_REGISTER_ID = "ceSJyvSGyHm";
 export const PPS_WARD_REGISTER_ID = "aIyAtgpYYrS";
 //PPS Data element Ids
 
@@ -13,14 +13,14 @@ export const START_DATE_DATAELEMENT_ID = "OmkxlG2rNw3";
 export const SURVEY_TYPE_DATAELEMENT_ID = "Oyi27xcPzAY";
 export const SURVEY_COMPLETED_DATAELEMENT_ID = "KuGRIx3I16f";
 export const SURVEY_ID_DATAELEMENT_ID = "JHw6Hs0T2Lb";
-export const SURVEY_ID_PATIENT_DATAELEMENT_ID = "X2EkNfUHANO";
-export const WARD_ID_DATAELEMENT_ID = "o4YMhVrXTeG";
+export const SURVEY_ID_PATIENT_TEA_ID = "Yc0jYZn0lwa";
+export const WARD_ID_TEA_ID = "pUZFmyeWHZa";
 export const WARD2_ID_DATAELEMENT_ID = "aSI3ZfIb3YS";
 export const SURVEY_NAME_DATAELEMENT_ID = "mEQnAQQjdO8";
 export const SURVEY_HOSPITAL_CODE_DATAELEMENT_ID = "uAe6Mlw2XlE";
 export const SURVEY_WARD_CODE_DATAELEMENT_ID = "q4mg5z04dzd";
-export const SURVEY_PATIENT_CODE_DATAELEMENT_ID = "yScrOW1eTvm";
-export const SURVEY_PATIENT_ID_DATAELEMENT_ID = "eKUbBRlR684";
+export const SURVEY_PATIENT_CODE_TEA_ID = "qX450py29V3";
+export const SURVEY_PATIENT_ID_TEA_ID = "HkBG3DVELBM";
 //Prevalence Program Ids
 
 export const PREVALENCE_SURVEY_FORM_ID = "WcSw803XiUk";
@@ -72,6 +72,7 @@ export const PREVALENCE_CENTRAL_REF_LAB_TET = "yqa88gKCdV8";
 export const PREVALENCE_PATHOGEN_ISOLATES_TET = "aWIdBmjFWF0";
 export const PREVALENCE_SUPRANATIONAL_TET = "KQMBM3q32FC";
 export const PREVALENCE_MORTALITY_FOLLOW_UP_TET = "m8YpTxNjHbn";
+export const PPS_PATIENT_TET = "EHN9A3tEP5s";
 
 type SURVEY_DATA_ELEMENT_KEYS =
     | "startDate"
@@ -105,7 +106,7 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
         key: "parentPPSSurveyId",
         dataElements: [
             SURVEY_ID_DATAELEMENT_ID,
-            SURVEY_ID_PATIENT_DATAELEMENT_ID,
+            SURVEY_ID_PATIENT_TEA_ID,
             AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
         ],
     },
@@ -115,9 +116,9 @@ export const keyToDataElementMap: SurveyKeyDataElementMapType[] = [
     },
     { key: "hospitalCode", dataElements: [SURVEY_HOSPITAL_CODE_DATAELEMENT_ID] },
     { key: "wardCode", dataElements: [SURVEY_WARD_CODE_DATAELEMENT_ID] },
-    { key: "patientId", dataElements: [SURVEY_PATIENT_ID_DATAELEMENT_ID] },
-    { key: "patientCode", dataElements: [SURVEY_PATIENT_CODE_DATAELEMENT_ID] },
-    { key: "parentWardRegisterId", dataElements: [WARD_ID_DATAELEMENT_ID] },
+    { key: "patientId", dataElements: [SURVEY_PATIENT_ID_TEA_ID] },
+    { key: "patientCode", dataElements: [SURVEY_PATIENT_CODE_TEA_ID] },
+    { key: "parentWardRegisterId", dataElements: [WARD_ID_TEA_ID] },
     { key: "uniqueSurveyPatientId", dataElements: [AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID] },
     { key: "astGuideline", dataElements: [AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES] },
     { key: "customAstGuideline", dataElements: [AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE] },

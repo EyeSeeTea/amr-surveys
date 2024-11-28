@@ -31,9 +31,9 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
-    SURVEY_ID_PATIENT_DATAELEMENT_ID,
+    SURVEY_ID_PATIENT_TEA_ID,
     WARD2_ID_DATAELEMENT_ID,
-    WARD_ID_DATAELEMENT_ID,
+    WARD_ID_TEA_ID,
 } from "../entities/D2Survey";
 import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
@@ -282,8 +282,6 @@ export const mapProgramDataElementToQuestions = (
                 if (
                     currentQuestion &&
                     (currentQuestion.id === SURVEY_ID_DATAELEMENT_ID ||
-                        currentQuestion.id === SURVEY_ID_PATIENT_DATAELEMENT_ID ||
-                        currentQuestion.id === WARD_ID_DATAELEMENT_ID ||
                         currentQuestion.id === WARD2_ID_DATAELEMENT_ID ||
                         currentQuestion.id === AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID)
                 ) {
@@ -375,7 +373,9 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
-                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2)
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2 ||
+                    currentQuestion.id === SURVEY_ID_PATIENT_TEA_ID ||
+                    currentQuestion.id === WARD_ID_TEA_ID)
             ) {
                 currentQuestion.disabled = true;
             }

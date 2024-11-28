@@ -10,6 +10,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import {
     PPS_COUNTRY_QUESTIONNAIRE_ID,
     PPS_HOSPITAL_FORM_ID,
+    PPS_PATIENT_REGISTER_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
 } from "../entities/D2Survey";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
@@ -38,7 +39,20 @@ export const getSurveyChildCount = (
         const isTracker = isTrackerProgram(childId);
 
         if (isTracker) {
-            if (childIds.type === "singleChild") {
+            if (
+                childIds.type === "singleChild" &&
+                childId === PPS_PATIENT_REGISTER_ID &&
+                secondaryparentId
+            ) {
+                const eventCount = getTrackerSurveyCount(
+                    childId,
+                    orgUnitId,
+                    secondaryparentId,
+                    api
+                );
+
+                return { type: "value", value: eventCount };
+            } else if (childIds.type === "singleChild") {
                 const eventCount = getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api);
 
                 return { type: "value", value: eventCount };

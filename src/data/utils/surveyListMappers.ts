@@ -21,6 +21,10 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
     AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
     AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID,
+    SURVEY_ID_PATIENT_TEA_ID,
+    SURVEY_PATIENT_ID_TEA_ID,
+    WARD_ID_TEA_ID,
+    SURVEY_PATIENT_CODE_TEA_ID,
 } from "../entities/D2Survey";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
@@ -45,6 +49,10 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH
             )?.value ?? "";
 
+        const parentPPSSurveyId =
+            trackedEntity.attributes?.find(attr => attr.attribute === SURVEY_ID_PATIENT_TEA_ID)
+                ?.value ?? "";
+
         const patientId =
             trackedEntity.attributes?.find(
                 attribute =>
@@ -54,7 +62,13 @@ export const mapTrackedEntityToSurvey = (
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
                     attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
                     attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2
+                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2 ||
+                    attribute.attribute === SURVEY_PATIENT_ID_TEA_ID
+            )?.value ?? "";
+
+        const patientCode =
+            trackedEntity.attributes?.find(
+                attribute => attribute.attribute === SURVEY_PATIENT_CODE_TEA_ID
             )?.value ?? "";
 
         const facilityCode =
@@ -62,11 +76,18 @@ export const mapTrackedEntityToSurvey = (
                 attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID
             )?.value ?? "";
 
+        const parentWardId =
+            trackedEntity.attributes?.find(attribute => attribute.attribute === WARD_ID_TEA_ID)
+                ?.value ?? "";
+
         const survey: Survey = {
             id: trackedEntity.trackedEntity ?? "",
             name: trackedEntity.trackedEntity ?? "",
             rootSurvey: {
-                id: parentPrevalenceSurveyId ?? "",
+                id:
+                    surveyFormType === "PPSPatientRegister"
+                        ? parentPPSSurveyId
+                        : parentPrevalenceSurveyId,
                 name: "",
                 surveyType: "",
             },
@@ -77,10 +98,10 @@ export const mapTrackedEntityToSurvey = (
                 name: trackedEntity.enrollments?.[0]?.orgUnitName ?? "",
             },
             surveyType: "",
-            parentWardRegisterId: undefined,
+            parentWardRegisterId: parentWardId,
             surveyFormType: surveyFormType,
             childCount: undefined,
-            uniquePatient: { id: patientId, code: "" },
+            uniquePatient: { id: patientId, code: patientCode },
             facilityCode: facilityCode,
         };
         return survey;

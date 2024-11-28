@@ -22,7 +22,7 @@ import {
     PREVALENCE_SURVEY_FORM_ID,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
-    WARD_ID_DATAELEMENT_ID,
+    WARD_ID_TEA_ID,
     PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
     PREVALENCE_MORTALITY_DISCHARGE_FORM,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
@@ -33,6 +33,7 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
+    PPS_PATIENT_TET,
 } from "../entities/D2Survey";
 
 export const isTrackerProgram = (programId: Id) => {
@@ -46,6 +47,7 @@ export const isTrackerProgram = (programId: Id) => {
         case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
         case PREVALENCE_MORTALITY_DISCHARGE_FORM:
         case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
+        case PPS_PATIENT_REGISTER_ID:
             return true;
         default:
             return false;
@@ -70,6 +72,8 @@ export const getTrackedEntityAttributeType = (programId: Id) => {
         case PREVALENCE_MORTALITY_DISCHARGE_FORM:
         case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
             return PREVALENCE_MORTALITY_FOLLOW_UP_TET;
+        case PPS_PATIENT_REGISTER_ID:
+            return PPS_PATIENT_TET;
 
         default:
             return "";
@@ -130,7 +134,7 @@ export const getParentDataElementForProgram = (programId: Id): Id => {
         case PPS_WARD_REGISTER_ID:
             return SURVEY_ID_DATAELEMENT_ID;
         case PPS_PATIENT_REGISTER_ID:
-            return WARD_ID_DATAELEMENT_ID;
+            return WARD_ID_TEA_ID;
 
         default:
             return "";
