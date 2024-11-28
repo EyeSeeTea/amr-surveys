@@ -81,10 +81,17 @@ export const getQuestionValueByType = (question: Question): string => {
         case "boolean":
             return question.value === undefined ? "false" : question.value.toString();
         case "date":
-            return question.value?.toISOString().split("T")[0] ?? "";
+            try {
+                return question.value?.toISOString().split("T")[0] ?? "";
+            } catch (e) {
+                return ""; //Handle invalid date
+            }
         case "datetime":
-            return question.value?.toString() ?? "";
-
+            try {
+                return question.value?.toString() ?? "";
+            } catch (e) {
+                return ""; //Handle invalid date
+            }
         case "number":
         case "text":
             return question.value ?? "";
