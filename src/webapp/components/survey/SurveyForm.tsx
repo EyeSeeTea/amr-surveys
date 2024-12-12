@@ -116,25 +116,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     return (
                         <PaddedDiv key={stage.id}>
                             <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
-                            {stage.repeatable && (
-                                <RightAlignedDiv>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => addProgramStage(stage.code)}
-                                    >
-                                        {i18n.t(`Add Another ${stage.title}`)}
-                                    </Button>
-                                    {stage.isAddedByUser && (
-                                        <CancelButton
-                                            variant="outlined"
-                                            onClick={() => removeProgramStage(stage.id)}
-                                        >
-                                            {i18n.t(`Remove ${stage.title}`)}
-                                        </CancelButton>
-                                    )}
-                                </RightAlignedDiv>
-                            )}
+
                             {stage.sections.map(section => {
                                 if (!section.isVisible || section.isAntibioticSection) return null;
 
@@ -172,6 +154,26 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     />
                                 );
                             })}
+
+                            {stage.repeatable && (
+                                <RightAlignedDiv>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => addProgramStage(stage.code)}
+                                    >
+                                        {i18n.t(`Add Another ${stage.title}`)}
+                                    </Button>
+                                    {stage.isAddedByUser && (
+                                        <CancelButton
+                                            variant="outlined"
+                                            onClick={() => removeProgramStage(stage.id)}
+                                        >
+                                            {i18n.t(`Remove ${stage.title}`)}
+                                        </CancelButton>
+                                    )}
+                                </RightAlignedDiv>
+                            )}
                         </PaddedDiv>
                     );
                 })}
