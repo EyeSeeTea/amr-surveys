@@ -1,4 +1,6 @@
 import { Id } from "../../domain/entities/Ref";
+import { Codec, Schema } from "../../utils/codec";
+
 export type ProgramRuleActionType =
     | "DISPLAYTEXT"
     | "DISPLAYKEYVALUEPAIR"
@@ -47,8 +49,18 @@ export interface ProgramDataElement {
     formName: string;
     valueType: string;
     optionSet?: { id: string };
-    sortOrder: number | undefined;
+    sortOrder?: number | undefined;
 }
+
+export const ProgramDataElementModel: Codec<ProgramDataElement> = Schema.object({
+    code: Schema.string,
+    id: Schema.string,
+    name: Schema.string,
+    formName: Schema.string,
+    valueType: Schema.string,
+    optionSet: Schema.optional(Schema.object({ id: Schema.string })),
+    sortOrder: Schema.optional(Schema.number),
+});
 
 export interface OptionSet {
     id: string;
