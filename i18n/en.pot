@@ -5,11 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-12-19T11:55:32.909Z\n"
-"PO-Revision-Date: 2024-12-19T11:55:32.909Z\n"
-
-msgid "There was a problem with {{dataElementErrorIdentifiers}}"
-msgstr ""
+"POT-Creation-Date: 2024-12-19T15:42:35.172Z\n"
+"PO-Revision-Date: 2024-12-19T15:42:35.172Z\n"
 
 msgid "Facilities"
 msgstr ""

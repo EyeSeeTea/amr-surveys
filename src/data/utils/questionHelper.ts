@@ -43,16 +43,19 @@ const SPECIES_QUESTION_FORNAME = "Specify the specie";
 const ANTIBIOTIC_QUESTION_FORNAME = "Specify the antibiotic";
 const getQuestionBase = (
     id: Id,
-    code: string,
+    code: string | undefined,
     name: string,
-    formName: string,
+    formName: string | undefined,
     sortOrder: number | undefined
 ): QuestionBase => {
+    if (formName === undefined || code === undefined) {
+        console.debug("formName or code undefined. Defaulting to ''", { id, name, code, formName });
+    }
     return {
         id: id,
-        code: code, //code
+        code: code ?? "",
         name: name,
-        text: formName, //formName
+        text: formName ?? "",
         isVisible: true,
         sortOrder: sortOrder,
         errors: [],
@@ -81,9 +84,9 @@ const getSelectQuestionBase = (
 export const getQuestion = (
     valueType: string,
     id: Id,
-    code: string,
+    code: string | undefined,
     name: string,
-    formName: string,
+    formName: string | undefined,
     sortOrder: number | undefined,
     options: Option[],
     optionSet?: { id: string },
@@ -128,7 +131,7 @@ export const getQuestion = (
         case "EMAIL":
         case "TEXT": {
             if (optionSet) {
-                const isSpeciesQuestion = formName.includes(SPECIES_QUESTION_FORNAME);
+                const isSpeciesQuestion = formName?.includes(SPECIES_QUESTION_FORNAME) ?? false;
                 const isAntibioticQuestion = name.startsWith(ANTIBIOTIC_QUESTION_FORNAME);
 
                 const selectBase = getSelectQuestionBase(base, options, optionSet, dataValue);

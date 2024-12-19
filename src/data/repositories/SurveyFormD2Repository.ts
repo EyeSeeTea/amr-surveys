@@ -38,7 +38,6 @@ import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
-import { validateDataElements } from "../utils/validationHelper";
 
 const OU_CHUNK_SIZE = 500;
 export class SurveyD2Repository implements SurveyRepository {
@@ -89,11 +88,6 @@ export class SurveyD2Repository implements SurveyRepository {
                               )?.sortOrder,
                           };
                       });
-
-                const dataElementErrors = validateDataElements(dataElementsWithSortOrder);
-                if (dataElementErrors) {
-                    return Future.error(new Error(dataElementErrors));
-                }
 
                 const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
                     ? _(
