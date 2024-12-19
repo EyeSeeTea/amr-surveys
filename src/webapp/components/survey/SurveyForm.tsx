@@ -67,14 +67,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
         if (saveCompleteState && saveCompleteState.status === "error") {
             snackbar.error(saveCompleteState.message);
-            if (props.hideForm) props.hideForm();
+            setLoading(false);
         }
 
         //If error fetching survey, redirect to homepage.
         if (error) {
             history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props]);
+    }, [error, saveCompleteState, snackbar, history, props, setLoading]);
 
     const saveSurveyForm = () => {
         setLoading(true);
