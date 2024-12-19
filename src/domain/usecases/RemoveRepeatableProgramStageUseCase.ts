@@ -11,17 +11,15 @@ export class RemoveRepeatableProgramStageUseCase {
         //Repeatable Program Stages are only applicable to Prevalence Facility forms
 
         const eventId = questionnaire.stages.find(stage => stage.id === stageId)?.instanceId;
+        const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
 
-        if (!eventId)
-            return Future.error(new Error("Cannot find event Id correspoding to the stage"));
+        if (!eventId) {
+            return Future.success(updatedQuestionnaire);
+        }
 
         return this.surveyRepository
             .deleteEventSurvey(eventId, questionnaire.orgUnit.id, PREVALENCE_FACILITY_LEVEL_FORM_ID)
             .flatMap(() => {
-                const updatedQuestionnaire = Questionnaire.removeProgramStage(
-                    questionnaire,
-                    stageId
-                );
                 return Future.success(updatedQuestionnaire);
             });
     }
