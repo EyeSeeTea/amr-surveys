@@ -1,7 +1,7 @@
 import { Codec, decodeModel } from "./codec";
 
-export function getValidationErrorsByItem<Model, T>(
-    model: Codec<Model>,
+export function getValidationErrorsByItem<T>(
+    model: Codec<T>,
     collection: T[]
 ): { item: T; error: string }[] | null {
     const validationErrors = collection
