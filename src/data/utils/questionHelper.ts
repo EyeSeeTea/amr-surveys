@@ -38,6 +38,7 @@ import {
 import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import i18n from "../../utils/i18n";
 
 const SPECIES_QUESTION_FORNAME = "Specify the specie";
 const ANTIBIOTIC_QUESTION_FORNAME = "Specify the antibiotic";
@@ -49,13 +50,18 @@ const getQuestionBase = (
     sortOrder: number | undefined
 ): QuestionBase => {
     if (formName === undefined || code === undefined) {
-        console.debug("formName or code undefined. Defaulting to ''", { id, name, code, formName });
+        throw new Error(
+            i18n.t('There was a problem with "{{name}}" - {{prop}} is not set', {
+                name,
+                prop: formName === undefined ? "Form Name" : "Code",
+            })
+        );
     }
     return {
         id: id,
-        code: code ?? "",
+        code: code,
         name: name,
-        text: formName ?? "",
+        text: formName,
         isVisible: true,
         sortOrder: sortOrder,
         errors: [],
