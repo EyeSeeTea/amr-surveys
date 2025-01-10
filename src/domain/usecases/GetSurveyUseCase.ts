@@ -140,11 +140,12 @@ export class GetSurveyUseCase {
                         sections: updatedSections,
                     };
 
+                    const updatedStages = questionnaire.stages.map(stage =>
+                        stage.id === updatedStage.id ? updatedStage : stage
+                    );
+
                     return Future.success(
-                        Questionnaire.updateQuestionnaireStages(questionnaire, [
-                            ...questionnaire.stages,
-                            updatedStage,
-                        ])
+                        Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages)
                     );
                 } else {
                     return Future.success(questionnaire);
