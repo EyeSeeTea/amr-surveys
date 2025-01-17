@@ -1,4 +1,5 @@
 import { Id } from "../../domain/entities/Ref";
+
 export type ProgramRuleActionType =
     | "DISPLAYTEXT"
     | "DISPLAYKEYVALUEPAIR"
@@ -41,13 +42,13 @@ export interface ProgramStage {
 }
 
 export interface ProgramDataElement {
-    code: string;
+    code?: string;
     id: string;
     name: string;
-    formName: string;
+    formName?: string;
     valueType: string;
     optionSet?: { id: string };
-    sortOrder: number | undefined;
+    sortOrder?: number | undefined;
 }
 
 export interface OptionSet {
@@ -66,9 +67,9 @@ export interface Option {
 
 export interface TrackedEntityAttibute {
     id: string;
-    code: string;
+    code?: string;
     name: string;
-    formName: string;
+    formName?: string;
     sortOrder: number;
     valueType: string;
     optionSet?: { id: string };
