@@ -5,10 +5,13 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2024-12-20T16:08:06.715Z\n"
-"PO-Revision-Date: 2024-12-20T16:08:06.715Z\n"
+"POT-Creation-Date: 2025-01-17T13:50:55.771Z\n"
+"PO-Revision-Date: 2025-01-17T13:50:55.771Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
+msgstr ""
+
+msgid "There was an error processing the form"
 msgstr ""
 
 msgid "Facilities"
