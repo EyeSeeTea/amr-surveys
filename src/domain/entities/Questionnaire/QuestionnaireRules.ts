@@ -1,5 +1,6 @@
 import {
     D2ExpressionParser,
+    EvaluatedExpressionResult,
     ProgramRuleVariableName,
     ProgramRuleVariableValue,
 } from "../../../data/entities/D2ExpressionParser";
@@ -31,7 +32,8 @@ export interface QuestionnaireRuleAction {
     trackedEntityAttribute?: {
         id: Id | undefined; // to hide
     };
-    data?: string; // to assign
+    data?: string; // to assign (expression raw value)
+    dataEvaluated?: EvaluatedExpressionResult; // to assign (calculated/evaluated value)
     programStageSection?: {
         id: Id | undefined; // to hide/show
     };
@@ -65,10 +67,18 @@ export const getApplicableRules = (
     );
 
     //2. Run the rule conditions and return rules with parsed results
+    // Also augment rule actions with results of the `data` expression evaluation
     const parsedApplicableRules = applicableRules.map(rule => {
         const expressionParserResult = parseConditionWithExpressionParser(rule, questions);
-
-        return { ...rule, parsedResult: expressionParserResult };
+        const actionsWithEvaluatedDataExpressions = getActionsWithEvaluatedDataExpression(
+            rule,
+            questions
+        );
+        return {
+            ...rule,
+            parsedResult: expressionParserResult,
+            actions: actionsWithEvaluatedDataExpressions,
+        };
     });
 
     return parsedApplicableRules;
@@ -100,6 +110,25 @@ export const getQuestionValueByType = (question: Question): string => {
             return "";
     }
 };
+
+export function getQuestionValueFromEvaluatedExpression(
+    question: Question,
+    dataEvaluated?: EvaluatedExpressionResult
+): Question["value"] {
+    // TODO: handle possible mismatches between question value type and dataEvaluated type
+    // e.g. question.type is "date" but dataEvaluated is a number
+    if (dataEvaluated === null) {
+        return undefined;
+    } else if (question.type === "select") {
+        const option = question.options.find(option => option.code === dataEvaluated);
+        if (!option) console.warn("Option not found in question for code:", dataEvaluated);
+        return option;
+    } else if (typeof dataEvaluated === "number") {
+        return dataEvaluated.toString();
+    } else {
+        return dataEvaluated;
+    }
+}
 
 function getProgramRuleVariableValues(
     programRuleVariables: Maybe<D2ProgramRuleVariable[]>,
@@ -153,4 +182,41 @@ const parseConditionWithExpressionParser = (
                 return false;
             },
         });
+};
+
+/**
+ *  Get the actions from the rule, augmenting them with the `dataEvaluated` property - Only for ASSIGN actions
+ *  `dataEvaluated` is set with the results of running the D2ExpressionParser evaluation
+ */
+const getActionsWithEvaluatedDataExpression = (
+    rule: QuestionnaireRule,
+    questions: Question[]
+): QuestionnaireRuleAction[] => {
+    const programRuleVariableValues = getProgramRuleVariableValues(
+        rule.programRuleVariables,
+        questions
+    );
+    const parser = new D2ExpressionParser();
+
+    return rule.actions.map(action => {
+        if (!action.data || action.programRuleActionType !== "ASSIGN") {
+            return action;
+        }
+        return {
+            ...action,
+            dataEvaluated: parser
+                .evaluateActionExpression(action.data, programRuleVariableValues)
+                .match({
+                    success: evaluationResult => evaluationResult,
+                    error: errMsg => {
+                        console.error(
+                            "Error evaluating ASSIGN data expression",
+                            action.data,
+                            errMsg
+                        );
+                        return null;
+                    },
+                }),
+        };
+    });
 };

@@ -42,6 +42,7 @@ import {
 } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import { DataValue } from "@eyeseetea/d2-api";
 import { generateUid } from "../../utils/uid";
+import i18n from "../../utils/i18n";
 
 const AntibioticTreatmentHospitalEpisodeSectionName =
     `Antibiotic treatments during hospital episode`.toLowerCase();
@@ -294,7 +295,12 @@ export const mapQuestionnaireToEvent = (
         stages.sections.flatMap(section => section.questions)
     );
 
-    const dataValues = mapQuestionsToDataValues(questions);
+    let dataValues: DataValue[] = [];
+    try {
+        dataValues = mapQuestionsToDataValues(questions);
+    } catch (error) {
+        return Future.error(new Error(i18n.t("There was an error processing the form")));
+    }
 
     if (eventId) {
         return getEventProgramById(eventId, api).flatMap(event => {
@@ -323,13 +329,12 @@ export const mapQuestionnaireToEvent = (
     }
 };
 
-export const mapQuestionnaireToTrackedEntities = (
+const mapQuestionnaireToEventsByStage = (
     questionnaire: Questionnaire,
     orgUnitId: string,
-    programId: Id,
-    teiId: string | undefined = undefined
-): FutureData<{ trackedEntities: TrackedEntity[] }> => {
-    const eventsByStage: D2TrackerEvent[] = questionnaire.stages.map(stage => {
+    programId: Id
+): D2TrackerEvent[] => {
+    return questionnaire.stages.map(stage => {
         const dataValuesByStage = stage.sections.flatMap(section => {
             return mapQuestionsToDataValues(section.questions);
         });
@@ -339,11 +344,25 @@ export const mapQuestionnaireToTrackedEntities = (
             event: stage.instanceId ?? "",
             programStage: stage.code,
             orgUnit: orgUnitId,
-            dataValues: dataValuesByStage as DataValue[],
+            dataValues: dataValuesByStage,
             occurredAt: new Date().getTime().toString(),
             status: "ACTIVE",
         };
     });
+};
+
+export const mapQuestionnaireToTrackedEntities = (
+    questionnaire: Questionnaire,
+    orgUnitId: string,
+    programId: Id,
+    teiId: string | undefined = undefined
+): FutureData<{ trackedEntities: TrackedEntity[] }> => {
+    let eventsByStage: D2TrackerEvent[] = [];
+    try {
+        eventsByStage = mapQuestionnaireToEventsByStage(questionnaire, orgUnitId, programId);
+    } catch (error) {
+        return Future.error(new Error(i18n.t("There was an error processing the form")));
+    }
 
     const attributes: D2TrackerEnrollmentAttribute[] = questionnaire.entity
         ? questionnaire.entity.questions.map(question => {

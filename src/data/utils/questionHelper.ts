@@ -38,6 +38,7 @@ import {
 import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import { isValidDate } from "../../utils/dates";
 import i18n from "../../utils/i18n";
 
 const SPECIES_QUESTION_FORNAME = "Specify the specie";
@@ -182,7 +183,7 @@ export const getQuestion = (
             const dateQ: DateQuestion = {
                 ...base,
                 type: "date",
-                value: dataValue ? new Date(dataValue) : undefined,
+                value: parseQuestionDate(dataValue, base),
             };
             return dateQ;
         }
@@ -191,11 +192,23 @@ export const getQuestion = (
             const dateQ: DateTimeQuestion = {
                 ...base,
                 type: "datetime",
-                value: dataValue ? new Date(dataValue) : undefined,
+                value: parseQuestionDate(dataValue, base),
             };
             return dateQ;
         }
     }
+};
+
+const parseQuestionDate = (
+    dateStr: string | undefined,
+    question: QuestionBase
+): Date | undefined => {
+    if (!dateStr) return undefined;
+    const result = isValidDate(new Date(dateStr)) ? new Date(dateStr) : undefined;
+    if (dateStr && !result) {
+        console.debug(`Invalid date value: ${dateStr}`, question);
+    }
+    return result;
 };
 
 export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => {
