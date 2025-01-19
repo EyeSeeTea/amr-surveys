@@ -52,6 +52,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         updateQuestion,
         addProgramStage,
         removeProgramStage,
+        setRefreshQuestionnaire,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
     const { saveCompleteState, saveSurvey, resetSaveActionOutcome } = useSaveSurvey(
@@ -76,39 +77,41 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
         if (saveCompleteState && saveCompleteState.status === "intermediate-success") {
             snackbar.info(saveCompleteState.message);
+            setLoading(false);
             resetSaveActionOutcome();
+            setRefreshQuestionnaire({});
         }
         if (props.formType === "PPSPatientRegister" && questionnaire && questionnaire.stages) {
             const existingTreatments = _c(
-                questionnaire.stages
-                    .filter(stage => stage.code === "rayB0NQMmwx")
-                    .flatMap(stage => stage.instanceId)
+                questionnaire.stages.filter(
+                    stage => stage.code === "rayB0NQMmwx" && stage.instanceId
+                )
             )
                 .compact()
                 .value();
 
             const treatmentLinkOptions: QuestionOption[] = existingTreatments.map(treatment => {
                 return {
-                    id: treatment,
-                    name: treatment,
-                    code: treatment,
+                    id: treatment.instanceId ?? "",
+                    name: treatment.subTitle ?? treatment.instanceId ?? "",
+                    code: treatment.code,
                 };
             });
             setTreatmentOptions(treatmentLinkOptions);
 
             const existingIndications = _c(
-                questionnaire.stages
-                    .filter(stage => stage.code === "tLOW37yZuB9")
-                    .flatMap(stage => stage.instanceId)
+                questionnaire.stages.filter(
+                    stage => stage.code === "tLOW37yZuB9" && stage.instanceId
+                )
             )
                 .compact()
                 .value();
 
             const indicationLinkOptions: QuestionOption[] = existingIndications.map(indication => {
                 return {
-                    id: indication,
-                    name: indication,
-                    code: indication,
+                    id: indication.instanceId ?? "",
+                    name: indication.subTitle ?? indication.instanceId ?? "",
+                    code: indication.code,
                 };
             });
             setIndicationOptions(indicationLinkOptions);
@@ -118,7 +121,19 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         if (error) {
             // history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props, questionnaire, resetSaveActionOutcome]);
+    }, [
+        error,
+        saveCompleteState,
+        snackbar,
+        history,
+        props,
+        questionnaire,
+        resetSaveActionOutcome,
+        setLoading,
+        setTreatmentOptions,
+        setIndicationOptions,
+        setRefreshQuestionnaire,
+    ]);
 
     const saveSurveyForm = () => {
         setLoading(true);
@@ -128,7 +143,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
     };
     const saveSurveyFormWithoutRedirect = () => {
-        //TO DO : User permission check for saving a Survey Form
+        setLoading(true);
         if (questionnaire) {
             saveSurvey(questionnaire, true);
         }
@@ -165,7 +180,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                     return (
                         <PaddedDiv key={stage.id}>
-                            <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
+                            <span>
+                                <Typography style={{ display: "inline-block" }}>
+                                    {i18n.t(`Stage - ${stage.title}`)}
+                                </Typography>
+                                {stage.subTitle && (
+                                    <Typography style={{ display: "inline-block" }} variant="body2">
+                                        {i18n.t(` (${stage.subTitle})`)}
+                                    </Typography>
+                                )}
+                            </span>
                             {stage.sections.map(section => {
                                 if (!section.isVisible || section.isAntibioticSection) return null;
 

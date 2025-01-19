@@ -255,6 +255,12 @@ const getRepeatedStageEvents = (
         return {
             id: newStageId,
             title: stage.name,
+            subTitle:
+                stage.id === "tLOW37yZuB9"
+                    ? `I${index + 1}-${repeatedStageEvt.event}`
+                    : stage.id === "rayB0NQMmwx"
+                    ? `T${index + 1}-${repeatedStageEvt.event}`
+                    : "",
             code: stage.id,
             sections: _(currentSections)
                 .sortBy(section => section.sortOrder)

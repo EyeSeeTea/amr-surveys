@@ -26,7 +26,7 @@ export class SaveFormDataUseCase {
         questionnaire: Questionnaire,
         orgUnitId: Id,
         eventId: string | undefined = undefined
-    ): FutureData<void> {
+    ): FutureData<Id> {
         const programId = getProgramId(surveyFormType);
 
         //All PPS Survey Forms are Global.
@@ -64,19 +64,15 @@ export class SaveFormDataUseCase {
         ouId: string,
         programId: string,
         eventId: string | undefined = undefined
-    ): FutureData<void> => {
+    ): FutureData<Id> => {
         return this.surveyReporsitory
             .saveFormData(questionnaire, "CREATE_AND_UPDATE", ouId, eventId, programId)
-            .flatMap((surveyId: Id | undefined) => {
-                if (surveyId) {
-                    return this.saveCustomASTGuidelineToDatastore(
-                        surveyId,
-                        questionnaire,
-                        surveyFormType
-                    );
-                } else {
-                    return Future.success(undefined);
-                }
+            .flatMap(surveyId => {
+                return this.saveCustomASTGuidelineToDatastore(
+                    surveyId,
+                    questionnaire,
+                    surveyFormType
+                );
             });
     };
 
@@ -84,7 +80,7 @@ export class SaveFormDataUseCase {
         surveyId: Id,
         questionnaire: Questionnaire,
         surveyFormType: SURVEY_FORM_TYPES
-    ): FutureData<void> => {
+    ): FutureData<Id> => {
         //If Prevelance Survey Form, of custom AST Guideline, then save custom guideline to datastore.
 
         const customASTGuidelineQuestion = questionnaire.stages[0]?.sections
@@ -105,11 +101,11 @@ export class SaveFormDataUseCase {
                     .saveByASTGuidelineType(astGuidelineType, surveyId)
                     .flatMap(() => {
                         console.debug("Custom AST Guideline saved successfully.");
-                        return Future.success(undefined);
+                        return Future.success(surveyId);
                     });
             }
         }
-        return Future.success(undefined);
+        return Future.success(surveyId);
     };
 
     getCustomGuidelineType = (astGuidelineQuestion: SelectQuestion): ASTGUIDELINE_TYPES => {

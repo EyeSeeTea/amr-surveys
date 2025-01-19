@@ -13,6 +13,8 @@ import {
     QuestionOption,
     QuestionnaireQuestion,
     SelectQuestion,
+    isPPSIndicationLinkQuestion,
+    isPPSTreatmentLinkQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface QuestionWidgetProps {
@@ -20,28 +22,18 @@ export interface QuestionWidgetProps {
     question: Question;
     disabled: boolean;
     treatmentOptions?: Maybe<QuestionOption[]>;
-    // selectedTreatmentOption?: Maybe<QuestionOption>;
     indicationOptions?: Maybe<QuestionOption[]>;
-    // selectedIndicationOption?: Maybe<QuestionOption>;
 }
 
 export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props => {
-    const {
-        question,
-        disabled,
-        onChange,
-        treatmentOptions,
-        // selectedTreatmentOption,
-        indicationOptions,
-        // selectedIndicationOption,
-    } = props;
+    const { question, disabled, onChange, treatmentOptions, indicationOptions } = props;
     const { type } = question;
     const { update } = QuestionnaireQuestion;
 
     const [processedQuestion, setProcessedQuestion] = useState<SelectQuestion>();
 
     useEffect(() => {
-        if (question.name.startsWith("Treatment link")) {
+        if (isPPSTreatmentLinkQuestion(question)) {
             const treatmentDropdown: SelectQuestion = {
                 ...question,
                 type: "select",
@@ -49,7 +41,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 value: treatmentOptions?.find(op => op.id === question.value) || undefined,
             };
             setProcessedQuestion(treatmentDropdown);
-        } else if (question.name.startsWith("Indication link")) {
+        } else if (isPPSIndicationLinkQuestion(question)) {
             const indicationDropdown: SelectQuestion = {
                 ...question,
                 type: "select",
@@ -106,7 +98,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 />
             );
         case "text":
-            if (question.name.startsWith("Treatment link") && processedQuestion) {
+            if (isPPSTreatmentLinkQuestion(question) && processedQuestion) {
                 return (
                     <SearchableSelect
                         value={
@@ -115,14 +107,13 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                             ) || null
                         }
                         options={processedQuestion.options}
-                        onChange={(value: Maybe<QuestionOption>) => {
-                            onChange(update(question, value?.id));
-                            console.debug("To Do : set the corresponding indication value");
-                        }}
+                        onChange={(value: Maybe<QuestionOption>) =>
+                            onChange(update(question, value?.id))
+                        }
                         disabled={disabled}
                     />
                 );
-            } else if (question.name.startsWith("Indication link") && processedQuestion) {
+            } else if (isPPSIndicationLinkQuestion(question) && processedQuestion) {
                 return (
                     <SearchableSelect
                         value={
@@ -131,10 +122,9 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                             ) || null
                         }
                         options={processedQuestion.options}
-                        onChange={(value: Maybe<QuestionOption>) => {
-                            onChange(update(question, value?.id));
-                            console.debug("To Do : set the corresponding treatment value");
-                        }}
+                        onChange={(value: Maybe<QuestionOption>) =>
+                            onChange(update(question, value?.id))
+                        }
                         disabled={disabled}
                     />
                 );

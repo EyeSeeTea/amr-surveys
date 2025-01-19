@@ -2,14 +2,16 @@ import { useAppContext } from "../../../contexts/app-context";
 
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { Id } from "../../../../domain/entities/Ref";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { ActionOutcome } from "../../../../domain/entities/generic/ActionOutcome";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
+import { useHistory } from "react-router-dom";
 
 export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, surveyId?: Id) {
     const { compositionRoot } = useAppContext();
+    const history = useHistory();
     const [saveCompleteState, setSaveCompleteState] = useState<ActionOutcome>();
     const { currentHospitalForm, currentFacilityLevelForm } = useCurrentSurveys();
 
@@ -38,12 +40,17 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
         compositionRoot.surveys.saveFormData
             .execute(formType, questionnaire, orgUnitByFormType, surveyId)
             .run(
-                () => {
-                    if (intermediate) {
-                        setSaveCompleteState({
-                            status: "intermediate-success",
-                            message: i18n.t("Treatment/Indication Saved!"),
-                        });
+                savedSurveyId => {
+                    if (intermediate && formType === "PPSPatientRegister") {
+                        if (!surveyId)
+                            history.push({
+                                pathname: `/survey/${formType}/${savedSurveyId}`,
+                            });
+                        else
+                            setSaveCompleteState({
+                                status: "intermediate-success",
+                                message: i18n.t("Treatment/Indication Saved!"),
+                            });
                     } else
                         setSaveCompleteState({
                             status: "success",
@@ -63,9 +70,9 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
             );
     };
 
-    const resetSaveActionOutcome = () => {
+    const resetSaveActionOutcome = useCallback(() => {
         setSaveCompleteState(undefined);
-    };
+    }, [setSaveCompleteState]);
 
     return { saveCompleteState, saveSurvey, resetSaveActionOutcome };
 }

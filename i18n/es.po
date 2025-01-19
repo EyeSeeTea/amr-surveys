@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2024-12-20T14:48:50.948Z\n"
+"POT-Creation-Date: 2025-01-19T16:12:52.290Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -59,6 +59,12 @@ msgstr ""
 msgid "Stage - Profile"
 msgstr ""
 
+msgid "Save Indication"
+msgstr ""
+
+msgid "Save Treatment"
+msgstr ""
+
 msgid "Cancel"
 msgstr ""
 
@@ -69,6 +75,9 @@ msgid "PPS Surveys"
 msgstr ""
 
 msgid "New Survey"
+msgstr ""
+
+msgid "Treatment/Indication Saved!"
 msgstr ""
 
 msgid "Submission Success!"

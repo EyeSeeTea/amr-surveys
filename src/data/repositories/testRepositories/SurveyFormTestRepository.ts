@@ -81,8 +81,8 @@ export class SurveyTestRepository implements SurveyRepository {
         orgUnitId: Id,
         eventId: string | undefined,
         programId: Id
-    ): FutureData<Id | undefined> {
-        if (events && action && orgUnitId && eventId && programId) return Future.success(undefined);
+    ): FutureData<Id> {
+        if (events && action && orgUnitId && eventId && programId) return Future.success(eventId);
         else return Future.error(new Error("An error occured while saving the survey"));
     }
 
