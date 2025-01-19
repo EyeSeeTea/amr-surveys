@@ -72,7 +72,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
         if (saveCompleteState && saveCompleteState.status === "error") {
             snackbar.error(saveCompleteState.message);
-            if (props.hideForm) props.hideForm();
+            setLoading(false);
         }
 
         if (saveCompleteState && saveCompleteState.status === "intermediate-success") {

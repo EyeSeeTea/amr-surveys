@@ -197,7 +197,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     },
                     err => {
                         setLoading(false);
-                        setError(err.message);
+                        setError(`Cannot find event Id corresponding to the stage: ${err.message}`);
                     }
                 );
             }

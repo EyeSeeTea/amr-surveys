@@ -9,24 +9,16 @@ export class RemoveRepeatableProgramStageUseCase {
 
     execute(questionnaire: Questionnaire, stageId: string): FutureData<Questionnaire> {
         const eventId = questionnaire.stages.find(stage => stage.id === stageId)?.instanceId;
+        const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
 
         if (!eventId) {
-            //if event id is not set, it is an empty repeatable program stage
-            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
             return Future.success(updatedQuestionnaire);
-        } else
-            return this.surveyRepository
-                .deleteEventSurvey(
-                    eventId,
-                    questionnaire.orgUnit.id,
-                    PREVALENCE_FACILITY_LEVEL_FORM_ID
-                )
-                .flatMap(() => {
-                    const updatedQuestionnaire = Questionnaire.removeProgramStage(
-                        questionnaire,
-                        stageId
-                    );
-                    return Future.success(updatedQuestionnaire);
-                });
+        }
+
+        return this.surveyRepository
+            .deleteEventSurvey(eventId, questionnaire.orgUnit.id, PREVALENCE_FACILITY_LEVEL_FORM_ID)
+            .flatMap(() => {
+                return Future.success(updatedQuestionnaire);
+            });
     }
 }

@@ -1,6 +1,10 @@
 import { Maybe, assertUnreachable } from "../../../utils/ts-utils";
 import { Id, NamedRef } from "../Ref";
-import { getApplicableRules, QuestionnaireRule } from "./QuestionnaireRules";
+import {
+    getApplicableRules,
+    getQuestionValueFromEvaluatedExpression,
+    QuestionnaireRule,
+} from "./QuestionnaireRules";
 import _ from "../generic/Collection";
 import { Questionnaire } from "./Questionnaire";
 
@@ -286,16 +290,69 @@ export class QuestionnaireQuestion {
         return finalUpdatesWithSideEffects;
     }
 
-    private static updateQuestion(question: Question, rules: QuestionnaireRule[]): Question {
+    private static updateQuestion<T extends Question>(question: T, rules: QuestionnaireRule[]): T {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
-
+        const updatedIsDisabled = this.isQuestionDisabled(question, rules);
+        const updatedValue = this.getQuestionAssignValue(question, rules);
         return {
             ...question,
             isVisible: updatedIsVisible,
             errors: updatedErrors,
+            disabled: updatedIsDisabled,
+            value: updatedValue,
             ...(question.isVisible !== updatedIsVisible ? { value: undefined } : {}),
         };
+    }
+
+    private static getRulesWithAssignActionForQuestion(
+        question: Question,
+        rules: QuestionnaireRule[]
+    ) {
+        return rules.filter(
+            rule =>
+                rule.parsedResult &&
+                rule.actions.filter(
+                    action =>
+                        action.programRuleActionType === "ASSIGN" &&
+                        ((action.dataElement && action.dataElement.id === question.id) ||
+                            (action.trackedEntityAttribute &&
+                                action.trackedEntityAttribute.id === question.id))
+                ).length > 0
+        );
+    }
+
+    private static isQuestionDisabled(
+        question: Question,
+        rules: QuestionnaireRule[]
+    ): boolean | undefined {
+        const applicableRules = this.getRulesWithAssignActionForQuestion(question, rules);
+        return applicableRules.length > 0 ? true : question.disabled;
+    }
+
+    private static getQuestionAssignValue(
+        question: Question,
+        rules: QuestionnaireRule[]
+    ): Question["value"] {
+        const applicableActions = this.getRulesWithAssignActionForQuestion(question, rules).flatMap(
+            rule => rule.actions
+        );
+        if (applicableActions.length === 0) {
+            return question.value;
+        } else {
+            if (applicableActions.length > 1) {
+                console.warn(
+                    "Multiple ASSIGN actions found for question: ",
+                    question,
+                    "Applying first rule:",
+                    applicableActions[0]
+                );
+            }
+            return getQuestionValueFromEvaluatedExpression(
+                question,
+                applicableActions[0]?.dataEvaluated
+            );
+        }
     }
 
     private static isQuestionVisible(question: Question, rules: QuestionnaireRule[]): boolean {

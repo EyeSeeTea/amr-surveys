@@ -12,23 +12,41 @@ export class D2ExpressionParser {
                 ruleCondition,
                 xp.ExpressionMode.RULE_ENGINE_CONDITION
             );
-
-            const ruleVariables = this.mapProgramRuleVariables(expressionParser, variableValues);
-            const genericVariables = this.mapProgramVariables(expressionParser);
-            const variables = new Map([...ruleVariables, ...genericVariables]);
-
-            const expressionData = new xp.ExpressionDataJs(variables);
-
-            const parsedResult: boolean = expressionParser.evaluate(
-                () => console.debug(""),
-                expressionData
-            );
-
+            const expressionData = this.getExpressionDataJs(expressionParser, variableValues);
+            const parsedResult: boolean = expressionParser.evaluate(() => {}, expressionData);
             return Either.success(parsedResult);
         } catch (error) {
             return Either.error(error as Error);
         }
     }
+
+    public evaluateActionExpression(
+        expression: string,
+        variableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
+    ): Either<Error, EvaluatedExpressionResult> {
+        try {
+            const expressionParser = new xp.ExpressionJs(
+                expression,
+                xp.ExpressionMode.RULE_ENGINE_ACTION
+            );
+            const expressionData = this.getExpressionDataJs(expressionParser, variableValues);
+            const parsedResult: EvaluatedExpressionResult = expressionParser.evaluate(() => {},
+            expressionData);
+            return Either.success(parsedResult);
+        } catch (error) {
+            return Either.error(error as Error);
+        }
+    }
+
+    private getExpressionDataJs = (
+        expressionParser: xp.ExpressionJs,
+        variableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
+    ): xp.ExpressionDataJs => {
+        const ruleVariables = this.mapProgramRuleVariables(expressionParser, variableValues);
+        const genericVariables = this.mapProgramVariables(expressionParser);
+        const variables = new Map([...ruleVariables, ...genericVariables]);
+        return new xp.ExpressionDataJs(variables);
+    };
 
     private getVariableValueByType = (
         type: ProgramRuleVariableType,
@@ -106,3 +124,5 @@ const VariableValueTypeMap: Record<ProgramRuleVariableType, xp.ValueType> = {
     date: xp.ValueType.DATE,
     number: xp.ValueType.NUMBER,
 };
+
+export type EvaluatedExpressionResult = boolean | string | number | Date | null;
