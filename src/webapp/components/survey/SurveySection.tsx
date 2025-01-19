@@ -17,19 +17,31 @@ import {
 import { Typography } from "@material-ui/core";
 import styled from "styled-components";
 import { QuestionWidget } from "../survey-questions/QuestionWidget";
-import { Question } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    Question,
+    QuestionOption,
+} from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { Maybe } from "../../../utils/ts-utils";
 
 interface SurveySectionProps {
     title: string;
     questions: Question[];
     updateQuestion: (question: Question) => void;
     viewOnly?: boolean;
+    treatmentOptions?: Maybe<QuestionOption[]>;
+    // selectedTreatmentOption?: Maybe<QuestionOption>;
+    indicationOptions?: Maybe<QuestionOption[]>;
+    // selectedIndicationOption?: Maybe<QuestionOption>;
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
     questions,
     updateQuestion,
     viewOnly,
+    treatmentOptions,
+    // selectedTreatmentOption,
+    indicationOptions,
+    // selectedIndicationOption,
 }) => {
     return (
         <StyledSection key={title}>
@@ -60,6 +72,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                                 disabled={
                                                     question.disabled || viewOnly ? true : false
                                                 }
+                                                treatmentOptions={treatmentOptions}
+                                                // selectedTreatmentOption={selectedTreatmentOption}
+                                                indicationOptions={indicationOptions}
+                                                // selectedIndicationOption={selectedIndicationOption}
                                             />
                                             {question.errors.map((err, index) => (
                                                 <PaddedDiv key={index}>

@@ -8,21 +8,25 @@ export class RemoveRepeatableProgramStageUseCase {
     constructor(private surveyRepository: SurveyRepository) {}
 
     execute(questionnaire: Questionnaire, stageId: string): FutureData<Questionnaire> {
-        //Repeatable Program Stages are only applicable to Prevalence Facility forms
-
         const eventId = questionnaire.stages.find(stage => stage.id === stageId)?.instanceId;
 
-        if (!eventId)
-            return Future.error(new Error("Cannot find event Id correspoding to the stage"));
-
-        return this.surveyRepository
-            .deleteEventSurvey(eventId, questionnaire.orgUnit.id, PREVALENCE_FACILITY_LEVEL_FORM_ID)
-            .flatMap(() => {
-                const updatedQuestionnaire = Questionnaire.removeProgramStage(
-                    questionnaire,
-                    stageId
-                );
-                return Future.success(updatedQuestionnaire);
-            });
+        if (!eventId) {
+            //if event id is not set, it is an empty repeatable program stage
+            const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
+            return Future.success(updatedQuestionnaire);
+        } else
+            return this.surveyRepository
+                .deleteEventSurvey(
+                    eventId,
+                    questionnaire.orgUnit.id,
+                    PREVALENCE_FACILITY_LEVEL_FORM_ID
+                )
+                .flatMap(() => {
+                    const updatedQuestionnaire = Questionnaire.removeProgramStage(
+                        questionnaire,
+                        stageId
+                    );
+                    return Future.success(updatedQuestionnaire);
+                });
     }
 }

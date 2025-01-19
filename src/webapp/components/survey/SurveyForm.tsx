@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, withStyles, Typography } from "@material-ui/core";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
@@ -17,6 +17,7 @@ import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
 import { TableSection } from "./TableSection";
+import { QuestionOption } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -53,11 +54,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         removeProgramStage,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
-    const { saveCompleteState, saveSurvey } = useSaveSurvey(
+    const { saveCompleteState, saveSurvey, resetSaveActionOutcome } = useSaveSurvey(
         props.formType,
         currentOrgUnit?.orgUnitId ?? "",
         props.currentSurveyId
     );
+
+    const [treatmentOptions, setTreatmentOptions] = useState<QuestionOption[]>();
+    const [indicationOptions, setIndicationOptions] = useState<QuestionOption[]>();
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -70,17 +74,63 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             if (props.hideForm) props.hideForm();
         }
 
+        if (saveCompleteState && saveCompleteState.status === "intermediate-success") {
+            snackbar.info(saveCompleteState.message);
+            resetSaveActionOutcome();
+        }
+        if (props.formType === "PPSPatientRegister" && questionnaire && questionnaire.stages) {
+            const existingTreatments = _c(
+                questionnaire.stages
+                    .filter(stage => stage.code === "rayB0NQMmwx")
+                    .flatMap(stage => stage.instanceId)
+            )
+                .compact()
+                .value();
+
+            const treatmentLinkOptions: QuestionOption[] = existingTreatments.map(treatment => {
+                return {
+                    id: treatment,
+                    name: treatment,
+                    code: treatment,
+                };
+            });
+            setTreatmentOptions(treatmentLinkOptions);
+
+            const existingIndications = _c(
+                questionnaire.stages
+                    .filter(stage => stage.code === "tLOW37yZuB9")
+                    .flatMap(stage => stage.instanceId)
+            )
+                .compact()
+                .value();
+
+            const indicationLinkOptions: QuestionOption[] = existingIndications.map(indication => {
+                return {
+                    id: indication,
+                    name: indication,
+                    code: indication,
+                };
+            });
+            setIndicationOptions(indicationLinkOptions);
+        }
+
         //If error fetching survey, redirect to homepage.
         if (error) {
-            history.push(`/`);
+            // history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props]);
+    }, [error, saveCompleteState, snackbar, history, props, questionnaire, resetSaveActionOutcome]);
 
     const saveSurveyForm = () => {
         setLoading(true);
         //TO DO : User permission check for saving a Survey Form
         if (questionnaire) {
-            saveSurvey(questionnaire);
+            saveSurvey(questionnaire, false);
+        }
+    };
+    const saveSurveyFormWithoutRedirect = () => {
+        //TO DO : User permission check for saving a Survey Form
+        if (questionnaire) {
+            saveSurvey(questionnaire, true);
         }
     };
 
@@ -116,7 +166,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     return (
                         <PaddedDiv key={stage.id}>
                             <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
-
                             {stage.sections.map(section => {
                                 if (!section.isVisible || section.isAntibioticSection) return null;
 
@@ -151,10 +200,37 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         }
                                         questions={section.questions}
                                         viewOnly={hasReadOnlyAccess}
+                                        treatmentOptions={treatmentOptions}
+                                        // selectedTreatmentOption={selectedTreatmentOption}
+                                        indicationOptions={indicationOptions}
+                                        // selectedIndicationOption={selectedIndicationOption}
                                     />
                                 );
                             })}
-
+                            {stage.repeatable && stage.code === "tLOW37yZuB9" && (
+                                <RightAlignedDiv>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={saveSurveyFormWithoutRedirect}
+                                        disabled={shouldDisableSave}
+                                    >
+                                        {i18n.t("Save Indication")}
+                                    </Button>
+                                </RightAlignedDiv>
+                            )}
+                            {stage.repeatable && stage.code === "rayB0NQMmwx" && (
+                                <RightAlignedDiv>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={saveSurveyFormWithoutRedirect}
+                                        disabled={shouldDisableSave}
+                                    >
+                                        {i18n.t("Save Treatment")}
+                                    </Button>
+                                </RightAlignedDiv>
+                            )}
                             {stage.repeatable && (
                                 <RightAlignedDiv>
                                     <Button

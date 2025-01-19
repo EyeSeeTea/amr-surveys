@@ -32,17 +32,23 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
         }
     };
 
-    const saveSurvey = (questionnaire: Questionnaire) => {
+    const saveSurvey = (questionnaire: Questionnaire, intermediate: boolean) => {
         const orgUnitByFormType = getOrgUnitByFormType(orgUnitId);
 
         compositionRoot.surveys.saveFormData
             .execute(formType, questionnaire, orgUnitByFormType, surveyId)
             .run(
                 () => {
-                    setSaveCompleteState({
-                        status: "success",
-                        message: i18n.t("Submission Success!"),
-                    });
+                    if (intermediate) {
+                        setSaveCompleteState({
+                            status: "intermediate-success",
+                            message: i18n.t("Treatment/Indication Saved!"),
+                        });
+                    } else
+                        setSaveCompleteState({
+                            status: "success",
+                            message: i18n.t("Submission Success!"),
+                        });
                 },
                 err => {
                     setSaveCompleteState({
@@ -57,5 +63,9 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
             );
     };
 
-    return { saveCompleteState, saveSurvey };
+    const resetSaveActionOutcome = () => {
+        setSaveCompleteState(undefined);
+    };
+
+    return { saveCompleteState, saveSurvey, resetSaveActionOutcome };
 }

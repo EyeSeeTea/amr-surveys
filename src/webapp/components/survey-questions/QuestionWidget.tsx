@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import BooleanWidget from "./widgets/BooleanWidget";
 import NumberWidget from "./widgets/NumberWidget";
 import SingleSelect from "./widgets/SingleSelectWidget";
@@ -12,18 +12,54 @@ import {
     Question,
     QuestionOption,
     QuestionnaireQuestion,
+    SelectQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
     question: Question;
     disabled: boolean;
+    treatmentOptions?: Maybe<QuestionOption[]>;
+    // selectedTreatmentOption?: Maybe<QuestionOption>;
+    indicationOptions?: Maybe<QuestionOption[]>;
+    // selectedIndicationOption?: Maybe<QuestionOption>;
 }
 
 export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props => {
-    const { question, disabled, onChange } = props;
+    const {
+        question,
+        disabled,
+        onChange,
+        treatmentOptions,
+        // selectedTreatmentOption,
+        indicationOptions,
+        // selectedIndicationOption,
+    } = props;
     const { type } = question;
     const { update } = QuestionnaireQuestion;
+
+    const [processedQuestion, setProcessedQuestion] = useState<SelectQuestion>();
+
+    useEffect(() => {
+        if (question.name.startsWith("Treatment link")) {
+            const treatmentDropdown: SelectQuestion = {
+                ...question,
+                type: "select",
+                options: treatmentOptions || [],
+                value: treatmentOptions?.find(op => op.id === question.value) || undefined,
+            };
+            setProcessedQuestion(treatmentDropdown);
+        } else if (question.name.startsWith("Indication link")) {
+            const indicationDropdown: SelectQuestion = {
+                ...question,
+                type: "select",
+                options: indicationOptions || [],
+                value: indicationOptions?.find(op => op.id === question.value) || undefined,
+                disabled: true,
+            };
+            setProcessedQuestion(indicationDropdown);
+        }
+    }, [indicationOptions, question, setProcessedQuestion, treatmentOptions]);
 
     switch (type) {
         case "select": {
@@ -70,14 +106,47 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 />
             );
         case "text":
-            return (
-                <TextWidget
-                    value={question.value}
-                    onChange={value => onChange(update(question, value))}
-                    disabled={disabled}
-                    multiline={question.multiline}
-                />
-            );
+            if (question.name.startsWith("Treatment link") && processedQuestion) {
+                return (
+                    <SearchableSelect
+                        value={
+                            processedQuestion.options.find(
+                                op => op.id === processedQuestion.value?.id
+                            ) || null
+                        }
+                        options={processedQuestion.options}
+                        onChange={(value: Maybe<QuestionOption>) => {
+                            onChange(update(question, value?.id));
+                            console.debug("To Do : set the corresponding indication value");
+                        }}
+                        disabled={disabled}
+                    />
+                );
+            } else if (question.name.startsWith("Indication link") && processedQuestion) {
+                return (
+                    <SearchableSelect
+                        value={
+                            processedQuestion.options.find(
+                                op => op.id === processedQuestion.value?.id
+                            ) || null
+                        }
+                        options={processedQuestion.options}
+                        onChange={(value: Maybe<QuestionOption>) => {
+                            onChange(update(question, value?.id));
+                            console.debug("To Do : set the corresponding treatment value");
+                        }}
+                        disabled={disabled}
+                    />
+                );
+            } else
+                return (
+                    <TextWidget
+                        value={question.value}
+                        onChange={value => onChange(update(question, value))}
+                        disabled={disabled}
+                        multiline={question.multiline}
+                    />
+                );
 
         case "date":
             return (
