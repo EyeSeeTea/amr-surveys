@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppContext } from "../../../contexts/app-context";
-import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
+import {
+    Questionnaire,
+    QuestionnaireStage,
+} from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
@@ -9,6 +12,19 @@ import useReadOnlyAccess from "./useReadOnlyAccess";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Id } from "../../../../domain/entities/Ref";
+import { Maybe } from "../../../../utils/ts-utils";
+import _c from "../../../../domain/entities/generic/Collection";
+
+type RepeatableStage = {
+    title: string;
+    sortOrder: number;
+    repeatable: boolean;
+    isVisible: boolean;
+    code: Code;
+    repeatableStages: QuestionnaireStage[];
+};
+
+type SurveyStage = QuestionnaireStage | RepeatableStage;
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser, ppsHospitals, prevalenceHospitals } = useAppContext();
@@ -203,8 +219,13 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         [compositionRoot.surveys, questionnaire]
     );
 
+    const surveyStages = useMemo(() => {
+        return buildSurveyStages(questionnaire);
+    }, [questionnaire]);
+
     return {
         questionnaire,
+        surveyStages,
         setQuestionnaire,
         loading,
         currentOrgUnit,
@@ -217,3 +238,35 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         removeProgramStage,
     };
 }
+
+const buildSurveyStages = (questionnaire: Maybe<Questionnaire>): SurveyStage[] => {
+    if (!questionnaire) return [];
+
+    const { stages } = questionnaire;
+    const nonRepeatableStages = stages.filter(stage => !stage.repeatable);
+    const repeatableStages = stages.filter(stage => stage.repeatable);
+
+    const groupedRepeatableStages = _c(repeatableStages)
+        .groupBy(stage => stage.title)
+        .mapValues(([title, questionnaireStages]) => {
+            const questionnaireStage = questionnaireStages[0];
+            if (!questionnaireStage) return undefined;
+
+            const { sortOrder, isVisible, code, repeatable } = questionnaireStage;
+
+            return {
+                code: code,
+                isVisible: isVisible,
+                repeatable: repeatable,
+                repeatableStages: questionnaireStages,
+                sortOrder: sortOrder,
+                title: title,
+            };
+        })
+        .values()
+        .filter((stage): stage is RepeatableStage => stage !== undefined);
+
+    return _c([...nonRepeatableStages, ...groupedRepeatableStages])
+        .sortBy(stage => stage.sortOrder)
+        .value();
+};
