@@ -18,6 +18,8 @@ import PersonOutlineIcon from "@material-ui/icons/PersonOutline";
 import i18n from "@eyeseetea/feedback-component/locales";
 import SettingsIcon from "@material-ui/icons/Settings";
 import styled from "styled-components";
+import { palette } from "../../pages/app/themes/dhis2.theme";
+import useOnlineStatus from "../../hooks/useOnlineStatus";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -48,6 +50,7 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
     const classes = useStyles();
     const history = useHistory();
+    const isOnline = useOnlineStatus();
 
     const { currentUser } = useAppContext();
 
@@ -88,6 +91,11 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ toggleShowMenu }) => {
                     </IconButton>
 
                     <Box className={classes.title} />
+
+                    <OnlineStatusContainer>
+                        <StatusIndicator isOnline={isOnline}>&#9679;</StatusIndicator>
+                        <p>{isOnline ? i18n.t("Online") : i18n.t("Offline")}</p>
+                    </OnlineStatusContainer>
 
                     <SelectContainer>
                         <AvatarContainer id="demo-positioned-button" onClick={handleClick}>
@@ -139,4 +147,21 @@ const AvatarContainer = styled.div`
     :hover {
         cursor: pointer;
     }
+`;
+
+const OnlineStatusContainer = styled.div`
+    margin: 16px 16px;
+    display: flex;
+    align-items: center;
+    background-color: ${palette.primary.dark};
+    padding: 0 16px;
+    font-size: 14px;
+    border-radius: 5px;
+    gap: 8px;
+`;
+
+const StatusIndicator = styled.p<{
+    isOnline: boolean;
+}>`
+    color: ${props => (props.isOnline ? palette.status.positive : palette.status.negative)};
 `;
