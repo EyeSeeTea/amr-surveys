@@ -195,7 +195,7 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: Id,
         eventId: string | undefined,
         programId: Id
-    ): FutureData<Id | undefined> {
+    ): FutureData<Id> {
         const $payload = isTrackerProgram(programId)
             ? mapQuestionnaireToTrackedEntities(questionnaire, orgUnitId, programId, eventId)
             : mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, this.api, eventId);
@@ -210,7 +210,8 @@ export class SurveyD2Repository implements SurveyRepository {
                             ? response.bundleReport?.typeReportMap?.TRACKED_ENTITY?.objectReports[0]
                                   ?.uid
                             : response.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
-                        return Future.success(surveyId);
+                        if (surveyId) return Future.success(surveyId);
+                        else return Future.error(new Error(`Error saving survey`));
                     } else {
                         return this.getErrorMessageWithNames(response).flatMap(errorMessage => {
                             return Future.error(new Error(`Error: ${errorMessage} `));

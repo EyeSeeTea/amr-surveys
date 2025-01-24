@@ -8,8 +8,6 @@ export class RemoveRepeatableProgramStageUseCase {
     constructor(private surveyRepository: SurveyRepository) {}
 
     execute(questionnaire: Questionnaire, stageId: string): FutureData<Questionnaire> {
-        //Repeatable Program Stages are only applicable to Prevalence Facility forms
-
         const eventId = questionnaire.stages.find(stage => stage.id === stageId)?.instanceId;
         const updatedQuestionnaire = Questionnaire.removeProgramStage(questionnaire, stageId);
 

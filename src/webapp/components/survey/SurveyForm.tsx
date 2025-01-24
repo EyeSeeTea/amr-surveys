@@ -17,6 +17,11 @@ import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
 import { TableSection } from "./TableSection";
+import { useTreatmentIndicationLink } from "./hook/useTreatmentIndicationLink";
+import {
+    PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
+    PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
+} from "../../../data/utils/surveyFormMappers";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -51,12 +56,18 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         updateQuestion,
         addProgramStage,
         removeProgramStage,
+        setRefreshQuestionnaire,
     } = useSurveyForm(props.formType, props.currentSurveyId);
 
-    const { saveCompleteState, saveSurvey } = useSaveSurvey(
+    const { saveCompleteState, saveSurvey, resetSaveActionOutcome } = useSaveSurvey(
         props.formType,
         currentOrgUnit?.orgUnitId ?? "",
         props.currentSurveyId
+    );
+
+    const { indicationOptions, treatmentOptions, removeLinkedStage } = useTreatmentIndicationLink(
+        props.formType,
+        questionnaire
     );
 
     useEffect(() => {
@@ -70,18 +81,46 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             setLoading(false);
         }
 
+        if (saveCompleteState && saveCompleteState.status === "intermediate-success") {
+            snackbar.info(saveCompleteState.message);
+            setLoading(false);
+            resetSaveActionOutcome();
+            setRefreshQuestionnaire({});
+        }
+
         //If error fetching survey, redirect to homepage.
         if (error) {
-            history.push(`/`);
+            // history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props, setLoading]);
+    }, [
+        error,
+        saveCompleteState,
+        snackbar,
+        history,
+        props,
+        questionnaire,
+        resetSaveActionOutcome,
+        setLoading,
+        setRefreshQuestionnaire,
+    ]);
 
     const saveSurveyForm = () => {
         setLoading(true);
         //TO DO : User permission check for saving a Survey Form
         if (questionnaire) {
-            saveSurvey(questionnaire);
+            saveSurvey(questionnaire, false);
         }
+    };
+    const saveSurveyFormWithoutRedirect = () => {
+        setLoading(true);
+        if (questionnaire) {
+            saveSurvey(questionnaire, true);
+        }
+    };
+
+    const removeLinksAndStage = (stageId: string, stageCode: string) => {
+        removeLinkedStage(stageCode);
+        removeProgramStage(stageId);
     };
 
     const onCancel = () => {
@@ -115,8 +154,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                     return (
                         <PaddedDiv key={stage.id}>
-                            <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
-
+                            <span>
+                                <Typography style={{ display: "inline-block" }}>
+                                    {i18n.t(`Stage - ${stage.title}`)}
+                                </Typography>
+                                {stage.subTitle && (
+                                    <Typography style={{ display: "inline-block" }} variant="body2">
+                                        {i18n.t(` (${stage.subTitle})`)}
+                                    </Typography>
+                                )}
+                            </span>
                             {stage.sections.map(section => {
                                 if (!section.isVisible || section.isAntibioticSection) return null;
 
@@ -151,10 +198,37 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         }
                                         questions={section.questions}
                                         viewOnly={hasReadOnlyAccess}
+                                        treatmentOptions={treatmentOptions}
+                                        indicationOptions={indicationOptions}
                                     />
                                 );
                             })}
-
+                            {stage.repeatable &&
+                                stage.code === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID && (
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={saveSurveyFormWithoutRedirect}
+                                            disabled={shouldDisableSave}
+                                        >
+                                            {i18n.t("Save")}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                )}
+                            {stage.repeatable &&
+                                stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID && (
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={saveSurveyFormWithoutRedirect}
+                                            disabled={shouldDisableSave}
+                                        >
+                                            {i18n.t("Save")}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                )}
                             {stage.repeatable && (
                                 <RightAlignedDiv>
                                     <Button
@@ -167,7 +241,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     {stage.isAddedByUser && (
                                         <CancelButton
                                             variant="outlined"
-                                            onClick={() => removeProgramStage(stage.id)}
+                                            onClick={() =>
+                                                removeLinksAndStage(stage.id, stage.code)
+                                            }
                                         >
                                             {i18n.t(`Remove ${stage.title}`)}
                                         </CancelButton>

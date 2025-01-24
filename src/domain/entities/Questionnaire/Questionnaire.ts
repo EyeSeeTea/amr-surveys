@@ -41,6 +41,7 @@ export interface QuestionnaireEntity {
 export interface QuestionnaireStage {
     id: Id;
     title: string;
+    subTitle?: string;
     code: Code;
     sections: QuestionnaireSection[];
     sortOrder: number;

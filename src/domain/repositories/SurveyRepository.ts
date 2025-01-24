@@ -18,7 +18,7 @@ export interface SurveyRepository {
         orgUnitId: Id,
         eventId: string | undefined,
         programId: Id
-    ): FutureData<Id | undefined>;
+    ): FutureData<Id>;
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
