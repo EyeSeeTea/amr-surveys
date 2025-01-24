@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-01-19T19:00:38.576Z\n"
-"PO-Revision-Date: 2025-01-19T19:00:38.576Z\n"
+"POT-Creation-Date: 2025-01-24T07:04:36.375Z\n"
+"PO-Revision-Date: 2025-01-24T07:04:36.375Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -62,16 +62,10 @@ msgstr ""
 msgid "Stage - Profile"
 msgstr ""
 
-msgid "Save Indication"
-msgstr ""
-
-msgid "Save Treatment"
+msgid "Save"
 msgstr ""
 
 msgid "Cancel"
-msgstr ""
-
-msgid "Save"
 msgstr ""
 
 msgid "PPS Surveys"

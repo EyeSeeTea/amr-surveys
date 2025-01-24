@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { QuestionOption } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
@@ -55,5 +55,18 @@ export const useTreatmentIndicationLink = (
         }
     }, [formType, questionnaire]);
 
-    return { treatmentOptions, indicationOptions };
+    const removeLinkedStage = useCallback((stageCode: string) => {
+        if (stageCode === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID) {
+            setTreatmentOptions(prevTreatmeantOptions => {
+                return prevTreatmeantOptions?.filter(option => option.code !== stageCode);
+            });
+            
+        } else if (stageCode === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID) {
+            setIndicationOptions(prevIndicationOptions => {
+                return prevIndicationOptions?.filter(option => option.code !== stageCode);
+            });
+        }
+    }, []);
+
+    return { treatmentOptions, indicationOptions, removeLinkedStage };
 };

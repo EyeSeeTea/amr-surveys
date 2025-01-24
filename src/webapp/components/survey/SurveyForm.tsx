@@ -65,7 +65,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.currentSurveyId
     );
 
-    const { indicationOptions, treatmentOptions } = useTreatmentIndicationLink(
+    const { indicationOptions, treatmentOptions, removeLinkedStage } = useTreatmentIndicationLink(
         props.formType,
         questionnaire
     );
@@ -116,6 +116,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         if (questionnaire) {
             saveSurvey(questionnaire, true);
         }
+    };
+
+    const removeLinksAndStage = (stageId: string, stageCode: string) => {
+        removeLinkedStage(stageCode);
+        removeProgramStage(stageId);
     };
 
     const onCancel = () => {
@@ -236,7 +241,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     {stage.isAddedByUser && (
                                         <CancelButton
                                             variant="outlined"
-                                            onClick={() => removeProgramStage(stage.id)}
+                                            onClick={() =>
+                                                removeLinksAndStage(stage.id, stage.code)
+                                            }
                                         >
                                             {i18n.t(`Remove ${stage.title}`)}
                                         </CancelButton>
