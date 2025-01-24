@@ -35,7 +35,7 @@ export const SurveyListPage: React.FC = React.memo(() => {
             resetCurrentPrevalenceSurveyForm();
         } else if (shouldRedirectToHome(formType)) {
             //Redirecting to home page.
-            // history.push("/");
+            history.push("/");
         }
     }, [
         formType,

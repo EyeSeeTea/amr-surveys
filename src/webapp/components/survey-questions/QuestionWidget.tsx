@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import BooleanWidget from "./widgets/BooleanWidget";
 import NumberWidget from "./widgets/NumberWidget";
 import SingleSelect from "./widgets/SingleSelectWidget";
@@ -12,10 +12,10 @@ import {
     Question,
     QuestionOption,
     QuestionnaireQuestion,
-    SelectQuestion,
     isPPSIndicationLinkQuestion,
     isPPSTreatmentLinkQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { useTreatmentIndicationLinkDropdown } from "./useTreatmentIndicationLinkDropdown";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
@@ -30,28 +30,11 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
     const { type } = question;
     const { update } = QuestionnaireQuestion;
 
-    const [processedQuestion, setProcessedQuestion] = useState<SelectQuestion>();
-
-    useEffect(() => {
-        if (isPPSTreatmentLinkQuestion(question)) {
-            const treatmentDropdown: SelectQuestion = {
-                ...question,
-                type: "select",
-                options: treatmentOptions || [],
-                value: treatmentOptions?.find(op => op.id === question.value) || undefined,
-            };
-            setProcessedQuestion(treatmentDropdown);
-        } else if (isPPSIndicationLinkQuestion(question)) {
-            const indicationDropdown: SelectQuestion = {
-                ...question,
-                type: "select",
-                options: indicationOptions || [],
-                value: indicationOptions?.find(op => op.id === question.value) || undefined,
-                disabled: true,
-            };
-            setProcessedQuestion(indicationDropdown);
-        }
-    }, [indicationOptions, question, setProcessedQuestion, treatmentOptions]);
+    const { linkQuestion } = useTreatmentIndicationLinkDropdown(
+        question,
+        treatmentOptions,
+        indicationOptions
+    );
 
     switch (type) {
         case "select": {
@@ -98,30 +81,28 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 />
             );
         case "text":
-            if (isPPSTreatmentLinkQuestion(question) && processedQuestion) {
+            if (isPPSTreatmentLinkQuestion(question) && linkQuestion) {
                 return (
                     <SearchableSelect
                         value={
-                            processedQuestion.options.find(
-                                op => op.id === processedQuestion.value?.id
-                            ) || null
+                            linkQuestion.options.find(op => op.id === linkQuestion.value?.id) ||
+                            null
                         }
-                        options={processedQuestion.options}
+                        options={linkQuestion.options}
                         onChange={(value: Maybe<QuestionOption>) =>
                             onChange(update(question, value?.id))
                         }
                         disabled={disabled}
                     />
                 );
-            } else if (isPPSIndicationLinkQuestion(question) && processedQuestion) {
+            } else if (isPPSIndicationLinkQuestion(question) && linkQuestion) {
                 return (
                     <SearchableSelect
                         value={
-                            processedQuestion.options.find(
-                                op => op.id === processedQuestion.value?.id
-                            ) || null
+                            linkQuestion.options.find(op => op.id === linkQuestion.value?.id) ||
+                            null
                         }
-                        options={processedQuestion.options}
+                        options={linkQuestion.options}
                         onChange={(value: Maybe<QuestionOption>) =>
                             onChange(update(question, value?.id))
                         }

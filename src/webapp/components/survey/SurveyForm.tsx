@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Button, withStyles, Typography } from "@material-ui/core";
 import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
@@ -17,7 +17,11 @@ import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
 import { TableSection } from "./TableSection";
-import { QuestionOption } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { useTreatmentIndicationLink } from "./hook/useTreatmentIndicationLink";
+import {
+    PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
+    PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
+} from "../../../data/utils/surveyFormMappers";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -61,8 +65,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.currentSurveyId
     );
 
-    const [treatmentOptions, setTreatmentOptions] = useState<QuestionOption[]>();
-    const [indicationOptions, setIndicationOptions] = useState<QuestionOption[]>();
+    const { indicationOptions, treatmentOptions } = useTreatmentIndicationLink(
+        props.formType,
+        questionnaire
+    );
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -81,41 +87,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             resetSaveActionOutcome();
             setRefreshQuestionnaire({});
         }
-        if (props.formType === "PPSPatientRegister" && questionnaire && questionnaire.stages) {
-            const existingTreatments = _c(
-                questionnaire.stages.filter(
-                    stage => stage.code === "rayB0NQMmwx" && stage.instanceId
-                )
-            )
-                .compact()
-                .value();
-
-            const treatmentLinkOptions: QuestionOption[] = existingTreatments.map(treatment => {
-                return {
-                    id: treatment.instanceId ?? "",
-                    name: `${treatment.subTitle}`,
-                    code: treatment.code,
-                };
-            });
-            setTreatmentOptions(treatmentLinkOptions);
-
-            const existingIndications = _c(
-                questionnaire.stages.filter(
-                    stage => stage.code === "tLOW37yZuB9" && stage.instanceId
-                )
-            )
-                .compact()
-                .value();
-
-            const indicationLinkOptions: QuestionOption[] = existingIndications.map(indication => {
-                return {
-                    id: indication.instanceId ?? "",
-                    name: `${indication.subTitle}`,
-                    code: indication.code,
-                };
-            });
-            setIndicationOptions(indicationLinkOptions);
-        }
 
         //If error fetching survey, redirect to homepage.
         if (error) {
@@ -130,8 +101,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         questionnaire,
         resetSaveActionOutcome,
         setLoading,
-        setTreatmentOptions,
-        setIndicationOptions,
         setRefreshQuestionnaire,
     ]);
 
@@ -229,30 +198,32 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                     />
                                 );
                             })}
-                            {stage.repeatable && stage.code === "tLOW37yZuB9" && (
-                                <RightAlignedDiv>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={saveSurveyFormWithoutRedirect}
-                                        disabled={shouldDisableSave}
-                                    >
-                                        {i18n.t("Save Indication")}
-                                    </Button>
-                                </RightAlignedDiv>
-                            )}
-                            {stage.repeatable && stage.code === "rayB0NQMmwx" && (
-                                <RightAlignedDiv>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={saveSurveyFormWithoutRedirect}
-                                        disabled={shouldDisableSave}
-                                    >
-                                        {i18n.t("Save Treatment")}
-                                    </Button>
-                                </RightAlignedDiv>
-                            )}
+                            {stage.repeatable &&
+                                stage.code === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID && (
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={saveSurveyFormWithoutRedirect}
+                                            disabled={shouldDisableSave}
+                                        >
+                                            {i18n.t("Save")}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                )}
+                            {stage.repeatable &&
+                                stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID && (
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={saveSurveyFormWithoutRedirect}
+                                            disabled={shouldDisableSave}
+                                        >
+                                            {i18n.t("Save")}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                )}
                             {stage.repeatable && (
                                 <RightAlignedDiv>
                                     <Button
