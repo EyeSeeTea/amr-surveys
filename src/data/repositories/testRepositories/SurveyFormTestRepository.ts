@@ -86,7 +86,9 @@ export class SurveyTestRepository implements SurveyRepository {
         else return Future.error(new Error("An error occured while saving the survey"));
     }
 
-    getSurveys(programId: string, orgUnitId: string): FutureData<Survey[]> {
+    getSurveys(options: { programId: string; orgUnitId: string }): FutureData<Survey[]> {
+        const { programId, orgUnitId } = options;
+
         if (programId === PPS_SURVEY_FORM_ID)
             return Future.success([
                 {

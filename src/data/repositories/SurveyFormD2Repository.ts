@@ -13,6 +13,7 @@ import {
     TrackedEntitiesGetResponse,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import {
+    getParentDataElementForProgram,
     getSurveyType,
     getTrackedEntityAttributeType,
     isTrackerProgram,
@@ -38,8 +39,15 @@ import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
+import { Maybe } from "../../utils/ts-utils";
 
 const OU_CHUNK_SIZE = 500;
+
+type Filter = {
+    id: string;
+    value: string;
+};
+
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
@@ -221,15 +229,33 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        programId: Id,
-        orgUnitId: Id,
-        chunked = false
-    ): FutureData<Survey[]> {
+    getSurveys(options: {
+        surveyFormType: SURVEY_FORM_TYPES;
+        programId: Id;
+        parentId?: Id;
+        orgUnitId: Id;
+        chunked: boolean;
+    }): FutureData<Survey[]> {
+        const { surveyFormType, programId, parentId, orgUnitId, chunked = false } = options;
+        const filter = this.getFilterByParentId(programId, parentId);
+
         return isTrackerProgram(programId)
-            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked)
-            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
+            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked, filter)
+            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId, filter);
+    }
+
+    private getFilterByParentId(programId: string, parentId: Maybe<string>): Maybe<Filter> {
+        const filterParentDEId = getParentDataElementForProgram(programId);
+
+        const filter =
+            parentId && filterParentDEId
+                ? {
+                      id: filterParentDEId,
+                      value: parentId,
+                  }
+                : undefined;
+
+        return filter;
     }
 
     //Currently tracker programs are only in Prevalence module
@@ -237,17 +263,19 @@ export class SurveyD2Repository implements SurveyRepository {
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
-        chunked = false
+        chunked = false,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         return chunked
-            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId)
-            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId);
+            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId, filter)
+            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId, filter);
     }
 
     private getTrackerProgramSurveysUnchunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const ouMode =
             (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
@@ -261,6 +289,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
             const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
@@ -271,7 +300,8 @@ export class SurveyD2Repository implements SurveyRepository {
     private getTrackerProgramSurveysChunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnits: string
+        orgUnits: string,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const orgUnitIds = orgUnits.split(";");
         const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
@@ -288,6 +318,7 @@ export class SurveyD2Repository implements SurveyRepository {
                         },
                         program: programId,
                         orgUnit: ouChunk.join(";"),
+                        filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
                     })
                 ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
                     const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
@@ -300,19 +331,22 @@ export class SurveyD2Repository implements SurveyRepository {
     private getEventProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const ouMode =
             orgUnitId !== "" &&
             (programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID)
                 ? "DESCENDANTS"
                 : undefined;
+
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap(response => {
             const events = response.instances;
