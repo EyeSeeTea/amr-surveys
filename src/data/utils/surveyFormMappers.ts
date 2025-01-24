@@ -213,6 +213,7 @@ const getParsedProgramStages = (
 
     return parsedProgramStages;
 };
+
 const getRepeatedStageEvents = (
     trackedEntity: TrackedEntity | undefined,
     stage: ProgramStage,
@@ -253,14 +254,28 @@ const getRepeatedStageEvents = (
                 };
             }) ?? [];
 
+        //Treatment-Indication Link
+        const treatmentLinkQ = currentSections[0]?.questions.find(
+            q => q.code === "AMR_SURVEYS_HAMUPPS_DEA_ANTIB_NOTES_NAMES"
+        );
+
+        const treatmentName = treatmentLinkQ?.value;
+
+        const indicationLinkQ = currentSections[0]?.questions.find(
+            q => q.code === "AMR_SURVEYS_HAMUPPS_DEA_IND_TYPE"
+        );
+
+        const indicationName =
+            indicationLinkQ?.type === "select" ? indicationLinkQ?.value?.name : "";
+
         return {
             id: newStageId,
             title: stage.name,
             subTitle:
                 stage.id === "tLOW37yZuB9"
-                    ? `I${index + 1}-${repeatedStageEvt.event}`
+                    ? `I${index + 1}-${indicationName}`
                     : stage.id === "rayB0NQMmwx"
-                    ? `T${index + 1}-${repeatedStageEvt.event}`
+                    ? `T${index + 1}-${treatmentName}`
                     : "",
             code: stage.id,
             sections: _(currentSections)

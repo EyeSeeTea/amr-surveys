@@ -29,9 +29,7 @@ interface SurveySectionProps {
     updateQuestion: (question: Question) => void;
     viewOnly?: boolean;
     treatmentOptions?: Maybe<QuestionOption[]>;
-    // selectedTreatmentOption?: Maybe<QuestionOption>;
     indicationOptions?: Maybe<QuestionOption[]>;
-    // selectedIndicationOption?: Maybe<QuestionOption>;
 }
 export const SurveySection: React.FC<SurveySectionProps> = ({
     title,
@@ -39,9 +37,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
     updateQuestion,
     viewOnly,
     treatmentOptions,
-    // selectedTreatmentOption,
     indicationOptions,
-    // selectedIndicationOption,
 }) => {
     return (
         <StyledSection key={title}>
@@ -73,9 +69,7 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                                     question.disabled || viewOnly ? true : false
                                                 }
                                                 treatmentOptions={treatmentOptions}
-                                                // selectedTreatmentOption={selectedTreatmentOption}
                                                 indicationOptions={indicationOptions}
-                                                // selectedIndicationOption={selectedIndicationOption}
                                             />
                                             {question.errors.map((err, index) => (
                                                 <PaddedDiv key={index}>

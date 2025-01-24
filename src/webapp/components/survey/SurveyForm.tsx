@@ -93,7 +93,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             const treatmentLinkOptions: QuestionOption[] = existingTreatments.map(treatment => {
                 return {
                     id: treatment.instanceId ?? "",
-                    name: treatment.subTitle ?? treatment.instanceId ?? "",
+                    name: `${treatment.subTitle}`,
                     code: treatment.code,
                 };
             });
@@ -110,7 +110,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             const indicationLinkOptions: QuestionOption[] = existingIndications.map(indication => {
                 return {
                     id: indication.instanceId ?? "",
-                    name: indication.subTitle ?? indication.instanceId ?? "",
+                    name: `${indication.subTitle}`,
                     code: indication.code,
                 };
             });
@@ -225,9 +225,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                         questions={section.questions}
                                         viewOnly={hasReadOnlyAccess}
                                         treatmentOptions={treatmentOptions}
-                                        // selectedTreatmentOption={selectedTreatmentOption}
                                         indicationOptions={indicationOptions}
-                                        // selectedIndicationOption={selectedIndicationOption}
                                     />
                                 );
                             })}
