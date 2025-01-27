@@ -1,4 +1,3 @@
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Select } from "@material-ui/core";
 import { MenuItem } from "material-ui";
@@ -7,6 +6,7 @@ import styled from "styled-components";
 import { UserAttrs } from "../../../domain/entities/User";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useUserSettings } from "./hooks/useUserSettings";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
 interface UserSettingsContentProps {
     userInformation: UserAttrs;
@@ -18,7 +18,7 @@ const booleanOptions: { label: string; value: string }[] = [
 ];
 
 export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformation }) => {
-    const snackbar = useSnackbar();
+    const snackbar = useOfflineSnackbar();
     const { databaseLocalesOptions, uiLocalesOptions, saveLocaleStatus, changeLocale } =
         useUserSettings();
 

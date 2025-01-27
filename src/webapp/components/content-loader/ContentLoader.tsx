@@ -1,7 +1,7 @@
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Backdrop, CircularProgress } from "@material-ui/core";
 import React, { ReactNode, useEffect } from "react";
 import styled from "styled-components";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
 export interface ContentLoaderProps {
     loading: boolean;
@@ -18,7 +18,7 @@ export const ContentLoader: React.FC<ContentLoaderProps> = ({
     showErrorAsSnackbar,
     onError,
 }) => {
-    const snackbar = useSnackbar();
+    const snackbar = useOfflineSnackbar();
 
     useEffect(() => {
         if (error && showErrorAsSnackbar) {

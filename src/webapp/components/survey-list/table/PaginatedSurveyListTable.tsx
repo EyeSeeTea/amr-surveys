@@ -3,7 +3,6 @@ import {
     SURVEY_FORM_TYPES,
     SURVEYS_WITH_CHILD_COUNT,
 } from "../../../../domain/entities/Survey";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
     TableBody,
@@ -28,6 +27,7 @@ import { useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 import { useMultipleChildCount } from "../hook/useMultipleChildCount";
 import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
+import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 
 interface PaginatedSurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -49,7 +49,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     pageSize,
     total,
 }) => {
-    const snackbar = useSnackbar();
+    const snackbar = useOfflineSnackbar();
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");

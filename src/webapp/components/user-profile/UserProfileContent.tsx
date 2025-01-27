@@ -13,19 +13,20 @@ import {
     InputAdornment,
     InputLabel,
 } from "@material-ui/core";
-import { ConfirmationDialog, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { ConfirmationDialog } from "@eyeseetea/d2-ui-components";
 import { useEffect } from "react";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
 import { OrgUnitAccess, UserAttrs, UserRole } from "../../../domain/entities/User";
 import { useSavePassword } from "./hooks/useSavePassword";
 import { useUserProfile } from "./hooks/useUserProfile";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
 interface UserProfileContentProps {
     userInformation: UserAttrs;
 }
 
 export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInformation }) => {
-    const snackbar = useSnackbar();
+    const snackbar = useOfflineSnackbar();
     const {
         password,
         setPassword,

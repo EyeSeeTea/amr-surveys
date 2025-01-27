@@ -24,22 +24,18 @@ export default ({ mode }) => {
             }),
             VitePWA({
                 registerType: "autoUpdate",
-                injectRegister: "auto",
                 includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
-                devOptions: {
-                    enabled: true,
-                },
                 workbox: {
                     maximumFileSizeToCacheInBytes: 5000000,
                     globPatterns: ["**/*.{js,css,html,png,svg,ico,json}"],
                     runtimeCaching: [
                         {
                             urlPattern: ({ url }) => url.pathname !== "",
-                            handler: "StaleWhileRevalidate",
+                            handler: "NetworkFirst",
                             options: {
                                 cacheName: "api-cache",
                                 expiration: {
-                                    maxAgeSeconds: 60 * 60 * 24,
+                                    maxAgeSeconds: 60 * 60 * 24 * 7,
                                 },
                                 cacheableResponse: {
                                     statuses: [200],
@@ -50,7 +46,8 @@ export default ({ mode }) => {
                             urlPattern: ({ request }) =>
                                 request.destination === "script" ||
                                 request.destination === "style" ||
-                                request.destination === "image",
+                                request.destination === "image" ||
+                                request.destination === "font",
                             handler: "StaleWhileRevalidate",
                             options: {
                                 cacheName: "assets-cache",
