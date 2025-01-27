@@ -16,7 +16,9 @@ export function useOfflineSnackbar(): SnackbarState {
         () => (message: Message, options?: Partial<SnackbarOptions>) => {
             if (!isOnline) {
                 return snackbar.error(
-                    i18n.t("You are offline. Please check your internet connection."),
+                    i18n.t(
+                        "This page did not load because you are offline. Please check your internet connection."
+                    ),
                     options
                 );
             } else {
