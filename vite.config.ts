@@ -26,7 +26,7 @@ export default ({ mode }) => {
                 registerType: "autoUpdate",
                 includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
                 workbox: {
-                    maximumFileSizeToCacheInBytes: 5000000,
+                    maximumFileSizeToCacheInBytes: 20000000,
                     globPatterns: ["**/*.{js,css,html,png,svg,ico,json}"],
                     runtimeCaching: [
                         {
