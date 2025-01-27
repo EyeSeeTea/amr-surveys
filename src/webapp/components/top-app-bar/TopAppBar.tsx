@@ -153,7 +153,7 @@ const OnlineStatusContainer = styled.div`
     margin: 16px 16px;
     display: flex;
     align-items: center;
-    background-color: ${palette.primary.dark};
+    background-color: #0099de;
     padding: 0 16px;
     font-size: 14px;
     border-radius: 5px;
