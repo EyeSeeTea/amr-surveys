@@ -4,10 +4,6 @@ import useOnlineStatus from "./useOnlineStatus";
 import { SnackbarState, useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Message, SnackbarOptions } from "@eyeseetea/d2-ui-components/snackbar/types";
 
-export interface OfflineErrorNotifier {
-    onOfflineError: (error: string) => void;
-}
-
 export function useOfflineSnackbar(): SnackbarState {
     const isOnline = useOnlineStatus();
     const snackbar = useSnackbar();
