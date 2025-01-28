@@ -1,8 +1,8 @@
 import { useCallback } from "react";
-import i18n from "../../utils/i18n";
 import useOnlineStatus from "./useOnlineStatus";
 import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Message, SnackbarOptions } from "@eyeseetea/d2-ui-components/snackbar/types";
+import { OfflineMessage } from "../components/offline-message/OfflineMessage";
 
 export function useOfflineSnackbar() {
     const isOnline = useOnlineStatus();
@@ -11,12 +11,7 @@ export function useOfflineSnackbar() {
     const offlineError = useCallback(
         (message: Message, options?: Partial<SnackbarOptions>) => {
             if (!isOnline) {
-                return snackbar.error(
-                    i18n.t(
-                        "You cannot carry out this action because you are not connected to the internet. Please try again later."
-                    ),
-                    options
-                );
+                return snackbar.error(<OfflineMessage />, options);
             } else {
                 return snackbar.error(message, options);
             }
