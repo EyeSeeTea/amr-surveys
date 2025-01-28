@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-01-28T14:18:02.608Z\n"
-"PO-Revision-Date: 2025-01-28T14:18:02.608Z\n"
+"POT-Creation-Date: 2025-01-28T16:57:55.539Z\n"
+"PO-Revision-Date: 2025-01-28T16:57:55.539Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -57,6 +57,11 @@ msgid "HOME"
 msgstr ""
 
 msgid "Log Out"
+msgstr ""
+
+msgid ""
+"You cannot carry out this action because you are not connected to the "
+"internet. Please try again later."
 msgstr ""
 
 msgid "Stage - Profile"
@@ -274,9 +279,4 @@ msgid "Database language updated successfully"
 msgstr ""
 
 msgid "Error updating database language."
-msgstr ""
-
-msgid ""
-"You cannot carry out this action because you are not connected to the "
-"internet. Please try again later."
 msgstr ""
