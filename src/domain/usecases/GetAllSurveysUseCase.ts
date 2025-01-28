@@ -5,7 +5,6 @@ import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
-import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
 
 export class GetAllSurveysUseCase {
@@ -23,23 +22,15 @@ export class GetAllSurveysUseCase {
         const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
         return this.surveyReporsitory
-            .getSurveys(surveyFormType, programId, ouId, chunked)
+            .getSurveys({
+                surveyFormType: surveyFormType,
+                programId: programId,
+                parentId: parentSurveyId,
+                orgUnitId: ouId,
+                chunked: chunked,
+            })
             .flatMap(surveys => {
-                const filteredSurveys =
-                    surveyFormType === "PPSSurveyForm" ||
-                    (surveyFormType === "PPSHospitalForm" && !parentSurveyId) ||
-                    surveyFormType === "PrevalenceSurveyForm" ||
-                    (surveyFormType === "PrevalenceFacilityLevelForm" && !parentSurveyId)
-                        ? surveys
-                        : _(
-                              surveys.map(survey => {
-                                  if (survey.rootSurvey.id === parentSurveyId) return survey;
-                              })
-                          )
-                              .compact()
-                              .value();
-
-                const surveysWithName = filteredSurveys.map(survey => {
+                const surveysWithName = surveys.map(survey => {
                     return Future.join2(
                         this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                             survey.rootSurvey.id,

@@ -8,7 +8,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
+
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
+msgstr ""
+
+msgid "There was an error processing the form"
 msgstr ""
 
 msgid "There was an error processing the form"

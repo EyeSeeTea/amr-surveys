@@ -131,7 +131,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                     },
                     err => {
                         //@ts-ignore
-                        setSurveysError(err.response ? err.response.data.message : err.message);
+                        setSurveysError(err.message || err?.response.data.message);
                         setLoadingSurveys(false);
                     }
                 );
