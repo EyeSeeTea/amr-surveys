@@ -83,6 +83,7 @@
         "vite-plugin-checker": "^0.6.2",
         "vite-plugin-eslint": "^1.8.1",
         "vite-plugin-node-stdlib-browser": "^0.2.1",
+        "vite-plugin-pwa": "^0.21.1",
         "vitest": "^0.32.2"
     },
     "scripts": {
