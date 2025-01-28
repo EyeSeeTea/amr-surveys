@@ -26,7 +26,7 @@ interface UserProfileContentProps {
 }
 
 export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInformation }) => {
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     const {
         password,
         setPassword,
@@ -53,14 +53,14 @@ export const UserProfileContent: React.FC<UserProfileContentProps> = ({ userInfo
             setIsChangePasswordDialogOpen(false);
             setIsLoading(false);
         } else if (savePasswordStatus && savePasswordStatus.status === "error") {
-            snackbar.error(savePasswordStatus.message);
+            offlineError(savePasswordStatus.message);
             setIsLoading(false);
         }
-    }, [savePasswordStatus, snackbar, setIsChangePasswordDialogOpen, setIsLoading]);
+    }, [savePasswordStatus, snackbar, offlineError, setIsChangePasswordDialogOpen, setIsLoading]);
 
     const saveUserPassword = () => {
         if (password !== confirmPassword) {
-            snackbar.error(i18n.t("The password and confirm password fields don't match"));
+            offlineError(i18n.t("The password and confirm password fields don't match"));
         } else {
             savePassword(password);
             setIsLoading(true);

@@ -38,7 +38,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveyFormType,
     refreshSurveys,
 }) => {
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
 
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
@@ -73,9 +73,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
             snackbar.success(deleteCompleteState.message);
         }
         if (deleteCompleteState?.status === "error") {
-            snackbar.error(deleteCompleteState.message);
+            offlineError(deleteCompleteState.message);
         }
-    }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
+    }, [deleteCompleteState, snackbar, surveys, offlineError, setSortedSurveys]);
 
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>

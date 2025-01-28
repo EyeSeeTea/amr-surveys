@@ -18,7 +18,7 @@ export const usePatientSearch = (
         currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
     } = useCurrentSurveys();
-    const snackbar = useOfflineSnackbar();
+    const { offlineError } = useOfflineSnackbar();
 
     const [patientIdSearchKeyword, setPatientIdSearchKeyword] = useState("");
     const [patientCodeSearchKeyword, setPatientCodeSearchKeyword] = useState("");
@@ -65,7 +65,7 @@ export const usePatientSearch = (
                         setIsLoading(false);
                     },
                     () => {
-                        snackbar.error(i18n.t("Error fetching surveys"));
+                        offlineError(i18n.t("Error fetching surveys"));
                         setIsLoading(false);
                     }
                 );
@@ -84,7 +84,7 @@ export const usePatientSearch = (
                         setIsLoading(false);
                     },
                     () => {
-                        snackbar.error(i18n.t("Error fetching surveys"));
+                        offlineError(i18n.t("Error fetching surveys"));
                         setIsLoading(false);
                     }
                 );

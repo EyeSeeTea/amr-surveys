@@ -18,17 +18,17 @@ export const ContentLoader: React.FC<ContentLoaderProps> = ({
     showErrorAsSnackbar,
     onError,
 }) => {
-    const snackbar = useOfflineSnackbar();
+    const { offlineError } = useOfflineSnackbar();
 
     useEffect(() => {
         if (error && showErrorAsSnackbar) {
-            snackbar.error(error);
+            offlineError(error);
         }
 
         if (error && onError) {
             onError();
         }
-    }, [error, snackbar, showErrorAsSnackbar, onError]);
+    }, [error, offlineError, showErrorAsSnackbar, onError]);
 
     if (loading) {
         return (

@@ -18,7 +18,7 @@ const booleanOptions: { label: string; value: string }[] = [
 ];
 
 export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformation }) => {
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     const { databaseLocalesOptions, uiLocalesOptions, saveLocaleStatus, changeLocale } =
         useUserSettings();
 
@@ -26,9 +26,9 @@ export const UserSettingsContent: FC<UserSettingsContentProps> = ({ userInformat
         if (saveLocaleStatus && saveLocaleStatus.status === "success") {
             snackbar.info(saveLocaleStatus.message);
         } else if (saveLocaleStatus && saveLocaleStatus.status === "error") {
-            snackbar.error(saveLocaleStatus.message);
+            offlineError(saveLocaleStatus.message);
         }
-    }, [snackbar, saveLocaleStatus]);
+    }, [snackbar, saveLocaleStatus, offlineError]);
 
     const changeUserLocale = (
         e: ChangeEvent<{

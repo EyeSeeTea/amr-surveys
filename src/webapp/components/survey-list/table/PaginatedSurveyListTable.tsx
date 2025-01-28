@@ -49,7 +49,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     pageSize,
     total,
 }) => {
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
@@ -80,9 +80,9 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
             snackbar.success(deleteCompleteState.message);
         }
         if (deleteCompleteState?.status === "error") {
-            snackbar.error(deleteCompleteState.message);
+            offlineError(deleteCompleteState.message);
         }
-    }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
+    }, [deleteCompleteState, snackbar, surveys, offlineError, setSortedSurveys]);
 
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>

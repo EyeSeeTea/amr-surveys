@@ -32,13 +32,13 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         setCurrentOrgUnit,
         currentSurveyId
     );
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
 
     useEffect(() => {
         if (ouSelectorErrMsg) {
-            snackbar.error(ouSelectorErrMsg);
+            offlineError(ouSelectorErrMsg);
         }
-    }, [ouSelectorErrMsg, snackbar, shouldRefresh]);
+    }, [ouSelectorErrMsg, snackbar, shouldRefresh, offlineError]);
 
     return (
         <>

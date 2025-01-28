@@ -36,7 +36,7 @@ const CancelButton = withStyles(() => ({
 }))(Button);
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
-    const snackbar = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     const history = useHistory();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
@@ -66,7 +66,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
 
         if (saveCompleteState && saveCompleteState.status === "error") {
-            snackbar.error(saveCompleteState.message);
+            offlineError(saveCompleteState.message);
             setLoading(false);
         }
 
@@ -74,7 +74,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         if (error) {
             history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props, setLoading]);
+    }, [error, saveCompleteState, snackbar, history, props, setLoading, offlineError]);
 
     const saveSurveyForm = () => {
         setLoading(true);

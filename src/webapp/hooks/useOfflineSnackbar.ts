@@ -1,19 +1,19 @@
 import { useCallback } from "react";
 import i18n from "../../utils/i18n";
 import useOnlineStatus from "./useOnlineStatus";
-import { SnackbarState, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { Message, SnackbarOptions } from "@eyeseetea/d2-ui-components/snackbar/types";
 
-export function useOfflineSnackbar(): SnackbarState {
+export function useOfflineSnackbar() {
     const isOnline = useOnlineStatus();
     const snackbar = useSnackbar();
 
     const offlineError = useCallback(
-        () => (message: Message, options?: Partial<SnackbarOptions>) => {
+        (message: Message, options?: Partial<SnackbarOptions>) => {
             if (!isOnline) {
                 return snackbar.error(
                     i18n.t(
-                        "This page did not load because you are offline. Please check your internet connection."
+                        "You cannot carry out this action because you are not connected to the internet. Please try again later."
                     ),
                     options
                 );
@@ -24,8 +24,5 @@ export function useOfflineSnackbar(): SnackbarState {
         [isOnline, snackbar]
     );
 
-    return {
-        ...snackbar,
-        error: offlineError,
-    };
+    return { snackbar: snackbar, offlineError: offlineError };
 }
