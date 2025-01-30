@@ -430,8 +430,6 @@ export const mapQuestionnaireToTrackedEntities = (
 
     const postRequest: TrackerPostRequest = {
         trackedEntities: [entity],
-        enrollments: enrollments,
-        events: eventsByStage,
     };
 
     return Future.success(postRequest);
