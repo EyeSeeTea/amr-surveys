@@ -5,6 +5,7 @@ import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
+import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 
 const PAGE_SIZE = 10;
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
@@ -59,8 +60,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             case "PrevalenceCohortEnrolment":
             case "PrevalenceDischarge":
                 return currentFacilityLevelForm?.orgUnitId ?? "";
+
             default:
-                return "";
+                return GLOBAL_OU_ID;
         }
     }, [
         currentCountryQuestionnaire?.orgUnitId,
