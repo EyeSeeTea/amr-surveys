@@ -16,7 +16,11 @@ import {
     SURVEY_PATIENT_ID_TEA_ID,
     WARD_ID_TEA_ID,
 } from "../entities/D2Survey";
-import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import {
+    mapEventToSurvey,
+    mapTrackedEntityToSurvey,
+    trackedEntityFields,
+} from "../utils/surveyListMappers";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
@@ -57,13 +61,13 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const ouMode = undefined;
+        const ouMode = "SELECTED";
 
         const filterParentDEId = getParentDataElementForProgram(programId);
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
@@ -73,7 +77,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 filter: `${filterParentDEId}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
+            const instances = trackedEntities.instances;
+            const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -96,7 +101,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const ouMode = undefined;
+        const ouMode = "SELECTED";
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
@@ -133,15 +138,17 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: PPS_PATIENT_REGISTER_ID,
                 orgUnit: orgUnitId,
+                ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
                 filter: ` ${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PPSPatientRegister");
+            const instances = trackedEntities.instances;
+            const surveys = mapTrackedEntityToSurvey(instances, "PPSPatientRegister");
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -163,15 +170,17 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: PPS_PATIENT_REGISTER_ID,
                 orgUnit: orgUnitId,
+                ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
                 filter: ` ${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PPSPatientRegister");
+            const instances = trackedEntities.instances;
+            const surveys = mapTrackedEntityToSurvey(instances, "PPSPatientRegister");
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -193,15 +202,17 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: PREVALENCE_CASE_REPORT_FORM_ID,
                 orgUnit: orgUnitId,
+                ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
                 filter: ` ${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}, ${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, "PrevalenceCaseReportForm");
+            const instances = trackedEntities.instances;
+            const surveys = mapTrackedEntityToSurvey(instances, "PrevalenceCaseReportForm");
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {

@@ -1,5 +1,4 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
 import { Id } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
@@ -27,6 +26,8 @@ import {
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
     AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    PREVALENCE_SURVEY_FORM_ID,
 } from "../entities/D2Survey";
 import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
 import {
@@ -34,12 +35,18 @@ import {
     mapQuestionnaireToEvent,
     mapQuestionnaireToTrackedEntities,
 } from "../utils/surveyFormMappers";
-import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import {
+    D2TrackerEntity,
+    mapEventToSurvey,
+    mapTrackedEntityToSurvey,
+    trackedEntityFields,
+} from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
 import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
 import { Maybe } from "../../utils/ts-utils";
+import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 
 const OU_CHUNK_SIZE = 500;
 
@@ -281,18 +288,19 @@ export class SurveyD2Repository implements SurveyRepository {
             (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
             programId === PPS_PATIENT_REGISTER_ID
                 ? "DESCENDANTS"
-                : undefined;
+                : "SELECTED";
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
                 filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
-        ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
+        ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
+            const instances: D2TrackerEntity[] = trackedEntities.instances;
+            const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
             return Future.success(surveys);
         });
     }
@@ -310,20 +318,19 @@ export class SurveyD2Repository implements SurveyRepository {
             chunkedOUs.flatMap(ouChunk => {
                 return apiToFuture(
                     this.api.tracker.trackedEntities.get({
-                        fields: {
-                            attributes: true,
-                            enrollments: true,
-                            trackedEntity: true,
-                            orgUnit: true,
-                        },
+                        fields: trackedEntityFields,
                         program: programId,
                         orgUnit: ouChunk.join(";"),
+                        ouMode: "SELECTED",
                         filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
                     })
-                ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-                    const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
-                    return Future.success(surveys);
-                });
+                ).flatMap(
+                    (trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
+                        const instances: D2TrackerEntity[] = trackedEntities.instances;
+                        const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
+                        return Future.success(surveys);
+                    }
+                );
             })
         ).flatMap(listOfSurveys => Future.success(_(listOfSurveys).flatten().value()));
     }
@@ -336,9 +343,12 @@ export class SurveyD2Repository implements SurveyRepository {
     ): FutureData<Survey[]> {
         const ouMode =
             orgUnitId !== "" &&
-            (programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID)
+            (programId === PPS_WARD_REGISTER_ID ||
+                programId === PPS_HOSPITAL_FORM_ID ||
+                programId === PPS_COUNTRY_QUESTIONNAIRE_ID ||
+                programId === PREVALENCE_SURVEY_FORM_ID)
                 ? "DESCENDANTS"
-                : undefined;
+                : "SELECTED";
 
         return apiToFuture(
             this.api.tracker.events.get({

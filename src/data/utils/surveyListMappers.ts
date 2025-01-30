@@ -1,4 +1,4 @@
-import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import { D2TrackerTrackedEntitySchema } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { SURVEY_FORM_TYPES, SURVEY_STATUSES, Survey } from "../../domain/entities/Survey";
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -26,17 +26,30 @@ import {
     WARD_ID_TEA_ID,
     SURVEY_PATIENT_CODE_TEA_ID,
 } from "../entities/D2Survey";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
 import { Id } from "../../domain/entities/Ref";
+import { SelectedPick } from "@eyeseetea/d2-api/api";
+import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+
+export const trackedEntityFields = {
+    attributes: true,
+    enrollments: true,
+    trackedEntity: true,
+    orgUnit: true,
+} as const;
+
+export type D2TrackerEntity = SelectedPick<
+    D2TrackerTrackedEntitySchema,
+    typeof trackedEntityFields
+>;
 
 export const mapTrackedEntityToSurvey = (
-    trackedEntities: TrackedEntitiesGetResponse,
+    trackedEntities: D2TrackerEntity[],
     surveyFormType: SURVEY_FORM_TYPES
 ): Survey[] => {
-    return trackedEntities.instances.map(trackedEntity => {
+    return trackedEntities.map(trackedEntityInstance => {
         const parentPrevalenceSurveyId =
-            trackedEntity.attributes?.find(
+            trackedEntityInstance.attributes?.find(
                 attribute =>
                     attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
@@ -50,11 +63,12 @@ export const mapTrackedEntityToSurvey = (
             )?.value ?? "";
 
         const parentPPSSurveyId =
-            trackedEntity.attributes?.find(attr => attr.attribute === SURVEY_ID_PATIENT_TEA_ID)
-                ?.value ?? "";
+            trackedEntityInstance.attributes?.find(
+                attr => attr.attribute === SURVEY_ID_PATIENT_TEA_ID
+            )?.value ?? "";
 
         const patientId =
-            trackedEntity.attributes?.find(
+            trackedEntityInstance.attributes?.find(
                 attribute =>
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID ||
                     attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
@@ -67,22 +81,23 @@ export const mapTrackedEntityToSurvey = (
             )?.value ?? "";
 
         const patientCode =
-            trackedEntity.attributes?.find(
+            trackedEntityInstance.attributes?.find(
                 attribute => attribute.attribute === SURVEY_PATIENT_CODE_TEA_ID
             )?.value ?? "";
 
         const facilityCode =
-            trackedEntity.attributes?.find(
+            trackedEntityInstance.attributes?.find(
                 attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID
             )?.value ?? "";
 
         const parentWardId =
-            trackedEntity.attributes?.find(attribute => attribute.attribute === WARD_ID_TEA_ID)
-                ?.value ?? "";
+            trackedEntityInstance.attributes?.find(
+                attribute => attribute.attribute === WARD_ID_TEA_ID
+            )?.value ?? "";
 
         const survey: Survey = {
-            id: trackedEntity.trackedEntity ?? "",
-            name: trackedEntity.trackedEntity ?? "",
+            id: trackedEntityInstance.trackedEntity ?? "",
+            name: trackedEntityInstance.trackedEntity ?? "",
             rootSurvey: {
                 id:
                     surveyFormType === "PPSPatientRegister"
@@ -91,11 +106,17 @@ export const mapTrackedEntityToSurvey = (
                 name: "",
                 surveyType: "",
             },
-            startDate: trackedEntity.createdAt ? new Date(trackedEntity.createdAt) : undefined,
+            //TO DO : Fix for upgrade
+            // startDate: trackedEntityInstance.createdAt
+            //     ? new Date(trackedEntityInstance.createdAt)
+            //     : undefined,
+            startDate: undefined,
             status: "ACTIVE",
             assignedOrgUnit: {
-                id: trackedEntity.orgUnit ?? "",
-                name: trackedEntity.enrollments?.[0]?.orgUnitName ?? "",
+                id: trackedEntityInstance.orgUnit ?? "",
+                //TO DO : Fix for upgrade
+                // name: trackedEntityInstance.enrollments?.[0]?.orgUnitName ?? "",
+                name: "",
             },
             surveyType: "",
             parentWardRegisterId: parentWardId,
