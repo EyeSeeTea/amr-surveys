@@ -14,7 +14,6 @@ import {
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
 } from "../entities/D2Survey";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 
 export type SurveyChildCountType =
