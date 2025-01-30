@@ -392,33 +392,16 @@ export class SurveyD2Repository implements SurveyRepository {
     ): FutureData<D2TrackerTrackedEntity | void> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: {
-                    attributes: true,
-                    enrollments: true,
-                    orgUnit: true,
-                    trackedEntity: true,
-                    trackedEntityType: true,
-                    createdAt: true,
-                    createdAtClient: true,
-                    updatedAt: true,
-                    updatedAtClient: true,
-                    inactive: true,
-                    deleted: true,
-                    relationships: true,
-                    programOwners: true,
-                    geometry: true,
-                },
+                fields: { $all: true },
                 program: programId,
                 trackedEntity: trackedEntityId,
-                ouMode: "DESCENDANTS",
+                ouMode: "ALL",
                 enrollmentEnrolledBefore: new Date().toISOString(),
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
 
             if (instances[0]) {
-                //TO DO : Upgrade fix
-                //@ts-ignore
                 const instance: D2TrackerTrackedEntity = instances[0];
                 return Future.success(instance);
             } else return Future.success(undefined);
