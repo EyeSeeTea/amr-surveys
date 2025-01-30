@@ -118,17 +118,48 @@ export class SurveyTestRepository implements SurveyRepository {
     }
     getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
         if (eventId) {
-            //@ts-ignore
             return Future.success({
                 event: "123",
                 orgUnit: "OU1",
                 program: "1234",
                 status: "ACTIVE",
                 occurredAt: new Date().toISOString().split("T")?.at(0) || "",
-                //@ts-ignore
+                programStage: "",
+                enrollment: "",
+                enrollmentStatus: "ACTIVE",
+                orgUnitName: "",
+                scheduledAt: "",
+                storedBy: " ",
+                followup: false,
+                deleted: false,
+                createdAt: "",
+                updatedAt: "",
+                createdBy: {
+                    uid: "123",
+                    name: "John Doe",
+                    username: "",
+                    firstName: "",
+                    surname: "",
+                },
+                attributeOptionCombo: "",
+                attributeCategoryOptions: "",
+                updatedBy: {
+                    uid: "123",
+                    name: "John Doe",
+                    username: "",
+                    firstName: "",
+                    surname: "",
+                },
+                notes: [],
                 dataValues: [
-                    { dataElement: "de1", value: "0" },
-                    { dataElement: "de2", value: "abc" },
+                    {
+                        dataElement: "de1",
+                        value: "0",
+                        providedElsewhere: false,
+                        updatedAt: "",
+                        storedBy: "",
+                        createdAt: "",
+                    },
                 ],
             });
         } else {

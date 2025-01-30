@@ -107,16 +107,18 @@ export const mapTrackedEntityToSurvey = (
                 surveyType: "",
             },
             //TO DO : Fix for upgrade
-            // startDate: trackedEntityInstance.createdAt
-            //     ? new Date(trackedEntityInstance.createdAt)
-            //     : undefined,
-            startDate: undefined,
+            //@ts-ignore
+            startDate: trackedEntityInstance.enrollments[0]?.createdAt
+                ? //@ts-ignore
+                  new Date(trackedEntityInstance.enrollments[0].createdAt)
+                : undefined,
+
             status: "ACTIVE",
             assignedOrgUnit: {
                 id: trackedEntityInstance.orgUnit ?? "",
                 //TO DO : Fix for upgrade
-                // name: trackedEntityInstance.enrollments?.[0]?.orgUnitName ?? "",
-                name: "",
+                //@ts-ignore
+                name: trackedEntityInstance.enrollments?.[0]?.orgUnitName ?? "",
             },
             surveyType: "",
             parentWardRegisterId: parentWardId,

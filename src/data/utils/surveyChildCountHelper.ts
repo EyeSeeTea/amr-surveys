@@ -141,7 +141,6 @@ const getEventSurveyCount = (
     secondaryParentId: Id | undefined,
     api: D2Api
 ): FutureData<number> => {
-    // const ouId = programId === PPS_COUNTRY_QUESTIONNAIRE_ID ? "" : orgUnitId;
     const ouMode =
         programId === PPS_HOSPITAL_FORM_ID || programId === PPS_COUNTRY_QUESTIONNAIRE_ID
             ? "DESCENDANTS"
