@@ -118,6 +118,7 @@ export class SurveyTestRepository implements SurveyRepository {
     }
     getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
         if (eventId) {
+            //@ts-ignore
             return Future.success({
                 event: "123",
                 orgUnit: "OU1",

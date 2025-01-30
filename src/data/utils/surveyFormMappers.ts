@@ -1,4 +1,4 @@
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+import { D2TrackerEvent, D2TrackerEventToPost } from "@eyeseetea/d2-api/api/trackerEvents";
 import {
     D2ProgramRule,
     D2ProgramRuleAction,
@@ -10,7 +10,11 @@ import {
     ProgramStageSection,
     TrackedEntityAttibute,
 } from "../entities/D2Program";
-import { D2TrackerTrackedEntity as TrackedEntity } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import {
+    AttributeToPost,
+    D2TrackedEntityInstanceToPost,
+    D2TrackerTrackedEntity as TrackedEntity,
+} from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { Id, Ref } from "../../domain/entities/Ref";
 import {
     Questionnaire,
@@ -36,13 +40,11 @@ import { getProgramRules } from "./ruleHelper";
 import { FutureData, apiToFuture } from "../api-futures";
 import { Future } from "../../domain/entities/generic/Future";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import {
-    D2TrackerEnrollment,
-    D2TrackerEnrollmentAttribute,
-} from "@eyeseetea/d2-api/api/trackerEnrollments";
+import { D2TrackerEnrollment } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import { DataValue } from "@eyeseetea/d2-api";
 import { generateUid } from "../../utils/uid";
 import i18n from "../../utils/i18n";
+import { TrackerPostRequest } from "@eyeseetea/d2-api/api/tracker";
 
 const AntibioticTreatmentHospitalEpisodeSectionName =
     `Antibiotic treatments during hospital episode`.toLowerCase();
@@ -290,7 +292,7 @@ export const mapQuestionnaireToEvent = (
     programId: Id,
     api: D2Api,
     eventId: string | undefined = undefined
-): FutureData<{ events: D2TrackerEvent[] }> => {
+): FutureData<TrackerPostRequest> => {
     const questions = questionnaire.stages.flatMap(stages =>
         stages.sections.flatMap(section => section.questions)
     );
@@ -305,10 +307,10 @@ export const mapQuestionnaireToEvent = (
     if (eventId) {
         return getEventProgramById(eventId, api).flatMap(event => {
             if (event) {
-                const updatedEvent: D2TrackerEvent = {
+                const updatedEvent: D2TrackerEventToPost = {
                     ...event,
 
-                    dataValues: dataValues as DataValue[],
+                    dataValues: dataValues,
                 };
                 return Future.success({ events: [updatedEvent] });
             } else {
@@ -316,14 +318,16 @@ export const mapQuestionnaireToEvent = (
             }
         });
     } else {
-        const event: D2TrackerEvent = {
+        const event: D2TrackerEventToPost = {
             event: "",
             orgUnit: orgUnitId,
             program: programId,
             status: "ACTIVE",
             occurredAt: new Date().toISOString().split("T")?.at(0) || "",
-            //@ts-ignore
+
             dataValues: dataValues,
+            programStage: "",
+            scheduledAt: "",
         };
         return Future.success({ events: [event] });
     }
@@ -333,7 +337,7 @@ const mapQuestionnaireToEventsByStage = (
     questionnaire: Questionnaire,
     orgUnitId: string,
     programId: Id
-): D2TrackerEvent[] => {
+): D2TrackerEventToPost[] => {
     return questionnaire.stages.map(stage => {
         const dataValuesByStage = stage.sections.flatMap(section => {
             return mapQuestionsToDataValues(section.questions);
@@ -347,6 +351,7 @@ const mapQuestionnaireToEventsByStage = (
             dataValues: dataValuesByStage,
             occurredAt: new Date().getTime().toString(),
             status: "ACTIVE",
+            scheduledAt: new Date().getTime().toString(),
         };
     });
 };
@@ -356,15 +361,15 @@ export const mapQuestionnaireToTrackedEntities = (
     orgUnitId: string,
     programId: Id,
     teiId: string | undefined = undefined
-): FutureData<{ trackedEntities: TrackedEntity[] }> => {
-    let eventsByStage: D2TrackerEvent[] = [];
+): FutureData<TrackerPostRequest> => {
+    let eventsByStage: D2TrackerEventToPost[] = [];
     try {
         eventsByStage = mapQuestionnaireToEventsByStage(questionnaire, orgUnitId, programId);
     } catch (error) {
         return Future.error(new Error(i18n.t("There was an error processing the form")));
     }
 
-    const attributes: D2TrackerEnrollmentAttribute[] = questionnaire.entity
+    const attributes: AttributeToPost[] = questionnaire.entity
         ? questionnaire.entity.questions.map(question => {
               if (question.type === "select" && question.value) {
                   return {
@@ -374,7 +379,9 @@ export const mapQuestionnaireToTrackedEntities = (
               } else if (question.type === "date") {
                   return {
                       attribute: question.id,
-                      value: question.value ? question.value : new Date(),
+                      value: question.value
+                          ? question.value.toISOString()
+                          : new Date().toISOString(),
                   };
               } else {
                   return {
@@ -392,9 +399,8 @@ export const mapQuestionnaireToTrackedEntities = (
             enrollment: questionnaire.subLevelDetails?.enrollmentId ?? "",
             trackedEntityType: getTrackedEntityAttributeType(programId),
             notes: [],
-            relationships: [],
             attributes: attributes,
-            events: eventsByStage,
+            events: eventsByStage as D2TrackerEvent[],
             enrolledAt: new Date().getTime().toString(),
             occurredAt: new Date().getTime().toString(),
             createdAt: new Date().getTime().toString(),
@@ -409,13 +415,26 @@ export const mapQuestionnaireToTrackedEntities = (
         },
     ];
 
-    const entity: TrackedEntity = {
+    const entity: D2TrackedEntityInstanceToPost = {
         orgUnit: orgUnitId,
         trackedEntity: teiId ?? "",
         trackedEntityType: getTrackedEntityAttributeType(programId),
+        createdAt: new Date().toISOString(),
+        createdAtClient: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        updatedAtClient: new Date().toISOString(),
         enrollments: enrollments,
+        attributes: attributes,
+        relationships: [],
     };
-    return Future.success({ trackedEntities: [entity] });
+
+    const postRequest: TrackerPostRequest = {
+        trackedEntities: [entity],
+        enrollments: enrollments,
+        events: eventsByStage,
+    };
+
+    return Future.success(postRequest);
 };
 
 const getEventProgramById = (eventId: Id, api: D2Api): FutureData<D2TrackerEvent | void> => {

@@ -38,13 +38,13 @@ export const trackedEntityFields = {
     orgUnit: true,
 } as const;
 
-export type D2TrackerEntity = SelectedPick<
+export type D2TrackerEntitySelectedPick = SelectedPick<
     D2TrackerTrackedEntitySchema,
     typeof trackedEntityFields
 >;
 
 export const mapTrackedEntityToSurvey = (
-    trackedEntities: D2TrackerEntity[],
+    trackedEntities: D2TrackerEntitySelectedPick[],
     surveyFormType: SURVEY_FORM_TYPES
 ): Survey[] => {
     return trackedEntities.map(trackedEntityInstance => {

@@ -7,9 +7,9 @@ import _ from "../../domain/entities/generic/Collection";
 import { ImportStrategy } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import {
-    D2TrackerTrackedEntity,
-    D2TrackerTrackedEntity as TrackedEntity,
     TrackedEntitiesGetResponse,
+    D2TrackedEntityInstanceToPost,
+    D2TrackerTrackedEntity,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import {
     getParentDataElementForProgram,
@@ -36,7 +36,7 @@ import {
     mapQuestionnaireToTrackedEntities,
 } from "../utils/surveyFormMappers";
 import {
-    D2TrackerEntity,
+    D2TrackerEntitySelectedPick,
     mapEventToSurvey,
     mapTrackedEntityToSurvey,
     trackedEntityFields,
@@ -44,9 +44,9 @@ import {
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
-import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
+import { TrackerPostRequest, TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
 import { Maybe } from "../../utils/ts-utils";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+import { D2TrackerEvent, D2TrackerEventToPost } from "@eyeseetea/d2-api/api/trackerEvents";
 
 const OU_CHUNK_SIZE = 500;
 
@@ -299,7 +299,7 @@ export class SurveyD2Repository implements SurveyRepository {
                 filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
-            const instances: D2TrackerEntity[] = trackedEntities.instances;
+            const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
             const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
             return Future.success(surveys);
         });
@@ -326,7 +326,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     })
                 ).flatMap(
                     (trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
-                        const instances: D2TrackerEntity[] = trackedEntities.instances;
+                        const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
                         const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
                         return Future.success(surveys);
                     }
@@ -389,18 +389,39 @@ export class SurveyD2Repository implements SurveyRepository {
     private getTrackerProgramById(
         trackedEntityId: Id,
         programId: Id
-    ): FutureData<TrackedEntity | void> {
+    ): FutureData<D2TrackerTrackedEntity | void> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: {
+                    attributes: true,
+                    enrollments: true,
+                    orgUnit: true,
+                    trackedEntity: true,
+                    trackedEntityType: true,
+                    createdAt: true,
+                    createdAtClient: true,
+                    updatedAt: true,
+                    updatedAtClient: true,
+                    inactive: true,
+                    deleted: true,
+                    relationships: true,
+                    programOwners: true,
+                    geometry: true,
+                },
                 program: programId,
                 trackedEntity: trackedEntityId,
                 ouMode: "DESCENDANTS",
                 enrollmentEnrolledBefore: new Date().toISOString(),
             })
-        ).flatMap(resp => {
-            if (resp) return Future.success(resp.instances[0]);
-            else return Future.success(undefined);
+        ).flatMap(trackedEntities => {
+            const instances = trackedEntities.instances;
+
+            if (instances[0]) {
+                //TO DO : Upgrade fix
+                //@ts-ignore
+                const instance: D2TrackerTrackedEntity = instances[0];
+                return Future.success(instance);
+            } else return Future.success(undefined);
         });
     }
 
@@ -468,7 +489,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     deleteEventSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
-        const event: D2TrackerEvent = {
+        const event: D2TrackerEventToPost = {
             event: eventId,
             orgUnit: orgUnitId,
             program: programId,
@@ -476,9 +497,15 @@ export class SurveyD2Repository implements SurveyRepository {
             status: "ACTIVE",
             occurredAt: "",
             dataValues: [],
+            programStage: "",
+            scheduledAt: "",
+        };
+
+        const payload: TrackerPostRequest = {
+            events: [event],
         };
         return apiToFuture(
-            this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, payload)
         ).flatMap(response => {
             return apiToFuture(
                 // eslint-disable-next-line testing-library/await-async-utils
@@ -496,17 +523,23 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     deleteTrackerProgramSurvey(teiId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
-        const trackedEntity: D2TrackerTrackedEntity = {
+        const trackedEntity: D2TrackedEntityInstanceToPost = {
             orgUnit: orgUnitId,
             trackedEntity: teiId,
             trackedEntityType: getTrackedEntityAttributeType(programId),
+            createdAtClient: "",
+            enrollments: [],
+            relationships: [],
+            updatedAtClient: "",
+            attributes: [],
+        };
+
+        const payload: TrackerPostRequest = {
+            trackedEntities: [trackedEntity],
         };
 
         return apiToFuture(
-            this.api.tracker.postAsync(
-                { importStrategy: "DELETE" },
-                { trackedEntities: [trackedEntity] }
-            )
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, payload)
         ).flatMap(response => {
             return apiToFuture(
                 // eslint-disable-next-line testing-library/await-async-utils
