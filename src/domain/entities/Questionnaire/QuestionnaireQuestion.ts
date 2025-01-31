@@ -140,6 +140,7 @@ export type UpdateQuestionOptions = {
 export class QuestionnaireQuestion {
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
+        if (!isNumber(s)) return false;
 
         switch (numberType) {
             case "INTEGER":
@@ -398,4 +399,8 @@ export class QuestionnaireQuestion {
 
 function isInteger(s: string): boolean {
     return Boolean(s.match(/^-?\d*$/));
+}
+
+export function isNumber(s: string): boolean {
+    return Boolean(s.match(/^-?(0|[1-9]\d*)(\.\d+)?$/));
 }
