@@ -27,7 +27,7 @@ import {
     SURVEY_PATIENT_CODE_TEA_ID,
 } from "../entities/D2Survey";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
-import { Id } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { SelectedPick } from "@eyeseetea/d2-api/api";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 
@@ -45,7 +45,8 @@ export type D2TrackerEntitySelectedPick = SelectedPick<
 
 export const mapTrackedEntityToSurvey = (
     trackedEntities: D2TrackerEntitySelectedPick[],
-    surveyFormType: SURVEY_FORM_TYPES
+    surveyFormType: SURVEY_FORM_TYPES,
+    orgUnits?: NamedRef[]
 ): Survey[] => {
     return trackedEntities.map(trackedEntityInstance => {
         const parentPrevalenceSurveyId =
@@ -116,9 +117,7 @@ export const mapTrackedEntityToSurvey = (
             status: "ACTIVE",
             assignedOrgUnit: {
                 id: trackedEntityInstance.orgUnit ?? "",
-                //TO DO : Fix for upgrade
-                //@ts-ignore
-                name: trackedEntityInstance.enrollments?.[0]?.orgUnitName ?? "",
+                name: orgUnits?.find(ou => ou.id === trackedEntityInstance.orgUnit)?.name ?? "",
             },
             surveyType: "",
             parentWardRegisterId: parentWardId,
@@ -134,7 +133,8 @@ export const mapTrackedEntityToSurvey = (
 export const mapEventToSurvey = (
     events: D2TrackerEvent[],
     surveyFormType: SURVEY_FORM_TYPES,
-    programId: Id
+    programId: Id,
+    orgUnits?: NamedRef[]
 ): Survey[] => {
     return events.map((event: D2TrackerEvent) => {
         const surveyProperties = new Map(
@@ -195,7 +195,10 @@ export const mapEventToSurvey = (
                     : event.status === "COMPLETED"
                     ? ("COMPLETED" as SURVEY_STATUSES)
                     : ("ACTIVE" as SURVEY_STATUSES),
-            assignedOrgUnit: { id: event.orgUnit, name: event.orgUnitName ?? "" },
+            assignedOrgUnit: {
+                id: event.orgUnit,
+                name: orgUnits?.find(ou => ou.id === event.orgUnit)?.name ?? "",
+            },
             surveyType: surveyType,
             parentWardRegisterId: parentWardRegisterId,
             surveyFormType: surveyFormType,

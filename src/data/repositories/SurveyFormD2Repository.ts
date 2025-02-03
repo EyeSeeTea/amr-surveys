@@ -1,6 +1,6 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { Future } from "../../domain/entities/generic/Future";
-import { Id } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
@@ -265,7 +265,6 @@ export class SurveyD2Repository implements SurveyRepository {
         return filter;
     }
 
-    //Currently tracker programs are only in Prevalence module
     private getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
@@ -300,8 +299,12 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
             const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
-            return Future.success(surveys);
+            return this.getOrgUnitNames(instances.map(instance => instance.orgUnit)).flatMap(
+                orgUnits => {
+                    const surveys = mapTrackedEntityToSurvey(instances, surveyFormType, orgUnits);
+                    return Future.success(surveys);
+                }
+            );
         });
     }
 
@@ -327,12 +330,35 @@ export class SurveyD2Repository implements SurveyRepository {
                 ).flatMap(
                     (trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
                         const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
-                        const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
-                        return Future.success(surveys);
+                        return this.getOrgUnitNames(
+                            instances.map(instance => instance.orgUnit)
+                        ).flatMap(orgUnits => {
+                            const surveys = mapTrackedEntityToSurvey(
+                                instances,
+                                surveyFormType,
+                                orgUnits
+                            );
+                            return Future.success(surveys);
+                        });
                     }
                 );
             })
         ).flatMap(listOfSurveys => Future.success(_(listOfSurveys).flatten().value()));
+    }
+
+    private getOrgUnitNames(orgUnitIds: Id[]): FutureData<NamedRef[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true },
+                filter: { id: { in: orgUnitIds } },
+                paging: false,
+            })
+        ).flatMap(orgUnitsResponse => {
+            const orgUnits = orgUnitsResponse.objects.map(ou => {
+                return { id: ou.id, name: ou.name };
+            });
+            return Future.success(orgUnits);
+        });
     }
 
     private getEventProgramSurveys(
@@ -360,8 +386,11 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(response => {
             const events = response.instances;
-            const surveys = mapEventToSurvey(events, surveyFormType, programId);
-            return Future.success(surveys);
+
+            return this.getOrgUnitNames(events.map(event => event.orgUnit)).flatMap(orgUnits => {
+                const surveys = mapEventToSurvey(events, surveyFormType, programId, orgUnits);
+                return Future.success(surveys);
+            });
         });
     }
 
