@@ -324,10 +324,8 @@ export const mapQuestionnaireToEvent = (
             program: programId,
             status: "ACTIVE",
             occurredAt: new Date().toISOString().split("T")?.at(0) || "",
-
             dataValues: dataValues,
             programStage: "",
-            scheduledAt: "",
         };
         return Future.success({ events: [event] });
     }
@@ -394,6 +392,7 @@ export const mapQuestionnaireToTrackedEntities = (
 
     const enrollments: D2TrackerEnrollment[] = [
         {
+            trackedEntity: teiId ?? "",
             orgUnit: orgUnitId,
             program: programId,
             enrollment: questionnaire.subLevelDetails?.enrollmentId ?? "",

@@ -107,7 +107,6 @@ export const mapTrackedEntityToSurvey = (
                 name: "",
                 surveyType: "",
             },
-            //TO DO : Fix for upgrade
             //@ts-ignore
             startDate: trackedEntityInstance.enrollments[0]?.createdAt
                 ? //@ts-ignore

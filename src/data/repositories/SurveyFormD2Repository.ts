@@ -510,7 +510,6 @@ export class SurveyD2Repository implements SurveyRepository {
             occurredAt: "",
             dataValues: [],
             programStage: "",
-            scheduledAt: "",
         };
 
         const payload: TrackerPostRequest = {
@@ -539,10 +538,7 @@ export class SurveyD2Repository implements SurveyRepository {
             orgUnit: orgUnitId,
             trackedEntity: teiId,
             trackedEntityType: getTrackedEntityAttributeType(programId),
-            createdAtClient: "",
             enrollments: [],
-            relationships: [],
-            updatedAtClient: "",
             attributes: [],
         };
 
