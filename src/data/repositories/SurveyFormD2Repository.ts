@@ -1,18 +1,18 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Future } from "../../domain/entities/generic/Future";
-import { Id } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ImportStrategy } from "../../domain/entities/Program";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import {
-    D2TrackerTrackedEntity,
-    D2TrackerTrackedEntity as TrackedEntity,
     TrackedEntitiesGetResponse,
+    D2TrackedEntityInstanceToPost,
+    D2TrackerTrackedEntity,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import {
+    getParentDataElementForProgram,
     getSurveyType,
     getTrackedEntityAttributeType,
     isTrackerProgram,
@@ -26,6 +26,8 @@ import {
     PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
     AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    PREVALENCE_SURVEY_FORM_ID,
 } from "../entities/D2Survey";
 import { ProgramDataElement, ProgramMetadata } from "../entities/D2Program";
 import {
@@ -33,13 +35,26 @@ import {
     mapQuestionnaireToEvent,
     mapQuestionnaireToTrackedEntities,
 } from "../utils/surveyFormMappers";
-import { mapEventToSurvey, mapTrackedEntityToSurvey } from "../utils/surveyListMappers";
+import {
+    D2TrackerEntitySelectedPick,
+    mapEventToSurvey,
+    mapTrackedEntityToSurvey,
+    trackedEntityFields,
+} from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
-import { TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
+import { TrackerPostRequest, TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
+import { Maybe } from "../../utils/ts-utils";
+import { D2TrackerEvent, D2TrackerEventToPost } from "@eyeseetea/d2-api/api/trackerEvents";
 
 const OU_CHUNK_SIZE = 500;
+
+type Filter = {
+    id: string;
+    value: string;
+};
+
 export class SurveyD2Repository implements SurveyRepository {
     constructor(private api: D2Api) {}
 
@@ -222,57 +237,83 @@ export class SurveyD2Repository implements SurveyRepository {
         });
     }
 
-    getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        programId: Id,
-        orgUnitId: Id,
-        chunked = false
-    ): FutureData<Survey[]> {
+    getSurveys(options: {
+        surveyFormType: SURVEY_FORM_TYPES;
+        programId: Id;
+        parentId?: Id;
+        orgUnitId: Id;
+        chunked: boolean;
+    }): FutureData<Survey[]> {
+        const { surveyFormType, programId, parentId, orgUnitId, chunked = false } = options;
+        const filter = this.getFilterByParentId(programId, parentId);
+
         return isTrackerProgram(programId)
-            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked)
-            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId);
+            ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked, filter)
+            : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId, filter);
     }
 
-    //Currently tracker programs are only in Prevalence module
+    private getFilterByParentId(programId: string, parentId: Maybe<string>): Maybe<Filter> {
+        const filterParentDEId = getParentDataElementForProgram(programId);
+
+        const filter =
+            parentId && filterParentDEId
+                ? {
+                      id: filterParentDEId,
+                      value: parentId,
+                  }
+                : undefined;
+
+        return filter;
+    }
+
     private getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
-        chunked = false
+        chunked = false,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         return chunked
-            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId)
-            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId);
+            ? this.getTrackerProgramSurveysChunked(surveyFormType, programId, orgUnitId, filter)
+            : this.getTrackerProgramSurveysUnchunked(surveyFormType, programId, orgUnitId, filter);
     }
 
     private getTrackerProgramSurveysUnchunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const ouMode =
             (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
             programId === PPS_PATIENT_REGISTER_ID
                 ? "DESCENDANTS"
-                : undefined;
+                : "SELECTED";
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: trackedEntityFields,
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
-        ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-            const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
-            return Future.success(surveys);
+        ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
+            const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
+            return this.getOrgUnitNames(instances.map(instance => instance.orgUnit)).flatMap(
+                orgUnits => {
+                    const surveys = mapTrackedEntityToSurvey(instances, surveyFormType, orgUnits);
+                    return Future.success(surveys);
+                }
+            );
         });
     }
 
     private getTrackerProgramSurveysChunked(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnits: string
+        orgUnits: string,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const orgUnitIds = orgUnits.split(";");
         const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
@@ -281,44 +322,76 @@ export class SurveyD2Repository implements SurveyRepository {
             chunkedOUs.flatMap(ouChunk => {
                 return apiToFuture(
                     this.api.tracker.trackedEntities.get({
-                        fields: {
-                            attributes: true,
-                            enrollments: true,
-                            trackedEntity: true,
-                            orgUnit: true,
-                        },
+                        fields: trackedEntityFields,
                         program: programId,
                         orgUnit: ouChunk.join(";"),
+                        ouMode: "SELECTED",
+                        filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
                     })
-                ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
-                    const surveys = mapTrackedEntityToSurvey(trackedEntities, surveyFormType);
-                    return Future.success(surveys);
-                });
+                ).flatMap(
+                    (trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
+                        const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
+                        return this.getOrgUnitNames(
+                            instances.map(instance => instance.orgUnit)
+                        ).flatMap(orgUnits => {
+                            const surveys = mapTrackedEntityToSurvey(
+                                instances,
+                                surveyFormType,
+                                orgUnits
+                            );
+                            return Future.success(surveys);
+                        });
+                    }
+                );
             })
         ).flatMap(listOfSurveys => Future.success(_(listOfSurveys).flatten().value()));
+    }
+
+    private getOrgUnitNames(orgUnitIds: Id[]): FutureData<NamedRef[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true },
+                filter: { id: { in: orgUnitIds } },
+                paging: false,
+            })
+        ).flatMap(orgUnitsResponse => {
+            const orgUnits = orgUnitsResponse.objects.map(ou => {
+                return { id: ou.id, name: ou.name };
+            });
+            return Future.success(orgUnits);
+        });
     }
 
     private getEventProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
-        orgUnitId: Id
+        orgUnitId: Id,
+        filter: Maybe<Filter>
     ): FutureData<Survey[]> {
         const ouMode =
             orgUnitId !== "" &&
-            (programId === PPS_WARD_REGISTER_ID || programId === PPS_HOSPITAL_FORM_ID)
+            (programId === PPS_WARD_REGISTER_ID ||
+                programId === PPS_HOSPITAL_FORM_ID ||
+                programId === PPS_COUNTRY_QUESTIONNAIRE_ID ||
+                programId === PREVALENCE_SURVEY_FORM_ID)
                 ? "DESCENDANTS"
-                : undefined;
+                : "SELECTED";
+
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
                 program: programId,
                 orgUnit: orgUnitId,
                 ouMode: ouMode,
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap(response => {
             const events = response.instances;
-            const surveys = mapEventToSurvey(events, surveyFormType, programId);
-            return Future.success(surveys);
+
+            return this.getOrgUnitNames(events.map(event => event.orgUnit)).flatMap(orgUnits => {
+                const surveys = mapEventToSurvey(events, surveyFormType, programId, orgUnits);
+                return Future.success(surveys);
+            });
         });
     }
 
@@ -346,18 +419,22 @@ export class SurveyD2Repository implements SurveyRepository {
     private getTrackerProgramById(
         trackedEntityId: Id,
         programId: Id
-    ): FutureData<TrackedEntity | void> {
+    ): FutureData<D2TrackerTrackedEntity | void> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
-                fields: { attributes: true, enrollments: true, trackedEntity: true, orgUnit: true },
+                fields: { $all: true },
                 program: programId,
                 trackedEntity: trackedEntityId,
-                ouMode: "DESCENDANTS",
+                ouMode: "ALL",
                 enrollmentEnrolledBefore: new Date().toISOString(),
             })
-        ).flatMap(resp => {
-            if (resp) return Future.success(resp.instances[0]);
-            else return Future.success(undefined);
+        ).flatMap(trackedEntities => {
+            const instances = trackedEntities.instances;
+
+            if (instances[0]) {
+                const instance: D2TrackerTrackedEntity = instances[0];
+                return Future.success(instance);
+            } else return Future.success(undefined);
         });
     }
 
@@ -425,7 +502,7 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     deleteEventSurvey(eventId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
-        const event: D2TrackerEvent = {
+        const event: D2TrackerEventToPost = {
             event: eventId,
             orgUnit: orgUnitId,
             program: programId,
@@ -433,9 +510,14 @@ export class SurveyD2Repository implements SurveyRepository {
             status: "ACTIVE",
             occurredAt: "",
             dataValues: [],
+            programStage: "",
+        };
+
+        const payload: TrackerPostRequest = {
+            events: [event],
         };
         return apiToFuture(
-            this.api.tracker.postAsync({ importStrategy: "DELETE" }, { events: [event] })
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, payload)
         ).flatMap(response => {
             return apiToFuture(
                 // eslint-disable-next-line testing-library/await-async-utils
@@ -453,17 +535,20 @@ export class SurveyD2Repository implements SurveyRepository {
     }
 
     deleteTrackerProgramSurvey(teiId: Id, orgUnitId: Id, programId: Id): FutureData<void> {
-        const trackedEntity: D2TrackerTrackedEntity = {
+        const trackedEntity: D2TrackedEntityInstanceToPost = {
             orgUnit: orgUnitId,
             trackedEntity: teiId,
             trackedEntityType: getTrackedEntityAttributeType(programId),
+            enrollments: [],
+            attributes: [],
+        };
+
+        const payload: TrackerPostRequest = {
+            trackedEntities: [trackedEntity],
         };
 
         return apiToFuture(
-            this.api.tracker.postAsync(
-                { importStrategy: "DELETE" },
-                { trackedEntities: [trackedEntity] }
-            )
+            this.api.tracker.postAsync({ importStrategy: "DELETE" }, payload)
         ).flatMap(response => {
             return apiToFuture(
                 // eslint-disable-next-line testing-library/await-async-utils

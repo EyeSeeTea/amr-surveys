@@ -218,7 +218,11 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
                 if (question.type === "select" && question.value) {
                     return {
                         dataElement: question.id,
-                        value: question.value.code,
+                        value: question.value.code ?? "",
+                        lastUpdated: new Date().toISOString(),
+                        storedBy: "",
+                        created: "",
+                        providedElsewhere: false,
                     };
                 } else if (
                     (question.type === "date" || question.type === "datetime") &&
@@ -227,16 +231,28 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
                     return {
                         dataElement: question.id,
                         value: question.value.toISOString(),
+                        lastUpdated: new Date().toISOString(),
+                        storedBy: "",
+                        created: "",
+                        providedElsewhere: false,
                     };
                 } else if (question.type === "boolean" && question.storeFalse === false) {
                     return {
                         dataElement: question.id,
-                        value: question.value ? question.value : undefined,
+                        value: question.value ? "true" : "",
+                        lastUpdated: new Date().toISOString(),
+                        storedBy: "",
+                        created: "",
+                        providedElsewhere: false,
                     };
                 } else {
                     return {
                         dataElement: question.id,
-                        value: question.value,
+                        value: question.value ? question.value.toString() : "",
+                        lastUpdated: new Date().toISOString(),
+                        storedBy: "",
+                        created: "",
+                        providedElsewhere: false,
                     };
                 }
             }
@@ -245,7 +261,7 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
         .compact()
         .value();
 
-    return dataValues as DataValue[];
+    return dataValues;
 };
 
 export const mapProgramDataElementToQuestions = (

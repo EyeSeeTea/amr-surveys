@@ -36,7 +36,12 @@ export class SaveFormDataUseCase {
         //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
         if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
             return this.surveyReporsitory
-                .getSurveys(surveyFormType, programId, ouId, false)
+                .getSurveys({
+                    surveyFormType: surveyFormType,
+                    programId: programId,
+                    orgUnitId: ouId,
+                    chunked: false,
+                })
                 .flatMap(surveys => {
                     if (surveys.length > 0) {
                         return Future.error(

@@ -86,7 +86,9 @@ export class SurveyTestRepository implements SurveyRepository {
         else return Future.error(new Error("An error occured while saving the survey"));
     }
 
-    getSurveys(programId: string, orgUnitId: string): FutureData<Survey[]> {
+    getSurveys(options: { programId: string; orgUnitId: string }): FutureData<Survey[]> {
+        const { programId, orgUnitId } = options;
+
         if (programId === PPS_SURVEY_FORM_ID)
             return Future.success([
                 {
@@ -122,10 +124,41 @@ export class SurveyTestRepository implements SurveyRepository {
                 program: "1234",
                 status: "ACTIVE",
                 occurredAt: new Date().toISOString().split("T")?.at(0) || "",
-                //@ts-ignore
+                programStage: "",
+                enrollment: "",
+                enrollmentStatus: "ACTIVE",
+                orgUnitName: "",
+                scheduledAt: "",
+                storedBy: " ",
+                followup: false,
+                deleted: false,
+                createdAt: "",
+                updatedAt: "",
+                createdBy: {
+                    uid: "123",
+                    name: "John Doe",
+                    username: "",
+                    firstName: "",
+                    surname: "",
+                },
+                attributeOptionCombo: "",
+                attributeCategoryOptions: "",
+                updatedBy: {
+                    uid: "123",
+                    name: "John Doe",
+                    username: "",
+                    firstName: "",
+                    surname: "",
+                },
+                notes: [],
                 dataValues: [
-                    { dataElement: "de1", value: "0" },
-                    { dataElement: "de2", value: "abc" },
+                    {
+                        dataElement: "de1",
+                        value: "0",
+                        updatedAt: "",
+                        storedBy: "",
+                        createdAt: "",
+                    },
                 ],
             });
         } else {
