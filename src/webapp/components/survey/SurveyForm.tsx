@@ -87,11 +87,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             resetSaveActionOutcome();
             setRefreshQuestionnaire({});
         }
-
-        //If error fetching survey, redirect to homepage.
-        if (error) {
-            // history.push(`/`);
-        }
     }, [
         error,
         saveCompleteState,

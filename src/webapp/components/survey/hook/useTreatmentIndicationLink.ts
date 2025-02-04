@@ -60,7 +60,6 @@ export const useTreatmentIndicationLink = (
             setTreatmentOptions(prevTreatmeantOptions => {
                 return prevTreatmeantOptions?.filter(option => option.code !== stageCode);
             });
-            
         } else if (stageCode === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID) {
             setIndicationOptions(prevIndicationOptions => {
                 return prevIndicationOptions?.filter(option => option.code !== stageCode);
