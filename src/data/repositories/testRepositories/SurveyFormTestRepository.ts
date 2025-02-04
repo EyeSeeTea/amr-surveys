@@ -155,7 +155,6 @@ export class SurveyTestRepository implements SurveyRepository {
                     {
                         dataElement: "de1",
                         value: "0",
-                        providedElsewhere: false,
                         updatedAt: "",
                         storedBy: "",
                         createdAt: "",
