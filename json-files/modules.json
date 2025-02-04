@@ -1,0 +1,182 @@
+[
+    {
+        "color": "#A6228F",
+        "id": "QaxWuRg4XAL",
+        "name": "PPS",
+        "surveyPrograms": [
+            {
+                "id": "OGOw5Kt3ytv",
+                "name": "PPS Survey Form"
+            },
+            {
+                "id": "mesnCzaLc7u",
+                "name": "PPS Hospital form"
+            }
+        ],
+        "userGroups": {
+            "adminAccess": [
+                {
+                    "id": "vnvKgXEe9pp",
+                    "name": "AMR Surveys PPS admin"
+                }
+            ],
+            "captureAccess": [
+                {
+                    "id": "xRM5fExpVYi",
+                    "name": "AMR Surveys PPS data capture"
+                }
+            ],
+            "readAccess": [
+                {
+                    "id": "BwXHH1ztfgC",
+                    "name": "AMR Surveys PPS data visualizer"
+                }
+            ]
+        }
+    },
+    {
+        "color": "#E23A75",
+        "id": "cBqBNvIJTlX",
+        "name": "Prevalence",
+        "rulesBySurvey": [
+            {
+                "antibioticBlacklist": [],
+                "surveyId": "ZaB9P9c10OG",
+                "surveyRules": [
+                    {
+                        "formId": "igEDINFwytu",
+                        "rules": [
+                            {
+                                "id": "1",
+                                "toHide": ["uU67dHZm9ZT", "mIkjU4im65m"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "2",
+                                "toHide": ["mcY57Zn7FFl", "yq8en6ZkENB"],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "aaAzYmn5vBG",
+                        "rules": [
+                            {
+                                "id": "3",
+                                "toHide": ["ios12ANWOTk", "ykKQgSuhT4M"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "4",
+                                "toHide": [
+                                    "b9dqKVYm4Xn",
+                                    "mUaaSzbeMmj",
+                                    "OmY18xCWVQ0",
+                                    "KsC8VdQK3I7"
+                                ],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "ew0mOwKdcJp",
+                        "rules": [
+                            {
+                                "id": "5",
+                                "toHide": ["qwUD37bhSGZ", "SOEHH3TzyMs"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "6",
+                                "toHide": ["Wv5cTMAba6e", "mUaaSzbeMmj"],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "antibioticBlacklist": [],
+                "surveyId": "vWlHK0wztio",
+                "surveyRules": [
+                    {
+                        "formId": "igEDINFwytu",
+                        "rules": [
+                            {
+                                "id": "1",
+                                "toHide": ["uU67dHZm9ZT", "mIkjU4im65m"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "2",
+                                "toHide": ["mcY57Zn7FFl", "yq8en6ZkENB"],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "aaAzYmn5vBG",
+                        "rules": [
+                            {
+                                "id": "3",
+                                "toHide": ["ios12ANWOTk", "ykKQgSuhT4M"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "4",
+                                "toHide": [
+                                    "b9dqKVYm4Xn",
+                                    "mUaaSzbeMmj",
+                                    "OmY18xCWVQ0",
+                                    "KsC8VdQK3I7"
+                                ],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "ew0mOwKdcJp",
+                        "rules": [
+                            {
+                                "id": "5",
+                                "toHide": ["qwUD37bhSGZ", "SOEHH3TzyMs"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "6",
+                                "toHide": ["Wv5cTMAba6e", "mUaaSzbeMmj"],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "surveyPrograms": [
+            {
+                "id": "WcSw803XiUk",
+                "name": "Survey form"
+            }
+        ],
+        "userGroups": {
+            "adminAccess": [
+                {
+                    "id": "p9FsjQ18CX6",
+                    "name": "AMR Surveys Prevalence admin"
+                }
+            ],
+            "captureAccess": [
+                {
+                    "id": "mEiddV7XYz5",
+                    "name": "AMR Surveys Prevalence data capture"
+                }
+            ],
+            "readAccess": [
+                {
+                    "id": "UVrRpSXkVfH",
+                    "name": "AMR Surveys Prevalence data visualizer"
+                }
+            ]
+        }
+    }
+]

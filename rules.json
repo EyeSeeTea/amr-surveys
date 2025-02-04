@@ -1,0 +1,182 @@
+[
+    {
+        "color": "#A6228F",
+        "id": "QaxWuRg4XAL",
+        "name": "PPS",
+        "surveyPrograms": [
+            {
+                "id": "OGOw5Kt3ytv",
+                "name": "PPS Survey Form"
+            },
+            {
+                "id": "mesnCzaLc7u",
+                "name": "PPS Hospital form"
+            }
+        ],
+        "userGroups": {
+            "adminAccess": [
+                {
+                    "id": "vnvKgXEe9pp",
+                    "name": "AMR Surveys PPS admin"
+                }
+            ],
+            "captureAccess": [
+                {
+                    "id": "xRM5fExpVYi",
+                    "name": "AMR Surveys PPS data capture"
+                }
+            ],
+            "readAccess": [
+                {
+                    "id": "BwXHH1ztfgC",
+                    "name": "AMR Surveys PPS data visualizer"
+                }
+            ]
+        }
+    },
+    {
+        "color": "#E23A75",
+        "id": "cBqBNvIJTlX",
+        "name": "Prevalence",
+        "rulesBySurvey": [
+            {
+                "antibioticBlacklist": [],
+                "surveyId": "vWlHK0wztio",
+                "surveyRules": [
+                    {
+                        "formId": "i0msBbbQxYC",
+                        "rules": [
+                            {
+                                "id": "vWlHK0wztio_i0msBbbQxYC_HIDEFIELD",
+                                "toHide": ["ejxmpzsueTU", "VeTDndFzqSB", "qw8D5sPqKnK"],
+                                "type": "HIDEFIELD"
+                            },
+                            {
+                                "id": "vWlHK0wztio_i0msBbbQxYC_HIDESECTION",
+                                "toHide": ["RuXpKHskNka", "djIwSG3MKJz", "GZ0dVejwiiP"],
+                                "type": "HIDESECTION"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "iEOwhBjBeAY",
+                        "rules": [
+                            {
+                                "id": "vWlHK0wztio_iEOwhBjBeAY_HIDESTAGE",
+                                "toHide": ["ios12ANWOTk", "ykKQgSuhT4M"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "vWlHK0wztio_iEOwhBjBeAY_HIDEFIELD",
+                                "toHide": [
+                                    "b9dqKVYm4Xn",
+                                    "mUaaSzbeMmj",
+                                    "OmY18xCWVQ0",
+                                    "KsC8VdQK3I7"
+                                ],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "igEDINFwytu",
+                        "rules": [
+                            {
+                                "id": "vWlHK0wztio_igEDINFwytu_HIDESTAGE",
+                                "toHide": ["uU67dHZm9ZT", "mIkjU4im65m"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "vWlHK0wztio_igEDINFwytu_HIDEFIELD",
+                                "toHide": ["mcY57Zn7FFl", "yq8en6ZkENB"],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "ew0mOwKdcJp",
+                        "rules": [
+                            {
+                                "id": "vWlHK0wztio_ew0mOwKdcJp_HIDESTAGE",
+                                "toHide": [
+                                    "qwUD37bhSGZ",
+                                    "SOEHH3TzyMs",
+                                    "ios12ANWOTk",
+                                    "ykKQgSuhT4M"
+                                ],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "vWlHK0wztio_ew0mOwKdcJp_HIDEFIELD",
+                                "toHide": ["Wv5cTMAba6e", "mUaaSzbeMmj"],
+                                "type": "HIDEFIELD"
+                            },
+                            {
+                                "id": "vWlHK0wztio_ew0mOwKdcJp_HIDESECTION",
+                                "toHide": [
+                                    "EaPizdqwECL",
+                                    "v59Ye9LlulQ",
+                                    "jsBDDtQmBiZ",
+                                    "Qnv5BYgUiZ7",
+                                    "JDlWgblqbSh",
+                                    "DBf9XeIygSz",
+                                    "sgiD9uQ0rwD",
+                                    "kk8Neer6O90",
+                                    "GzVZWEZpnrh",
+                                    "Qhzjw1AvUHv"
+                                ],
+                                "type": "HIDESECTION"
+                            }
+                        ]
+                    },
+                    {
+                        "formId": "aaAzYmn5vBG",
+                        "rules": [
+                            {
+                                "id": "vWlHK0wztio_aaAzYmn5vBG_HIDESTAGE",
+                                "toHide": ["ios12ANWOTk", "ykKQgSuhT4M"],
+                                "type": "HIDESTAGE"
+                            },
+                            {
+                                "id": "vWlHK0wztio_aaAzYmn5vBG_HIDEFIELD",
+                                "toHide": [
+                                    "b9dqKVYm4Xn",
+                                    "mUaaSzbeMmj",
+                                    "OmY18xCWVQ0",
+                                    "KsC8VdQK3I7"
+                                ],
+                                "type": "HIDEFIELD"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "surveyPrograms": [
+            {
+                "id": "WcSw803XiUk",
+                "name": "Survey form"
+            }
+        ],
+        "userGroups": {
+            "adminAccess": [
+                {
+                    "id": "p9FsjQ18CX6",
+                    "name": "AMR Surveys Prevalence admin"
+                }
+            ],
+            "captureAccess": [
+                {
+                    "id": "mEiddV7XYz5",
+                    "name": "AMR Surveys Prevalence data capture"
+                }
+            ],
+            "readAccess": [
+                {
+                    "id": "UVrRpSXkVfH",
+                    "name": "AMR Surveys Prevalence data visualizer"
+                }
+            ]
+        }
+    }
+]
