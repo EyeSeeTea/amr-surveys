@@ -11,6 +11,7 @@ import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
+import { SurveyStageSection } from "./SurveyStageSection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
 import { GridSection } from "./GridSection";
@@ -18,13 +19,14 @@ import _c from "../../../domain/entities/generic/Collection";
 import { TableSection } from "./TableSection";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
+
 export interface SurveyFormProps {
     hideForm: () => void;
     currentSurveyId?: Id;
     formType: SURVEY_FORM_TYPES;
 }
 
-const CancelButton = withStyles(() => ({
+export const CancelButton = withStyles(() => ({
     root: {
         color: "white",
         backgroundColor: "#bd1818",
@@ -42,6 +44,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
     const {
         questionnaire,
+        surveyStages,
         loading,
         setLoading,
         currentOrgUnit,
@@ -110,69 +113,58 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         />
                     </PaddedDiv>
                 )}
-                {questionnaire?.stages?.map(stage => {
+
+                {surveyStages.map(stage => {
                     if (!stage?.isVisible) return null;
 
                     return (
-                        <PaddedDiv key={stage.id}>
-                            <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
+                        <PaddedDiv key={stage.title}>
+                            {"repeatableStages" in stage ? (
+                                <>
+                                    {stage.repeatableStages.map(repeatableStage => (
+                                        <PaddedDiv key={repeatableStage.id}>
+                                            <Typography>
+                                                {i18n.t(`Stage - ${stage.title}`)}
+                                            </Typography>
 
-                            {stage.sections.map(section => {
-                                if (!section.isVisible || section.isAntibioticSection) return null;
+                                            {repeatableStage.sections.map(section => (
+                                                <SurveyStageSection
+                                                    key={repeatableStage.id}
+                                                    section={section}
+                                                    stage={repeatableStage}
+                                                    viewOnly={hasReadOnlyAccess}
+                                                    removeProgramStage={removeProgramStage}
+                                                    updateQuestion={updateQuestion}
+                                                />
+                                            ))}
+                                        </PaddedDiv>
+                                    ))}
 
-                                if (section.isSpeciesSection)
-                                    return (
-                                        <GridSection
-                                            speciesSection={section}
-                                            antibioticStage={stage}
-                                            updateQuestion={question =>
-                                                updateQuestion(question, stage.id)
-                                            }
-                                            viewOnly={hasReadOnlyAccess}
-                                        />
-                                    );
-                                if (section.isAntibioticTreatmentHospitalEpisodeSection)
-                                    return (
-                                        <TableSection
-                                            section={section}
-                                            updateQuestion={question =>
-                                                updateQuestion(question, stage.id)
-                                            }
-                                            viewOnly={hasReadOnlyAccess}
-                                        />
-                                    );
-
-                                return (
-                                    <SurveySection
-                                        key={section.code}
-                                        title={section.title}
-                                        updateQuestion={question =>
-                                            updateQuestion(question, stage.id)
-                                        }
-                                        questions={section.questions}
-                                        viewOnly={hasReadOnlyAccess}
-                                    />
-                                );
-                            })}
-
-                            {stage.repeatable && (
-                                <RightAlignedDiv>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => addProgramStage(stage.code)}
-                                    >
-                                        {i18n.t(`Add Another ${stage.title}`)}
-                                    </Button>
-                                    {stage.isAddedByUser && (
-                                        <CancelButton
-                                            variant="outlined"
-                                            onClick={() => removeProgramStage(stage.id)}
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => addProgramStage(stage.code)}
                                         >
-                                            {i18n.t(`Remove ${stage.title}`)}
-                                        </CancelButton>
-                                    )}
-                                </RightAlignedDiv>
+                                            {i18n.t(`Add Another ${stage.title}`)}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                </>
+                            ) : (
+                                <>
+                                    <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
+
+                                    {stage.sections.map(section => (
+                                        <SurveyStageSection
+                                            key={stage.id}
+                                            section={section}
+                                            stage={stage}
+                                            viewOnly={hasReadOnlyAccess}
+                                            removeProgramStage={removeProgramStage}
+                                            updateQuestion={updateQuestion}
+                                        />
+                                    ))}
+                                </>
                             )}
                         </PaddedDiv>
                     );
