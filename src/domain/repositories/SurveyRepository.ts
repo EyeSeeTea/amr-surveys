@@ -19,12 +19,7 @@ export interface SurveyRepository {
         eventId: string | undefined,
         programId: Id
     ): FutureData<Id | undefined>;
-    getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        programId: Id,
-        orgUnitId: Id,
-        chunked: boolean
-    ): FutureData<Survey[]>;
+    getSurveys(options: GetSurveyOptions): FutureData<Survey[]>;
     getPopulatedSurveyById(
         eventId: Id,
         programId: Id,
@@ -46,3 +41,11 @@ export interface SurveyRepository {
         secondaryparentId: Id | undefined
     ): SurveyChildCountType;
 }
+
+export type GetSurveyOptions = {
+    surveyFormType: SURVEY_FORM_TYPES;
+    programId: Id;
+    parentId?: Id;
+    orgUnitId: Id;
+    chunked: boolean;
+};
