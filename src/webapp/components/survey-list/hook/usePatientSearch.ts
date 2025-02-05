@@ -2,8 +2,8 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SURVEY_FORM_TYPES, Survey } from "../../../../domain/entities/Survey";
 import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import i18n from "../../../../utils/i18n";
+import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 
 export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
@@ -18,7 +18,7 @@ export const usePatientSearch = (
         currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
     } = useCurrentSurveys();
-    const snackbar = useSnackbar();
+    const { offlineError } = useOfflineSnackbar();
 
     const [patientIdSearchKeyword, setPatientIdSearchKeyword] = useState("");
     const [patientCodeSearchKeyword, setPatientCodeSearchKeyword] = useState("");
@@ -65,7 +65,7 @@ export const usePatientSearch = (
                         setIsLoading(false);
                     },
                     () => {
-                        snackbar.error(i18n.t("Error fetching surveys"));
+                        offlineError(i18n.t("Error fetching surveys"));
                         setIsLoading(false);
                     }
                 );
@@ -84,7 +84,7 @@ export const usePatientSearch = (
                         setIsLoading(false);
                     },
                     () => {
-                        snackbar.error(i18n.t("Error fetching surveys"));
+                        offlineError(i18n.t("Error fetching surveys"));
                         setIsLoading(false);
                     }
                 );
