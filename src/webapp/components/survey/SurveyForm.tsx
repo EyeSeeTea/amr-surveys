@@ -4,7 +4,6 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
@@ -15,6 +14,11 @@ import { SurveySection } from "./SurveySection";
 import { SurveyStageSection } from "./SurveyStageSection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
+import { GridSection } from "./GridSection";
+import _c from "../../../domain/entities/generic/Collection";
+import { TableSection } from "./TableSection";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
+
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -34,7 +38,7 @@ export const CancelButton = withStyles(() => ({
 }))(Button);
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
-    const snackbar = useSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     const history = useHistory();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
@@ -65,7 +69,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
 
         if (saveCompleteState && saveCompleteState.status === "error") {
-            snackbar.error(saveCompleteState.message);
+            offlineError(saveCompleteState.message);
             setLoading(false);
         }
 
@@ -73,7 +77,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         if (error) {
             history.push(`/`);
         }
-    }, [error, saveCompleteState, snackbar, history, props, setLoading]);
+    }, [error, saveCompleteState, snackbar, history, props, setLoading, offlineError]);
 
     const saveSurveyForm = () => {
         setLoading(true);

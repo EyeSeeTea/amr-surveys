@@ -3,7 +3,6 @@ import {
     SURVEY_FORM_TYPES,
     SURVEYS_WITH_CHILD_COUNT,
 } from "../../../../domain/entities/Survey";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import styled from "styled-components";
 import {
     TableBody,
@@ -25,6 +24,7 @@ import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
+import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 
 interface SurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -38,7 +38,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
     surveyFormType,
     refreshSurveys,
 }) => {
-    const snackbar = useSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
 
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
@@ -73,9 +73,9 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
             snackbar.success(deleteCompleteState.message);
         }
         if (deleteCompleteState?.status === "error") {
-            snackbar.error(deleteCompleteState.message);
+            offlineError(deleteCompleteState.message);
         }
-    }, [deleteCompleteState, snackbar, surveys, setSortedSurveys]);
+    }, [deleteCompleteState, snackbar, surveys, offlineError, setSortedSurveys]);
 
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
