@@ -214,29 +214,39 @@ const parseQuestionDate = (
 export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => {
     const dataValues = _(
         questions.map(question => {
+            const baseQuestion = {
+                lastUpdated: new Date().toISOString(),
+                storedBy: "",
+                created: "",
+                providedElsewhere: false,
+            };
             if (question) {
                 if (question.type === "select" && question.value) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
-                        value: question.value.code,
+                        value: question.value.code ?? "",
                     };
                 } else if (
                     (question.type === "date" || question.type === "datetime") &&
                     question.value
                 ) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
                         value: question.value.toISOString(),
                     };
                 } else if (question.type === "boolean" && question.storeFalse === false) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
-                        value: question.value ? question.value : undefined,
+                        value: question.value ? "true" : "",
                     };
                 } else {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
-                        value: question.value,
+                        value: question.value ? question.value.toString() : "",
                     };
                 }
             }
@@ -245,7 +255,7 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
         .compact()
         .value();
 
-    return dataValues as DataValue[];
+    return dataValues;
 };
 
 export const mapProgramDataElementToQuestions = (

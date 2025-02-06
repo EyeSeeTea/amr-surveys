@@ -14,11 +14,8 @@ import { SurveySection } from "./SurveySection";
 import { SurveyStageSection } from "./SurveyStageSection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
-import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
-import { TableSection } from "./TableSection";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
-
 
 export interface SurveyFormProps {
     hideForm: () => void;

@@ -14,8 +14,8 @@ import {
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
 } from "../entities/D2Survey";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
-import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
+import { TrackedEntitiesParamsBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
 export type SurveyChildCountType =
     | { type: "value"; value: FutureData<number> }
@@ -109,10 +109,10 @@ const asyncGetEventSurveyChildCount = async (
     programId: Id,
     api: D2Api,
     ouId: string,
-    ouMode: "SELECTED" | "CHILDREN" | "DESCENDANTS" | undefined,
+    ouMode: TrackedEntitiesParamsBase["ouMode"],
     filterStr: string
 ) => {
-    let response: TrackerEventsResponse;
+    let response: TrackerEventsResponse<{ event: true }>;
     let count = 0;
     const pageSize = 250;
 
@@ -142,8 +142,10 @@ const getEventSurveyCount = (
     secondaryParentId: Id | undefined,
     api: D2Api
 ): FutureData<number> => {
-    const ouId = programId === PPS_COUNTRY_QUESTIONNAIRE_ID ? "" : orgUnitId;
-    const ouMode = programId === PPS_HOSPITAL_FORM_ID ? "DESCENDANTS" : undefined;
+    const ouMode =
+        programId === PPS_HOSPITAL_FORM_ID || programId === PPS_COUNTRY_QUESTIONNAIRE_ID
+            ? "DESCENDANTS"
+            : "SELECTED";
     const filterParentDEId = getParentDataElementForProgram(programId);
 
     const filterStr =
@@ -155,7 +157,7 @@ const getEventSurveyCount = (
         1,
         programId,
         api,
-        ouId,
+        orgUnitId,
         ouMode,
         filterStr
     );
@@ -174,7 +176,7 @@ const getTrackerSurveyCount = (
     const ouMode =
         orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID
             ? "DESCENDANTS"
-            : undefined;
+            : "SELECTED";
 
     return apiToFuture(
         api.tracker.trackedEntities.get({
@@ -186,7 +188,7 @@ const getTrackerSurveyCount = (
             ouMode: ouMode,
             filter: `${filterParentDEId}:eq:${parentSurveyId}`,
         })
-    ).flatMap((trackedEntities: TrackedEntitiesGetResponse) => {
+    ).flatMap(trackedEntities => {
         if (trackedEntities.total) return Future.success(trackedEntities.total);
         else return Future.success(trackedEntities.instances.length);
     });
