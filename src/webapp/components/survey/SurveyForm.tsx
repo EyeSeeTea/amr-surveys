@@ -166,7 +166,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                                             {repeatableStage.sections.map(section => (
                                                 <SurveyStageSection
-                                                    key={repeatableStage.id}
+                                                    key={section.code}
                                                     section={section}
                                                     stage={repeatableStage}
                                                     viewOnly={hasReadOnlyAccess}
@@ -211,7 +211,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                                     {stage.sections.map(section => (
                                         <SurveyStageSection
-                                            key={stage.id}
+                                            key={section.code}
                                             section={section}
                                             stage={stage}
                                             viewOnly={hasReadOnlyAccess}
