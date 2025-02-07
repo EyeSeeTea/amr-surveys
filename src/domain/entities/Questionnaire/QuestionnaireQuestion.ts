@@ -49,6 +49,13 @@ export interface AddNewAntibioticQuestion extends BooleanQuestion {
     subType: "text-add-new-antibiotic";
 }
 
+export interface PPSIndicationLinkQuestion extends TextQuestion {
+    subType: "indication-link";
+}
+export interface PPSTreatmentLinkQuestion extends TextQuestion {
+    subType: "treatment-link";
+}
+
 export const isSpeciesQuestion = (question: Question): question is SpeciesQuestion => {
     return (question as SpeciesQuestion).subType === "select-species";
 };
@@ -83,6 +90,18 @@ export const isSectionAntibioticQuestion = (
         (question as AntibioticQuestion).subType === "select-antibiotic" &&
         question.name.startsWith(`${ANTIBIOTIC_QUESTION_FORM_NAME}${sectionIdentifier}`)
     );
+};
+
+export const isPPSIndicationLinkQuestion = (
+    question: Question
+): question is PPSIndicationLinkQuestion => {
+    return question.type === "text" && question.name.startsWith("Indication link");
+};
+
+export const isPPSTreatmentLinkQuestion = (
+    question: Question
+): question is PPSTreatmentLinkQuestion => {
+    return question.type === "text" && question.name.startsWith("Treatment link");
 };
 
 export interface SelectQuestion extends QuestionBase {

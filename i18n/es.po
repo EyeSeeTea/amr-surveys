@@ -71,16 +71,19 @@ msgstr ""
 msgid "Stage - Profile"
 msgstr ""
 
-msgid "Cancel"
+msgid "Save"
 msgstr ""
 
-msgid "Save"
+msgid "Cancel"
 msgstr ""
 
 msgid "PPS Surveys"
 msgstr ""
 
 msgid "New Survey"
+msgstr ""
+
+msgid "Treatment/Indication Saved!"
 msgstr ""
 
 msgid "Submission Success!"

@@ -12,18 +12,29 @@ import {
     Question,
     QuestionOption,
     QuestionnaireQuestion,
+    isPPSIndicationLinkQuestion,
+    isPPSTreatmentLinkQuestion,
 } from "../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import { useTreatmentIndicationLinkDropdown } from "./useTreatmentIndicationLinkDropdown";
 
 export interface QuestionWidgetProps {
     onChange: (question: Question) => void;
     question: Question;
     disabled: boolean;
+    treatmentOptions?: Maybe<QuestionOption[]>;
+    indicationOptions?: Maybe<QuestionOption[]>;
 }
 
 export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props => {
-    const { question, disabled, onChange } = props;
+    const { question, disabled, onChange, treatmentOptions, indicationOptions } = props;
     const { type } = question;
     const { update } = QuestionnaireQuestion;
+
+    const { linkQuestion } = useTreatmentIndicationLinkDropdown(
+        question,
+        treatmentOptions,
+        indicationOptions
+    );
 
     switch (type) {
         case "select": {
@@ -70,14 +81,32 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 />
             );
         case "text":
-            return (
-                <TextWidget
-                    value={question.value}
-                    onChange={value => onChange(update(question, value))}
-                    disabled={disabled}
-                    multiline={question.multiline}
-                />
-            );
+            if (
+                (isPPSTreatmentLinkQuestion(question) || isPPSIndicationLinkQuestion(question)) &&
+                linkQuestion
+            ) {
+                return (
+                    <SearchableSelect
+                        value={
+                            linkQuestion.options.find(op => op.id === linkQuestion.value?.id) ||
+                            null
+                        }
+                        options={linkQuestion.options}
+                        onChange={(value: Maybe<QuestionOption>) =>
+                            onChange(update(question, value?.id))
+                        }
+                        disabled={disabled}
+                    />
+                );
+            } else
+                return (
+                    <TextWidget
+                        value={question.value}
+                        onChange={value => onChange(update(question, value))}
+                        disabled={disabled}
+                        multiline={question.multiline}
+                    />
+                );
 
         case "date":
             return (

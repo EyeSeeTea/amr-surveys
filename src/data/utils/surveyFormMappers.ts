@@ -49,6 +49,11 @@ import { TrackerPostRequest } from "@eyeseetea/d2-api/api/tracker";
 const AntibioticTreatmentHospitalEpisodeSectionName =
     `Antibiotic treatments during hospital episode`.toLowerCase();
 
+const AMR_SURVEYS_HAMUPPS_DEA_ANTIB_NOTES_NAMES = "AMR_SURVEYS_HAMUPPS_DEA_ANTIB_NOTES_NAMES";
+const AMR_SURVEYS_HAMUPPS_DEA_IND_TYPE = "AMR_SURVEYS_HAMUPPS_DEA_IND_TYPE";
+export const PPS_PATIENT_TRACKER_INDICATION_STAGE_ID = "tLOW37yZuB9";
+export const PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID = "rayB0NQMmwx";
+
 export const mapProgramToQuestionnaire = (
     program: Program,
     event: D2TrackerEvent | undefined,
@@ -215,6 +220,29 @@ const getParsedProgramStages = (
 
     return parsedProgramStages;
 };
+
+const getIndicationTreatmentSubtitle = (stageId: Id, index: number, questions: Question[]) => {
+    //Treatment-Indication Link
+    const treatmentLinkQ = questions.find(
+        q => q.code === AMR_SURVEYS_HAMUPPS_DEA_ANTIB_NOTES_NAMES
+    );
+
+    const treatmentName = treatmentLinkQ?.value;
+
+    const indicationLinkQ = questions.find(q => q.code === AMR_SURVEYS_HAMUPPS_DEA_IND_TYPE);
+
+    const indicationName = indicationLinkQ?.type === "select" ? indicationLinkQ?.value?.name : "";
+
+    const indicationTreatmentSubtitle =
+        stageId === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID
+            ? `I${index + 1}-${indicationName}`
+            : stageId === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
+            ? `T${index + 1}-${treatmentName}`
+            : "";
+
+    return indicationTreatmentSubtitle;
+};
+
 const getRepeatedStageEvents = (
     trackedEntity: TrackedEntity | undefined,
     stage: ProgramStage,
@@ -255,9 +283,14 @@ const getRepeatedStageEvents = (
                 };
             }) ?? [];
 
+        const indicationTreatmentSubtitle = currentSections[0]
+            ? getIndicationTreatmentSubtitle(stage.id, index, currentSections[0].questions)
+            : "";
+
         return {
             id: newStageId,
             title: stage.name,
+            subTitle: indicationTreatmentSubtitle,
             code: stage.id,
             sections: _(currentSections)
                 .sortBy(section => section.sortOrder)

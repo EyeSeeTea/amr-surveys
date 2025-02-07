@@ -32,6 +32,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
     const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
+    const [refreshQuestionnaire, setRefreshQuestionnaire] = useState({});
     const {
         currentPPSSurveyForm,
         currentHospitalForm,
@@ -172,6 +173,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentCaseReportForm?.id,
         ppsHospitals,
         prevalenceHospitals,
+        refreshQuestionnaire,
     ]);
 
     const updateQuestion = useCallback((question: Question, stageId?: string) => {
@@ -236,6 +238,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         updateQuestion,
         addProgramStage,
         removeProgramStage,
+        setRefreshQuestionnaire,
     };
 }
 
