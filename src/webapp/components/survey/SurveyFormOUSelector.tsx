@@ -1,4 +1,4 @@
-import { OrgUnitsSelector, useSnackbar } from "@eyeseetea/d2-ui-components";
+import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { useEffect } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
@@ -9,6 +9,7 @@ import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { useSurveyFormOUSelector } from "./hook/useSurveyFormOUSelector";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
 export interface SurveyFormOUSelectorProps {
     formType: SURVEY_FORM_TYPES;
@@ -31,13 +32,13 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         setCurrentOrgUnit,
         currentSurveyId
     );
-    const snackbar = useSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
 
     useEffect(() => {
         if (ouSelectorErrMsg) {
-            snackbar.error(ouSelectorErrMsg);
+            offlineError(ouSelectorErrMsg);
         }
-    }, [ouSelectorErrMsg, snackbar, shouldRefresh]);
+    }, [ouSelectorErrMsg, snackbar, shouldRefresh, offlineError]);
 
     return (
         <>

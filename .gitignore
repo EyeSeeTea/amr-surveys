@@ -40,3 +40,7 @@ cypress/fixtures/
 .idea/*
 
 docs/
+
+# build output
+dist/
+dev-dist/

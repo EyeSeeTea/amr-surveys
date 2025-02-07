@@ -15,6 +15,7 @@ import {
 } from "../entities/D2Survey";
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
+import { TrackedEntitiesParamsBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
 export type SurveyChildCountType =
     | { type: "value"; value: FutureData<number> }
@@ -108,7 +109,7 @@ const asyncGetEventSurveyChildCount = async (
     programId: Id,
     api: D2Api,
     ouId: string,
-    ouMode: "SELECTED" | "CHILDREN" | "DESCENDANTS" | "ALL" | "ACCESSIBLE" | "CAPTURE",
+    ouMode: TrackedEntitiesParamsBase["ouMode"],
     filterStr: string
 ) => {
     let response: TrackerEventsResponse<{ event: true }>;

@@ -4,7 +4,6 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { useSnackbar } from "@eyeseetea/d2-ui-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
@@ -12,16 +11,16 @@ import styled from "styled-components";
 import { getSurveyDisplayName } from "../../../domain/utils/PPSProgramsHelper";
 import { SurveyFormOUSelector } from "./SurveyFormOUSelector";
 import { SurveySection } from "./SurveySection";
+import { SurveyStageSection } from "./SurveyStageSection";
 import { useHistory } from "react-router-dom";
 import useReadOnlyAccess from "./hook/useReadOnlyAccess";
-import { GridSection } from "./GridSection";
 import _c from "../../../domain/entities/generic/Collection";
-import { TableSection } from "./TableSection";
 import { useTreatmentIndicationLink } from "./hook/useTreatmentIndicationLink";
 import {
     PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
     PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
 } from "../../../data/utils/surveyFormMappers";
+import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -29,7 +28,7 @@ export interface SurveyFormProps {
     formType: SURVEY_FORM_TYPES;
 }
 
-const CancelButton = withStyles(() => ({
+export const CancelButton = withStyles(() => ({
     root: {
         color: "white",
         backgroundColor: "#bd1818",
@@ -41,12 +40,13 @@ const CancelButton = withStyles(() => ({
 }))(Button);
 
 export const SurveyForm: React.FC<SurveyFormProps> = props => {
-    const snackbar = useSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
     const history = useHistory();
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const {
         questionnaire,
+        surveyStages,
         loading,
         setLoading,
         currentOrgUnit,
@@ -77,7 +77,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         }
 
         if (saveCompleteState && saveCompleteState.status === "error") {
-            snackbar.error(saveCompleteState.message);
+            offlineError(saveCompleteState.message);
             setLoading(false);
         }
 
@@ -97,6 +97,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         resetSaveActionOutcome,
         setLoading,
         setRefreshQuestionnaire,
+        offlineError,
     ]);
 
     const saveSurveyForm = () => {
@@ -111,11 +112,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         if (questionnaire) {
             saveSurvey(questionnaire, true);
         }
-    };
-
-    const removeLinksAndStage = (stageId: string, stageCode: string) => {
-        removeLinkedStage(stageCode);
-        removeProgramStage(stageId);
     };
 
     const onCancel = () => {
@@ -144,106 +140,97 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                         />
                     </PaddedDiv>
                 )}
-                {questionnaire?.stages?.map(stage => {
+
+                {surveyStages.map(stage => {
                     if (!stage?.isVisible) return null;
 
                     return (
-                        <PaddedDiv key={stage.id}>
-                            <span>
-                                <Typography style={{ display: "inline-block" }}>
-                                    {i18n.t(`Stage - ${stage.title}`)}
-                                </Typography>
-                                {stage.subTitle && (
-                                    <Typography style={{ display: "inline-block" }} variant="body2">
-                                        {i18n.t(` (${stage.subTitle})`)}
-                                    </Typography>
-                                )}
-                            </span>
-                            {stage.sections.map(section => {
-                                if (!section.isVisible || section.isAntibioticSection) return null;
+                        <PaddedDiv key={stage.title}>
+                            {"repeatableStages" in stage ? (
+                                <>
+                                    {stage.repeatableStages.map(repeatableStage => (
+                                        <PaddedDiv key={repeatableStage.id}>
+                                            <span>
+                                                <Typography style={{ display: "inline-block" }}>
+                                                    {i18n.t(`Stage - ${stage.title}`)}
+                                                </Typography>
+                                                {repeatableStage.subTitle && (
+                                                    <Typography
+                                                        style={{ display: "inline-block" }}
+                                                        variant="body2"
+                                                    >
+                                                        {i18n.t(` (${repeatableStage.subTitle})`)}
+                                                    </Typography>
+                                                )}
+                                            </span>
 
-                                if (section.isSpeciesSection)
-                                    return (
-                                        <GridSection
-                                            speciesSection={section}
-                                            antibioticStage={stage}
-                                            updateQuestion={question =>
-                                                updateQuestion(question, stage.id)
-                                            }
-                                            viewOnly={hasReadOnlyAccess}
-                                        />
-                                    );
-                                if (section.isAntibioticTreatmentHospitalEpisodeSection)
-                                    return (
-                                        <TableSection
+                                            {repeatableStage.sections.map(section => (
+                                                <SurveyStageSection
+                                                    key={repeatableStage.id}
+                                                    section={section}
+                                                    stage={repeatableStage}
+                                                    viewOnly={hasReadOnlyAccess}
+                                                    removeProgramStage={removeProgramStage}
+                                                    updateQuestion={updateQuestion}
+                                                    removeLinkedStage={removeLinkedStage}
+                                                    treatmentOptions={treatmentOptions}
+                                                    indicationOptions={indicationOptions}
+                                                />
+                                            ))}
+                                            {stage.code ===
+                                                PPS_PATIENT_TRACKER_INDICATION_STAGE_ID && (
+                                                <RightAlignedDiv>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={saveSurveyFormWithoutRedirect}
+                                                        disabled={shouldDisableSave}
+                                                    >
+                                                        {i18n.t("Save")}
+                                                    </Button>
+                                                </RightAlignedDiv>
+                                            )}
+                                            {stage.code ===
+                                                PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID && (
+                                                <RightAlignedDiv>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={saveSurveyFormWithoutRedirect}
+                                                        disabled={shouldDisableSave}
+                                                    >
+                                                        {i18n.t("Save")}
+                                                    </Button>
+                                                </RightAlignedDiv>
+                                            )}
+                                        </PaddedDiv>
+                                    ))}
+
+                                    <RightAlignedDiv>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => addProgramStage(stage.code)}
+                                        >
+                                            {i18n.t(`Add Another ${stage.title}`)}
+                                        </Button>
+                                    </RightAlignedDiv>
+                                </>
+                            ) : (
+                                <>
+                                    <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
+
+                                    {stage.sections.map(section => (
+                                        <SurveyStageSection
+                                            key={stage.id}
                                             section={section}
-                                            updateQuestion={question =>
-                                                updateQuestion(question, stage.id)
-                                            }
+                                            stage={stage}
                                             viewOnly={hasReadOnlyAccess}
+                                            removeProgramStage={removeProgramStage}
+                                            updateQuestion={updateQuestion}
                                         />
-                                    );
-
-                                return (
-                                    <SurveySection
-                                        key={section.code}
-                                        title={section.title}
-                                        updateQuestion={question =>
-                                            updateQuestion(question, stage.id)
-                                        }
-                                        questions={section.questions}
-                                        viewOnly={hasReadOnlyAccess}
-                                        treatmentOptions={treatmentOptions}
-                                        indicationOptions={indicationOptions}
-                                    />
-                                );
-                            })}
-                            {stage.repeatable &&
-                                stage.code === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID && (
-                                    <RightAlignedDiv>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={saveSurveyFormWithoutRedirect}
-                                            disabled={shouldDisableSave}
-                                        >
-                                            {i18n.t("Save")}
-                                        </Button>
-                                    </RightAlignedDiv>
-                                )}
-                            {stage.repeatable &&
-                                stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID && (
-                                    <RightAlignedDiv>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={saveSurveyFormWithoutRedirect}
-                                            disabled={shouldDisableSave}
-                                        >
-                                            {i18n.t("Save")}
-                                        </Button>
-                                    </RightAlignedDiv>
-                                )}
-                            {stage.repeatable && (
-                                <RightAlignedDiv>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => addProgramStage(stage.code)}
-                                    >
-                                        {i18n.t(`Add Another ${stage.title}`)}
-                                    </Button>
-                                    {stage.isAddedByUser && (
-                                        <CancelButton
-                                            variant="outlined"
-                                            onClick={() =>
-                                                removeLinksAndStage(stage.id, stage.code)
-                                            }
-                                        >
-                                            {i18n.t(`Remove ${stage.title}`)}
-                                        </CancelButton>
-                                    )}
-                                </RightAlignedDiv>
+                                    ))}
+                                </>
                             )}
                         </PaddedDiv>
                     );

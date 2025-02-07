@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import checker from "vite-plugin-checker";
@@ -19,6 +20,40 @@ export default ({ mode }) => {
                 eslint: {
                     lintCommand: 'eslint "./src/**/*.{ts,tsx}"',
                     dev: { logLevel: ["error", "warning"] },
+                },
+            }),
+            VitePWA({
+                registerType: "autoUpdate",
+                includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
+                workbox: {
+                    maximumFileSizeToCacheInBytes: 20000000,
+                    globPatterns: ["**/*.{js,css,html,png,svg,ico,json}"],
+                    runtimeCaching: [
+                        {
+                            urlPattern: ({ url }) => url.pathname !== "",
+                            handler: "NetworkFirst",
+                            options: {
+                                cacheName: "api-cache",
+                                expiration: {
+                                    maxAgeSeconds: 60 * 60 * 24 * 7,
+                                },
+                                cacheableResponse: {
+                                    statuses: [200],
+                                },
+                            },
+                        },
+                        {
+                            urlPattern: ({ request }) =>
+                                request.destination === "script" ||
+                                request.destination === "style" ||
+                                request.destination === "image" ||
+                                request.destination === "font",
+                            handler: "StaleWhileRevalidate",
+                            options: {
+                                cacheName: "assets-cache",
+                            },
+                        },
+                    ],
                 },
             }),
         ],

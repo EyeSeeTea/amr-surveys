@@ -1,30 +1,15 @@
 import { D2TrackerTrackedEntitySchema } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { SURVEY_FORM_TYPES, SURVEY_STATUSES, Survey } from "../../domain/entities/Survey";
 import {
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     PPS_SURVEY_FORM_ID,
     PREVALENCE_SURVEY_FORM_ID,
-    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     keyToDataElementMap,
-    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
-    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
-    AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
-    AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
-    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
-    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
-    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
     AMR_SURVEYS_PREVALENCE_TEA_HOSPITAL_ID,
     SURVEY_ID_PATIENT_TEA_ID,
-    SURVEY_PATIENT_ID_TEA_ID,
     WARD_ID_TEA_ID,
     SURVEY_PATIENT_CODE_TEA_ID,
+    parentPrevalenceSurveyIdList,
+    patientIdList,
 } from "../entities/D2Survey";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
 import { Id, NamedRef } from "../../domain/entities/Ref";
@@ -33,7 +18,9 @@ import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
 
 export const trackedEntityFields = {
     attributes: true,
-    enrollments: true,
+    enrollments: {
+        createdAt: true,
+    },
     trackedEntity: true,
     orgUnit: true,
 } as const;
@@ -50,17 +37,8 @@ export const mapTrackedEntityToSurvey = (
 ): Survey[] => {
     return trackedEntities.map(trackedEntityInstance => {
         const parentPrevalenceSurveyId =
-            trackedEntityInstance.attributes?.find(
-                attribute =>
-                    attribute.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH
+            trackedEntityInstance.attributes?.find(attribute =>
+                parentPrevalenceSurveyIdList.includes(attribute.attribute)
             )?.value ?? "";
 
         const parentPPSSurveyId =
@@ -69,16 +47,8 @@ export const mapTrackedEntityToSurvey = (
             )?.value ?? "";
 
         const patientId =
-            trackedEntityInstance.attributes?.find(
-                attribute =>
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
-                    attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
-                    attribute.attribute === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2 ||
-                    attribute.attribute === SURVEY_PATIENT_ID_TEA_ID
+            trackedEntityInstance.attributes?.find(attribute =>
+                patientIdList.includes(attribute.attribute)
             )?.value ?? "";
 
         const patientCode =
@@ -96,6 +66,8 @@ export const mapTrackedEntityToSurvey = (
                 attribute => attribute.attribute === WARD_ID_TEA_ID
             )?.value ?? "";
 
+        const createdAt = trackedEntityInstance.enrollments[0]?.createdAt;
+
         const survey: Survey = {
             id: trackedEntityInstance.trackedEntity ?? "",
             name: trackedEntityInstance.trackedEntity ?? "",
@@ -107,12 +79,7 @@ export const mapTrackedEntityToSurvey = (
                 name: "",
                 surveyType: "",
             },
-            //@ts-ignore
-            startDate: trackedEntityInstance.enrollments[0]?.createdAt
-                ? //@ts-ignore
-                  new Date(trackedEntityInstance.enrollments[0].createdAt)
-                : undefined,
-
+            startDate: createdAt ? new Date(createdAt) : undefined,
             status: "ACTIVE",
             assignedOrgUnit: {
                 id: trackedEntityInstance.orgUnit ?? "",

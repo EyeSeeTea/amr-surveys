@@ -214,45 +214,39 @@ const parseQuestionDate = (
 export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => {
     const dataValues = _(
         questions.map(question => {
+            const baseQuestion = {
+                lastUpdated: new Date().toISOString(),
+                storedBy: "",
+                created: "",
+                providedElsewhere: false,
+            };
             if (question) {
                 if (question.type === "select" && question.value) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
                         value: question.value.code ?? "",
-                        lastUpdated: new Date().toISOString(),
-                        storedBy: "",
-                        created: "",
-                        providedElsewhere: false,
                     };
                 } else if (
                     (question.type === "date" || question.type === "datetime") &&
                     question.value
                 ) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
                         value: question.value.toISOString(),
-                        lastUpdated: new Date().toISOString(),
-                        storedBy: "",
-                        created: "",
-                        providedElsewhere: false,
                     };
                 } else if (question.type === "boolean" && question.storeFalse === false) {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
                         value: question.value ? "true" : "",
-                        lastUpdated: new Date().toISOString(),
-                        storedBy: "",
-                        created: "",
-                        providedElsewhere: false,
                     };
                 } else {
                     return {
+                        ...baseQuestion,
                         dataElement: question.id,
                         value: question.value ? question.value.toString() : "",
-                        lastUpdated: new Date().toISOString(),
-                        storedBy: "",
-                        created: "",
-                        providedElsewhere: false,
                     };
                 }
             }
