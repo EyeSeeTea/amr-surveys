@@ -81,21 +81,10 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                 />
             );
         case "text":
-            if (isPPSTreatmentLinkQuestion(question) && linkQuestion) {
-                return (
-                    <SearchableSelect
-                        value={
-                            linkQuestion.options.find(op => op.id === linkQuestion.value?.id) ||
-                            null
-                        }
-                        options={linkQuestion.options}
-                        onChange={(value: Maybe<QuestionOption>) =>
-                            onChange(update(question, value?.id))
-                        }
-                        disabled={disabled}
-                    />
-                );
-            } else if (isPPSIndicationLinkQuestion(question) && linkQuestion) {
+            if (
+                (isPPSTreatmentLinkQuestion(question) || isPPSIndicationLinkQuestion(question)) &&
+                linkQuestion
+            ) {
                 return (
                     <SearchableSelect
                         value={

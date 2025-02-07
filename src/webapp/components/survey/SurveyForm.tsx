@@ -177,21 +177,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                                                     indicationOptions={indicationOptions}
                                                 />
                                             ))}
-                                            {stage.code ===
-                                                PPS_PATIENT_TRACKER_INDICATION_STAGE_ID && (
-                                                <RightAlignedDiv>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={saveSurveyFormWithoutRedirect}
-                                                        disabled={shouldDisableSave}
-                                                    >
-                                                        {i18n.t("Save")}
-                                                    </Button>
-                                                </RightAlignedDiv>
-                                            )}
-                                            {stage.code ===
-                                                PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID && (
+                                            {(stage.code ===
+                                                PPS_PATIENT_TRACKER_INDICATION_STAGE_ID ||
+                                                stage.code ===
+                                                    PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID) && (
                                                 <RightAlignedDiv>
                                                     <Button
                                                         variant="contained"
