@@ -1,12 +1,27 @@
 import { useCallback, useEffect, useState } from "react";
-import { QuestionOption } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { Questionnaire } from "../../../../domain/entities/Questionnaire/Questionnaire";
+import {
+    isPPSIndicationLinkQuestion,
+    isPPSTreatmentLinkQuestion,
+    PPSIndicationLinkQuestion,
+    QuestionOption,
+} from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
+import {
+    Questionnaire,
+    QuestionnaireStage,
+} from "../../../../domain/entities/Questionnaire/Questionnaire";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import _c from "../../../../domain/entities/generic/Collection";
 import {
     PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
     PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
 } from "../../../../data/utils/surveyFormMappers";
+import { Id } from "../../../../domain/entities/Ref";
+import { useSnackbar } from "@eyeseetea/d2-ui-components";
+
+type AutoLinkStatus = {
+    updatedQuestionnaire: Questionnaire;
+    error: boolean;
+};
 
 export const useTreatmentIndicationLink = (
     formType: SURVEY_FORM_TYPES,
@@ -14,6 +29,7 @@ export const useTreatmentIndicationLink = (
 ) => {
     const [treatmentOptions, setTreatmentOptions] = useState<QuestionOption[]>();
     const [indicationOptions, setIndicationOptions] = useState<QuestionOption[]>();
+    const snackbar = useSnackbar();
 
     useEffect(() => {
         if (formType === "PPSPatientRegister" && questionnaire && questionnaire.stages) {
@@ -67,5 +83,105 @@ export const useTreatmentIndicationLink = (
         }
     }, []);
 
-    return { treatmentOptions, indicationOptions, removeLinkedStage };
+    const autoUpdateIndicationLinks = useCallback(
+        (currentQuestionnaire: Questionnaire): AutoLinkStatus => {
+            const indicationStages = currentQuestionnaire.stages.filter(
+                stage => stage.code === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID
+            );
+
+            const treatmentStages = currentQuestionnaire.stages.filter(
+                stage => stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
+            );
+
+            const indicationTreatmentMap: { indicationId: Id; treatmentIds: Id[] }[] = _c(
+                indicationStages.map(indicationStage => {
+                    if (!indicationStage.sections[0]) return undefined;
+                    if (!indicationStage.instanceId) return undefined;
+                    const linkedTreatments = indicationStage.sections[0].questions.filter(
+                        q => isPPSTreatmentLinkQuestion(q) && q.value
+                    );
+
+                    return {
+                        indicationId: indicationStage.instanceId,
+                        treatmentIds: _c(linkedTreatments.map(q => q.value?.toString()))
+                            .compact()
+                            .value(),
+                    };
+                })
+            )
+                .compact()
+                .value();
+
+            const treatmentIndicationMap = indicationTreatmentMap.reduce(
+                (map, { indicationId, treatmentIds }) => {
+                    treatmentIds.forEach(treatmentId => {
+                        map.set(treatmentId, [...(map.get(treatmentId) || []), indicationId]);
+                    });
+                    return map;
+                },
+                new Map<Id, Id[]>()
+            );
+
+            const linkError = Array.from(treatmentIndicationMap.entries()).some(
+                ([treatment, indications]) => {
+                    if (indications.length > 5) {
+                        snackbar.error(
+                            `The treatment : ${treatment} can only be linked to a maximum of 5 indications : `
+                        );
+                        return true;
+                    }
+                    return false;
+                }
+            );
+
+            if (linkError) return { updatedQuestionnaire: currentQuestionnaire, error: true };
+
+            const updatedTreatmentStages: QuestionnaireStage[] = treatmentStages.map(
+                treatmentStage => {
+                    if (!treatmentStage.sections[0]) return treatmentStage;
+                    if (!treatmentStage.instanceId) return treatmentStage;
+                    if (!treatmentIndicationMap.has(treatmentStage.instanceId))
+                        return treatmentStage;
+
+                    const linkedIndications = treatmentIndicationMap.get(treatmentStage.instanceId);
+                    // if (!linkedIndications) return treatmentStage; // No indications to link
+
+                    const indicationLinkQuestions: PPSIndicationLinkQuestion[] =
+                        treatmentStage.sections[0].questions.filter(isPPSIndicationLinkQuestion);
+
+                    if (!indicationLinkQuestions) return treatmentStage;
+
+                    const updatedIndicationLinks: PPSIndicationLinkQuestion[] =
+                        indicationLinkQuestions.map((q, index) => {
+                            return {
+                                ...q,
+                                value: linkedIndications ? linkedIndications[index] : undefined,
+                            };
+                        });
+
+                    const updatedStage: QuestionnaireStage = {
+                        ...treatmentStage,
+                        sections: [
+                            {
+                                ...treatmentStage.sections[0],
+                                questions: updatedIndicationLinks,
+                            },
+                        ],
+                    };
+
+                    return updatedStage;
+                }
+            );
+
+            const updatedQuestionnaire: Questionnaire = Questionnaire.updateQuestionnaireStages(
+                currentQuestionnaire,
+                [...currentQuestionnaire.stages, ...updatedTreatmentStages]
+            );
+
+            return { updatedQuestionnaire: updatedQuestionnaire, error: false };
+        },
+        [snackbar]
+    );
+
+    return { treatmentOptions, indicationOptions, removeLinkedStage, autoUpdateIndicationLinks };
 };

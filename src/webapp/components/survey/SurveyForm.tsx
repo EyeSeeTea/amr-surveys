@@ -65,10 +65,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         props.currentSurveyId
     );
 
-    const { indicationOptions, treatmentOptions, removeLinkedStage } = useTreatmentIndicationLink(
-        props.formType,
-        questionnaire
-    );
+    const { indicationOptions, treatmentOptions, removeLinkedStage, autoUpdateIndicationLinks } =
+        useTreatmentIndicationLink(props.formType, questionnaire);
 
     useEffect(() => {
         if (saveCompleteState && saveCompleteState.status === "success") {
@@ -110,7 +108,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const saveSurveyFormWithoutRedirect = () => {
         setLoading(true);
         if (questionnaire) {
-            saveSurvey(questionnaire, true);
+            const { updatedQuestionnaire, error } = autoUpdateIndicationLinks(questionnaire);
+            if (error) {
+                setLoading(false);
+                return;
+            }
+            saveSurvey(updatedQuestionnaire, true);
         }
     };
 
