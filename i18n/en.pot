@@ -5,13 +5,10 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-01-28T16:57:55.539Z\n"
-"PO-Revision-Date: 2025-01-28T16:57:55.539Z\n"
+"POT-Creation-Date: 2025-02-13T08:38:58.776Z\n"
+"PO-Revision-Date: 2025-02-13T08:38:58.776Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
-msgstr ""
-
-msgid "There was an error processing the form"
 msgstr ""
 
 msgid "There was an error processing the form"
@@ -105,9 +102,6 @@ msgstr ""
 msgid "Filter by patientcode"
 msgstr ""
 
-msgid "Country"
-msgstr ""
-
 msgid "Filter by Status"
 msgstr ""
 
@@ -133,6 +127,15 @@ msgid "NATIONAL"
 msgstr ""
 
 msgid "HOSP"
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "Prevalence Surveys"
+msgstr ""
+
+msgid "Case Reports"
 msgstr ""
 
 msgid ""

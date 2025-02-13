@@ -8,6 +8,7 @@ import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { useCallback } from "react";
 import { getSurveyDisplayName } from "../../../../domain/utils/PPSProgramsHelper";
+import { useIsPrevelanceChild } from "../../../hooks/useIsPrevelanceChild";
 
 export interface PrevalenceListBreadCrumbsProps {
     formType: SURVEY_FORM_TYPES;
@@ -19,19 +20,7 @@ export const PrevalenceListBreadCrumbs: React.FC<PrevalenceListBreadCrumbsProps>
     const { currentPrevalenceSurveyForm, currentFacilityLevelForm, currentCaseReportForm } =
         useCurrentSurveys();
 
-    const isPrevelanceChild = useCallback(() => {
-        return (
-            formType === "PrevalenceCaseReportForm" ||
-            formType === "PrevalenceCentralRefLabForm" ||
-            formType === "PrevalencePathogenIsolatesLog" ||
-            formType === "PrevalenceSampleShipTrackForm" ||
-            formType === "PrevalenceSupranationalRefLabForm" ||
-            formType === "PrevalenceDischarge" ||
-            formType === "PrevalenceD28FollowUp" ||
-            formType === "PrevalenceCohortEnrolment"
-        );
-    }, [formType]);
-
+    const { isPrevelanceChild } = useIsPrevelanceChild(formType);
     const getCaseReportNameCrumb = useCallback(() => {
         return (
             <>
@@ -75,7 +64,7 @@ export const PrevalenceListBreadCrumbs: React.FC<PrevalenceListBreadCrumbsProps>
                 </StyledBreadCrumbChild>
             )}
 
-            {isPrevelanceChild() && (
+            {isPrevelanceChild() && !(formType === "PrevalenceFacilityLevelForm") && (
                 <StyledBreadCrumbChild>
                     <>
                         <Button
@@ -97,14 +86,16 @@ export const PrevalenceListBreadCrumbs: React.FC<PrevalenceListBreadCrumbsProps>
                 </StyledBreadCrumbChild>
             )}
 
-            {isPrevelanceChild() && !(formType === "PrevalenceCaseReportForm") && (
-                <StyledBreadCrumbChild>
-                    {getCaseReportNameCrumb()}
-                    <Button>
-                        <span>{i18n.t(`${getSurveyDisplayName(formType)} List`)}</span>
-                    </Button>
-                </StyledBreadCrumbChild>
-            )}
+            {isPrevelanceChild() &&
+                !(formType === "PrevalenceCaseReportForm") &&
+                !(formType === "PrevalenceFacilityLevelForm") && (
+                    <StyledBreadCrumbChild>
+                        {getCaseReportNameCrumb()}
+                        <Button>
+                            <span>{i18n.t(`${getSurveyDisplayName(formType)} List`)}</span>
+                        </Button>
+                    </StyledBreadCrumbChild>
+                )}
         </StyledBreadCrumbs>
     );
 };
