@@ -5,7 +5,10 @@ import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { Id } from "../../../domain/entities/Ref";
-import { StyledBreadCrumbChild, StyledBreadCrumbs } from "../survey-list/SurveyListBreadCrumb";
+import {
+    StyledBreadCrumbChild,
+    StyledBreadCrumbs,
+} from "../survey-list/bread-crumbs/PPSListBreadCrumbs";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
 import { getUserAccess } from "../../../domain/utils/menuHelper";

@@ -19,7 +19,7 @@ export type SurveyRule = {
 
 export interface AMRSurveyModule {
     id: string;
-    name: string;
+    name: "PPS" | "Prevalence";
     color: string;
     surveyPrograms: NamedRef[];
     userGroups: UserGroups;

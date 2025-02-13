@@ -52,13 +52,15 @@ export class GetAllSurveysUseCase {
                                       .map(child => child.count)
                                       .reduce((agg, childCount) => agg + childCount, 0);
 
+                        const rootName =
+                            survey.rootSurvey.name === ""
+                                ? parentDetails.name
+                                : survey.rootSurvey.name;
+
                         const newRootSurvey: SurveyBase = {
                             surveyType: survey.rootSurvey.surveyType,
                             id: survey.rootSurvey.id,
-                            name:
-                                survey.rootSurvey.name === ""
-                                    ? parentDetails.name
-                                    : survey.rootSurvey.name,
+                            name: rootName,
                             astGuideline: survey.rootSurvey.astGuideline
                                 ? survey.rootSurvey.astGuideline
                                 : parentDetails.astGuidelineType,
@@ -66,6 +68,12 @@ export class GetAllSurveysUseCase {
 
                         const updatedSurvey: Survey = {
                             ...survey,
+                            name:
+                                surveyFormType === "PrevalenceSurveyForm"
+                                    ? parentDetails.name
+                                    : surveyFormType === "PrevalenceFacilityLevelForm"
+                                    ? survey.facilityCode ?? survey.name
+                                    : survey.name,
                             rootSurvey: newRootSurvey,
                             childCount: count,
                         };
