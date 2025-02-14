@@ -22,7 +22,9 @@ export const SurveyPage: React.FC = () => {
             {currentModule?.name === "PPS" && (
                 <PPSSurveyFormBreadCrumb formType={formType} id={id} />
             )}
-            {currentModule?.name === "Prevalence" && (<PrevalenceSurveyFormBreadCrumb formType={formType} id={id} />)}     
+            {currentModule?.name === "Prevalence" && (
+                <PrevalenceSurveyFormBreadCrumb formType={formType} id={id} />
+            )}
             <SurveyForm hideForm={hideForm} formType={formType} currentSurveyId={id} />
         </ContentWrapper>
     );

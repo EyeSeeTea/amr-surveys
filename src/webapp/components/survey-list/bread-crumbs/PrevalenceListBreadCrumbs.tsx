@@ -44,16 +44,18 @@ export const PrevalenceListBreadCrumbs: React.FC<PrevalenceListBreadCrumbsProps>
 
             {(formType === "PrevalenceFacilityLevelForm" || isPrevelanceChild()) && (
                 <StyledBreadCrumbChild>
-                    <>
-                        <Button
-                            component={NavLink}
-                            to={`/survey/PrevalenceSurveyForm/${currentPrevalenceSurveyForm?.id}`}
-                            exact={true}
-                        >
-                            <span>{currentPrevalenceSurveyForm?.name}</span>
-                        </Button>
-                        <ChevronRightIcon />
-                    </>
+                    {currentPrevalenceSurveyForm && (
+                        <>
+                            <Button
+                                component={NavLink}
+                                to={`/survey/PrevalenceSurveyForm/${currentPrevalenceSurveyForm?.id}`}
+                                exact={true}
+                            >
+                                <span>{currentPrevalenceSurveyForm?.name}</span>
+                            </Button>
+                            <ChevronRightIcon />
+                        </>
+                    )}
                     <Button
                         component={NavLink}
                         to={`/surveys/PrevalenceFacilityLevelForm`}

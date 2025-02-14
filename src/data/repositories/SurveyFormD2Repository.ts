@@ -456,7 +456,6 @@ export class SurveyD2Repository implements SurveyRepository {
                         const prevalenceSurveyName = survey.dataValues?.find(
                             dv => dv.dataElement === PREVALENCE_SURVEY_NAME_DATAELEMENT_ID
                         )?.value;
-
                         const customASTGuideline = survey.dataValues?.find(
                             dv => dv.dataElement === AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE
                         )?.value;

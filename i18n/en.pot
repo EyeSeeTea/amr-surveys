@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-02-13T08:38:58.776Z\n"
-"PO-Revision-Date: 2025-02-13T08:38:58.776Z\n"
+"POT-Creation-Date: 2025-02-13T17:58:53.810Z\n"
+"PO-Revision-Date: 2025-02-13T17:58:53.810Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -79,6 +79,12 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
+msgid "Prevalence Surveys"
+msgstr ""
+
+msgid "Case reports"
+msgstr ""
+
 msgid "Treatment/Indication Saved!"
 msgstr ""
 
@@ -130,9 +136,6 @@ msgid "HOSP"
 msgstr ""
 
 msgid "Country"
-msgstr ""
-
-msgid "Prevalence Surveys"
 msgstr ""
 
 msgid "Case Reports"
