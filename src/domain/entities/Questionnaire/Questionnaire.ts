@@ -290,18 +290,6 @@ export class Questionnaire {
             question => question.id === updatedQuestion.id
         );
 
-        // "assign" actions may cause cascading updates
-        const assignRuleTargets: Question[] =
-            QuestionnaireQuestion.filterQuestionsTargettedByAssign(
-                allQsInQuestionnaireWithUpdatedQ,
-                applicableRules
-            )
-                // we don't want to update questions already updated to prevent infinite recursion
-                .filter(
-                    question =>
-                        question && !alreadyUpdatedQuestions?.some(uq => uq.id === question.id)
-                );
-
         const updatedQuestionnaire = Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
@@ -327,28 +315,53 @@ export class Questionnaire {
                     : questionnaire.entity,
         });
 
+        // "assign" actions may cause cascading updates
+        const assignRuleTargets: Question[] =
+            QuestionnaireQuestion.filterQuestionsTargettedByAssign(
+                allQsInQuestionnaireWithUpdatedQ,
+                applicableRules
+            )
+                // we don't want to update questions already updated to prevent infinite recursion
+                .filter(
+                    question =>
+                        question && !alreadyUpdatedQuestions?.some(uq => uq.id === question.id)
+                );
+
         if (assignRuleTargets.length > 0) {
             // We need to update the questionnaire again based on updates from "assign" actions
-            const updatedQuestionnaireWithAssigns = assignRuleTargets.reduce(
-                (accQuestionnaire, question) => {
-                    const updatedAssignQuestion = QuestionnaireQuestion.updateQuestion(
-                        question,
-                        applicableRules
-                    );
-                    return this.updateQuestionnaire(
-                        accQuestionnaire,
-                        updatedAssignQuestion,
-                        stageId,
-                        initialLoad,
-                        [...(alreadyUpdatedQuestions ?? []), updatedAssignQuestion]
-                    );
-                },
-                updatedQuestionnaire
+            return this.updateQuestionnaireForAssign(
+                updatedQuestionnaire,
+                assignRuleTargets,
+                applicableRules,
+                stageId,
+                initialLoad,
+                alreadyUpdatedQuestions
             );
-
-            return updatedQuestionnaireWithAssigns;
         }
         return updatedQuestionnaire;
+    }
+
+    static updateQuestionnaireForAssign(
+        questionnaire: Questionnaire,
+        assignTargets: Question[],
+        rules: QuestionnaireRule[],
+        stageId?: string,
+        initialLoad = false,
+        alreadyUpdatedQuestions?: undefined | Question[]
+    ): Questionnaire {
+        return assignTargets.reduce((accQuestionnaire, assignedQuestion) => {
+            const updatedAssignQuestion = QuestionnaireQuestion.updateQuestion(
+                assignedQuestion,
+                rules
+            );
+            return this.updateQuestionnaire(
+                accQuestionnaire,
+                updatedAssignQuestion,
+                stageId,
+                initialLoad,
+                [...(alreadyUpdatedQuestions ?? []), updatedAssignQuestion]
+            );
+        }, questionnaire);
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {
