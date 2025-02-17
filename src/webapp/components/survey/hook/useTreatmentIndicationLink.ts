@@ -134,7 +134,7 @@ export const useTreatmentIndicationLink = (
                 ([treatment, indications]) => {
                     if (indications.length > 5) {
                         snackbar.error(
-                            `The treatment : ${treatment} can only be linked to a maximum of 5 indications : `
+                            `The treatment : ${treatment} can only be linked to a maximum of 5 indications`
                         );
                         return true;
                     }
