@@ -27,6 +27,7 @@ export interface QuestionBase {
     sortOrder: number | undefined;
     errors: string[];
     stageId?: Id; //For repeatable stages processing.
+    computed?: boolean; // true if value is the result of "assign" actions program rules
 }
 
 export interface SpeciesQuestion extends SelectQuestion {
@@ -314,13 +315,13 @@ export class QuestionnaireQuestion {
     public static updateQuestion<T extends Question>(question: T, rules: QuestionnaireRule[]): T {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
-        const updatedIsDisabled = this.isQuestionDisabled(question, rules);
+        const updatedIsComputed = this.isQuestionComputed(question, rules);
         const updatedValue = this.getQuestionAssignValue(question, rules);
         return {
             ...question,
             isVisible: updatedIsVisible,
             errors: updatedErrors,
-            disabled: updatedIsDisabled,
+            computed: updatedIsComputed,
             value: updatedValue,
             ...(question.isVisible !== updatedIsVisible ? { value: undefined } : {}),
         };
@@ -343,12 +344,12 @@ export class QuestionnaireQuestion {
         );
     }
 
-    private static isQuestionDisabled(
+    private static isQuestionComputed(
         question: Question,
         rules: QuestionnaireRule[]
     ): boolean | undefined {
         const applicableRules = this.getRulesWithAssignActionForQuestion(question, rules);
-        return applicableRules.length > 0 ? true : question.disabled;
+        return applicableRules.length > 0;
     }
 
     private static getQuestionAssignValue(
