@@ -83,6 +83,40 @@ export const useTreatmentIndicationLink = (
         }
     }, []);
 
+    const mapIndicationsToTreatments = useCallback((indicationStages: QuestionnaireStage[]) => {
+        //Get a map of indications to treatments, selected by user.
+        const indicationTreatmentMap: { indicationId: Id; treatmentIds: Id[] }[] = _c(
+            indicationStages.map(indicationStage => {
+                if (!indicationStage.sections[0]) return undefined;
+                if (!indicationStage.instanceId) return undefined;
+                const linkedTreatments = indicationStage.sections[0].questions.filter(
+                    q => isPPSTreatmentLinkQuestion(q) && q.value
+                );
+
+                return {
+                    indicationId: indicationStage.instanceId,
+                    treatmentIds: _c(linkedTreatments.map(q => q.value?.toString()))
+                        .compact()
+                        .value(),
+                };
+            })
+        )
+            .compact()
+            .value();
+
+        //Convert to a map of treatments to indications, to be autopopulated
+        const treatmentIndicationMap = indicationTreatmentMap.reduce(
+            (map, { indicationId, treatmentIds }) => {
+                treatmentIds.forEach(treatmentId => {
+                    map.set(treatmentId, [...(map.get(treatmentId) || []), indicationId]);
+                });
+                return map;
+            },
+            new Map<Id, Id[]>()
+        );
+
+        return treatmentIndicationMap;
+    }, []);
     const autoUpdateIndicationLinks = useCallback(
         (currentQuestionnaire: Questionnaire): AutoLinkStatus => {
             const indicationStages = currentQuestionnaire.stages.filter(
@@ -93,35 +127,9 @@ export const useTreatmentIndicationLink = (
                 stage => stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
             );
 
-            const indicationTreatmentMap: { indicationId: Id; treatmentIds: Id[] }[] = _c(
-                indicationStages.map(indicationStage => {
-                    if (!indicationStage.sections[0]) return undefined;
-                    if (!indicationStage.instanceId) return undefined;
-                    const linkedTreatments = indicationStage.sections[0].questions.filter(
-                        q => isPPSTreatmentLinkQuestion(q) && q.value
-                    );
+            const treatmentIndicationMap = mapIndicationsToTreatments(indicationStages);
 
-                    return {
-                        indicationId: indicationStage.instanceId,
-                        treatmentIds: _c(linkedTreatments.map(q => q.value?.toString()))
-                            .compact()
-                            .value(),
-                    };
-                })
-            )
-                .compact()
-                .value();
-
-            const treatmentIndicationMap = indicationTreatmentMap.reduce(
-                (map, { indicationId, treatmentIds }) => {
-                    treatmentIds.forEach(treatmentId => {
-                        map.set(treatmentId, [...(map.get(treatmentId) || []), indicationId]);
-                    });
-                    return map;
-                },
-                new Map<Id, Id[]>()
-            );
-
+            //One treatment cannot be linked to more than 5 indications
             const linkError = Array.from(treatmentIndicationMap.entries()).some(
                 ([treatment, indications]) => {
                     if (indications.length > 5) {
@@ -140,17 +148,15 @@ export const useTreatmentIndicationLink = (
                 treatmentStage => {
                     if (!treatmentStage.sections[0]) return treatmentStage;
                     if (!treatmentStage.instanceId) return treatmentStage;
-                    if (!treatmentIndicationMap.has(treatmentStage.instanceId))
-                        return treatmentStage;
-
-                    const linkedIndications = treatmentIndicationMap.get(treatmentStage.instanceId);
-                    // if (!linkedIndications) return treatmentStage; // No indications to link
 
                     const indicationLinkQuestions: PPSIndicationLinkQuestion[] =
                         treatmentStage.sections[0].questions.filter(isPPSIndicationLinkQuestion);
-
+                    const otherQuestions = treatmentStage.sections[0].questions.filter(
+                        q => !isPPSIndicationLinkQuestion(q)
+                    );
                     if (!indicationLinkQuestions) return treatmentStage;
 
+                    const linkedIndications = treatmentIndicationMap.get(treatmentStage.instanceId);
                     const updatedIndicationLinks: PPSIndicationLinkQuestion[] =
                         indicationLinkQuestions.map((q, index) => {
                             return {
@@ -164,7 +170,7 @@ export const useTreatmentIndicationLink = (
                         sections: [
                             {
                                 ...treatmentStage.sections[0],
-                                questions: updatedIndicationLinks,
+                                questions: [...otherQuestions, ...updatedIndicationLinks],
                             },
                         ],
                     };
@@ -173,14 +179,18 @@ export const useTreatmentIndicationLink = (
                 }
             );
 
+            const otherStages = currentQuestionnaire.stages.filter(
+                stage => stage.code !== PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
+            );
+
             const updatedQuestionnaire: Questionnaire = Questionnaire.updateQuestionnaireStages(
                 currentQuestionnaire,
-                [...currentQuestionnaire.stages, ...updatedTreatmentStages]
+                [...otherStages, ...updatedTreatmentStages]
             );
 
             return { updatedQuestionnaire: updatedQuestionnaire, error: false };
         },
-        [snackbar]
+        [mapIndicationsToTreatments, snackbar]
     );
 
     return { treatmentOptions, indicationOptions, removeLinkedStage, autoUpdateIndicationLinks };
