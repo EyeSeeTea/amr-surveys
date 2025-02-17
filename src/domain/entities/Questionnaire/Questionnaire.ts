@@ -79,6 +79,17 @@ export class Questionnaire {
         return this.data.subLevelDetails;
     }
 
+    /** Returns all questions, including entity questions and stage questions */
+    getAllQuestions(): Question[] {
+        const stageQuestions = this.stages.flatMap((stage: QuestionnaireStage) => {
+            return stage.sections.flatMap(section => {
+                return section.questions.map(question => question);
+            });
+        });
+        const entityQuestions = this.entity?.questions || [];
+        return [...stageQuestions, ...entityQuestions];
+    }
+
     public static create(data: QuestionnaireData): Questionnaire {
         //TO DO : Add validations if any
         return new Questionnaire({
@@ -257,21 +268,11 @@ export class Questionnaire {
         questionnaire: Questionnaire,
         updatedQuestion: Question,
         stageId?: string,
-        initialLoad = false
+        initialLoad = false,
+        alreadyUpdatedQuestions?: undefined | Question[]
     ): Questionnaire {
         //For the updated question, get all rules that are applicable
-        const allQsInQuestionnaireStages = questionnaire.stages.flatMap(
-            (stage: QuestionnaireStage) => {
-                return stage.sections.flatMap(section => {
-                    return section.questions.map(question => question);
-                });
-            }
-        );
-
-        const allQsInQuestionnaire = [
-            ...(questionnaire.entity?.questions || []),
-            ...allQsInQuestionnaireStages,
-        ];
+        const allQsInQuestionnaire = questionnaire.getAllQuestions();
 
         const allQsInQuestionnaireWithUpdatedQ = allQsInQuestionnaire.map(question =>
             question.id === updatedQuestion.id ? updatedQuestion : question
@@ -289,7 +290,7 @@ export class Questionnaire {
             question => question.id === updatedQuestion.id
         );
 
-        return Questionnaire.create({
+        const updatedQuestionnaire = Questionnaire.create({
             ...questionnaire.data,
             stages: questionnaire.stages.map(stage => {
                 if (stageId && stage.id !== stageId) return stage;
@@ -313,6 +314,54 @@ export class Questionnaire {
                       )
                     : questionnaire.entity,
         });
+
+        // "assign" actions may cause cascading updates
+        const assignRuleTargets: Question[] =
+            QuestionnaireQuestion.filterQuestionsTargettedByAssign(
+                allQsInQuestionnaireWithUpdatedQ,
+                applicableRules
+            )
+                // we don't want to update questions already updated to prevent infinite recursion
+                .filter(
+                    question =>
+                        question && !alreadyUpdatedQuestions?.some(uq => uq.id === question.id)
+                );
+
+        if (assignRuleTargets.length > 0) {
+            // We need to update the questionnaire again based on updates from "assign" actions
+            return this.updateQuestionnaireForAssign(
+                updatedQuestionnaire,
+                assignRuleTargets,
+                applicableRules,
+                stageId,
+                initialLoad,
+                alreadyUpdatedQuestions
+            );
+        }
+        return updatedQuestionnaire;
+    }
+
+    static updateQuestionnaireForAssign(
+        questionnaire: Questionnaire,
+        assignTargets: Question[],
+        rules: QuestionnaireRule[],
+        stageId?: string,
+        initialLoad = false,
+        alreadyUpdatedQuestions?: undefined | Question[]
+    ): Questionnaire {
+        return assignTargets.reduce((accQuestionnaire, assignedQuestion) => {
+            const updatedAssignQuestion = QuestionnaireQuestion.updateQuestion(
+                assignedQuestion,
+                rules
+            );
+            return this.updateQuestionnaire(
+                accQuestionnaire,
+                updatedAssignQuestion,
+                stageId,
+                initialLoad,
+                [...(alreadyUpdatedQuestions ?? []), updatedAssignQuestion]
+            );
+        }, questionnaire);
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {

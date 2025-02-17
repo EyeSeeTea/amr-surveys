@@ -159,6 +159,7 @@ export type UpdateQuestionOptions = {
 export class QuestionnaireQuestion {
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
+        if (!isNumber(s)) return false;
 
         switch (numberType) {
             case "INTEGER":
@@ -290,7 +291,27 @@ export class QuestionnaireQuestion {
         return finalUpdatesWithSideEffects;
     }
 
-    private static updateQuestion<T extends Question>(question: T, rules: QuestionnaireRule[]): T {
+    public static filterQuestionsTargettedByAssign(
+        questions: Question[],
+        applicableRules: QuestionnaireRule[]
+    ): Question[] {
+        return applicableRules
+            .flatMap(rule =>
+                rule.parsedResult
+                    ? rule.actions.filter(action => action.programRuleActionType === "ASSIGN")
+                    : []
+            )
+            .map(action =>
+                questions.find(
+                    q =>
+                        q.id === action.dataElement?.id ||
+                        q.id === action.trackedEntityAttribute?.id
+                )
+            )
+            .filter(x => x !== undefined) as Question[];
+    }
+
+    public static updateQuestion<T extends Question>(question: T, rules: QuestionnaireRule[]): T {
         const updatedIsVisible = this.isQuestionVisible(question, rules);
         const updatedErrors = this.getQuestionWarningsAndErrors(question, rules);
         const updatedIsDisabled = this.isQuestionDisabled(question, rules);
@@ -417,4 +438,8 @@ export class QuestionnaireQuestion {
 
 function isInteger(s: string): boolean {
     return Boolean(s.match(/^-?\d*$/));
+}
+
+export function isNumber(s: string): boolean {
+    return Boolean(s.match(/^-?(0|[1-9]\d*)(\.\d+)?$/));
 }
