@@ -9,15 +9,17 @@ import { Future } from "../entities/generic/Future";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
     AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
+    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
 } from "../../data/entities/D2Survey";
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
+import i18n from "../../utils/i18n";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(
-        private surveyReporsitory: SurveyRepository,
+        private surveyRepository: SurveyRepository,
         private astGuidelineRepository: ASTGuidelinesRepository
     ) {}
 
@@ -33,35 +35,48 @@ export class SaveFormDataUseCase {
         const ouId =
             surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
-        //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
-        if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
-            return this.surveyReporsitory
+        return this.validate(surveyFormType, questionnaire, ouId, programId, eventId).flatMap(() =>
+            this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId)
+        );
+    }
+
+    validate = (
+        surveyFormType: SURVEY_FORM_TYPES,
+        questionnaire: Questionnaire,
+        orgUnitId: Id,
+        programId: Id,
+        eventId: string | undefined = undefined
+    ): FutureData<boolean> => {
+        //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility in the same survey.
+        const isNewPrevalenceFacilityLevelForm =
+            !eventId && surveyFormType === "PrevalenceFacilityLevelForm";
+        if (isNewPrevalenceFacilityLevelForm) {
+            const surveyId = questionnaire.entity?.questions
+                .find(q => q.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID)
+                ?.value?.toString();
+            if (!surveyId) {
+                return Future.error(
+                    new Error(i18n.t("Survey ID expected but could not be resolved"))
+                );
+            }
+            return this.surveyRepository
                 .getSurveys({
                     surveyFormType: surveyFormType,
                     programId: programId,
-                    orgUnitId: ouId,
+                    orgUnitId: orgUnitId,
                     chunked: false,
+                    parentId: surveyId,
                 })
                 .flatMap(surveys => {
                     if (surveys.length > 0) {
                         return Future.error(
-                            new Error(
-                                "Prevalence Facility Level Form already exists for this facility."
-                            )
+                            new Error(i18n.t("Prevalence Facility already exists for this Survey."))
                         );
-                    } else
-                        return this.saveFormData(
-                            surveyFormType,
-                            questionnaire,
-                            ouId,
-                            programId,
-                            eventId
-                        );
+                    } else return Future.success(true);
                 });
         }
-
-        return this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId);
-    }
+        return Future.success(true);
+    };
 
     saveFormData = (
         surveyFormType: SURVEY_FORM_TYPES,
@@ -70,7 +85,7 @@ export class SaveFormDataUseCase {
         programId: string,
         eventId: string | undefined = undefined
     ): FutureData<Id> => {
-        return this.surveyReporsitory
+        return this.surveyRepository
             .saveFormData(questionnaire, "CREATE_AND_UPDATE", ouId, eventId, programId)
             .flatMap(surveyId => {
                 return this.saveCustomASTGuidelineToDatastore(
