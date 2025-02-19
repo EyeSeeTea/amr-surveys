@@ -144,7 +144,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
-                filter: ` ${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
+                filter: `${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -176,7 +176,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
-                filter: ` ${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword}, ${WARD_ID_TEA_ID}:eq:${parentId}`,
+                filter: `${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -208,7 +208,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
-                filter: ` ${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}, ${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
