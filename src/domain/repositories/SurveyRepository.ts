@@ -1,10 +1,9 @@
 import { FutureData } from "../../data/api-futures";
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
-import { SurveyChildCountType } from "../../data/utils/surveyChildCountHelper";
 import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
-import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export interface SurveyRepository {
     getForm(
@@ -39,7 +38,7 @@ export interface SurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): SurveyChildCountType;
+    ): FutureData<ChildCount>;
 }
 
 export type GetSurveyOptions = {

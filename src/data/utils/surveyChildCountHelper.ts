@@ -5,7 +5,6 @@ import {
     getParentDataElementForProgram,
     isTrackerProgram,
 } from "./surveyProgramHelper";
-import { ProgramCountMap } from "../../domain/entities/Program";
 import { Future } from "../../domain/entities/generic/Future";
 import {
     PPS_COUNTRY_QUESTIONNAIRE_ID,
@@ -16,10 +15,7 @@ import {
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { TrackedEntitiesParamsBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
-
-export type SurveyChildCountType =
-    | { type: "value"; value: FutureData<number> }
-    | { type: "map"; value: FutureData<ProgramCountMap> };
+import { ChildCount } from "../../domain/entities/Survey";
 
 export const getSurveyChildCount = (
     parentProgram: Id,
@@ -27,7 +23,7 @@ export const getSurveyChildCount = (
     parentSurveyId: Id,
     secondaryparentId: Id | undefined,
     api: D2Api
-): SurveyChildCountType => {
+): FutureData<ChildCount> => {
     const childIds = getChildProgramId(parentProgram);
 
     //As of now, all child programs for a given program are of the same type,
@@ -44,63 +40,56 @@ export const getSurveyChildCount = (
                 childId === PPS_PATIENT_REGISTER_ID &&
                 secondaryparentId
             ) {
-                const eventCount = getTrackerSurveyCount(
-                    childId,
-                    orgUnitId,
-                    secondaryparentId,
-                    api
+                return getTrackerSurveyCount(childId, orgUnitId, secondaryparentId, api).flatMap(
+                    eventCount => {
+                        return Future.success({ type: "number", value: eventCount });
+                    }
                 );
-
-                return { type: "value", value: eventCount };
             } else if (childIds.type === "singleChild") {
-                const eventCount = getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api);
-
-                return { type: "value", value: eventCount };
+                return getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api).flatMap(
+                    eventCount => {
+                        return Future.success({ type: "number", value: eventCount });
+                    }
+                );
             } else if (secondaryparentId) {
-                const eventCounts = childIds.value.map(id => {
+                const eventCountsFuture = childIds.value.map(id => {
                     return getTrackerSurveyCount(id, orgUnitId, secondaryparentId, api).map(
                         count => {
                             return { id: id, count: count };
                         }
                     );
                 });
+                const eventCounts = Future.sequential(eventCountsFuture);
 
-                return { type: "map", value: Future.sequential(eventCounts) };
+                return eventCounts.flatMap(eventCounts => {
+                    return Future.success({ type: "map", value: eventCounts });
+                });
             } else {
-                return {
-                    type: "map",
-                    value: Future.error(
-                        new Error("secondaryparentId not provided for multichild program")
-                    ),
-                };
+                return Future.error(
+                    new Error("secondaryparentId not provided for multichild program")
+                );
             }
         } else {
             if (childIds.type === "singleChild") {
-                const eventCount = getEventSurveyCount(
+                return getEventSurveyCount(
                     childIds.value,
                     orgUnitId,
                     parentSurveyId,
                     secondaryparentId,
                     api
-                );
-
-                return { type: "value", value: eventCount };
+                ).flatMap(eventCount => {
+                    return Future.success({ type: "number", value: eventCount });
+                });
             } else {
-                return {
-                    type: "map",
-                    value: Future.error(
-                        new Error(
-                            "Event programs in AMR Surveys have single child. It should not contain multiple children"
-                        )
-                    ),
-                };
+                return Future.error(
+                    new Error(
+                        "Event programs in AMR Surveys have single child. It should not contain multiple children"
+                    )
+                );
             }
         }
     } else {
-        return {
-            type: "value",
-            value: Future.error(new Error("Unknown Child program ")),
-        };
+        return Future.error(new Error("Unknown Child program "));
     }
 };
 

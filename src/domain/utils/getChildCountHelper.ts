@@ -1,7 +1,7 @@
 import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { ProgramOptionCountMap } from "../entities/Program";
-import { SURVEYS_WITH_CHILD_COUNT, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { ChildCountLabel, SURVEYS_WITH_CHILD_COUNT, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "./PPSProgramsHelper";
 import {
@@ -36,11 +36,12 @@ export const getChildCount = ({
     parentSurveyId,
     secondaryparentId,
     surveyReporsitory,
-}: GetChildCountType): FutureData<number | ProgramOptionCountMap> => {
-    if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType)) return Future.success(0);
+}: GetChildCountType): FutureData<ChildCountLabel> => {
+    if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType))
+        return Future.success({ type: "number", value: 0 });
 
     const programId = getProgramId(surveyFormType);
-    const programCountMap = isPaginatedSurveyRepository(surveyReporsitory)
+    const programCountMapFuture = isPaginatedSurveyRepository(surveyReporsitory)
         ? surveyReporsitory.getPaginatedSurveyChildCount(
               programId,
               orgUnitId,
@@ -54,11 +55,11 @@ export const getChildCount = ({
               secondaryparentId
           );
 
-    if (programCountMap.type === "value") {
-        return programCountMap.value;
-    } else {
-        return programCountMap.value.map(programCountMap => {
-            const programOptionsMap: ProgramOptionCountMap = programCountMap.map(pc => {
+    return programCountMapFuture.flatMap(programCountMap => {
+        if (programCountMap.type === "number") {
+            return Future.success({ type: "number", value: programCountMap.value });
+        } else if (programCountMap.type === "map") {
+            const programOptionsMap: ProgramOptionCountMap = programCountMap.value.map(pc => {
                 if (pc.id === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID) {
                     return {
                         option: { label: `List Sample Shipments (${pc.count})` },
@@ -101,7 +102,7 @@ export const getChildCount = ({
                     };
                 }
             });
-            return programOptionsMap;
-        });
-    }
+            return Future.success({ type: "map", value: programOptionsMap });
+        } else return Future.error(new Error("Invalid program count map type"));
+    });
 };

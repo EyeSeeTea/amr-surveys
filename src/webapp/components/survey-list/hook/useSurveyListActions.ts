@@ -114,10 +114,10 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
         const { childCount } = survey;
 
-        if (typeof childCount === "number") {
+        if (childCount?.type === "number") {
             const optionsWithChildCount = currentOptions.map(option => {
                 if (option.label.startsWith("List")) {
-                    const updatedLabel = `${option.label} (${childCount})`;
+                    const updatedLabel = `${option.label} (${childCount.value})`;
                     return { ...option, label: updatedLabel };
                 }
                 return option;
@@ -126,7 +126,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             setOptionLoading(false);
         } else {
             const optionsWithChildCount = currentOptions.map(option => {
-                const updatedChilsOptionMap = childCount?.find(childMap =>
+                const updatedChilsOptionMap = childCount?.value.find(childMap =>
                     childMap.option.label.startsWith(option.label)
                 );
                 if (updatedChilsOptionMap) {

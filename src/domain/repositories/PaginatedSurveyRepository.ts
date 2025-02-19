@@ -1,7 +1,12 @@
 import { FutureData } from "../../data/api-futures";
-import { SurveyChildCountType } from "../../data/utils/surveyChildCountHelper";
 import { Id } from "../entities/Ref";
-import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
+import {
+    ChildCount,
+    ChildCountNumber,
+    ChildCountOption,
+    Survey,
+    SURVEY_FORM_TYPES,
+} from "../entities/Survey";
 import { PaginatedReponse } from "../entities/TablePagination";
 
 export interface PaginatedSurveyRepository {
@@ -33,5 +38,5 @@ export interface PaginatedSurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): SurveyChildCountType;
+    ): FutureData<ChildCount>;
 }
