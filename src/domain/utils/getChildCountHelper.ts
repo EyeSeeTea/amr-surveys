@@ -20,6 +20,7 @@ import {
 } from "../../data/entities/D2Survey";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { Future } from "../entities/generic/Future";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -75,37 +76,37 @@ const mapOptionToLabel = (programCountMap: ChildCountOption) => {
         switch (pc.id) {
             case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
                 return {
-                    option: { label: `List Sample Shipments (${pc.count})` },
+                    option: { label: i18n.t(`List Sample Shipments (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
                 return {
-                    option: { label: `List Central Ref Labs Results (${pc.count})` },
+                    option: { label: i18n.t(`List Central Ref Labs Results (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
                 return {
-                    option: { label: `List Pathogen Isolates Logs (${pc.count})` },
+                    option: { label: i18n.t(`List Pathogen Isolates Logs (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
                 return {
-                    option: { label: `List Supranational Refs Results (${pc.count})` },
+                    option: { label: i18n.t(`List Supranational Refs Results (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
                 return {
-                    option: { label: `List D28 Follow-up (${pc.count})` },
+                    option: { label: i18n.t(`List D28 Follow-up (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_DISCHARGE_FORM:
                 return {
-                    option: { label: `List Discharge (${pc.count})` },
+                    option: { label: i18n.t(`List Discharge (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
                 return {
-                    option: { label: `List Cohort enrolment (${pc.count})` },
+                    option: { label: i18n.t(`List Cohort enrolment (${pc.count})`) },
                     count: pc.count,
                 };
             default:

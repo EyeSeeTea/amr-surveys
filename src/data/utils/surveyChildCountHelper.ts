@@ -39,15 +39,15 @@ export const getSurveyChildCount = (
                 childId === PPS_PATIENT_REGISTER_ID &&
                 secondaryparentId
             ) {
-                return getTrackerSurveyCount(childId, orgUnitId, secondaryparentId, api).flatMap(
+                return getTrackerSurveyCount(childId, orgUnitId, secondaryparentId, api).map(
                     eventCount => {
-                        return Future.success({ type: "number", value: eventCount });
+                        return { type: "number", value: eventCount };
                     }
                 );
             } else if (childIds.type === "singleChild") {
-                return getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api).flatMap(
+                return getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api).map(
                     eventCount => {
-                        return Future.success({ type: "number", value: eventCount });
+                        return { type: "number", value: eventCount };
                     }
                 );
             } else if (secondaryparentId) {
@@ -58,7 +58,7 @@ export const getSurveyChildCount = (
                         }
                     );
                 });
-                const eventCounts = Future.sequential(eventCountsFuture);
+                const eventCounts = Future.parallel(eventCountsFuture, { concurrency: 5 });
 
                 return eventCounts.flatMap(eventCounts => {
                     return Future.success({ type: "map", value: eventCounts });
@@ -76,8 +76,8 @@ export const getSurveyChildCount = (
                     parentSurveyId,
                     secondaryparentId,
                     api
-                ).flatMap(eventCount => {
-                    return Future.success({ type: "number", value: eventCount });
+                ).map(eventCount => {
+                    return { type: "number", value: eventCount };
                 });
             } else {
                 return Future.error(
