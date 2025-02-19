@@ -1,12 +1,6 @@
 import { FutureData } from "../../data/api-futures";
 import { Id } from "../entities/Ref";
-import {
-    ChildCount,
-    ChildCountNumber,
-    ChildCountOption,
-    Survey,
-    SURVEY_FORM_TYPES,
-} from "../entities/Survey";
+import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { PaginatedReponse } from "../entities/TablePagination";
 
 export interface PaginatedSurveyRepository {
