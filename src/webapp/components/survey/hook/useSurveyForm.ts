@@ -31,7 +31,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
-    const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
     const [refreshQuestionnaire, setRefreshQuestionnaire] = useState({});
     const {
         currentPPSSurveyForm,
@@ -46,13 +45,15 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [error, setError] = useState<string>();
     const { currentModule } = useCurrentModule();
 
-    useEffect(() => {
-        if (!questionnaire) setShouldDisableSave(true);
-        else {
-            const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
-            setShouldDisableSave(shouldDisable || hasReadOnlyAccess);
+    const shouldDisableSave = useMemo(() => {
+        if (!questionnaire) return true;
+        const isDisabled =
+            Questionnaire.doesQuestionnaireHaveErrors(questionnaire) || hasReadOnlyAccess;
+        if (formType === "PrevalenceFacilityLevelForm") {
+            return isDisabled || !currentOrgUnit;
         }
-    }, [hasReadOnlyAccess, questionnaire]);
+        return isDisabled;
+    }, [hasReadOnlyAccess, questionnaire, currentOrgUnit, formType]);
 
     useEffect(() => {
         setLoading(true);
