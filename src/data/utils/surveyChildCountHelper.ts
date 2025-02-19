@@ -28,7 +28,6 @@ export const getSurveyChildCount = (
 
     //As of now, all child programs for a given program are of the same type,
     //so we will check only the first child
-
     const childId = childIds.type === "singleChild" ? childIds.value : childIds.value[0];
 
     if (childId) {
