@@ -4,7 +4,10 @@ import {
     Questionnaire,
     QuestionnaireStage,
 } from "../../../../domain/entities/Questionnaire/Questionnaire";
-import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    SURVEYS_WITH_ORG_UNIT_SELECTOR,
+    SURVEY_FORM_TYPES,
+} from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
@@ -49,7 +52,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         if (!questionnaire) return true;
         const isDisabled =
             Questionnaire.doesQuestionnaireHaveErrors(questionnaire) || hasReadOnlyAccess;
-        if (formType === "PrevalenceFacilityLevelForm") {
+        if (SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType)) {
             return isDisabled || !currentOrgUnit;
         }
         return isDisabled;
