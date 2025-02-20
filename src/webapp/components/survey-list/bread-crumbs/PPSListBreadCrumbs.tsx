@@ -2,19 +2,19 @@ import { Breadcrumbs, Button } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import { palette } from "../../pages/app/themes/dhis2.theme";
-import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
+import { palette } from "../../../pages/app/themes/dhis2.theme";
+import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import i18n from "@eyeseetea/feedback-component/locales";
-import { getUserAccess } from "../../../domain/utils/menuHelper";
-import { useAppContext } from "../../contexts/app-context";
-import { useCurrentModule } from "../../contexts/current-module-context";
+import { getUserAccess } from "../../../../domain/utils/menuHelper";
+import { useAppContext } from "../../../contexts/app-context";
+import { useCurrentModule } from "../../../contexts/current-module-context";
 
-export interface SurveyListBreadCrumbProps {
+export interface PPSListBreadCrumbsProps {
     formType: SURVEY_FORM_TYPES;
 }
 
-export const SurveyListBreadCrumb: React.FC<SurveyListBreadCrumbProps> = ({ formType }) => {
+export const PPSListBreadCrumbs: React.FC<PPSListBreadCrumbsProps> = ({ formType }) => {
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,

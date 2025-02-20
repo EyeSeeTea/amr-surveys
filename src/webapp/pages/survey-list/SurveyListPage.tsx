@@ -4,11 +4,12 @@ import styled from "styled-components";
 import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyList } from "../../components/survey-list/SurveyList";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
-import { SurveyListBreadCrumb } from "../../components/survey-list/SurveyListBreadCrumb";
+import { PPSListBreadCrumbs } from "../../components/survey-list/bread-crumbs/PPSListBreadCrumbs";
 import { useCurrentModule } from "../../contexts/current-module-context";
 import { useRedirectHome } from "./useRedirectHome";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
+import { PrevalenceListBreadCrumbs } from "../../components/survey-list/bread-crumbs/PrevalenceListBreadCrumbs";
 
 export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
@@ -48,7 +49,10 @@ export const SurveyListPage: React.FC = React.memo(() => {
 
     return (
         <ContentWrapper>
-            {currentModule?.name === "PPS" && <SurveyListBreadCrumb formType={formType} />}
+            {currentModule?.name === "PPS" && <PPSListBreadCrumbs formType={formType} />}
+            {currentModule?.name === "Prevalence" && (
+                <PrevalenceListBreadCrumbs formType={formType} />
+            )}
             <SurveyList surveyFormType={formType} />
         </ContentWrapper>
     );

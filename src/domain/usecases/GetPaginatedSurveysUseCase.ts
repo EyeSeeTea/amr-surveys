@@ -60,6 +60,10 @@ export class GetPaginatedSurveysUseCase {
 
                         const updatedSurvey: Survey = {
                             ...survey,
+                            name:
+                                surveyFormType === "PrevalenceCaseReportForm"
+                                    ? survey.uniquePatient?.id ?? survey.name
+                                    : survey.name,
                             rootSurvey: newRootSurvey,
                             childCount: childCount,
                         };
