@@ -65,9 +65,11 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                                             <QuestionWidget
                                                 onChange={updateQuestion}
                                                 question={question}
-                                                disabled={
-                                                    question.disabled || viewOnly ? true : false
-                                                }
+                                                disabled={Boolean(
+                                                    question.disabled ||
+                                                        question.computed ||
+                                                        viewOnly
+                                                )}
                                                 treatmentOptions={treatmentOptions}
                                                 indicationOptions={indicationOptions}
                                             />

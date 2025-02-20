@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ProgramCountMap } from "../../../domain/entities/Program";
-import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
+
+import { ChildCount, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
 import { FutureData } from "../../api-futures";
-import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
     getFilteredPrevalencePatientSurveysByPatientId(
@@ -43,7 +42,7 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         orgUnitId: string,
         parentSurveyId: string,
         secondaryparentId: string | undefined
-    ): SurveyChildCountType {
+    ): FutureData<ChildCount> {
         throw new Error("Method not implemented.");
     }
 }

@@ -61,11 +61,11 @@ export const TableSection: React.FC<TableSectionProps> = ({
                                                     <QuestionWidget
                                                         onChange={updateQuestion}
                                                         question={question}
-                                                        disabled={
-                                                            question.disabled || viewOnly
-                                                                ? true
-                                                                : false
-                                                        }
+                                                        disabled={Boolean(
+                                                            question.disabled ||
+                                                                question.computed ||
+                                                                viewOnly
+                                                        )}
                                                     />
                                                     {question.errors.map((err, index) => (
                                                         <div key={index}>

@@ -5,7 +5,7 @@ import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ImportStrategy } from "../../domain/entities/Program";
-import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import {
     TrackedEntitiesGetResponse,
     D2TrackedEntityInstanceToPost,
@@ -43,7 +43,7 @@ import {
 } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
-import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
+import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
 import { TrackerPostRequest, TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
 import { Maybe } from "../../utils/ts-utils";
 import { D2TrackerEvent, D2TrackerEventToPost } from "@eyeseetea/d2-api/api/trackerEvents";
@@ -485,7 +485,7 @@ export class SurveyD2Repository implements SurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): SurveyChildCountType {
+    ): FutureData<ChildCount> {
         return getSurveyChildCount(
             parentProgram,
             orgUnitId,

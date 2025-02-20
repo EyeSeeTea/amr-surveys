@@ -3,12 +3,11 @@ import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
-import { SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
+import { ChildCount, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
 import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 import { ASTGUIDELINE_TYPES } from "../../../domain/entities/ASTGuidelines";
-import { SurveyChildCountType } from "../../utils/surveyChildCountHelper";
 
 export class SurveyTestRepository implements SurveyRepository {
     deleteEventSurvey(_eventId: string, _orgUnitId: string, _programId: string): FutureData<void> {
@@ -26,7 +25,7 @@ export class SurveyTestRepository implements SurveyRepository {
         _orgUnitId: string,
         _parentSurveyId: string,
         _secondaryparentId: string | undefined
-    ): SurveyChildCountType {
+    ): FutureData<ChildCount> {
         throw new Error("Method not implemented.");
     }
     deleteSurvey(_id: string, _orgUnitId: string, _programId: string): FutureData<void> {
@@ -100,7 +99,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "SUPRANATIONAL",
                     rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
-                    childCount: 0,
+                    childCount: { type: "number", value: 0 },
                 },
                 {
                     name: "TestSurvey2",
@@ -111,7 +110,7 @@ export class SurveyTestRepository implements SurveyRepository {
                     surveyType: "NATIONAL",
                     rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
                     surveyFormType: "PPSSurveyForm",
-                    childCount: 0,
+                    childCount: { type: "number", value: 0 },
                 },
             ]);
         else return Future.success([]);

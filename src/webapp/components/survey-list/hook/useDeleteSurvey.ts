@@ -19,9 +19,9 @@ export function useDeleteSurvey(
 
     const showDeleteErrorMsg = (survey: Survey) => {
         const count =
-            typeof survey.childCount === "number"
-                ? survey.childCount
-                : survey.childCount
+            survey.childCount?.type === "number"
+                ? survey.childCount.value
+                : survey.childCount?.value
                       ?.map(child => child.count)
                       .reduce((agg, childCount) => agg + childCount, 0) || 0;
 

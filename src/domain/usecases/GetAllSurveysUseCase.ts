@@ -75,7 +75,7 @@ export class GetAllSurveysUseCase {
                                     ? survey.facilityCode ?? survey.name
                                     : survey.name,
                             rootSurvey: newRootSurvey,
-                            childCount: count,
+                            childCount: childCount,
                         };
                         return updatedSurvey;
                     });
