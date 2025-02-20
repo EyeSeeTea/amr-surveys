@@ -3,7 +3,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import { Id } from "../../domain/entities/Ref";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSurveyRepository";
 import { PaginatedReponse } from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
@@ -21,7 +21,7 @@ import {
     mapTrackedEntityToSurvey,
     trackedEntityFields,
 } from "../utils/surveyListMappers";
-import { getSurveyChildCount, SurveyChildCountType } from "../utils/surveyChildCountHelper";
+import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -232,7 +232,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentSurveyId: Id,
         secondaryparentId: Id | undefined
-    ): SurveyChildCountType {
+    ): FutureData<ChildCount> {
         return getSurveyChildCount(
             parentProgram,
             orgUnitId,

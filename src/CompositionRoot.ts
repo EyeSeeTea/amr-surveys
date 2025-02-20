@@ -31,7 +31,6 @@ import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurvey
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
 import { GetAccessibleHospitals } from "./domain/usecases/GetAccessibleHospitals";
-import { GetChildCountUseCase } from "./domain/usecases/GetChildCountUseCase";
 import { ApplyInitialRulesToSurveyUseCase } from "./domain/usecases/ApplyInitialRulesToSurveyUseCase";
 import { ASTGuidelinesRepository } from "./domain/repositories/ASTGuidelinesRepository";
 import { GetASTGuidelinesUseCase } from "./domain/usecases/GetASTGuidelinesUseCase";
@@ -91,7 +90,6 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.surveyFormRepository,
                 repositories.astGuidelinesRepository
             ),
-            getChildCount: new GetChildCountUseCase(repositories.surveyFormRepository),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
             removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(
                 repositories.surveyFormRepository

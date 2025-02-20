@@ -1,7 +1,12 @@
 import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { ProgramOptionCountMap } from "../entities/Program";
-import { SURVEYS_WITH_CHILD_COUNT, SURVEY_FORM_TYPES } from "../entities/Survey";
+import {
+    ChildCountLabel,
+    ChildCountOption,
+    SURVEYS_WITH_CHILD_COUNT,
+    SURVEY_FORM_TYPES,
+} from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "./PPSProgramsHelper";
 import {
@@ -15,6 +20,7 @@ import {
 } from "../../data/entities/D2Survey";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { Future } from "../entities/generic/Future";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -36,11 +42,12 @@ export const getChildCount = ({
     parentSurveyId,
     secondaryparentId,
     surveyReporsitory,
-}: GetChildCountType): FutureData<number | ProgramOptionCountMap> => {
-    if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType)) return Future.success(0);
+}: GetChildCountType): FutureData<ChildCountLabel> => {
+    if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType))
+        return Future.success({ type: "number", value: 0 });
 
     const programId = getProgramId(surveyFormType);
-    const programCountMap = isPaginatedSurveyRepository(surveyReporsitory)
+    const programCountMapFuture = isPaginatedSurveyRepository(surveyReporsitory)
         ? surveyReporsitory.getPaginatedSurveyChildCount(
               programId,
               orgUnitId,
@@ -54,54 +61,60 @@ export const getChildCount = ({
               secondaryparentId
           );
 
-    if (programCountMap.type === "value") {
-        return programCountMap.value;
-    } else {
-        return programCountMap.value.map(programCountMap => {
-            const programOptionsMap: ProgramOptionCountMap = programCountMap.map(pc => {
-                if (pc.id === PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID) {
-                    return {
-                        option: { label: `List Sample Shipments (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_CENTRAL_REF_LAB_FORM_ID) {
-                    return {
-                        option: { label: `List Central Ref Labs Results (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID) {
-                    return {
-                        option: { label: `List Pathogen Isolates Logs (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_SUPRANATIONAL_REF_LAB_ID) {
-                    return {
-                        option: { label: `List Supranational Refs Results (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28) {
-                    return {
-                        option: { label: `List D28 Follow-up (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_MORTALITY_DISCHARGE_FORM) {
-                    return {
-                        option: { label: `List Discharge (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else if (pc.id === PREVALENCE_MORTALITY_COHORT_ENORL_FORM) {
-                    return {
-                        option: { label: `List Cohort enrolment (${pc.count})` },
-                        count: pc.count,
-                    };
-                } else {
-                    return {
-                        option: { label: "" },
-                        count: 0,
-                    };
-                }
-            });
-            return programOptionsMap;
-        });
-    }
+    return programCountMapFuture.flatMap(programCountMap => {
+        if (programCountMap.type === "number") {
+            return Future.success({ type: "number", value: programCountMap.value });
+        } else if (programCountMap.type === "map") {
+            const programOptionsMap = mapOptionToLabel(programCountMap);
+            return Future.success({ type: "map", value: programOptionsMap });
+        } else return Future.error(new Error("Invalid program count map type"));
+    });
+};
+
+const mapOptionToLabel = (programCountMap: ChildCountOption) => {
+    const programOptionsMap: ProgramOptionCountMap = programCountMap.value.map(pc => {
+        switch (pc.id) {
+            case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
+                return {
+                    option: { label: i18n.t(`List Sample Shipments (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_CENTRAL_REF_LAB_FORM_ID:
+                return {
+                    option: { label: i18n.t(`List Central Ref Labs Results (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID:
+                return {
+                    option: { label: i18n.t(`List Pathogen Isolates Logs (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
+                return {
+                    option: { label: i18n.t(`List Supranational Refs Results (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
+                return {
+                    option: { label: i18n.t(`List D28 Follow-up (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_MORTALITY_DISCHARGE_FORM:
+                return {
+                    option: { label: i18n.t(`List Discharge (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
+                return {
+                    option: { label: i18n.t(`List Cohort enrolment (${pc.count})`) },
+                    count: pc.count,
+                };
+            default:
+                return {
+                    option: { label: "" },
+                    count: 0,
+                };
+        }
+    });
+    return programOptionsMap;
 };

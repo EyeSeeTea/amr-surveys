@@ -301,8 +301,8 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             )}
 
                                             {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
-                                                typeof survey.childCount === "number" && (
-                                                    <TableCell>{survey.childCount}</TableCell>
+                                                survey.childCount?.type === "number" && (
+                                                    <TableCell>{survey.childCount.value}</TableCell>
                                                 )}
 
                                             <TableCell style={{ opacity: 0.5 }}>
