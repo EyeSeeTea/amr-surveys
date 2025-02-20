@@ -45,13 +45,6 @@ export class GetAllSurveysUseCase {
                                 surveyFormType === "PPSWardRegister" ? survey.id : "",
                         })
                     ).map(([parentDetails, childCount]): Survey => {
-                        const count =
-                            typeof childCount === "number"
-                                ? childCount
-                                : childCount
-                                      .map(child => child.count)
-                                      .reduce((agg, childCount) => agg + childCount, 0);
-
                         const rootName =
                             survey.rootSurvey.name === ""
                                 ? parentDetails.name
