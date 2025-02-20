@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-02-19T16:04:36.776Z\n"
-"PO-Revision-Date: 2025-02-19T16:04:36.776Z\n"
+"POT-Creation-Date: 2025-02-20T17:43:05.613Z\n"
+"PO-Revision-Date: 2025-02-20T17:43:05.613Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -18,6 +18,9 @@ msgid "Survey ID expected but could not be resolved"
 msgstr ""
 
 msgid "Prevalence Facility already exists for this Survey."
+msgstr ""
+
+msgid "Hospital already exists for this Survey"
 msgstr ""
 
 msgid "Facilities"
