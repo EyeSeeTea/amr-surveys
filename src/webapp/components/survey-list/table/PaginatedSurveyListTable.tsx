@@ -211,14 +211,16 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                 {SURVEYS_WITH_CHILD_COUNT.includes(
                                                     surveyFormType
                                                 ) &&
-                                                    typeof survey.childCount !== "number" &&
-                                                    survey.childCount?.map((option, index) => {
-                                                        return (
-                                                            <TableCell key={index}>
-                                                                {option.count}
-                                                            </TableCell>
-                                                        );
-                                                    })}
+                                                    survey.childCount?.type === "map" &&
+                                                    survey.childCount.value.map(
+                                                        (option, index: number) => {
+                                                            return (
+                                                                <TableCell key={index}>
+                                                                    {option.count}
+                                                                </TableCell>
+                                                            );
+                                                        }
+                                                    )}
                                             </>
 
                                             <TableCell style={{ opacity: 0.5, width: "30%" }}>

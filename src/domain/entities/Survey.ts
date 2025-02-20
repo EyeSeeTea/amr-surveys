@@ -1,5 +1,5 @@
 import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
-import { ProgramOptionCountMap } from "./Program";
+import { ProgramCountMap, ProgramOptionCountMap } from "./Program";
 import { NamedRef, Id } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
@@ -45,6 +45,23 @@ export interface PrevalenceSurveyForm extends OrgUnitNamedRef {
     astGuidelines: ASTGUIDELINE_TYPES | undefined;
 }
 
+export type ChildCountNumber = {
+    type: "number";
+    value: number;
+};
+type ChildCountProgramOptionCountMap = {
+    type: "map";
+    value: ProgramOptionCountMap;
+};
+
+export type ChildCountOption = {
+    type: "map";
+    value: ProgramCountMap;
+};
+export type ChildCountLabel = ChildCountNumber | ChildCountProgramOptionCountMap;
+
+export type ChildCount = ChildCountNumber | ChildCountOption;
+
 export interface Survey extends SurveyBase {
     rootSurvey: SurveyBase; // all surveys are associated with a given parent Survey Form instance.
     startDate?: Date;
@@ -53,6 +70,6 @@ export interface Survey extends SurveyBase {
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
     uniquePatient?: { id: string; code: string };
-    childCount?: number | ProgramOptionCountMap;
+    childCount?: ChildCountLabel;
     facilityCode?: string;
 }

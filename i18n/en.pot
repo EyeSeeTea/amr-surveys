@@ -88,6 +88,12 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
+msgid "Prevalence Surveys"
+msgstr ""
+
+msgid "Case reports"
+msgstr ""
+
 msgid "Treatment/Indication Saved!"
 msgstr ""
 
@@ -109,9 +115,6 @@ msgid "Search Patient Code"
 msgstr ""
 
 msgid "Filter by patientcode"
-msgstr ""
-
-msgid "Country"
 msgstr ""
 
 msgid "Filter by Status"
@@ -139,6 +142,12 @@ msgid "NATIONAL"
 msgstr ""
 
 msgid "HOSP"
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "Case Reports"
 msgstr ""
 
 msgid ""
