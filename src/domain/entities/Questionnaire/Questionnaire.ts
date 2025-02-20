@@ -1,3 +1,4 @@
+import { getParentDataElementForProgram } from "../../../data/utils/surveyProgramHelper";
 import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
@@ -88,6 +89,13 @@ export class Questionnaire {
         });
         const entityQuestions = this.entity?.questions || [];
         return [...stageQuestions, ...entityQuestions];
+    }
+
+    getParentSurveyId(): Id | undefined {
+        const dataElementId = getParentDataElementForProgram(this.id);
+        return this.getAllQuestions()
+            .find(question => question.id === dataElementId)
+            ?.value?.toString();
     }
 
     public static create(data: QuestionnaireData): Questionnaire {

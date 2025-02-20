@@ -9,7 +9,6 @@ import { Future } from "../entities/generic/Future";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
     AMR_SURVEYS_PREVALENCE_DEA_CUSTOM_AST_GUIDE,
-    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
 } from "../../data/entities/D2Survey";
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
@@ -47,13 +46,14 @@ export class SaveFormDataUseCase {
         programId: Id,
         eventId: string | undefined = undefined
     ): FutureData<boolean> => {
-        //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility in the same survey.
-        const isNewPrevalenceFacilityLevelForm =
-            !eventId && surveyFormType === "PrevalenceFacilityLevelForm";
-        if (isNewPrevalenceFacilityLevelForm) {
-            const surveyId = questionnaire.entity?.questions
-                .find(q => q.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID)
-                ?.value?.toString();
+        const isNew = !eventId;
+        if (
+            isNew &&
+            (surveyFormType === "PrevalenceFacilityLevelForm" ||
+                surveyFormType === "PPSHospitalForm")
+        ) {
+            // avoid duplicate orgUnit in the same parent survey (Facility Level and Hospital)
+            const surveyId = questionnaire.getParentSurveyId();
             if (!surveyId) {
                 return Future.error(
                     new Error(i18n.t("Survey ID expected but could not be resolved"))
@@ -69,9 +69,13 @@ export class SaveFormDataUseCase {
                 })
                 .flatMap(surveys => {
                     if (surveys.length > 0) {
-                        return Future.error(
-                            new Error(i18n.t("Prevalence Facility already exists for this Survey."))
-                        );
+                        const errorMessages = {
+                            PrevalenceFacilityLevelForm: i18n.t(
+                                "Prevalence Facility already exists for this Survey."
+                            ),
+                            PPSHospitalForm: i18n.t("Hospital already exists for this Survey"),
+                        };
+                        return Future.error(new Error(errorMessages[surveyFormType]));
                     } else return Future.success(true);
                 });
         }
