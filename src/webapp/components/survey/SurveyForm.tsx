@@ -71,17 +71,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     );
 
     useEffect(() => {
-        if (saveCompleteState && saveCompleteState.status === "success") {
+        if (!saveCompleteState) return;
+        if (saveCompleteState.status === "success") {
             snackbar.info(saveCompleteState.message);
             if (props.hideForm) props.hideForm();
-        }
-
-        if (saveCompleteState && saveCompleteState.status === "error") {
+        } else if (saveCompleteState.status === "error") {
             offlineError(saveCompleteState.message);
             setLoading(false);
-        }
-
-        if (saveCompleteState && saveCompleteState.status === "intermediate-success") {
+            resetSaveActionOutcome();
+        } else if (saveCompleteState.status === "intermediate-success") {
             snackbar.info(saveCompleteState.message);
             setLoading(false);
             resetSaveActionOutcome();
