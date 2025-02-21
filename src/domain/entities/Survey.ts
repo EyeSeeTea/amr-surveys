@@ -1,4 +1,5 @@
 import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
+import { OrgUnitBasic } from "./OrgUnit";
 import { ProgramCountMap, ProgramOptionCountMap } from "./Program";
 import { NamedRef, Id } from "./Ref";
 
@@ -66,7 +67,7 @@ export interface Survey extends SurveyBase {
     rootSurvey: SurveyBase; // all surveys are associated with a given parent Survey Form instance.
     startDate?: Date;
     status: SURVEY_STATUSES;
-    assignedOrgUnit: NamedRef;
+    assignedOrgUnit: OrgUnitBasic;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
     uniquePatient?: { id: string; code: string };

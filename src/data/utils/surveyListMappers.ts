@@ -12,9 +12,10 @@ import {
     patientIdList,
 } from "../entities/D2Survey";
 import { getSurveyNameBySurveyFormType } from "./surveyProgramHelper";
-import { Id, NamedRef } from "../../domain/entities/Ref";
+import { Id } from "../../domain/entities/Ref";
 import { SelectedPick } from "@eyeseetea/d2-api/api";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
+import { OrgUnitBasic } from "../../domain/entities/OrgUnit";
 
 export const trackedEntityFields = {
     attributes: true,
@@ -33,7 +34,7 @@ export type D2TrackerEntitySelectedPick = SelectedPick<
 export const mapTrackedEntityToSurvey = (
     trackedEntities: D2TrackerEntitySelectedPick[],
     surveyFormType: SURVEY_FORM_TYPES,
-    orgUnits?: NamedRef[]
+    orgUnits?: OrgUnitBasic[]
 ): Survey[] => {
     return trackedEntities.map(trackedEntityInstance => {
         const parentPrevalenceSurveyId =
@@ -68,6 +69,8 @@ export const mapTrackedEntityToSurvey = (
 
         const createdAt = trackedEntityInstance.enrollments[0]?.createdAt;
 
+        const orgUnit = orgUnits?.find(ou => ou.id === trackedEntityInstance.orgUnit);
+
         const survey: Survey = {
             id: trackedEntityInstance.trackedEntity ?? "",
             name: trackedEntityInstance.trackedEntity ?? "",
@@ -83,7 +86,8 @@ export const mapTrackedEntityToSurvey = (
             status: "ACTIVE",
             assignedOrgUnit: {
                 id: trackedEntityInstance.orgUnit ?? "",
-                name: orgUnits?.find(ou => ou.id === trackedEntityInstance.orgUnit)?.name ?? "",
+                name: orgUnit?.name ?? "",
+                code: orgUnit?.code ?? "",
             },
             surveyType: "",
             parentWardRegisterId: parentWardId,
@@ -100,7 +104,7 @@ export const mapEventToSurvey = (
     events: D2TrackerEvent[],
     surveyFormType: SURVEY_FORM_TYPES,
     programId: Id,
-    orgUnits?: NamedRef[]
+    orgUnits?: OrgUnitBasic[]
 ): Survey[] => {
     return events.map((event: D2TrackerEvent) => {
         const surveyProperties = new Map(
@@ -133,6 +137,8 @@ export const mapEventToSurvey = (
                     : "ACTIVE"
                 : "COMPLETED";
 
+        const orgUnit = orgUnits?.find(ou => ou.id === event.orgUnit);
+
         const survey: Survey = {
             id: event.event,
             name: getSurveyNameBySurveyFormType(surveyFormType, {
@@ -162,8 +168,10 @@ export const mapEventToSurvey = (
                     ? ("COMPLETED" as SURVEY_STATUSES)
                     : ("ACTIVE" as SURVEY_STATUSES),
             assignedOrgUnit: {
+                ...orgUnit,
                 id: event.orgUnit,
-                name: orgUnits?.find(ou => ou.id === event.orgUnit)?.name ?? "",
+                name: orgUnit?.name ?? "",
+                code: orgUnit?.code ?? "",
             },
             surveyType: surveyType,
             parentWardRegisterId: parentWardRegisterId,
