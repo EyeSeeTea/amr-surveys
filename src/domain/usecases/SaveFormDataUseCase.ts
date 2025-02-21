@@ -50,7 +50,8 @@ export class SaveFormDataUseCase {
         if (
             isNew &&
             (surveyFormType === "PrevalenceFacilityLevelForm" ||
-                surveyFormType === "PPSHospitalForm")
+                surveyFormType === "PPSHospitalForm" ||
+                surveyFormType === "PPSCountryQuestionnaire")
         ) {
             // avoid duplicate orgUnit in the same parent survey (Facility Level and Hospital)
             const surveyId = questionnaire.getParentSurveyId();
@@ -74,6 +75,9 @@ export class SaveFormDataUseCase {
                                 "Prevalence Facility already exists for this Survey."
                             ),
                             PPSHospitalForm: i18n.t("Hospital already exists for this Survey"),
+                            PPSCountryQuestionnaire: i18n.t(
+                                "Country already exist for this Survey"
+                            ),
                         };
                         return Future.error(new Error(errorMessages[surveyFormType]));
                     } else return Future.success(true);
