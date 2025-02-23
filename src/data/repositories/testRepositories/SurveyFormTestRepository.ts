@@ -3,10 +3,9 @@ import { ImportStrategy } from "../../../domain/entities/Program";
 import { Future } from "../../../domain/entities/generic/Future";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 import { Id } from "../../../domain/entities/Ref";
-import { ChildCount, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
+import { ChildCount, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyRepository } from "../../../domain/repositories/SurveyRepository";
 import { FutureData } from "../../api-futures";
-import { PPS_SURVEY_FORM_ID } from "../../entities/D2Survey";
 import { ASTGUIDELINE_TYPES } from "../../../domain/entities/ASTGuidelines";
 
 export class SurveyTestRepository implements SurveyRepository {
@@ -85,36 +84,6 @@ export class SurveyTestRepository implements SurveyRepository {
         else return Future.error(new Error("An error occured while saving the survey"));
     }
 
-    getSurveys(options: { programId: string; orgUnitId: string }): FutureData<Survey[]> {
-        const { programId, orgUnitId } = options;
-
-        if (programId === PPS_SURVEY_FORM_ID)
-            return Future.success([
-                {
-                    name: "TestSurvey1",
-                    id: "1",
-                    startDate: new Date(),
-                    status: "ACTIVE",
-                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
-                    surveyType: "SUPRANATIONAL",
-                    rootSurvey: { id: "1", name: "TestSurvey1", surveyType: "" },
-                    surveyFormType: "PPSSurveyForm",
-                    childCount: { type: "number", value: 0 },
-                },
-                {
-                    name: "TestSurvey2",
-                    id: "2",
-                    startDate: new Date(),
-                    status: "COMPLETED",
-                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
-                    surveyType: "NATIONAL",
-                    rootSurvey: { id: "2", name: "TestSurvey1", surveyType: "" },
-                    surveyFormType: "PPSSurveyForm",
-                    childCount: { type: "number", value: 0 },
-                },
-            ]);
-        else return Future.success([]);
-    }
     getSurveyById(eventId: string): FutureData<D2TrackerEvent> {
         if (eventId) {
             return Future.success({

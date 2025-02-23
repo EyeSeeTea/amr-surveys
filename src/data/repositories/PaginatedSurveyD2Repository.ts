@@ -153,7 +153,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         });
     }
 
-    getEventProgramSurveys(
+    private getEventProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,

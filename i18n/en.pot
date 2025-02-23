@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-02-13T17:58:53.810Z\n"
-"PO-Revision-Date: 2025-02-13T17:58:53.810Z\n"
+"POT-Creation-Date: 2025-02-23T07:19:28.489Z\n"
+"PO-Revision-Date: 2025-02-23T07:19:28.489Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -158,21 +158,6 @@ msgstr ""
 msgid "Root Survey Name"
 msgstr ""
 
-msgid "Patient Id"
-msgstr ""
-
-msgid "Patient Code"
-msgstr ""
-
-msgid "Action"
-msgstr ""
-
-msgid "Loading..."
-msgstr ""
-
-msgid "No data found..."
-msgstr ""
-
 msgid "Org Unit"
 msgstr ""
 
@@ -192,6 +177,21 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
+msgstr ""
+
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Code"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "No data found..."
 msgstr ""
 
 msgid "Yes"

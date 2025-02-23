@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
+import { Future } from "../../../domain/entities/generic/Future";
 import { ChildCount, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
 import { PaginatedReponse } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
@@ -11,38 +10,145 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         orgUnitId: string,
         parentId: string
     ): FutureData<PaginatedReponse<Survey[]>> {
-        throw new Error("Method not implemented.");
+        return Future.success({
+            pager: {
+                page: 1,
+                pageSize: 10,
+            },
+            objects: [
+                {
+                    name: "Patient1",
+                    id: "1",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                    surveyType: "",
+                    rootSurvey: { id: parentId, name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+                {
+                    name: "Patient2",
+                    id: "2",
+                    startDate: new Date(),
+                    status: "COMPLETED",
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                    surveyType: "",
+                    rootSurvey: { id: parentId, name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+            ],
+        });
     }
     getFilteredPPSPatientByPatientCodeSurveys(
         keyword: string,
         orgUnitId: string,
         parentId: string
     ): FutureData<PaginatedReponse<Survey[]>> {
-        console.debug(keyword, orgUnitId, parentId);
-        throw new Error("Method not implemented.");
+        return Future.success({
+            pager: {
+                page: 1,
+                pageSize: 10,
+            },
+            objects: [
+                {
+                    name: "Patient1",
+                    id: "1",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                    surveyType: "",
+                    rootSurvey: { id: parentId, name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+                {
+                    name: "Patient2",
+                    id: "2",
+                    startDate: new Date(),
+                    status: "COMPLETED",
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                    surveyType: "",
+                    rootSurvey: { id: parentId, name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+            ],
+        });
     }
     getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
         orgUnitId: string
     ): FutureData<PaginatedReponse<Survey[]>> {
-        throw new Error("Method not implemented.");
+        return Future.success({
+            pager: {
+                page: 1,
+                pageSize: 10,
+            },
+            objects: [
+                {
+                    name: "Patient1",
+                    id: "1",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                    surveyType: "",
+                    rootSurvey: { id: "1", name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+                {
+                    name: "Patient2",
+                    id: "2",
+                    startDate: new Date(),
+                    status: "COMPLETED",
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                    surveyType: "",
+                    rootSurvey: { id: "2", name: `${keyword}-1`, surveyType: "" },
+                    surveyFormType: "PrevalenceCaseReportForm",
+                },
+            ],
+        });
     }
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
-        programId: string,
+        _programId: string,
         orgUnitId: string,
-        parentWardRegisterId: string | undefined,
+        parentId: string | undefined,
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        throw new Error("Method not implemented.");
+        return Future.success({
+            pager: {
+                page: page,
+                pageSize: pageSize,
+            },
+            objects: [
+                {
+                    name: "Patient1",
+                    id: "1",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                    surveyType: "",
+                    rootSurvey: { id: "1", name: `S-1`, surveyType: "" },
+                    surveyFormType: surveyFormType,
+                },
+                {
+                    name: "Patient2",
+                    id: "2",
+                    startDate: new Date(),
+                    status: "COMPLETED",
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                    surveyType: "",
+                    rootSurvey: { id: "2", name: `S-2`, surveyType: "" },
+                    surveyFormType: surveyFormType,
+                },
+            ],
+        });
     }
     getPaginatedSurveyChildCount(
-        parentProgram: string,
-        orgUnitId: string,
-        parentSurveyId: string,
-        secondaryparentId: string | undefined
+        _parentProgram: string,
+        _orgUnitId: string,
+        _parentSurveyId: string,
+        _secondaryparentId: string | undefined
     ): FutureData<ChildCount> {
-        throw new Error("Method not implemented.");
+        return Future.success({ type: "number", value: 2 });
     }
 }

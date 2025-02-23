@@ -25,7 +25,7 @@ import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
-import { useMultipleChildCount } from "../hook/useMultipleChildCount";
+// import { useMultipleChildCount } from "../hook/useMultipleChildCount";
 import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 
@@ -80,7 +80,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         sortByColumn,
     } = useSurveyListActions(surveyFormType);
 
-    const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
+    // const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
