@@ -13,11 +13,13 @@ import {
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
+import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(
         private surveyReporsitory: SurveyRepository,
+        private paginatedSurveyRepository: PaginatedSurveyRepository,
         private astGuidelineRepository: ASTGuidelinesRepository
     ) {}
 
@@ -35,15 +37,10 @@ export class SaveFormDataUseCase {
 
         //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
         if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
-            return this.surveyReporsitory
-                .getSurveys({
-                    surveyFormType: surveyFormType,
-                    programId: programId,
-                    orgUnitId: ouId,
-                    chunked: false,
-                })
+            return this.paginatedSurveyRepository
+                .getSurveys(surveyFormType, programId, ouId, undefined, 1, 10, false)
                 .flatMap(surveys => {
-                    if (surveys.length > 0) {
+                    if (surveys.objects.length > 0) {
                         return Future.error(
                             new Error(
                                 "Prevalence Facility Level Form already exists for this facility."

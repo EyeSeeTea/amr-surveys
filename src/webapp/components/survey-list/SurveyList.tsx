@@ -8,15 +8,10 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import {
-    getSurveyDisplayName,
-    hideCreateNewButton,
-    isPaginatedSurveyList,
-} from "../../../domain/utils/PPSProgramsHelper";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
-import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
@@ -150,23 +145,15 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         <SurveyListFilters status={statusFilter} setStatus={setStatusFilter} />
                     )}
 
-                    {isPaginatedSurveyList(surveyFormType) ? (
-                        <PaginatedSurveyListTable
-                            surveys={searchResultSurveys}
-                            surveyFormType={surveyFormType}
-                            page={page}
-                            setPage={setPage}
-                            pageSize={pageSize}
-                            total={total}
-                            refreshSurveys={setRefreshSurveys}
-                        />
-                    ) : (
-                        <SurveyListTable
-                            surveys={filteredSurveys}
-                            surveyFormType={surveyFormType}
-                            refreshSurveys={setRefreshSurveys}
-                        />
-                    )}
+                    <PaginatedSurveyListTable
+                        surveys={searchResultSurveys}
+                        surveyFormType={surveyFormType}
+                        page={page}
+                        setPage={setPage}
+                        pageSize={pageSize}
+                        total={total}
+                        refreshSurveys={setRefreshSurveys}
+                    />
                 </CustomCard>
             </ContentLoader>
             {isLoading && (

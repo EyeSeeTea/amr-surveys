@@ -1,6 +1,7 @@
 import { MouseEventHandler, useState } from "react";
-import { SortDirection } from "../table/PaginatedSurveyListTable";
+
 import { Survey } from "../../../../domain/entities/Survey";
+import { SortDirection } from "./useSurveyListActions";
 
 export const useMultipleChildCount = (
     sortByColumn: (columnName: keyof Survey, sortDirection: SortDirection) => void

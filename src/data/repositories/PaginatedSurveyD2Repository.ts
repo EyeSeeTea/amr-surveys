@@ -1,6 +1,6 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { Future } from "../../domain/entities/generic/Future";
-import { Id } from "../../domain/entities/Ref";
+import { Id, NamedRef } from "../../domain/entities/Ref";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
@@ -10,18 +10,33 @@ import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surve
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
+    PPS_COUNTRY_QUESTIONNAIRE_ID,
+    PPS_HOSPITAL_FORM_ID,
     PPS_PATIENT_REGISTER_ID,
+    PPS_WARD_REGISTER_ID,
     PREVALENCE_CASE_REPORT_FORM_ID,
+    PREVALENCE_FACILITY_LEVEL_FORM_ID,
+    PREVALENCE_SURVEY_FORM_ID,
     SURVEY_PATIENT_CODE_TEA_ID,
     SURVEY_PATIENT_ID_TEA_ID,
     WARD_ID_TEA_ID,
 } from "../entities/D2Survey";
 import {
+    D2TrackerEntitySelectedPick,
     mapEventToSurvey,
     mapTrackedEntityToSurvey,
     trackedEntityFields,
 } from "../utils/surveyListMappers";
 import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
+import { Maybe } from "../../utils/ts-utils";
+import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+
+type Filter = {
+    id: string;
+    value: string;
+};
+
+const OU_CHUNK_SIZE = 500;
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
@@ -32,14 +47,18 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        chunked = false
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const filter = this.getFilterByParentId(programId, parentId);
+
         return isTrackerProgram(programId)
             ? this.getTrackerProgramSurveys(
                   surveyFormType,
                   programId,
                   orgUnitId,
-                  parentId,
+                  chunked,
+                  filter,
                   page,
                   pageSize
               )
@@ -47,49 +66,90 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   surveyFormType,
                   programId,
                   orgUnitId,
-                  parentId,
+                  filter,
                   page,
                   pageSize
               );
     }
 
-    getTrackerProgramSurveys(
+    private getTrackerProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
-        parentId: Id | undefined,
+        chunked = false,
+        filter: Maybe<Filter>,
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const ouMode = "SELECTED";
+        return chunked
+            ? this.getTrackerProgramSurveysChunked(
+                  surveyFormType,
+                  programId,
+                  orgUnitId,
+                  filter,
+                  page,
+                  pageSize
+              )
+            : this.getTrackerProgramSurveysUnchunked(
+                  surveyFormType,
+                  programId,
+                  orgUnitId,
+                  filter,
+                  page,
+                  pageSize
+              );
+    }
 
-        const filterParentDEId = getParentDataElementForProgram(programId);
+    private getTrackerProgramSurveysUnchunked(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnitId: Id,
+        filter: Maybe<Filter>,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        const ouMode =
+            (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
+            programId === PPS_PATIENT_REGISTER_ID
+                ? "DESCENDANTS"
+                : "SELECTED";
 
-        return apiToFuture(
-            this.api.tracker.trackedEntities.get({
-                fields: trackedEntityFields,
-                program: programId,
-                orgUnit: orgUnitId,
-                ouMode: ouMode,
-                page: page + 1,
+        return this.getTrackerEnityMappedSurveysPaginated(
+            programId,
+            orgUnitId,
+            page,
+            pageSize,
+            filter,
+            ouMode,
+            surveyFormType
+        );
+    }
+
+    private getTrackerProgramSurveysChunked(
+        surveyFormType: SURVEY_FORM_TYPES,
+        programId: Id,
+        orgUnits: string,
+        filter: Maybe<Filter>,
+        page: number,
+        pageSize: number
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        const orgUnitIds = orgUnits.split(";");
+        const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
+
+        const allChunkedSurveys = chunkedOUs.flatMap(ouChunk => {
+            return this.getTrackerEnityMappedSurveysPaginated(
+                programId,
+                ouChunk.join(";"),
+                page,
                 pageSize,
-                totalPages: true,
-                filter: `${filterParentDEId}:eq:${parentId}`,
-            })
-        ).flatMap(trackedEntities => {
-            const instances = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, surveyFormType);
+                filter,
+                "SELECTED",
+                surveyFormType
+            );
+        });
 
-            const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                pager: {
-                    page: trackedEntities.page,
-                    pageSize: trackedEntities.pageSize,
-                    total: trackedEntities.total,
-                },
-                objects: surveys,
-            };
-
-            return Future.success(paginatedSurveys);
+        return Future.sequential(allChunkedSurveys).flatMap(listOfSurveys => {
+            return Future.success(_(listOfSurveys).flatten());
         });
     }
 
@@ -97,11 +157,19 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
-        parentId: Id | undefined,
+        filter: Maybe<Filter>,
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const ouMode = "SELECTED";
+        const ouMode =
+            orgUnitId !== "" &&
+            (programId === PPS_WARD_REGISTER_ID ||
+                programId === PPS_HOSPITAL_FORM_ID ||
+                programId === PPS_COUNTRY_QUESTIONNAIRE_ID ||
+                programId === PREVALENCE_SURVEY_FORM_ID)
+                ? "DESCENDANTS"
+                : "SELECTED";
+
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
@@ -111,23 +179,25 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 page: page + 1,
                 pageSize,
                 totalPages: true,
-                filter: `${WARD_ID_TEA_ID}:eq:${parentId}`,
+
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap(response => {
             const events = response.instances;
 
-            const surveys = mapEventToSurvey(events, surveyFormType, programId);
+            return this.getOrgUnitNames(events.map(event => event.orgUnit)).flatMap(orgUnits => {
+                const surveys = mapEventToSurvey(events, surveyFormType, programId, orgUnits);
+                const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                    pager: {
+                        page: response.page,
+                        pageSize: response.pageSize,
+                        total: response.total,
+                    },
+                    objects: surveys,
+                };
 
-            const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                pager: {
-                    page: response.page,
-                    pageSize: response.pageSize,
-                    total: response.total,
-                },
-                objects: surveys,
-            };
-
-            return Future.success(paginatedSurveys);
+                return Future.success(paginatedSurveys);
+            });
         });
     }
 
@@ -240,5 +310,74 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             secondaryparentId,
             this.api
         );
+    }
+
+    private getTrackerEnityMappedSurveysPaginated(
+        programId: Id,
+        orgUnits: string,
+        page: number,
+        pageSize: number,
+        filter: Maybe<Filter>,
+        ouMode: "SELECTED" | "DESCENDANTS",
+        surveyFormType: SURVEY_FORM_TYPES
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        return apiToFuture(
+            this.api.tracker.trackedEntities.get({
+                fields: trackedEntityFields,
+                program: programId,
+                orgUnit: orgUnits,
+                ouMode: ouMode,
+                page: page + 1,
+                pageSize,
+                totalPages: true,
+                filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
+            })
+        ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
+            const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
+            return this.getOrgUnitNames(instances.map(instance => instance.orgUnit)).flatMap(
+                orgUnits => {
+                    const surveys = mapTrackedEntityToSurvey(instances, surveyFormType, orgUnits);
+                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        pager: {
+                            page: trackedEntities.page,
+                            pageSize: trackedEntities.pageSize,
+                            total: trackedEntities.total,
+                        },
+                        objects: surveys,
+                    };
+
+                    return Future.success(paginatedSurveys);
+                }
+            );
+        });
+    }
+
+    private getFilterByParentId(programId: string, parentId: Maybe<string>): Maybe<Filter> {
+        const filterParentDEId = getParentDataElementForProgram(programId);
+
+        const filter =
+            parentId && filterParentDEId
+                ? {
+                      id: filterParentDEId,
+                      value: parentId,
+                  }
+                : undefined;
+
+        return filter;
+    }
+
+    private getOrgUnitNames(orgUnitIds: Id[]): FutureData<NamedRef[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true },
+                filter: { id: { in: orgUnitIds } },
+                paging: false,
+            })
+        ).flatMap(orgUnitsResponse => {
+            const orgUnits = orgUnitsResponse.objects.map(ou => {
+                return { id: ou.id, name: ou.name };
+            });
+            return Future.success(orgUnits);
+        });
     }
 }

@@ -8,10 +8,12 @@ export interface PaginatedSurveyRepository {
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
-        parentWardRegisterId: Id | undefined,
+        parentId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        chunked: boolean
     ): FutureData<PaginatedReponse<Survey[]>>;
+
     getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
         orgUnitId: Id,
