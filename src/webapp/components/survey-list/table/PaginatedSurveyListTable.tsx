@@ -25,7 +25,7 @@ import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { SortDirection, useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
-// import { useMultipleChildCount } from "../hook/useMultipleChildCount";
+import { useMultipleChildCount } from "../hook/useMultipleChildCount";
 import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 
@@ -57,7 +57,6 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
     const [patientCodeSortDirection, setPatientCodeSortDirection] = useState<SortDirection>("asc");
     const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
-    const [childrenSortDirection, setChildrenSortDirection] = useState<SortDirection>("asc");
     const [statusSortDirection, setStatusSortDirection] = useState<SortDirection>("asc");
     const [surveyTypeSortDirection, setSurveyTypeSortDirection] = useState<SortDirection>("asc");
     const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
@@ -80,7 +79,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         sortByColumn,
     } = useSurveyListActions(surveyFormType);
 
-    // const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
+    const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
 
     useEffect(() => {
         if (surveys) setSortedSurveys(surveys);
@@ -304,46 +303,24 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         </TableCell>
                                     )}
 
-                                    {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
-                                        <TableCell
-                                            onClick={() => {
-                                                childrenSortDirection === "asc"
-                                                    ? setChildrenSortDirection("desc")
-                                                    : setChildrenSortDirection("asc");
-                                                sortByColumn("childCount", childrenSortDirection);
-                                            }}
-                                        >
-                                            <span>
-                                                <Typography variant="caption">
-                                                    {getChildrenName(surveyFormType)}
-                                                </Typography>
-                                                {childrenSortDirection === "asc" ? (
-                                                    <ArrowUpward fontSize="small" />
-                                                ) : (
-                                                    <ArrowDownward fontSize="small" />
-                                                )}
-                                            </span>
-                                        </TableCell>
-                                    )}
-
                                     <>
                                         {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
                                             getChildrenName(surveyFormType).map(childName => (
                                                 <TableCell
-                                                    // onClick={childOnClick(childName)}
+                                                    onClick={childOnClick(childName)}
                                                     key={childName}
                                                 >
                                                     <span>
                                                         <Typography variant="caption">
                                                             {childName}
                                                         </Typography>
-                                                        {/* {childName &&
+                                                        {childName &&
                                                         getCurrentSortDirection(childName) ===
                                                             "asc" ? (
                                                             <ArrowUpward fontSize="small" />
                                                         ) : (
                                                             <ArrowDownward fontSize="small" />
-                                                        )} */}
+                                                        )}
                                                     </span>
                                                 </TableCell>
                                             ))}

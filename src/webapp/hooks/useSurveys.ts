@@ -2,21 +2,23 @@ import { useCallback, useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
-// import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
+import { PAGE_SIZE } from "../../domain/entities/TablePagination";
 
-const PAGE_SIZE = 10;
-export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
+export function useSurveys(
+    surveyFormType: SURVEY_FORM_TYPES,
+    page: number,
+    setPageSize: React.Dispatch<React.SetStateAction<number>>,
+    setTotal: React.Dispatch<React.SetStateAction<number | undefined>>
+) {
     const { compositionRoot, prevalenceHospitals } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loadingSurveys, setLoadingSurveys] = useState(false);
     const [surveysError, setSurveysError] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
-    const [page, setPage] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
-    const [total, setTotal] = useState<number>();
+
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -129,10 +131,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentPrevalenceSurveyForm?.id,
         currentWardRegister,
         shouldRefreshSurveys,
-        page,
         getOrgUnitByFormType,
         isAdmin,
         currentCaseReportForm?.id,
+        page,
+        setPageSize,
+        setTotal,
     ]);
 
     return {
@@ -140,11 +144,5 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         loadingSurveys,
         errorSurveys: surveysError,
         setRefreshSurveys,
-        page,
-        setPage,
-        pageSize,
-        setPageSize,
-        total,
-        setTotal,
     };
 }

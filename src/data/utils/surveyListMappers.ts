@@ -1,5 +1,5 @@
 import { D2TrackerTrackedEntitySchema } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
-import { SURVEY_FORM_TYPES, SURVEY_STATUSES, Survey } from "../../domain/entities/Survey";
+import { SURVEY_FORM_TYPES, Survey } from "../../domain/entities/Survey";
 import {
     PPS_SURVEY_FORM_ID,
     PREVALENCE_SURVEY_FORM_ID,
@@ -159,8 +159,8 @@ export const mapEventToSurvey = (
                 programId === PPS_SURVEY_FORM_ID || programId === PREVALENCE_SURVEY_FORM_ID
                     ? status
                     : event.status === "COMPLETED"
-                    ? ("COMPLETED" as SURVEY_STATUSES)
-                    : ("ACTIVE" as SURVEY_STATUSES),
+                    ? "COMPLETED"
+                    : "ACTIVE",
             assignedOrgUnit: {
                 id: event.orgUnit,
                 name: orgUnits?.find(ou => ou.id === event.orgUnit)?.name ?? "",

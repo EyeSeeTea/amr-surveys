@@ -5,7 +5,7 @@ import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSurveyRepository";
-import { PaginatedReponse } from "../../domain/entities/TablePagination";
+import { PAGE_SIZE, PaginatedReponse } from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -212,7 +212,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 program: PPS_PATIENT_REGISTER_ID,
                 orgUnit: orgUnitId,
                 ouMode: "SELECTED",
-                pageSize: 10,
+                pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
@@ -244,7 +244,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 program: PPS_PATIENT_REGISTER_ID,
                 orgUnit: orgUnitId,
                 ouMode: "SELECTED",
-                pageSize: 10,
+                pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
@@ -276,7 +276,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 program: PREVALENCE_CASE_REPORT_FORM_ID,
                 orgUnit: orgUnitId,
                 ouMode: "SELECTED",
-                pageSize: 10,
+                pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
             })

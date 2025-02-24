@@ -257,7 +257,7 @@ export const hideCreateNewButton = (
     );
 };
 
-export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolean => {
+export const hasSecondaryParent = (surveyFormType: SURVEY_FORM_TYPES): boolean => {
     switch (surveyFormType) {
         case "PPSPatientRegister":
         case "PrevalenceCaseReportForm":
@@ -268,6 +268,7 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
         case "PrevalenceD28FollowUp":
         case "PrevalenceCohortEnrolment":
         case "PrevalenceDischarge":
+        case "PPSWardRegister":
             return true;
         default:
             return false;

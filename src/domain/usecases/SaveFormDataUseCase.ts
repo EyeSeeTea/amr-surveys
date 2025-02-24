@@ -14,6 +14,7 @@ import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
+import { PAGE_SIZE } from "../entities/TablePagination";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
@@ -38,7 +39,7 @@ export class SaveFormDataUseCase {
         //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
         if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
             return this.paginatedSurveyRepository
-                .getSurveys(surveyFormType, programId, ouId, undefined, 1, 10, false)
+                .getSurveys(surveyFormType, programId, ouId, undefined, 1, PAGE_SIZE, false)
                 .flatMap(surveys => {
                     if (surveys.objects.length > 0) {
                         return Future.error(

@@ -3,7 +3,7 @@ import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
 import {
     getProgramId,
-    isPaginatedSurveyList,
+    hasSecondaryParent,
     isPrevalencePatientChild,
 } from "../utils/PPSProgramsHelper";
 import { PaginatedReponse } from "../entities/TablePagination";
@@ -55,11 +55,7 @@ export class GetPaginatedSurveysUseCase {
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
                             surveyReporsitory: this.paginatedSurveyRepo,
-                            secondaryparentId:
-                                surveyFormType === "PPSWardRegister" ||
-                                isPaginatedSurveyList(surveyFormType)
-                                    ? survey.id
-                                    : "",
+                            secondaryparentId: hasSecondaryParent(surveyFormType) ? survey.id : "",
                         })
                     ).map(([parentDetails, childCount]): Survey => {
                         const rootName =

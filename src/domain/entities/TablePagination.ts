@@ -1,3 +1,5 @@
+export const PAGE_SIZE = 5;
+
 export interface PaginatedReponse<T> {
     pager: Pager;
     objects: T;

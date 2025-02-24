@@ -21,8 +21,22 @@ import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
+    page: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
+    pageSize: number;
+    setPageSize: React.Dispatch<React.SetStateAction<number>>;
+    total: number | undefined;
+    setTotal: React.Dispatch<React.SetStateAction<number | undefined>>;
 }
-export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
+export const SurveyList: React.FC<SurveyListProps> = ({
+    surveyFormType,
+    page,
+    setPageSize,
+    pageSize,
+    setPage,
+    total,
+    setTotal,
+}) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
@@ -32,17 +46,12 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
         : false;
 
-    const {
-        surveys,
-        loadingSurveys,
-        errorSurveys,
+    const { surveys, loadingSurveys, errorSurveys, setRefreshSurveys } = useSurveys(
+        surveyFormType,
         page,
-        setPage,
-        pageSize,
-        total,
-        setTotal,
-        setRefreshSurveys,
-    } = useSurveys(surveyFormType);
+        setPageSize,
+        setTotal
+    );
 
     const {
         statusFilter,

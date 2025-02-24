@@ -14,6 +14,7 @@ export const useMultipleChildCount = (
         useState<SortDirection>("asc");
     const [supranationalRefsResultsSortDirection, setSupranationalRefsResultsSortDirection] =
         useState<SortDirection>("asc");
+    const [childrenSortDirection, setChildrenSortDirection] = useState<SortDirection>("asc");
 
     const getCurrentSortDirection = (childOptionName: string): SortDirection => {
         switch (childOptionName) {
@@ -31,7 +32,7 @@ export const useMultipleChildCount = (
                 return "asc";
 
             default:
-                throw new Error(`Invalid child option name: ${childOptionName}`);
+                return childrenSortDirection;
         }
     };
 
@@ -66,7 +67,12 @@ export const useMultipleChildCount = (
                     sortByColumn("childCount", supranationalRefsResultsSortDirection);
                 };
             default:
-                return undefined;
+                return () => {
+                    childrenSortDirection === "asc"
+                        ? setChildrenSortDirection("desc")
+                        : setChildrenSortDirection("asc");
+                    sortByColumn("childCount", childrenSortDirection);
+                };
         }
     };
 
