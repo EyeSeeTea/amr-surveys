@@ -4,7 +4,10 @@ import {
     Questionnaire,
     QuestionnaireStage,
 } from "../../../../domain/entities/Questionnaire/Questionnaire";
-import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    SURVEYS_WITH_ORG_UNIT_SELECTOR,
+    SURVEY_FORM_TYPES,
+} from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 
@@ -31,7 +34,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [questionnaire, setQuestionnaire] = useState<Questionnaire>();
     const [loading, setLoading] = useState<boolean>(false);
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
-    const [shouldDisableSave, setShouldDisableSave] = useState<boolean>(false);
     const [refreshQuestionnaire, setRefreshQuestionnaire] = useState({});
     const {
         currentPPSSurveyForm,
@@ -46,13 +48,15 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const [error, setError] = useState<string>();
     const { currentModule } = useCurrentModule();
 
-    useEffect(() => {
-        if (!questionnaire) setShouldDisableSave(true);
-        else {
-            const shouldDisable = Questionnaire.doesQuestionnaireHaveErrors(questionnaire);
-            setShouldDisableSave(shouldDisable || hasReadOnlyAccess);
+    const shouldDisableSave = useMemo(() => {
+        if (!questionnaire) return true;
+        const isDisabled =
+            Questionnaire.doesQuestionnaireHaveErrors(questionnaire) || hasReadOnlyAccess;
+        if (SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType)) {
+            return isDisabled || !currentOrgUnit;
         }
-    }, [hasReadOnlyAccess, questionnaire]);
+        return isDisabled;
+    }, [hasReadOnlyAccess, questionnaire, currentOrgUnit, formType]);
 
     useEffect(() => {
         setLoading(true);

@@ -32,6 +32,13 @@ export const SURVEYS_WITH_CHILD_COUNT: SURVEY_FORM_TYPES[] = [
     "PPSWardRegister",
 ];
 
+export const SURVEYS_WITH_ORG_UNIT_SELECTOR: readonly SURVEY_FORM_TYPES[] = [
+    "PPSCountryQuestionnaire",
+    "PPSHospitalForm",
+    "PrevalenceSurveyForm",
+    "PrevalenceFacilityLevelForm",
+];
+
 export interface SurveyBase extends NamedRef {
     surveyType: string;
     astGuideline?: ASTGUIDELINE_TYPES;
