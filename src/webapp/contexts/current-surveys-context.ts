@@ -1,6 +1,11 @@
 import { useContext, createContext } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { OrgUnitNamedRef, PrevalenceSurveyForm, SurveyBase } from "../../domain/entities/Survey";
+import {
+    OrgUnitNamedRef,
+    PrevalenceSurveyForm,
+    SurveyBase,
+    OrgUnitWithCodeRef,
+} from "../../domain/entities/Survey";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 
 export interface CurrentSurveysContextProps {
@@ -9,8 +14,8 @@ export interface CurrentSurveysContextProps {
     changeCurrentPPSSurveyForm: (survey: SurveyBase | undefined) => void;
     resetCurrentPPSSurveyForm: () => void;
 
-    currentCountryQuestionnaire: OrgUnitNamedRef | undefined;
-    changeCurrentCountryQuestionnaire: (id: Id, name: string, orgUnitId: Id) => void;
+    currentCountryQuestionnaire: OrgUnitWithCodeRef | undefined;
+    changeCurrentCountryQuestionnaire: (id: Id, orgUnitCode: string, orgUnitId: Id) => void;
     resetCurrentCountryQuestionnaire: () => void;
 
     currentHospitalForm: OrgUnitNamedRef | undefined;

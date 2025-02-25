@@ -1,7 +1,7 @@
 import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
 import { OrgUnitBasic } from "./OrgUnit";
 import { ProgramCountMap, ProgramOptionCountMap } from "./Program";
-import { NamedRef, Id } from "./Ref";
+import { NamedRef, Id, Ref } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
     | "PPSSurveyForm"
@@ -40,6 +40,11 @@ export interface SurveyBase extends NamedRef {
 
 export interface OrgUnitNamedRef extends NamedRef {
     orgUnitId: Id;
+}
+
+export interface OrgUnitWithCodeRef extends Ref {
+    orgUnitId: Id;
+    orgUnitCode: string;
 }
 
 export interface PrevalenceSurveyForm extends OrgUnitNamedRef {
