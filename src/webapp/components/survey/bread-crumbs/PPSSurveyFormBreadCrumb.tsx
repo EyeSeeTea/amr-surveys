@@ -81,7 +81,7 @@ export const PPSSurveyFormBreadCrumb: React.FC<PPSSurveyFormBreadCrumbProps> = (
                                 to={`/survey/PPSCountryQuestionnaire/${currentCountryQuestionnaire.id}`}
                                 exact={true}
                             >
-                                <span>{currentCountryQuestionnaire.name}</span>
+                                <span>{currentCountryQuestionnaire.orgUnitCode}</span>
                             </Button>
                         ) : (
                             <Button>
