@@ -13,13 +13,13 @@ import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
+// import { SortDirection } from "../../../../domain/entities/TablePagination";
 
-export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
     const [options, setOptions] = useState<OptionType[]>([]);
-    const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
+    // const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     const [optionLoading, setOptionLoading] = useState<boolean>(false);
 
     const {
@@ -141,14 +141,14 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-        setSortedSurveys(surveys => {
-            if (surveys)
-                return _(surveys)
-                    .sortBy(x => x[columnName], { direction: sortDirection })
-                    .value();
-        });
-    };
+    // const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
+    //     setSortedSurveys(surveys => {
+    //         if (surveys)
+    //             return _(surveys)
+    //                 .sortBy(x => x[columnName], { direction: sortDirection })
+    //                 .value();
+    //     });
+    // };
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,
@@ -217,13 +217,13 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
 
     return {
         options,
-        sortedSurveys,
+        // sortedSurveys,
         optionLoading,
-        setSortedSurveys,
+        // setSortedSurveys,
         goToSurvey,
         assignChild,
         listChildren,
         actionClick,
-        sortByColumn,
+        // sortByColumn,
     };
 }

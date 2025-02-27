@@ -18,6 +18,11 @@ import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
 import { usePatientSearch } from "./hook/usePatientSearch";
 import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
+import {
+    SortableColumnName,
+    SortColumnDetails,
+    SortDirection,
+} from "../../../domain/entities/TablePagination";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -27,6 +32,9 @@ interface SurveyListProps {
     setPageSize: React.Dispatch<React.SetStateAction<number>>;
     total: number | undefined;
     setTotal: React.Dispatch<React.SetStateAction<number | undefined>>;
+    sortDetails: SortColumnDetails | undefined;
+    setSortDetails: React.Dispatch<React.SetStateAction<SortColumnDetails | undefined>>;
+    getSortDirection: (column: SortableColumnName) => SortDirection;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({
     surveyFormType,
@@ -36,6 +44,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({
     setPage,
     total,
     setTotal,
+    sortDetails,
+    setSortDetails,
+    getSortDirection,
 }) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
@@ -50,7 +61,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({
         surveyFormType,
         page,
         setPageSize,
-        setTotal
+        setTotal,
+        sortDetails
     );
 
     const {
@@ -162,6 +174,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({
                         pageSize={pageSize}
                         total={total}
                         refreshSurveys={setRefreshSurveys}
+                        setSortDetails={setSortDetails}
+                        getSortDirection={getSortDirection}
                     />
                 </CustomCard>
             </ContentLoader>

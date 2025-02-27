@@ -6,7 +6,7 @@ import {
     hasSecondaryParent,
     isPrevalencePatientChild,
 } from "../utils/PPSProgramsHelper";
-import { PaginatedReponse } from "../entities/TablePagination";
+import { PaginatedReponse, SortColumnDetails } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
@@ -28,7 +28,8 @@ export class GetPaginatedSurveysUseCase {
         parentPatientId: Id | undefined,
         page: number,
         pageSize: number,
-        chunked = false
+        chunked = false,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         const programId = getProgramId(surveyFormType);
 
@@ -42,7 +43,16 @@ export class GetPaginatedSurveysUseCase {
             : parentSurveyId;
 
         return this.paginatedSurveyRepo
-            .getSurveys(surveyFormType, programId, ouId, parentId, page, pageSize, chunked)
+            .getSurveys(
+                surveyFormType,
+                programId,
+                ouId,
+                parentId,
+                page,
+                pageSize,
+                chunked,
+                sortColumnDetails
+            )
             .flatMap(surveys => {
                 const surveysWithName = surveys.objects.map(survey => {
                     return Future.join2(

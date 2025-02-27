@@ -12,7 +12,17 @@ export const SurveyListPage: React.FC = React.memo(() => {
     const { formType } = useParams<{ formType: SURVEY_FORM_TYPES }>();
     const { currentModule } = useCurrentModule();
 
-    const { page, setPage, pageSize, setPageSize, total, setTotal } = useSurveyListPage(formType);
+    const {
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        total,
+        setTotal,
+        sortDetails,
+        setSortDetails,
+        getSortDirection,
+    } = useSurveyListPage(formType);
     return (
         <ContentWrapper>
             {currentModule?.name === "PPS" && <PPSListBreadCrumbs formType={formType} />}
@@ -27,6 +37,9 @@ export const SurveyListPage: React.FC = React.memo(() => {
                 setPage={setPage}
                 setPageSize={setPageSize}
                 setTotal={setTotal}
+                setSortDetails={setSortDetails}
+                sortDetails={sortDetails}
+                getSortDirection={getSortDirection}
             />
         </ContentWrapper>
     );

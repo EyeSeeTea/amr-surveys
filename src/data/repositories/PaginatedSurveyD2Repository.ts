@@ -5,7 +5,13 @@ import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSurveyRepository";
-import { PAGE_SIZE, PaginatedReponse } from "../../domain/entities/TablePagination";
+import {
+    PAGE_SIZE,
+    PaginatedReponse,
+    SortableColumnName,
+    SortColumnDetails,
+    SortOrder,
+} from "../../domain/entities/TablePagination";
 import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surveyProgramHelper";
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
@@ -16,9 +22,16 @@ import {
     PPS_WARD_REGISTER_ID,
     PREVALENCE_CASE_REPORT_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
+    PREVALENCE_START_DATE_DATAELEMENT_ID,
     PREVALENCE_SURVEY_FORM_ID,
+    PREVALENCE_SURVEY_NAME_DATAELEMENT_ID,
+    START_DATE_DATAELEMENT_ID,
+    SURVEY_HOSPITAL_CODE_DATAELEMENT_ID,
+    SURVEY_NAME_DATAELEMENT_ID,
     SURVEY_PATIENT_CODE_TEA_ID,
     SURVEY_PATIENT_ID_TEA_ID,
+    SURVEY_TYPE_DATAELEMENT_ID,
+    SURVEY_WARD_CODE_DATAELEMENT_ID,
     WARD_ID_TEA_ID,
 } from "../entities/D2Survey";
 import {
@@ -29,7 +42,10 @@ import {
 } from "../utils/surveyListMappers";
 import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
 import { Maybe } from "../../utils/ts-utils";
-import { TrackedEntitiesGetResponse } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import {
+    TrackedEntitiesGetResponse,
+    TrackedOrderBase,
+} from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
 type Filter = {
     id: string;
@@ -48,9 +64,13 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         parentId: Id | undefined,
         page: number,
         pageSize: number,
-        chunked = false
+        chunked = false,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         const filter = this.getFilterByParentId(programId, parentId);
+        const sortOrder = sortColumnDetails
+            ? this.mapColumnToIdForSort(sortColumnDetails, surveyFormType)
+            : undefined;
 
         return isTrackerProgram(programId)
             ? this.getTrackerProgramSurveys(
@@ -60,7 +80,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   chunked,
                   filter,
                   page,
-                  pageSize
+                  pageSize,
+                  sortOrder
               )
             : this.getEventProgramSurveys(
                   surveyFormType,
@@ -68,7 +89,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   orgUnitId,
                   filter,
                   page,
-                  pageSize
+                  pageSize,
+                  sortOrder
               );
     }
 
@@ -79,7 +101,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         chunked = false,
         filter: Maybe<Filter>,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         return chunked
             ? this.getTrackerProgramSurveysChunked(
@@ -88,7 +111,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   orgUnitId,
                   filter,
                   page,
-                  pageSize
+                  pageSize,
+                  sortOrder
               )
             : this.getTrackerProgramSurveysUnchunked(
                   surveyFormType,
@@ -96,7 +120,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   orgUnitId,
                   filter,
                   page,
-                  pageSize
+                  pageSize,
+                  sortOrder
               );
     }
 
@@ -106,7 +131,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         filter: Maybe<Filter>,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode =
             (orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID) ||
@@ -121,7 +147,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             pageSize,
             filter,
             ouMode,
-            surveyFormType
+            surveyFormType,
+            sortOrder
         );
     }
 
@@ -131,7 +158,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnits: string,
         filter: Maybe<Filter>,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         const orgUnitIds = orgUnits.split(";");
         const chunkedOUs = _(orgUnitIds).chunk(OU_CHUNK_SIZE).value();
@@ -144,7 +172,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize,
                 filter,
                 "SELECTED",
-                surveyFormType
+                surveyFormType,
+                sortOrder
             );
         });
 
@@ -159,7 +188,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         filter: Maybe<Filter>,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode =
             orgUnitId !== "" &&
@@ -179,7 +209,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 page: page + 1,
                 pageSize,
                 totalPages: true,
-
+                order: sortOrder ? `${sortOrder.id}:${sortOrder.direction}` : undefined,
                 filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap(response => {
@@ -204,8 +234,19 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const trackerOrder: Maybe<TrackedOrderBase[]> = sortOrder
+            ? [
+                  {
+                      direction: sortOrder.direction,
+                      type: "trackedEntityAttributeId",
+                      id: sortOrder.id,
+                  },
+              ]
+            : undefined;
+
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: trackedEntityFields,
@@ -214,6 +255,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 ouMode: "SELECTED",
                 pageSize: PAGE_SIZE,
                 totalPages: true,
+                order: trackerOrder,
                 filter: `${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
@@ -236,7 +278,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     getFilteredPPSPatientByPatientCodeSurveys(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -247,6 +290,15 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
+                order: sortOrder
+                    ? [
+                          {
+                              direction: sortOrder.direction,
+                              type: "trackedEntityAttributeId",
+                              id: sortOrder.id,
+                          },
+                      ]
+                    : undefined,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -268,7 +320,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     getFilteredPrevalencePatientSurveysByPatientId(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -279,6 +332,15 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                order: sortOrder
+                    ? [
+                          {
+                              direction: sortOrder.direction,
+                              type: "trackedEntityAttributeId",
+                              id: sortOrder.id,
+                          },
+                      ]
+                    : undefined,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -319,7 +381,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         pageSize: number,
         filter: Maybe<Filter>,
         ouMode: "SELECTED" | "DESCENDANTS",
-        surveyFormType: SURVEY_FORM_TYPES
+        surveyFormType: SURVEY_FORM_TYPES,
+        sortOrder?: SortOrder
     ): FutureData<PaginatedReponse<Survey[]>> {
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -331,6 +394,15 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize,
                 totalPages: true,
                 filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
+                order: sortOrder
+                    ? [
+                          {
+                              direction: sortOrder.direction,
+                              type: "trackedEntityAttributeId",
+                              id: sortOrder.id,
+                          },
+                      ]
+                    : undefined,
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
             const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
@@ -379,5 +451,40 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             });
             return Future.success(orgUnits);
         });
+    }
+
+    private mapColumnToIdForSort(
+        sortColumnDetails: SortColumnDetails,
+        surveyFormType: SURVEY_FORM_TYPES
+    ): SortOrder {
+        return {
+            direction: sortColumnDetails.direction,
+            id: this.getIdForColumnName(sortColumnDetails.column, surveyFormType),
+        };
+    }
+
+    private getIdForColumnName(column: SortableColumnName, surveyFormType: SURVEY_FORM_TYPES): Id {
+        switch (column) {
+            case "hospitalCode":
+                return SURVEY_HOSPITAL_CODE_DATAELEMENT_ID;
+            case "startDate":
+                return surveyFormType === "PPSSurveyForm"
+                    ? START_DATE_DATAELEMENT_ID
+                    : PREVALENCE_START_DATE_DATAELEMENT_ID;
+
+            case "surveyType":
+                return SURVEY_TYPE_DATAELEMENT_ID;
+            case "uniquePatientCode":
+                return SURVEY_PATIENT_CODE_TEA_ID;
+            case "uniquePatientId":
+                return SURVEY_PATIENT_ID_TEA_ID;
+            case "wardCode":
+                return SURVEY_WARD_CODE_DATAELEMENT_ID;
+            case "surveyName":
+            default:
+                return surveyFormType === "PPSSurveyForm"
+                    ? SURVEY_NAME_DATAELEMENT_ID
+                    : PREVALENCE_SURVEY_NAME_DATAELEMENT_ID;
+        }
     }
 }
