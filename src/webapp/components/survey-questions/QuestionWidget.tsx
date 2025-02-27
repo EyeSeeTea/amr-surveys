@@ -95,7 +95,7 @@ export const QuestionWidget: React.FC<QuestionWidgetProps> = React.memo(props =>
                         onChange={(value: Maybe<QuestionOption>) =>
                             onChange(update(question, value?.id))
                         }
-                        disabled={disabled}
+                        disabled={isPPSIndicationLinkQuestion(question) ? true : disabled}
                     />
                 );
             } else

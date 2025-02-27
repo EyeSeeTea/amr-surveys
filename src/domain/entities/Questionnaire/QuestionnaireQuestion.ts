@@ -6,7 +6,8 @@ import {
     QuestionnaireRule,
 } from "./QuestionnaireRules";
 import _ from "../generic/Collection";
-import { Questionnaire } from "./Questionnaire";
+import { Questionnaire, QuestionnaireStage } from "./Questionnaire";
+import _c from "../generic/Collection";
 
 export type Code = string;
 export type Question =
@@ -79,6 +80,41 @@ export const isAddNewAntibioticQuestion = (
     question: Question
 ): question is AddNewAntibioticQuestion => {
     return question.type === "boolean" && question.text === "Add new antibiotic";
+};
+
+export const mapIndicationsToTreatments = (indicationStages: QuestionnaireStage[]) => {
+    //Get a map of indications to treatments, selected by user.
+    const indicationTreatmentMap: { indicationId: Id; treatmentIds: Id[] }[] = _c(
+        indicationStages.map(indicationStage => {
+            if (!indicationStage.sections[0]) return undefined;
+            if (!indicationStage.instanceId) return undefined;
+            const linkedTreatments = indicationStage.sections[0].questions.filter(
+                q => isPPSTreatmentLinkQuestion(q) && q.value
+            );
+
+            return {
+                indicationId: indicationStage.instanceId,
+                treatmentIds: _c(linkedTreatments.map(q => q.value?.toString()))
+                    .compact()
+                    .value(),
+            };
+        })
+    )
+        .compact()
+        .value();
+
+    //Convert to a map of treatments to indications, to be autopopulated
+    const treatmentIndicationMap = indicationTreatmentMap.reduce(
+        (map, { indicationId, treatmentIds }) => {
+            treatmentIds.forEach(treatmentId => {
+                map.set(treatmentId, [...(map.get(treatmentId) || []), indicationId]);
+            });
+            return map;
+        },
+        new Map<Id, Id[]>()
+    );
+
+    return treatmentIndicationMap;
 };
 
 const ANTIBIOTIC_QUESTION_FORM_NAME = "Specify the antibiotic";
