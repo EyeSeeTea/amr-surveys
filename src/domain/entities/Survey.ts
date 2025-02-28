@@ -1,6 +1,7 @@
 import { ASTGUIDELINE_TYPES } from "./ASTGuidelines";
+import { OrgUnitBasic } from "./OrgUnit";
 import { ProgramCountMap, ProgramOptionCountMap } from "./Program";
-import { NamedRef, Id } from "./Ref";
+import { NamedRef, Id, Ref } from "./Ref";
 
 export type SURVEY_FORM_TYPES =
     | "PPSSurveyForm"
@@ -32,6 +33,13 @@ export const SURVEYS_WITH_CHILD_COUNT: SURVEY_FORM_TYPES[] = [
     "PPSWardRegister",
 ];
 
+export const SURVEYS_WITH_ORG_UNIT_SELECTOR: readonly SURVEY_FORM_TYPES[] = [
+    "PPSCountryQuestionnaire",
+    "PPSHospitalForm",
+    "PrevalenceSurveyForm",
+    "PrevalenceFacilityLevelForm",
+];
+
 export interface SurveyBase extends NamedRef {
     surveyType: string;
     astGuideline?: ASTGUIDELINE_TYPES;
@@ -39,6 +47,11 @@ export interface SurveyBase extends NamedRef {
 
 export interface OrgUnitNamedRef extends NamedRef {
     orgUnitId: Id;
+}
+
+export interface OrgUnitWithCodeRef extends Ref {
+    orgUnitId: Id;
+    orgUnitCode: string;
 }
 
 export interface PrevalenceSurveyForm extends OrgUnitNamedRef {
@@ -66,7 +79,7 @@ export interface Survey extends SurveyBase {
     rootSurvey: SurveyBase; // all surveys are associated with a given parent Survey Form instance.
     startDate?: Date;
     status: SURVEY_STATUSES;
-    assignedOrgUnit: NamedRef;
+    assignedOrgUnit: OrgUnitBasic;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
     uniquePatient?: { id: string; code: string };

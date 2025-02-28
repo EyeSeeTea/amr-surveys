@@ -1,13 +1,21 @@
+import {
+    PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
+    PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
+} from "../../../data/utils/surveyFormMappers";
 import { getParentDataElementForProgram } from "../../../data/utils/surveyProgramHelper";
 import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
 import _ from "../generic/Collection";
+import { Either } from "../generic/Either";
 import {
     Code,
+    PPSIndicationLinkQuestion,
     Question,
     QuestionnaireQuestion,
     isAntibioticQuestion,
+    isPPSIndicationLinkQuestion,
+    mapIndicationsToTreatments,
 } from "./QuestionnaireQuestion";
 import { getApplicableRules, QuestionnaireRule } from "./QuestionnaireRules";
 import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSection";
@@ -492,4 +500,79 @@ export class Questionnaire {
 
         return Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages);
     }
+
+    //For PPS Patient tracker, when an treatmnet is linked to indication by user,
+    //auto link vice versa i.e auto link the indication link fields in corresponding treatment stage.
+    static autoUpdateIndicationLinks = (
+        currentQuestionnaire: Questionnaire
+    ): Either<Error, Questionnaire> => {
+        const indicationStages = currentQuestionnaire.stages.filter(
+            stage => stage.code === PPS_PATIENT_TRACKER_INDICATION_STAGE_ID
+        );
+
+        const treatmentStages = currentQuestionnaire.stages.filter(
+            stage => stage.code === PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
+        );
+
+        const treatmentIndicationMap = mapIndicationsToTreatments(indicationStages);
+
+        //One treatment cannot be linked to more than 5 indications
+        const linkError = Array.from(treatmentIndicationMap.entries()).some(
+            ([_treatment, indications]) => {
+                if (indications.length > 5) {
+                    return true;
+                }
+            }
+        );
+
+        if (linkError)
+            return Either.error(
+                new Error(`A treatment can only be linked to a maximum of 5 indications`)
+            );
+
+        const updatedTreatmentStages: QuestionnaireStage[] = treatmentStages.map(treatmentStage => {
+            if (!treatmentStage.sections[0]) return treatmentStage;
+            if (!treatmentStage.instanceId) return treatmentStage;
+
+            const indicationLinkQuestions: PPSIndicationLinkQuestion[] =
+                treatmentStage.sections[0].questions.filter(isPPSIndicationLinkQuestion);
+            const otherQuestions = treatmentStage.sections[0].questions.filter(
+                q => !isPPSIndicationLinkQuestion(q)
+            );
+            if (!indicationLinkQuestions) return treatmentStage;
+
+            const linkedIndications = treatmentIndicationMap.get(treatmentStage.instanceId);
+            const updatedIndicationLinks: PPSIndicationLinkQuestion[] = indicationLinkQuestions.map(
+                (q, index) => {
+                    return {
+                        ...q,
+                        value: linkedIndications ? linkedIndications[index] : undefined,
+                    };
+                }
+            );
+
+            const updatedStage: QuestionnaireStage = {
+                ...treatmentStage,
+                sections: [
+                    {
+                        ...treatmentStage.sections[0],
+                        questions: [...otherQuestions, ...updatedIndicationLinks],
+                    },
+                ],
+            };
+
+            return updatedStage;
+        });
+
+        const otherStages = currentQuestionnaire.stages.filter(
+            stage => stage.code !== PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID
+        );
+
+        const updatedQuestionnaire: Questionnaire = Questionnaire.updateQuestionnaireStages(
+            currentQuestionnaire,
+            [...otherStages, ...updatedTreatmentStages]
+        );
+
+        return Either.success(updatedQuestionnaire);
+    };
 }
