@@ -18,7 +18,7 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Dispatch, SetStateAction, useCallback, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
@@ -64,13 +64,11 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         refreshSurveys
     );
     const { options, optionLoading, goToSurvey, assignChild, listChildren, actionClick } =
-        useSurveyListActions(surveyFormType);
+        useSurveyListActions(surveyFormType, setSortDetails);
 
     // const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
 
     useEffect(() => {
-        // if (surveys) setSortedSurveys(surveys);
-
         if (deleteCompleteState?.status === "success") {
             snackbar.success(deleteCompleteState.message);
         }

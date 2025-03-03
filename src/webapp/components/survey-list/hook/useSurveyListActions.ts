@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Id } from "../../../../domain/entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
@@ -13,13 +13,15 @@ import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
-// import { SortDirection } from "../../../../domain/entities/TablePagination";
+import { SortColumnDetails } from "../../../../domain/entities/TablePagination";
 
-export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
+export function useSurveyListActions(
+    surveyFormType: SURVEY_FORM_TYPES,
+    setSortDetails: Dispatch<SetStateAction<SortColumnDetails | undefined>>
+) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
     const [options, setOptions] = useState<OptionType[]>([]);
-    // const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     const [optionLoading, setOptionLoading] = useState<boolean>(false);
 
     const {
@@ -79,6 +81,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     };
 
     const listChildren = (survey: Survey, option?: string) => {
+        setSortDetails(undefined);
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -217,13 +220,10 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
 
     return {
         options,
-        // sortedSurveys,
         optionLoading,
-        // setSortedSurveys,
         goToSurvey,
         assignChild,
         listChildren,
         actionClick,
-        // sortByColumn,
     };
 }

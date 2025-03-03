@@ -5,7 +5,7 @@ import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
-import { PAGE_SIZE, SortColumnDetails, SortDirection } from "../../domain/entities/TablePagination";
+import { PAGE_SIZE, SortColumnDetails } from "../../domain/entities/TablePagination";
 
 export function useSurveys(
     surveyFormType: SURVEY_FORM_TYPES,
@@ -19,17 +19,6 @@ export function useSurveys(
     const [loadingSurveys, setLoadingSurveys] = useState(false);
     const [surveysError, setSurveysError] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
-
-    //states for column sort
-    // const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
-    // const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
-    // const [patientCodeSortDirection, setPatientCodeSortDirection] = useState<SortDirection>("asc");
-    // const [startDateSortDirection, setStartDateSortDirection] = useState<SortDirection>("asc");
-    // const [statusSortDirection, setStatusSortDirection] = useState<SortDirection>("asc");
-    // const [surveyTypeSortDirection, setSurveyTypeSortDirection] = useState<SortDirection>("asc");
-    // const [wardCodeSortDirection, setWardCodeSortDirection] = useState<SortDirection>("asc");
-    // const [hospitalCodeSortDirection, setHospitalCodeSortDirection] =
-    //     useState<SortDirection>("asc");
 
     const {
         currentPPSSurveyForm,

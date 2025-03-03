@@ -1,7 +1,7 @@
 import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
 import { Survey, SurveyBase } from "../entities/Survey";
-import { PaginatedReponse } from "../entities/TablePagination";
+import { PaginatedReponse, SortColumnDetails } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { Future } from "../entities/generic/Future";
@@ -16,10 +16,16 @@ export class GetFilteredPrevalencePatientsUseCase {
     public execute(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         return this.paginatedSurveyRepo
-            .getFilteredPrevalencePatientSurveysByPatientId(keyword, orgUnitId, parentId)
+            .getFilteredPrevalencePatientSurveysByPatientId(
+                keyword,
+                orgUnitId,
+                parentId,
+                sortDetails
+            )
             .flatMap(filteredSurveys => {
                 const surveysWithName = filteredSurveys.objects.map(survey => {
                     return Future.join2(

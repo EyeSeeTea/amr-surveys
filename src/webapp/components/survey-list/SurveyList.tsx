@@ -69,9 +69,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({
         statusFilter,
         setStatusFilter,
         surveyTypeFilter,
-        setSurveyTypeFilter,
+        handleSurveyTypeFilter,
         filteredSurveys,
-    } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
+        isFilterLoading,
+    } = useFilteredSurveys(surveyFormType, isAdmin, surveys, setPageSize, setTotal, sortDetails);
 
     const {
         searchResultSurveys,
@@ -82,7 +83,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({
         setPatientCodeSearchKeyword,
         handlePatientCodeSearch,
         isLoading,
-    } = usePatientSearch(filteredSurveys, surveyFormType, page, setTotal);
+    } = usePatientSearch(filteredSurveys, surveyFormType, setTotal, sortDetails);
 
     return (
         <ContentWrapper>
@@ -158,7 +159,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({
                             status={statusFilter}
                             setStatus={setStatusFilter}
                             surveyType={surveyTypeFilter}
-                            setSurveyType={setSurveyTypeFilter}
+                            handleSurveyTypeFilter={handleSurveyTypeFilter}
                         />
                     )}
 
@@ -179,7 +180,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({
                     />
                 </CustomCard>
             </ContentLoader>
-            {isLoading && (
+
+            {(isLoading || isFilterLoading) && (
                 <Backdrop open={true} style={{ color: "#fff", zIndex: 1 }}>
                     <CircularProgress color="inherit" size={50} />
                 </Backdrop>

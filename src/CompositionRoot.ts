@@ -37,6 +37,7 @@ import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Re
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
 import { GetFilteredPrevalencePatientsUseCase } from "./domain/usecases/GetFilteredPrevalencePatientsUseCase";
+import { GetFilteredRootSurveysUseCase } from "./domain/usecases/GetFilteredRootSurveys";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -78,6 +79,11 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.surveyFormRepository
             ),
             getFilteredPrevalencePatients: new GetFilteredPrevalencePatientsUseCase(
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
+            ),
+
+            getFilteredRootSurveysUseCase: new GetFilteredRootSurveysUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),

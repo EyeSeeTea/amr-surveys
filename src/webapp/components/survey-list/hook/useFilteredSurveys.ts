@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     Survey,
     SURVEY_FORM_TYPES,
@@ -6,16 +6,24 @@ import {
     SURVEY_TYPES,
 } from "../../../../domain/entities/Survey";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
+import { useAppContext } from "../../../contexts/app-context";
+import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
+import { PAGE_SIZE, SortColumnDetails } from "../../../../domain/entities/TablePagination";
 
 export function useFilteredSurveys(
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
-    surveys: Survey[] | undefined
+    surveys: Survey[] | undefined,
+    setPageSize: React.Dispatch<React.SetStateAction<number>>,
+    setTotal: React.Dispatch<React.SetStateAction<number | undefined>>,
+    sortColumnDetails?: SortColumnDetails
 ) {
     const [filteredSurveys, setFilteredSurveys] = useState<Survey[]>();
     const [statusFilter, setStatusFilter] = useState<SURVEY_STATUSES>();
     const [surveyTypeFilter, setSurveyTypeFilter] = useState<SURVEY_TYPES>();
+    const [isFilterLoading, setIsFilterLoading] = useState<boolean>(false);
 
+    const { compositionRoot } = useAppContext();
     const {
         resetCurrentPPSSurveyForm,
         resetCurrentCountryQuestionnaire,
@@ -59,10 +67,6 @@ export function useFilteredSurveys(
             //Apply only status filter
             const filteredList = surveys.filter(survey => survey.status === statusFilter);
             setFilteredSurveys(filteredList);
-        } else if (surveyTypeFilter && surveys) {
-            //Apply only survey type filter
-            const filteredList = surveys.filter(survey => survey.surveyType === surveyTypeFilter);
-            setFilteredSurveys(filteredList);
         } else {
             //all surveys
             setFilteredSurveys(surveys);
@@ -80,11 +84,39 @@ export function useFilteredSurveys(
         resetCurrentFacilityLevelForm,
     ]);
 
+    const handleSurveyTypeFilter = useCallback(
+        (surveyType: SURVEY_TYPES | undefined) => {
+            setIsFilterLoading(true);
+            setSurveyTypeFilter(surveyType);
+            compositionRoot.surveys.getFilteredRootSurveysUseCase
+                .execute(GLOBAL_OU_ID, surveyType, 0, PAGE_SIZE, sortColumnDetails)
+                .run(
+                    filteredSurveys => {
+                        setFilteredSurveys(filteredSurveys.objects);
+                        setTotal(filteredSurveys.pager.total);
+                        setPageSize(filteredSurveys.pager.pageSize);
+                        setIsFilterLoading(false);
+                    },
+                    err => {
+                        console.debug(err);
+                        setIsFilterLoading(false);
+                    }
+                );
+        },
+        [
+            compositionRoot.surveys.getFilteredRootSurveysUseCase,
+            setPageSize,
+            setTotal,
+            sortColumnDetails,
+        ]
+    );
+
     return {
         statusFilter,
         setStatusFilter,
         surveyTypeFilter,
-        setSurveyTypeFilter,
+        handleSurveyTypeFilter,
         filteredSurveys,
+        isFilterLoading,
     };
 }

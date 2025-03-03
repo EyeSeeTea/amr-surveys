@@ -1,10 +1,52 @@
 import { Future } from "../../../domain/entities/generic/Future";
-import { ChildCount, SURVEY_FORM_TYPES, Survey } from "../../../domain/entities/Survey";
-import { PaginatedReponse } from "../../../domain/entities/TablePagination";
+import { Id } from "../../../domain/entities/Ref";
+import {
+    ChildCount,
+    SURVEY_FORM_TYPES,
+    SURVEY_TYPES,
+    Survey,
+} from "../../../domain/entities/Survey";
+import { PaginatedReponse, SortColumnDetails } from "../../../domain/entities/TablePagination";
 import { PaginatedSurveyRepository } from "../../../domain/repositories/PaginatedSurveyRepository";
 import { FutureData } from "../../api-futures";
 
 export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository {
+    getFilteredPPSSurveys(
+        orgUnitId: Id,
+        surveyType: SURVEY_TYPES,
+        page: number,
+        pageSize: number,
+        _sortColumnDetails?: SortColumnDetails
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        return Future.success({
+            pager: {
+                page: page,
+                pageSize: pageSize,
+            },
+            objects: [
+                {
+                    name: "Patient1",
+                    id: "1",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                    assignedOrgUnit: { id: orgUnitId, name: "OU1" },
+                    surveyType: surveyType,
+                    rootSurvey: { id: "1", name: `1`, surveyType: "" },
+                    surveyFormType: "PPSSurveyForm",
+                },
+                {
+                    name: "Patient2",
+                    id: "2",
+                    startDate: new Date(),
+                    status: "COMPLETED",
+                    assignedOrgUnit: { id: "OU1234", name: "OU2" },
+                    surveyType: surveyType,
+                    rootSurvey: { id: "2", name: `2`, surveyType: "" },
+                    surveyFormType: "PPSSurveyForm",
+                },
+            ],
+        });
+    }
     getFilteredPrevalencePatientSurveysByPatientId(
         keyword: string,
         orgUnitId: string,

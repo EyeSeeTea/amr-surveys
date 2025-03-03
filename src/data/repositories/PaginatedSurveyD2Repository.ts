@@ -3,7 +3,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
-import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import { ChildCount, Survey, SURVEY_FORM_TYPES, SURVEY_TYPES } from "../../domain/entities/Survey";
 import { PaginatedSurveyRepository } from "../../domain/repositories/PaginatedSurveyRepository";
 import {
     PAGE_SIZE,
@@ -19,6 +19,7 @@ import {
     PPS_COUNTRY_QUESTIONNAIRE_ID,
     PPS_HOSPITAL_FORM_ID,
     PPS_PATIENT_REGISTER_ID,
+    PPS_SURVEY_FORM_ID,
     PPS_WARD_REGISTER_ID,
     PREVALENCE_CASE_REPORT_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
@@ -235,17 +236,9 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         keyword: string,
         orgUnitId: Id,
         parentId: Id,
-        sortOrder?: SortOrder
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const trackerOrder: Maybe<TrackedOrderBase[]> = sortOrder
-            ? [
-                  {
-                      direction: sortOrder.direction,
-                      type: "trackedEntityAttributeId",
-                      id: sortOrder.id,
-                  },
-              ]
-            : undefined;
+        const formType = "PPSPatientRegister";
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -255,12 +248,12 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 ouMode: "SELECTED",
                 pageSize: PAGE_SIZE,
                 totalPages: true,
-                order: trackerOrder,
+                order: this.getTrackedOrderBase(formType, sortColumnDetails),
                 filter: `${SURVEY_PATIENT_ID_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, "PPSPatientRegister");
+            const surveys = mapTrackedEntityToSurvey(instances, formType);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -279,8 +272,10 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         keyword: string,
         orgUnitId: Id,
         parentId: Id,
-        sortOrder?: SortOrder
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const formType = "PPSPatientRegister";
+
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: trackedEntityFields,
@@ -290,19 +285,11 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${SURVEY_PATIENT_CODE_TEA_ID}:like:${keyword},${WARD_ID_TEA_ID}:eq:${parentId}`,
-                order: sortOrder
-                    ? [
-                          {
-                              direction: sortOrder.direction,
-                              type: "trackedEntityAttributeId",
-                              id: sortOrder.id,
-                          },
-                      ]
-                    : undefined,
+                order: this.getTrackedOrderBase(formType, sortColumnDetails),
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, "PPSPatientRegister");
+            const surveys = mapTrackedEntityToSurvey(instances, formType);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -321,8 +308,9 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         keyword: string,
         orgUnitId: Id,
         parentId: Id,
-        sortOrder?: SortOrder
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const formType = "PrevalenceCaseReportForm";
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: trackedEntityFields,
@@ -332,19 +320,11 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize: PAGE_SIZE,
                 totalPages: true,
                 filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
-                order: sortOrder
-                    ? [
-                          {
-                              direction: sortOrder.direction,
-                              type: "trackedEntityAttributeId",
-                              id: sortOrder.id,
-                          },
-                      ]
-                    : undefined,
+                order: this.getTrackedOrderBase(formType, sortColumnDetails),
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, "PrevalenceCaseReportForm");
+            const surveys = mapTrackedEntityToSurvey(instances, formType);
 
             const paginatedSurveys: PaginatedReponse<Survey[]> = {
                 pager: {
@@ -357,6 +337,35 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
 
             return Future.success(paginatedSurveys);
         });
+    }
+
+    getFilteredPPSSurveys(
+        orgUnitId: Id,
+        surveyType: SURVEY_TYPES | undefined,
+        page: number,
+        pageSize: number,
+        sortColumnDetails?: SortColumnDetails
+    ): FutureData<PaginatedReponse<Survey[]>> {
+        const formType = "PPSSurveyForm";
+        const sortOrder = sortColumnDetails
+            ? this.mapColumnToIdForSort(sortColumnDetails, formType)
+            : undefined;
+
+        const surveyTypeFilter = surveyType
+            ? {
+                  id: SURVEY_TYPE_DATAELEMENT_ID,
+                  value: surveyType,
+              }
+            : undefined;
+        return this.getEventProgramSurveys(
+            formType,
+            PPS_SURVEY_FORM_ID,
+            orgUnitId,
+            surveyTypeFilter,
+            page,
+            pageSize,
+            sortOrder
+        );
     }
 
     getPaginatedSurveyChildCount(
@@ -477,7 +486,9 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             case "uniquePatientCode":
                 return SURVEY_PATIENT_CODE_TEA_ID;
             case "uniquePatientId":
-                return SURVEY_PATIENT_ID_TEA_ID;
+                return surveyFormType === "PrevalenceCaseReportForm"
+                    ? AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID
+                    : SURVEY_PATIENT_ID_TEA_ID;
             case "wardCode":
                 return SURVEY_WARD_CODE_DATAELEMENT_ID;
             case "surveyName":
@@ -486,5 +497,24 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                     ? SURVEY_NAME_DATAELEMENT_ID
                     : PREVALENCE_SURVEY_NAME_DATAELEMENT_ID;
         }
+    }
+
+    private getTrackedOrderBase(
+        surveyFormType: SURVEY_FORM_TYPES,
+        sortColumnDetails?: SortColumnDetails
+    ): TrackedOrderBase[] | undefined {
+        const sortOrder = sortColumnDetails
+            ? this.mapColumnToIdForSort(sortColumnDetails, surveyFormType)
+            : undefined;
+
+        return sortOrder
+            ? [
+                  {
+                      direction: sortOrder.direction,
+                      type: "trackedEntityAttributeId",
+                      id: sortOrder.id,
+                  },
+              ]
+            : undefined;
     }
 }

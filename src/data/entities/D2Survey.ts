@@ -88,8 +88,6 @@ type SURVEY_DATA_ELEMENT_KEYS =
     | "uniqueSurveyPatientId"
     | "astGuideline"
     | "customAstGuideline";
-
-    
 interface SurveyKeyDataElementMapType {
     key: SURVEY_DATA_ELEMENT_KEYS;
     dataElements: Id[];
