@@ -1,6 +1,6 @@
 import { Id } from "./Ref";
 
-export const PAGE_SIZE = 5;
+export const PAGE_SIZE = 10;
 
 export type SortDirection = "asc" | "desc";
 
