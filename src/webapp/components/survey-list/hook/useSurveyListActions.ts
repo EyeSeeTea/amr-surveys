@@ -144,15 +144,6 @@ export function useSurveyListActions(
         }
     };
 
-    // const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-    //     setSortedSurveys(surveys => {
-    //         if (surveys)
-    //             return _(surveys)
-    //                 .sortBy(x => x[columnName], { direction: sortDirection })
-    //                 .value();
-    //     });
-    // };
-
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,
         orgUnitId: Id,

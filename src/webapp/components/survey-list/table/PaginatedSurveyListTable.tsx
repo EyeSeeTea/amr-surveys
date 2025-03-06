@@ -66,8 +66,6 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     const { options, optionLoading, goToSurvey, assignChild, listChildren, actionClick } =
         useSurveyListActions(surveyFormType, setSortDetails);
 
-    // const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
-
     useEffect(() => {
         if (deleteCompleteState?.status === "success") {
             snackbar.success(deleteCompleteState.message);

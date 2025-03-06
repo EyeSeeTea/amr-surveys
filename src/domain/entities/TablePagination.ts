@@ -16,7 +16,7 @@ export type SortableColumnName =
 
 export type SortOrder = {
     direction: SortDirection;
-    id: Id; //attribute/data element id
+    id: Id; //attribute id
 };
 
 export type SortColumnDetails = {

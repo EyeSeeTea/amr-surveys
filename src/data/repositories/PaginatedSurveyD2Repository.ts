@@ -354,7 +354,8 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         const surveyTypeFilter = surveyType
             ? {
                   id: SURVEY_TYPE_DATAELEMENT_ID,
-                  value: surveyType,
+                  //hack: the metadata id and code for HOSP survey type do not match
+                  value: surveyType === "HOSP" ? "HOSPITAL" : surveyType,
               }
             : undefined;
         return this.getEventProgramSurveys(
