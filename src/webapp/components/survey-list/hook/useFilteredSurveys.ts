@@ -89,7 +89,7 @@ export function useFilteredSurveys(
             setIsFilterLoading(true);
             setSurveyTypeFilter(surveyType);
             compositionRoot.surveys.getFilteredRootSurveysUseCase
-                .execute(GLOBAL_OU_ID, surveyType, 0, PAGE_SIZE, sortColumnDetails)
+                .execute(GLOBAL_OU_ID, surveyFormType, surveyType, 0, PAGE_SIZE, sortColumnDetails)
                 .run(
                     filteredSurveys => {
                         setFilteredSurveys(filteredSurveys.objects);
@@ -108,6 +108,7 @@ export function useFilteredSurveys(
             setPageSize,
             setTotal,
             sortColumnDetails,
+            surveyFormType,
         ]
     );
 

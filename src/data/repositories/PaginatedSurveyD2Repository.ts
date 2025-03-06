@@ -1,6 +1,6 @@
 import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { Future } from "../../domain/entities/generic/Future";
-import { Id, NamedRef } from "../../domain/entities/Ref";
+import { Id } from "../../domain/entities/Ref";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ChildCount, Survey, SURVEY_FORM_TYPES, SURVEY_TYPES } from "../../domain/entities/Survey";
@@ -47,6 +47,7 @@ import {
     TrackedEntitiesGetResponse,
     TrackedOrderBase,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
+import { OrgUnitBasic } from "../../domain/entities/OrgUnit";
 
 type Filter = {
     id: string;
@@ -216,19 +217,21 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         ).flatMap(response => {
             const events = response.instances;
 
-            return this.getOrgUnitNames(events.map(event => event.orgUnit)).flatMap(orgUnits => {
-                const surveys = mapEventToSurvey(events, surveyFormType, programId, orgUnits);
-                const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                    pager: {
-                        page: response.page,
-                        pageSize: response.pageSize,
-                        total: response.total,
-                    },
-                    objects: surveys,
-                };
+            return this.getOrgUnitsBasicInfo(events.map(event => event.orgUnit)).flatMap(
+                orgUnits => {
+                    const surveys = mapEventToSurvey(events, surveyFormType, programId, orgUnits);
+                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        pager: {
+                            page: response.page,
+                            pageSize: response.pageSize,
+                            total: response.total,
+                        },
+                        objects: surveys,
+                    };
 
-                return Future.success(paginatedSurveys);
-            });
+                    return Future.success(paginatedSurveys);
+                }
+            );
         });
     }
 
@@ -416,7 +419,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             })
         ).flatMap((trackedEntities: TrackedEntitiesGetResponse<typeof trackedEntityFields>) => {
             const instances: D2TrackerEntitySelectedPick[] = trackedEntities.instances;
-            return this.getOrgUnitNames(instances.map(instance => instance.orgUnit)).flatMap(
+            return this.getOrgUnitsBasicInfo(instances.map(instance => instance.orgUnit)).flatMap(
                 orgUnits => {
                     const surveys = mapTrackedEntityToSurvey(instances, surveyFormType, orgUnits);
                     const paginatedSurveys: PaginatedReponse<Survey[]> = {
@@ -446,21 +449,6 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 : undefined;
 
         return filter;
-    }
-
-    private getOrgUnitNames(orgUnitIds: Id[]): FutureData<NamedRef[]> {
-        return apiToFuture(
-            this.api.models.organisationUnits.get({
-                fields: { id: true, name: true },
-                filter: { id: { in: orgUnitIds } },
-                paging: false,
-            })
-        ).flatMap(orgUnitsResponse => {
-            const orgUnits = orgUnitsResponse.objects.map(ou => {
-                return { id: ou.id, name: ou.name };
-            });
-            return Future.success(orgUnits);
-        });
     }
 
     private mapColumnToIdForSort(
@@ -517,5 +505,20 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   },
               ]
             : undefined;
+    }
+
+    private getOrgUnitsBasicInfo(orgUnitIds: Id[]): FutureData<OrgUnitBasic[]> {
+        return apiToFuture(
+            this.api.models.organisationUnits.get({
+                fields: { id: true, name: true, code: true },
+                filter: { id: { in: orgUnitIds } },
+                paging: false,
+            })
+        ).flatMap(orgUnitsResponse => {
+            const orgUnits = orgUnitsResponse.objects.map(ou => {
+                return { id: ou.id, name: ou.name, code: ou.code };
+            });
+            return Future.success(orgUnits);
+        });
     }
 }

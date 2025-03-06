@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Id } from "../../../../domain/entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
 import _ from "../../../../domain/entities/generic/Collection";
@@ -14,6 +13,7 @@ import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
 import { SortColumnDetails } from "../../../../domain/entities/TablePagination";
+import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 
 export function useSurveyListActions(
     surveyFormType: SURVEY_FORM_TYPES,
@@ -51,7 +51,7 @@ export function useSurveyListActions(
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
             },
-            survey.assignedOrgUnit.id,
+            survey.assignedOrgUnit,
             survey.rootSurvey
         );
         history.push({
@@ -67,7 +67,7 @@ export function useSurveyListActions(
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
             },
-            survey.assignedOrgUnit.id,
+            survey.assignedOrgUnit,
             survey.rootSurvey
         );
         const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
@@ -89,7 +89,7 @@ export function useSurveyListActions(
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
             },
-            survey.assignedOrgUnit.id,
+            survey.assignedOrgUnit,
             survey.rootSurvey
         );
         const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
@@ -146,23 +146,23 @@ export function useSurveyListActions(
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,
-        orgUnitId: Id,
+        orgUnit: OrgUnitBasic,
         rootSurvey: SurveyBase
     ) => {
         if (surveyFormType === "PPSSurveyForm") changeCurrentPPSSurveyForm(survey);
         else if (surveyFormType === "PPSCountryQuestionnaire")
-            changeCurrentCountryQuestionnaire(survey.id, survey.name, orgUnitId);
+            changeCurrentCountryQuestionnaire(survey.id, orgUnit.code, orgUnit.id);
         else if (surveyFormType === "PPSHospitalForm") {
             if (!isAdmin) {
                 changeCurrentPPSSurveyForm(rootSurvey);
             }
-            changeCurrentHospitalForm(survey.id, survey.name, orgUnitId);
+            changeCurrentHospitalForm(survey.id, survey.name, orgUnit.id);
         } else if (surveyFormType === "PPSWardRegister") changeCurrentWardRegister(survey);
         else if (surveyFormType === "PrevalenceSurveyForm") {
             changeCurrentPrevalenceSurveyForm(
                 survey.id,
                 survey.name,
-                orgUnitId,
+                orgUnit.id,
                 survey.astGuideline
             );
             //when current astGuideline changes, fetch the corresponding ast guidelines from datstore
@@ -204,7 +204,7 @@ export function useSurveyListActions(
                             }
                         );
             }
-            changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnitId);
+            changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnit.id);
         } else if (surveyFormType === "PrevalenceCaseReportForm")
             changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
     };

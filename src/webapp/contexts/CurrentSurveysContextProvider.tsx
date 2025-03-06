@@ -1,6 +1,11 @@
 import { PropsWithChildren, useState } from "react";
 import { Id, NamedRef } from "../../domain/entities/Ref";
-import { OrgUnitNamedRef, PrevalenceSurveyForm, SurveyBase } from "../../domain/entities/Survey";
+import {
+    OrgUnitNamedRef,
+    PrevalenceSurveyForm,
+    SurveyBase,
+    OrgUnitWithCodeRef,
+} from "../../domain/entities/Survey";
 import { CurrentSurveysContext } from "./current-surveys-context";
 import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 
@@ -8,7 +13,7 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
     //PPS Module states
     const [currentPPSSurveyForm, setCurrentPPSSurveyForm] = useState<SurveyBase>();
     const [currentCountryQuestionnaire, setCurrentCountryQuestionnaire] =
-        useState<OrgUnitNamedRef>();
+        useState<OrgUnitWithCodeRef>();
     const [currentHospitalForm, setCurrentHospitalForm] = useState<OrgUnitNamedRef>();
     const [currentWardRegister, setCurrentWardRegister] = useState<NamedRef>();
 
@@ -29,8 +34,8 @@ export const CurrentSurveysContextProvider: React.FC<PropsWithChildren> = ({ chi
         resetCurrentWardRegister();
     };
 
-    const changeCurrentCountryQuestionnaire = (id: Id, name: string, orgUnitId: Id) => {
-        setCurrentCountryQuestionnaire({ id: id, name: name, orgUnitId: orgUnitId });
+    const changeCurrentCountryQuestionnaire = (id: Id, orgUnitCode: string, orgUnitId: Id) => {
+        setCurrentCountryQuestionnaire({ id, orgUnitCode, orgUnitId });
     };
 
     const resetCurrentCountryQuestionnaire = () => {

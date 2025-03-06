@@ -6,6 +6,7 @@ import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 import { PAGE_SIZE, SortColumnDetails } from "../../domain/entities/TablePagination";
+import i18n from "../../utils/i18n";
 
 export function useSurveys(
     surveyFormType: SURVEY_FORM_TYPES,
@@ -45,14 +46,16 @@ export function useSurveys(
 
         switch (surveyFormType) {
             case "PPSHospitalForm":
-                return currentCountryQuestionnaire?.orgUnitId ?? "";
+                // default to GLOBAL_OU_ID for "HOSP" since there is no country to use as OrgUnit
+                return currentPPSSurveyForm?.surveyType === "HOSP"
+                    ? GLOBAL_OU_ID
+                    : currentCountryQuestionnaire?.orgUnitId;
             case "PPSWardRegister":
             case "PPSPatientRegister":
-                return currentHospitalForm?.orgUnitId ?? "";
-
+                return currentHospitalForm?.orgUnitId;
             case "PrevalenceFacilityLevelForm":
                 return isAdmin
-                    ? currentPrevalenceSurveyForm?.orgUnitId ?? ""
+                    ? currentPrevalenceSurveyForm?.orgUnitId
                     : currentPrevalenceHospitals;
             case "PrevalenceCaseReportForm":
             case "PrevalenceCentralRefLabForm":
@@ -62,8 +65,7 @@ export function useSurveys(
             case "PrevalenceD28FollowUp":
             case "PrevalenceCohortEnrolment":
             case "PrevalenceDischarge":
-                return currentFacilityLevelForm?.orgUnitId ?? "";
-
+                return currentFacilityLevelForm?.orgUnitId;
             default:
                 return GLOBAL_OU_ID;
         }
@@ -75,11 +77,10 @@ export function useSurveys(
         isAdmin,
         prevalenceHospitals,
         surveyFormType,
+        currentPPSSurveyForm?.surveyType,
     ]);
 
     useEffect(() => {
-        setLoadingSurveys(true);
-
         const parentSurveyId =
             !isAdmin &&
             (surveyFormType === "PrevalenceFacilityLevelForm" ||
@@ -97,6 +98,13 @@ export function useSurveys(
                 : currentPPSSurveyForm?.id;
 
         const orgUnitId = getOrgUnitByFormType();
+
+        if (!orgUnitId) {
+            setSurveysError(i18n.t("Could not resolve Org Unit for current form"));
+            return;
+        }
+
+        setLoadingSurveys(true);
 
         const makeChunkedCall: boolean =
             surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin;

@@ -21,6 +21,7 @@ import {
     PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
 } from "../../../data/utils/surveyFormMappers";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
+import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -110,7 +111,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     const saveSurveyFormWithoutRedirect = () => {
         setLoading(true);
         if (questionnaire) {
-            saveSurvey(questionnaire, true);
+            return Questionnaire.autoUpdateIndicationLinks(questionnaire).match({
+                success: updatedQuestionnaire => {
+                    saveSurvey(updatedQuestionnaire, true);
+                },
+                error: error => {
+                    snackbar.error(error.message);
+                    setLoading(false);
+                },
+            });
         }
     };
 

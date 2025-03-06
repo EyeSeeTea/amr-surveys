@@ -2,7 +2,7 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { useEffect } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
-import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { SURVEYS_WITH_ORG_UNIT_SELECTOR, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../domain/entities/User";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
@@ -42,10 +42,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
 
     return (
         <>
-            {(formType === "PPSCountryQuestionnaire" ||
-                formType === "PPSHospitalForm" ||
-                formType === "PrevalenceSurveyForm" ||
-                formType === "PrevalenceFacilityLevelForm") && (
+            {SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType) && (
                 <OrgUnitsSelector
                     api={api}
                     fullWidth={false}
