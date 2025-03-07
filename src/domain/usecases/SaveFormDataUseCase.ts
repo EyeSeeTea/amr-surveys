@@ -13,11 +13,12 @@ import {
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
+import i18n from "../../utils/i18n";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(
-        private surveyReporsitory: SurveyRepository,
+        private surveyRepository: SurveyRepository,
         private astGuidelineRepository: ASTGuidelinesRepository
     ) {}
 
@@ -33,35 +34,57 @@ export class SaveFormDataUseCase {
         const ouId =
             surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
-        //Do not allow creation of multiple Prevalence Facility Level Forms for the same facility.
-        if (!eventId && surveyFormType === "PrevalenceFacilityLevelForm") {
-            return this.surveyReporsitory
+        return this.validate(surveyFormType, questionnaire, ouId, programId, eventId).flatMap(() =>
+            this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId)
+        );
+    }
+
+    validate = (
+        surveyFormType: SURVEY_FORM_TYPES,
+        questionnaire: Questionnaire,
+        orgUnitId: Id,
+        programId: Id,
+        eventId: string | undefined = undefined
+    ): FutureData<boolean> => {
+        const isNew = !eventId;
+        if (
+            isNew &&
+            (surveyFormType === "PrevalenceFacilityLevelForm" ||
+                surveyFormType === "PPSHospitalForm" ||
+                surveyFormType === "PPSCountryQuestionnaire")
+        ) {
+            // avoid duplicate orgUnit in the same parent survey (Facility Level and Hospital)
+            const surveyId = questionnaire.getParentSurveyId();
+            if (!surveyId) {
+                return Future.error(
+                    new Error(i18n.t("Survey ID expected but could not be resolved"))
+                );
+            }
+            return this.surveyRepository
                 .getSurveys({
                     surveyFormType: surveyFormType,
                     programId: programId,
-                    orgUnitId: ouId,
+                    orgUnitId: orgUnitId,
                     chunked: false,
+                    parentId: surveyId,
                 })
                 .flatMap(surveys => {
                     if (surveys.length > 0) {
-                        return Future.error(
-                            new Error(
-                                "Prevalence Facility Level Form already exists for this facility."
-                            )
-                        );
-                    } else
-                        return this.saveFormData(
-                            surveyFormType,
-                            questionnaire,
-                            ouId,
-                            programId,
-                            eventId
-                        );
+                        const errorMessages = {
+                            PrevalenceFacilityLevelForm: i18n.t(
+                                "Prevalence Facility already exists for this Survey."
+                            ),
+                            PPSHospitalForm: i18n.t("Hospital already exists for this Survey"),
+                            PPSCountryQuestionnaire: i18n.t(
+                                "Country already exist for this Survey"
+                            ),
+                        };
+                        return Future.error(new Error(errorMessages[surveyFormType]));
+                    } else return Future.success(true);
                 });
         }
-
-        return this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId);
-    }
+        return Future.success(true);
+    };
 
     saveFormData = (
         surveyFormType: SURVEY_FORM_TYPES,
@@ -70,7 +93,7 @@ export class SaveFormDataUseCase {
         programId: string,
         eventId: string | undefined = undefined
     ): FutureData<Id> => {
-        return this.surveyReporsitory
+        return this.surveyRepository
             .saveFormData(questionnaire, "CREATE_AND_UPDATE", ouId, eventId, programId)
             .flatMap(surveyId => {
                 return this.saveCustomASTGuidelineToDatastore(

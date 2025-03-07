@@ -3,21 +3,13 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     SURVEY_ID_DATAELEMENT_ID,
-    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_TEA_ID,
     WARD_ID_TEA_ID,
+    parentPrevalenceSurveyIdList,
 } from "../../data/entities/D2Survey";
 import { isTrackerProgram } from "../../data/utils/surveyProgramHelper";
 import { Future } from "../entities/generic/Future";
@@ -168,17 +160,10 @@ export class GetSurveyUseCase {
                 }
                 const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
                     question => {
-                        const isSurveyIdQuestion =
-                            question.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
-                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
-                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
-                            question.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH;
-
+                        const isSurveyIdQuestion = parentPrevalenceSurveyIdList.includes(
+                            question.id
+                        );
+                        // TODO: check if patientIdList can be used (it includes more IDs than these)
                         const isPatientIdQuestion =
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
