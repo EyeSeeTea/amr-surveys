@@ -14,6 +14,18 @@ msgstr ""
 msgid "There was an error processing the form"
 msgstr ""
 
+msgid "Survey ID expected but could not be resolved"
+msgstr ""
+
+msgid "Prevalence Facility already exists for this Survey."
+msgstr ""
+
+msgid "Hospital already exists for this Survey"
+msgstr ""
+
+msgid "Country already exist for this Survey"
+msgstr ""
+
 msgid "Facilities"
 msgstr ""
 

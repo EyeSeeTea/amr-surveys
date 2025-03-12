@@ -17,23 +17,15 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF,
-    AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP,
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL,
-    AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF,
     SURVEY_ID_DATAELEMENT_ID,
-    SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_TEA_ID,
     WARD2_ID_DATAELEMENT_ID,
     WARD_ID_TEA_ID,
+    parentPrevalenceSurveyIdList,
 } from "../entities/D2Survey";
 import _ from "../../domain/entities/generic/Collection";
 import { D2TrackerEvent } from "@eyeseetea/d2-api/api/trackerEvents";
@@ -391,15 +383,8 @@ export const mapTrackedAttributesToQuestions = (
             );
             if (
                 currentQuestion &&
-                (currentQuestion.id === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID ||
-                    currentQuestion?.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SSTF ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRL ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_PIS ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_SRL ||
-                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF ||
-                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_FUP ||
-                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_DF ||
-                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_SURVEY_ID_COH ||
+                (parentPrevalenceSurveyIdList.includes(currentQuestion.id) ||
+                    // TODO: check if patientIdList can be used here (not all IDs overlap)
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE ||
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||

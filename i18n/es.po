@@ -1,13 +1,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2025-01-28T16:57:55.539Z\n"
+"POT-Creation-Date: 2025-02-21T18:07:25.668Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -15,7 +14,16 @@ msgstr ""
 msgid "There was an error processing the form"
 msgstr ""
 
-msgid "There was an error processing the form"
+msgid "Survey ID expected but could not be resolved"
+msgstr ""
+
+msgid "Prevalence Facility already exists for this Survey."
+msgstr ""
+
+msgid "Hospital already exists for this Survey"
+msgstr ""
+
+msgid "Country already exist for this Survey"
 msgstr ""
 
 msgid "Facilities"
@@ -83,6 +91,12 @@ msgstr ""
 msgid "New Survey"
 msgstr ""
 
+msgid "Prevalence Surveys"
+msgstr ""
+
+msgid "Case reports"
+msgstr ""
+
 msgid "Treatment/Indication Saved!"
 msgstr ""
 
@@ -104,9 +118,6 @@ msgid "Search Patient Code"
 msgstr ""
 
 msgid "Filter by patientcode"
-msgstr ""
-
-msgid "Country"
 msgstr ""
 
 msgid "Filter by Status"
@@ -134,6 +145,12 @@ msgid "NATIONAL"
 msgstr ""
 
 msgid "HOSP"
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "Case Reports"
 msgstr ""
 
 msgid ""
