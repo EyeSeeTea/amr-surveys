@@ -7,7 +7,6 @@ import {
     SURVEYS_WITH_CHILD_COUNT,
     SURVEY_FORM_TYPES,
 } from "../entities/Survey";
-import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "./PPSProgramsHelper";
 import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
@@ -27,13 +26,7 @@ type GetChildCountType = {
     orgUnitId: Id;
     parentSurveyId: Id;
     secondaryparentId?: Id;
-    surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
-};
-
-const isPaginatedSurveyRepository = (
-    survey: SurveyRepository | PaginatedSurveyRepository
-): survey is PaginatedSurveyRepository => {
-    return (survey as PaginatedSurveyRepository).getPaginatedSurveyChildCount !== undefined;
+    surveyReporsitory: PaginatedSurveyRepository;
 };
 
 export const getChildCount = ({
@@ -47,19 +40,12 @@ export const getChildCount = ({
         return Future.success({ type: "number", value: 0 });
 
     const programId = getProgramId(surveyFormType);
-    const programCountMapFuture = isPaginatedSurveyRepository(surveyReporsitory)
-        ? surveyReporsitory.getPaginatedSurveyChildCount(
-              programId,
-              orgUnitId,
-              parentSurveyId,
-              secondaryparentId
-          )
-        : surveyReporsitory.getNonPaginatedSurveyChildCount(
-              programId,
-              orgUnitId,
-              parentSurveyId,
-              secondaryparentId
-          );
+    const programCountMapFuture = surveyReporsitory.getPaginatedSurveyChildCount(
+        programId,
+        orgUnitId,
+        parentSurveyId,
+        secondaryparentId
+    );
 
     return programCountMapFuture.flatMap(programCountMap => {
         if (programCountMap.type === "number") {

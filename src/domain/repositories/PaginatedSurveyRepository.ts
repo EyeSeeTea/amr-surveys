@@ -1,31 +1,39 @@
 import { FutureData } from "../../data/api-futures";
+import { PaginatedSurveyRepositoryProps } from "../../data/repositories/PaginatedSurveyD2Repository";
 import { Id } from "../entities/Ref";
-import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
-import { PaginatedReponse } from "../entities/TablePagination";
+import { ChildCount, Survey, SURVEY_TYPES } from "../entities/Survey";
+import { PaginatedReponse, SortColumnDetails } from "../entities/TablePagination";
 
 export interface PaginatedSurveyRepository {
     getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        programId: Id,
-        orgUnitId: Id,
-        parentWardRegisterId: Id | undefined,
-        page: number,
-        pageSize: number
+        options: PaginatedSurveyRepositoryProps,
+        chunked: boolean
     ): FutureData<PaginatedReponse<Survey[]>>;
+
     getFilteredPPSPatientByPatientIdSurveys(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>>;
     getFilteredPPSPatientByPatientCodeSurveys(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>>;
     getFilteredPrevalencePatientSurveysByPatientId(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        sortColumnDetails?: SortColumnDetails
+    ): FutureData<PaginatedReponse<Survey[]>>;
+    getFilteredPPSSurveys(
+        orgUnitId: Id,
+        surveyType: SURVEY_TYPES | undefined,
+        page: number,
+        pageSize: number,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>>;
     getPaginatedSurveyChildCount(
         parentProgram: Id,

@@ -1,31 +1,30 @@
-import { Id } from "@eyeseetea/d2-api";
 import { FutureData } from "../../data/api-futures";
-import { Survey, SurveyBase } from "../entities/Survey";
+import { Maybe } from "../../utils/ts-utils";
+import { Future } from "../entities/generic/Future";
+import { Id } from "../entities/Ref";
+import { Survey, SURVEY_FORM_TYPES, SURVEY_TYPES, SurveyBase } from "../entities/Survey";
 import { PaginatedReponse, SortColumnDetails } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { Future } from "../entities/generic/Future";
 import { getChildCount } from "../utils/getChildCountHelper";
+import { hasSecondaryParent } from "../utils/PPSProgramsHelper";
 
-export class GetFilteredPrevalencePatientsUseCase {
+export class GetFilteredRootSurveysUseCase {
     constructor(
         private paginatedSurveyRepo: PaginatedSurveyRepository,
         private surveyReporsitory: SurveyRepository
     ) {}
 
     public execute(
-        keyword: string,
         orgUnitId: Id,
-        parentId: Id,
-        sortDetails?: SortColumnDetails
+        surveyFormType: SURVEY_FORM_TYPES,
+        surveyType: Maybe<SURVEY_TYPES>,
+        page: number,
+        pageSize: number,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         return this.paginatedSurveyRepo
-            .getFilteredPrevalencePatientSurveysByPatientId(
-                keyword,
-                orgUnitId,
-                parentId,
-                sortDetails
-            )
+            .getFilteredPPSSurveys(orgUnitId, surveyType, page, pageSize, sortColumnDetails)
             .flatMap(filteredSurveys => {
                 const surveysWithName = filteredSurveys.objects.map(survey => {
                     return Future.join2(
@@ -34,10 +33,10 @@ export class GetFilteredPrevalencePatientsUseCase {
                             survey.surveyFormType
                         ),
                         getChildCount({
-                            surveyFormType: "PrevalenceCaseReportForm",
+                            surveyFormType: surveyFormType,
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
-                            secondaryparentId: survey.id,
+                            secondaryparentId: hasSecondaryParent(surveyFormType) ? survey.id : "",
                             surveyReporsitory: this.paginatedSurveyRepo,
                         })
                     ).map(([parentDetails, childCount]): Survey => {

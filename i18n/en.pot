@@ -170,21 +170,6 @@ msgstr ""
 msgid "Root Survey Name"
 msgstr ""
 
-msgid "Patient Id"
-msgstr ""
-
-msgid "Patient Code"
-msgstr ""
-
-msgid "Action"
-msgstr ""
-
-msgid "Loading..."
-msgstr ""
-
-msgid "No data found..."
-msgstr ""
-
 msgid "Org Unit"
 msgstr ""
 
@@ -204,6 +189,21 @@ msgid "Ward Code"
 msgstr ""
 
 msgid "Hospital Code"
+msgstr ""
+
+msgid "Patient Id"
+msgstr ""
+
+msgid "Patient Code"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "No data found..."
 msgstr ""
 
 msgid "Yes"

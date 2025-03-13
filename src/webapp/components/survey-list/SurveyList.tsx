@@ -8,26 +8,46 @@ import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { CustomCard } from "../custom-card/CustomCard";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { ContentLoader } from "../content-loader/ContentLoader";
-import {
-    getSurveyDisplayName,
-    hideCreateNewButton,
-    isPaginatedSurveyList,
-} from "../../../domain/utils/PPSProgramsHelper";
+import { getSurveyDisplayName, hideCreateNewButton } from "../../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../../domain/utils/menuHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentModule } from "../../contexts/current-module-context";
-import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
 import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
 import { usePatientSearch } from "./hook/usePatientSearch";
 import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
+import {
+    SortableColumnName,
+    SortColumnDetails,
+    SortDirection,
+} from "../../../domain/entities/TablePagination";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
+    page: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
+    pageSize: number;
+    setPageSize: React.Dispatch<React.SetStateAction<number>>;
+    total: number | undefined;
+    setTotal: React.Dispatch<React.SetStateAction<number | undefined>>;
+    sortDetails: SortColumnDetails | undefined;
+    setSortDetails: React.Dispatch<React.SetStateAction<SortColumnDetails | undefined>>;
+    getSortDirection: (column: SortableColumnName) => SortDirection;
 }
-export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
+export const SurveyList: React.FC<SurveyListProps> = ({
+    surveyFormType,
+    page,
+    setPageSize,
+    pageSize,
+    setPage,
+    total,
+    setTotal,
+    sortDetails,
+    setSortDetails,
+    getSortDirection,
+}) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
     const { currentUser } = useAppContext();
     const { currentModule } = useCurrentModule();
@@ -37,25 +57,22 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
         : false;
 
-    const {
-        surveys,
-        loadingSurveys,
-        errorSurveys,
+    const { surveys, loadingSurveys, errorSurveys, setRefreshSurveys } = useSurveys(
+        surveyFormType,
         page,
-        setPage,
-        pageSize,
-        total,
+        setPageSize,
         setTotal,
-        setRefreshSurveys,
-    } = useSurveys(surveyFormType);
+        sortDetails
+    );
 
     const {
         statusFilter,
         setStatusFilter,
         surveyTypeFilter,
-        setSurveyTypeFilter,
+        handleSurveyTypeFilter,
         filteredSurveys,
-    } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
+        isFilterLoading,
+    } = useFilteredSurveys(surveyFormType, isAdmin, surveys, setPageSize, setTotal, sortDetails);
 
     const {
         searchResultSurveys,
@@ -66,7 +83,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         setPatientCodeSearchKeyword,
         handlePatientCodeSearch,
         isLoading,
-    } = usePatientSearch(filteredSurveys, surveyFormType, page, setTotal);
+    } = usePatientSearch(filteredSurveys, surveyFormType, setTotal, sortDetails);
 
     return (
         <ContentWrapper>
@@ -142,7 +159,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             status={statusFilter}
                             setStatus={setStatusFilter}
                             surveyType={surveyTypeFilter}
-                            setSurveyType={setSurveyTypeFilter}
+                            handleSurveyTypeFilter={handleSurveyTypeFilter}
                         />
                     )}
 
@@ -150,26 +167,21 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                         <SurveyListFilters status={statusFilter} setStatus={setStatusFilter} />
                     )}
 
-                    {isPaginatedSurveyList(surveyFormType) ? (
-                        <PaginatedSurveyListTable
-                            surveys={searchResultSurveys}
-                            surveyFormType={surveyFormType}
-                            page={page}
-                            setPage={setPage}
-                            pageSize={pageSize}
-                            total={total}
-                            refreshSurveys={setRefreshSurveys}
-                        />
-                    ) : (
-                        <SurveyListTable
-                            surveys={filteredSurveys}
-                            surveyFormType={surveyFormType}
-                            refreshSurveys={setRefreshSurveys}
-                        />
-                    )}
+                    <PaginatedSurveyListTable
+                        surveys={searchResultSurveys}
+                        surveyFormType={surveyFormType}
+                        page={page}
+                        setPage={setPage}
+                        pageSize={pageSize}
+                        total={total}
+                        refreshSurveys={setRefreshSurveys}
+                        setSortDetails={setSortDetails}
+                        getSortDirection={getSortDirection}
+                    />
                 </CustomCard>
             </ContentLoader>
-            {isLoading && (
+
+            {(isLoading || isFilterLoading) && (
                 <Backdrop open={true} style={{ color: "#fff", zIndex: 1 }}>
                     <CircularProgress color="inherit" size={50} />
                 </Backdrop>

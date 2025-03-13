@@ -2,22 +2,25 @@ import { useCallback, useEffect, useState } from "react";
 import { Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { useAppContext } from "../contexts/app-context";
 import { useCurrentSurveys } from "../contexts/current-surveys-context";
-import { isPaginatedSurveyList } from "../../domain/utils/PPSProgramsHelper";
 import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
+import { PAGE_SIZE, SortColumnDetails } from "../../domain/entities/TablePagination";
 import i18n from "../../utils/i18n";
 
-const PAGE_SIZE = 10;
-export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
+export function useSurveys(
+    surveyFormType: SURVEY_FORM_TYPES,
+    page: number,
+    setPageSize: React.Dispatch<React.SetStateAction<number>>,
+    setTotal: React.Dispatch<React.SetStateAction<number | undefined>>,
+    sortDetails?: SortColumnDetails
+) {
     const { compositionRoot, prevalenceHospitals } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
     const [loadingSurveys, setLoadingSurveys] = useState(false);
     const [surveysError, setSurveysError] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
-    const [page, setPage] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
-    const [total, setTotal] = useState<number>();
+
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -103,61 +106,48 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
         setLoadingSurveys(true);
 
-        //Only Patient Forms are paginated.
-        if (isPaginatedSurveyList(surveyFormType)) {
-            compositionRoot.surveys.getPaginatedSurveys
-                .execute(
-                    surveyFormType,
-                    orgUnitId,
-                    parentSurveyId,
-                    currentWardRegister?.id,
-                    currentCaseReportForm?.id,
-                    page,
-                    PAGE_SIZE
-                )
-                .run(
-                    paginatedSurveys => {
-                        setSurveys(paginatedSurveys.objects);
-                        setTotal(paginatedSurveys.pager.total);
-                        setPageSize(paginatedSurveys.pager.pageSize);
-                        setLoadingSurveys(false);
-                    },
-                    err => {
-                        //@ts-ignore
-                        setSurveysError(err.message || err.response?.data.message);
-                        setLoadingSurveys(false);
-                    }
-                );
-        } else {
-            const makeChunkedCall: boolean =
-                surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin;
-            //Other forms are not paginated.
-            compositionRoot.surveys.getSurveys
-                .execute(surveyFormType, orgUnitId, parentSurveyId, makeChunkedCall)
-                .run(
-                    nonPaginatedSurveys => {
-                        setSurveys(nonPaginatedSurveys);
-                        setLoadingSurveys(false);
-                    },
-                    err => {
-                        //@ts-ignore
-                        setSurveysError(err.message || err?.response.data.message);
-                        setLoadingSurveys(false);
-                    }
-                );
-        }
+        const makeChunkedCall: boolean =
+            surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin;
+
+        compositionRoot.surveys.getPaginatedSurveys
+            .execute(
+                surveyFormType,
+                orgUnitId,
+                parentSurveyId,
+                currentWardRegister?.id,
+                currentCaseReportForm?.id,
+                page,
+                PAGE_SIZE,
+                makeChunkedCall,
+                sortDetails
+            )
+            .run(
+                paginatedSurveys => {
+                    setSurveys(paginatedSurveys.objects);
+                    setTotal(paginatedSurveys.pager.total);
+                    setPageSize(paginatedSurveys.pager.pageSize);
+                    setLoadingSurveys(false);
+                },
+                err => {
+                    //@ts-ignore
+                    setSurveysError(err.message || err.response?.data.message);
+                    setLoadingSurveys(false);
+                }
+            );
     }, [
         compositionRoot.surveys.getPaginatedSurveys,
-        compositionRoot.surveys.getSurveys,
         surveyFormType,
         currentPPSSurveyForm,
         currentPrevalenceSurveyForm?.id,
         currentWardRegister,
         shouldRefreshSurveys,
-        page,
         getOrgUnitByFormType,
         isAdmin,
         currentCaseReportForm?.id,
+        page,
+        setPageSize,
+        setTotal,
+        sortDetails,
     ]);
 
     return {
@@ -165,11 +155,5 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         loadingSurveys,
         errorSurveys: surveysError,
         setRefreshSurveys,
-        page,
-        setPage,
-        pageSize,
-        setPageSize,
-        total,
-        setTotal,
     };
 }

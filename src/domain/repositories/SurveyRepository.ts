@@ -3,7 +3,7 @@ import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { ImportStrategy } from "../entities/Program";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
-import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
+import { ChildCount, SURVEY_FORM_TYPES } from "../entities/Survey";
 
 export interface SurveyRepository {
     getForm(
@@ -18,7 +18,7 @@ export interface SurveyRepository {
         eventId: string | undefined,
         programId: Id
     ): FutureData<Id>;
-    getSurveys(options: GetSurveyOptions): FutureData<Survey[]>;
+
     getPopulatedSurveyById(
         eventId: Id,
         programId: Id,

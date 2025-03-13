@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
@@ -12,14 +12,16 @@ import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
+import { SortColumnDetails } from "../../../../domain/entities/TablePagination";
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 
-export type SortDirection = "asc" | "desc";
-export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
+export function useSurveyListActions(
+    surveyFormType: SURVEY_FORM_TYPES,
+    setSortDetails: Dispatch<SetStateAction<SortColumnDetails | undefined>>
+) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
     const [options, setOptions] = useState<OptionType[]>([]);
-    const [sortedSurveys, setSortedSurveys] = useState<Survey[]>();
     const [optionLoading, setOptionLoading] = useState<boolean>(false);
 
     const {
@@ -79,6 +81,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     };
 
     const listChildren = (survey: Survey, option?: string) => {
+        setSortDetails(undefined);
         updateSelectedSurveyDetails(
             {
                 id: survey.id,
@@ -139,15 +142,6 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             setOptions(optionsWithChildCount);
             setOptionLoading(false);
         }
-    };
-
-    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-        setSortedSurveys(surveys => {
-            if (surveys)
-                return _(surveys)
-                    .sortBy(x => x[columnName], { direction: sortDirection })
-                    .value();
-        });
     };
 
     const updateSelectedSurveyDetails = (
@@ -217,13 +211,10 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
 
     return {
         options,
-        sortedSurveys,
         optionLoading,
-        setSortedSurveys,
         goToSurvey,
         assignChild,
         listChildren,
         actionClick,
-        sortByColumn,
     };
 }

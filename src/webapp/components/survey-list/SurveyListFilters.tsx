@@ -8,13 +8,13 @@ interface SurveyListFilterProps {
     status: SURVEY_STATUSES | undefined;
     setStatus: Dispatch<SetStateAction<SURVEY_STATUSES | undefined>>;
     surveyType?: SURVEY_TYPES | undefined;
-    setSurveyType?: Dispatch<SetStateAction<SURVEY_TYPES | undefined>>;
+    handleSurveyTypeFilter?: (surveyType: SURVEY_TYPES | undefined) => void;
 }
 export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
     status,
     setStatus,
     surveyType,
-    setSurveyType,
+    handleSurveyTypeFilter,
 }) => {
     return (
         <FilterContainer>
@@ -44,14 +44,14 @@ export const SurveyListFilters: React.FC<SurveyListFilterProps> = ({
                 </Select>
             </FormControl>
 
-            {setSurveyType && (
+            {handleSurveyTypeFilter && (
                 <FormControl style={{ width: "50%" }}>
                     <InputLabel id="status-label">{i18n.t("Filter by Survey Type")}</InputLabel>
                     <Select
                         value={surveyType}
                         onChange={e => {
-                            if (e.target.value === "ALL") setSurveyType(undefined);
-                            else setSurveyType(e.target.value as SURVEY_TYPES);
+                            if (e.target.value === "ALL") handleSurveyTypeFilter(undefined);
+                            else handleSurveyTypeFilter(e.target.value as SURVEY_TYPES);
                         }}
                     >
                         <MenuItem key="SUPRANATIONAL" value="SUPRANATIONAL">

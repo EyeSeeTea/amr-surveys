@@ -18,16 +18,20 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { useSurveyListActions } from "../hook/useSurveyListActions";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
-import { useMultipleChildCount } from "../hook/useMultipleChildCount";
 import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
+import {
+    SortableColumnName,
+    SortColumnDetails,
+    SortDirection,
+} from "../../../../domain/entities/TablePagination";
+import { SortableTableCell } from "./SortableTableCell";
 
 interface PaginatedSurveyListTableProps {
     surveys: Survey[] | undefined;
@@ -37,9 +41,12 @@ interface PaginatedSurveyListTableProps {
     setPage: Dispatch<SetStateAction<number>>;
     pageSize: number;
     total?: number;
+    setSortDetails: Dispatch<SetStateAction<SortColumnDetails | undefined>>;
+    getSortDirection: (column: SortableColumnName) => SortDirection;
 }
 
-export type SortDirection = "asc" | "desc";
+export type SurveyColumns = keyof Survey;
+
 export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> = ({
     surveys,
     surveyFormType,
@@ -48,139 +55,129 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     setPage,
     pageSize,
     total,
+    setSortDetails,
+    getSortDirection,
 }) => {
     const { snackbar, offlineError } = useOfflineSnackbar();
-    //states for column sort
-    const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
-    const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
-    const [patientCodeSortDirection, setPatientCodeSortDirection] = useState<SortDirection>("asc");
-
-    const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
+    const { loading, deleteCompleteState, showDeleteErrorMsg } = useDeleteSurvey(
         surveyFormType,
         refreshSurveys
     );
-    const {
-        options,
-        optionLoading,
-        sortedSurveys,
-        setSortedSurveys,
-        goToSurvey,
-        assignChild,
-        listChildren,
-        actionClick,
-        sortByColumn,
-    } = useSurveyListActions(surveyFormType);
-
-    const { getCurrentSortDirection, childOnClick } = useMultipleChildCount(sortByColumn);
+    const { options, optionLoading, goToSurvey, assignChild, listChildren, actionClick } =
+        useSurveyListActions(surveyFormType, setSortDetails);
 
     useEffect(() => {
-        if (surveys) setSortedSurveys(surveys);
-
         if (deleteCompleteState?.status === "success") {
             snackbar.success(deleteCompleteState.message);
         }
         if (deleteCompleteState?.status === "error") {
             offlineError(deleteCompleteState.message);
         }
-    }, [deleteCompleteState, snackbar, surveys, offlineError, setSortedSurveys]);
+    }, [deleteCompleteState, snackbar, surveys, offlineError]);
 
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
-            {sortedSurveys && (
+            {surveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell
-                                        onClick={() => {
-                                            surveyNameSortDirection === "asc"
-                                                ? setSurveyNameSortDirection("desc")
-                                                : setSurveyNameSortDirection("asc");
-                                            sortByColumn("name", surveyNameSortDirection);
-                                        }}
-                                    >
-                                        <span>
-                                            <Typography variant="caption">
-                                                {i18n.t("Root Survey Name")}
-                                            </Typography>
-                                            {surveyNameSortDirection === "asc" ? (
-                                                <ArrowUpward fontSize="small" />
-                                            ) : (
-                                                <ArrowDownward fontSize="small" />
-                                            )}
-                                        </span>
-                                    </TableCell>
+                                    <SortableTableCell
+                                        label="Root Survey Name"
+                                        column="surveyName"
+                                        setSortDetails={setSortDetails}
+                                        getSortDirection={getSortDirection}
+                                    />
 
+                                    {(surveyFormType === "PrevalenceFacilityLevelForm" ||
+                                        surveyFormType === "PPSCountryQuestionnaire") && (
+                                        <TableCell>
+                                            <Typography variant="caption">
+                                                {i18n.t("Org Unit")}
+                                            </Typography>
+                                        </TableCell>
+                                    )}
+
+                                    {surveyFormType === "PrevalenceFacilityLevelForm" && (
+                                        <TableCell>
+                                            <Typography variant="caption">
+                                                {i18n.t("Facility Code")}
+                                            </Typography>
+                                        </TableCell>
+                                    )}
+
+                                    {(surveyFormType === "PPSSurveyForm" ||
+                                        surveyFormType === "PrevalenceSurveyForm") && (
+                                        <>
+                                            <SortableTableCell
+                                                label="Start Date"
+                                                column="startDate"
+                                                setSortDetails={setSortDetails}
+                                                getSortDirection={getSortDirection}
+                                            />
+
+                                            <SortableTableCell
+                                                label="Status"
+                                                column="status"
+                                                setSortDetails={setSortDetails}
+                                                getSortDirection={getSortDirection}
+                                            />
+
+                                            {surveyFormType === "PPSSurveyForm" && (
+                                                <SortableTableCell
+                                                    label="Survey Type"
+                                                    column="surveyType"
+                                                    setSortDetails={setSortDetails}
+                                                    getSortDirection={getSortDirection}
+                                                />
+                                            )}
+                                        </>
+                                    )}
+                                    {surveyFormType === "PPSWardRegister" && (
+                                        <SortableTableCell
+                                            label="Ward Code"
+                                            column="wardCode"
+                                            setSortDetails={setSortDetails}
+                                            getSortDirection={getSortDirection}
+                                        />
+                                    )}
+
+                                    {surveyFormType === "PPSHospitalForm" && (
+                                        <SortableTableCell
+                                            label="Hospital Code"
+                                            column="hospitalCode"
+                                            setSortDetails={setSortDetails}
+                                            getSortDirection={getSortDirection}
+                                        />
+                                    )}
                                     {(surveyFormType === "PPSPatientRegister" ||
                                         surveyFormType === "PrevalenceCaseReportForm" ||
                                         isPrevalencePatientChild(surveyFormType)) && (
-                                        <TableCell
-                                            onClick={() => {
-                                                patientIdSortDirection === "asc"
-                                                    ? setPatientIdSortDirection("desc")
-                                                    : setPatientIdSortDirection("asc");
-                                                sortByColumn(
-                                                    "uniquePatient.id" as keyof Survey,
-                                                    patientIdSortDirection
-                                                );
-                                            }}
-                                        >
-                                            <span>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Patient Id")}
-                                                </Typography>
-                                                {patientIdSortDirection === "asc" ? (
-                                                    <ArrowUpward fontSize="small" />
-                                                ) : (
-                                                    <ArrowDownward fontSize="small" />
-                                                )}
-                                            </span>
-                                        </TableCell>
+                                        <SortableTableCell
+                                            label="Patient Id"
+                                            column="uniquePatientId"
+                                            setSortDetails={setSortDetails}
+                                            getSortDirection={getSortDirection}
+                                        />
                                     )}
                                     {surveyFormType === "PPSPatientRegister" && (
-                                        <TableCell
-                                            onClick={() => {
-                                                patientCodeSortDirection === "asc"
-                                                    ? setPatientCodeSortDirection("desc")
-                                                    : setPatientCodeSortDirection("asc");
-                                                sortByColumn(
-                                                    "uniquePatient.code" as keyof Survey,
-                                                    patientCodeSortDirection
-                                                );
-                                            }}
-                                        >
-                                            <span>
-                                                <Typography variant="caption">
-                                                    {i18n.t("Patient Code")}
-                                                </Typography>
-                                                {patientCodeSortDirection === "asc" ? (
-                                                    <ArrowUpward fontSize="small" />
-                                                ) : (
-                                                    <ArrowDownward fontSize="small" />
-                                                )}
-                                            </span>
-                                        </TableCell>
+                                        <SortableTableCell
+                                            label="Patient Code"
+                                            column="uniquePatientCode"
+                                            setSortDetails={setSortDetails}
+                                            getSortDirection={getSortDirection}
+                                        />
                                     )}
 
                                     <>
                                         {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
                                             getChildrenName(surveyFormType).map(childName => (
-                                                <TableCell
-                                                    onClick={childOnClick(childName)}
-                                                    key={childName}
-                                                >
+                                                <TableCell key={childName}>
                                                     <span>
                                                         <Typography variant="caption">
                                                             {childName}
                                                         </Typography>
-                                                        {childName &&
-                                                        getCurrentSortDirection(childName) ===
-                                                            "asc" ? (
-                                                            <ArrowUpward fontSize="small" />
-                                                        ) : (
-                                                            <ArrowDownward fontSize="small" />
-                                                        )}
                                                     </span>
                                                 </TableCell>
                                             ))}
@@ -193,11 +190,43 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     </TableCell>
                                 </TableRow>
                             </TableHead>
-                            {sortedSurveys && sortedSurveys.length ? (
+                            {surveys && surveys.length ? (
                                 <StyledTableBody>
-                                    {sortedSurveys.map(survey => (
+                                    {surveys.map(survey => (
                                         <TableRow key={survey.id}>
                                             <TableCell>{`${survey.rootSurvey.name}`}</TableCell>
+                                            {(surveyFormType === "PrevalenceFacilityLevelForm" ||
+                                                surveyFormType === "PPSCountryQuestionnaire") && (
+                                                <TableCell>{survey.assignedOrgUnit.name}</TableCell>
+                                            )}
+                                            {surveyFormType === "PrevalenceFacilityLevelForm" && (
+                                                <TableCell>{survey.facilityCode}</TableCell>
+                                            )}
+
+                                            {(surveyFormType === "PPSSurveyForm" ||
+                                                surveyFormType === "PrevalenceSurveyForm") && (
+                                                <>
+                                                    <TableCell>
+                                                        {survey.startDate?.toDateString() || ""}
+                                                    </TableCell>
+                                                    <TableCell>{survey.status}</TableCell>
+                                                    {surveyFormType === "PPSSurveyForm" && (
+                                                        <TableCell>{survey.surveyType}</TableCell>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {surveyFormType === "PPSWardRegister" && (
+                                                <TableCell>{survey.name}</TableCell>
+                                            )}
+                                            {surveyFormType === "PPSHospitalForm" && (
+                                                <TableCell>{survey.name}</TableCell>
+                                            )}
+
+                                            {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
+                                                survey.childCount?.type === "number" && (
+                                                    <TableCell>{survey.childCount.value}</TableCell>
+                                                )}
                                             {(surveyFormType === "PPSPatientRegister" ||
                                                 surveyFormType === "PrevalenceCaseReportForm" ||
                                                 isPrevalencePatientChild(surveyFormType)) && (
@@ -245,10 +274,21 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         {
                                                             option: "Delete",
                                                             handler: () =>
-                                                                deleteSurvey(
-                                                                    survey.id,
-                                                                    survey.assignedOrgUnit.id
-                                                                ),
+                                                                showDeleteErrorMsg(survey),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(option =>
+                                                                    option.label.startsWith("Add")
+                                                                )?.label || "",
+                                                            handler: () => assignChild(survey),
+                                                        },
+                                                        {
+                                                            option:
+                                                                options.find(option =>
+                                                                    option.label.startsWith("List")
+                                                                )?.label || "",
+                                                            handler: () => listChildren(survey),
                                                         },
                                                         {
                                                             option: "Add New Sample Shipment",
@@ -330,7 +370,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                             ) : (
                                 <StyledTableBody>
                                     <TableRow>
-                                        <TableCell> {i18n.t("No data found...")}</TableCell>
+                                        <TableCell>{i18n.t("No data found...")} </TableCell>
                                     </TableRow>
                                 </StyledTableBody>
                             )}

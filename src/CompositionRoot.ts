@@ -26,7 +26,6 @@ import { GetPaginatedSurveysUseCase } from "./domain/usecases/GetPaginatedSurvey
 import { GetPopulatedSurveyUseCase } from "./domain/usecases/GetPopulatedSurveyUseCase";
 import { NonAdminUserTestRepository } from "./data/repositories/testRepositories/NonAdminUserTestRepository";
 import { DeleteSurveyUseCase } from "./domain/usecases/DeleteSurveyUseCase";
-import { GetAllSurveysUseCase } from "./domain/usecases/GetAllSurveysUseCase";
 import { PaginatedSurveyRepository } from "./domain/repositories/PaginatedSurveyRepository";
 import { PaginatedSurveyTestRepository } from "./data/repositories/testRepositories/PaginatedSurveyTestRepository";
 import { PaginatedSurveyD2Repository } from "./data/repositories/PaginatedSurveyD2Repository";
@@ -38,6 +37,7 @@ import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Re
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
 import { GetFilteredPrevalencePatientsUseCase } from "./domain/usecases/GetFilteredPrevalencePatientsUseCase";
+import { GetFilteredRootSurveysUseCase } from "./domain/usecases/GetFilteredRootSurveys";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -71,14 +71,19 @@ function getCompositionRoot(repositories: Repositories) {
             getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
             saveFormData: new SaveFormDataUseCase(
                 repositories.surveyFormRepository,
+                repositories.paginatedSurveyRepository,
                 repositories.astGuidelinesRepository
             ),
-            getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
             getFilteredPPSPatients: new GetFilteredPPSPatientsUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),
             getFilteredPrevalencePatients: new GetFilteredPrevalencePatientsUseCase(
+                repositories.paginatedSurveyRepository,
+                repositories.surveyFormRepository
+            ),
+
+            getFilteredRootSurveysUseCase: new GetFilteredRootSurveysUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),

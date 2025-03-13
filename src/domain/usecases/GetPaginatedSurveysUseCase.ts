@@ -1,13 +1,18 @@
 import { FutureData } from "../../data/api-futures";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
-import { getProgramId, isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
-import { PaginatedReponse } from "../entities/TablePagination";
+import {
+    getProgramId,
+    hasSecondaryParent,
+    isPrevalencePatientChild,
+} from "../utils/PPSProgramsHelper";
+import { PaginatedReponse, SortColumnDetails } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
+import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 
 export class GetPaginatedSurveysUseCase {
     constructor(
@@ -22,9 +27,14 @@ export class GetPaginatedSurveysUseCase {
         parentWardRegisterId: Id | undefined,
         parentPatientId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        chunked = false,
+        sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         const programId = getProgramId(surveyFormType);
+
+        //All PPS Survey Forms are Global.
+        const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
         const parentId = isPrevalencePatientChild(surveyFormType)
             ? parentPatientId
@@ -33,7 +43,18 @@ export class GetPaginatedSurveysUseCase {
             : parentSurveyId;
 
         return this.paginatedSurveyRepo
-            .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
+            .getSurveys(
+                {
+                    surveyFormType: surveyFormType,
+                    programId: programId,
+                    orgUnitId: ouId,
+                    parentId: parentId,
+                    page: page,
+                    pageSize: pageSize,
+                    sortColumnDetails,
+                },
+                chunked
+            )
             .flatMap(surveys => {
                 const surveysWithName = surveys.objects.map(survey => {
                     return Future.join2(
@@ -45,23 +66,32 @@ export class GetPaginatedSurveysUseCase {
                             surveyFormType: surveyFormType,
                             orgUnitId: survey.assignedOrgUnit.id,
                             parentSurveyId: survey.rootSurvey.id,
-                            secondaryparentId: survey.id,
                             surveyReporsitory: this.paginatedSurveyRepo,
+                            secondaryparentId: hasSecondaryParent(surveyFormType) ? survey.id : "",
                         })
                     ).map(([parentDetails, childCount]): Survey => {
+                        const rootName =
+                            survey.rootSurvey.name === ""
+                                ? parentDetails.name
+                                : survey.rootSurvey.name;
+
                         const newRootSurvey: SurveyBase = {
                             surveyType: survey.rootSurvey.surveyType,
                             id: survey.rootSurvey.id,
-                            name:
-                                survey.rootSurvey.name === ""
-                                    ? parentDetails.name
-                                    : survey.rootSurvey.name,
+                            name: rootName,
+                            astGuideline: survey.rootSurvey.astGuideline
+                                ? survey.rootSurvey.astGuideline
+                                : parentDetails.astGuidelineType,
                         };
 
                         const updatedSurvey: Survey = {
                             ...survey,
                             name:
-                                surveyFormType === "PrevalenceCaseReportForm"
+                                surveyFormType === "PrevalenceSurveyForm"
+                                    ? parentDetails.name
+                                    : surveyFormType === "PrevalenceFacilityLevelForm"
+                                    ? survey.facilityCode ?? survey.name
+                                    : surveyFormType === "PrevalenceCaseReportForm"
                                     ? survey.uniquePatient?.id ?? survey.name
                                     : survey.name,
                             rootSurvey: newRootSurvey,

@@ -13,12 +13,15 @@ import {
 import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
+import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
+import { PAGE_SIZE } from "../entities/TablePagination";
 import i18n from "../../utils/i18n";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(
         private surveyRepository: SurveyRepository,
+        private paginatedSurveyRepository: PaginatedSurveyRepository,
         private astGuidelineRepository: ASTGuidelinesRepository
     ) {}
 
@@ -60,16 +63,21 @@ export class SaveFormDataUseCase {
                     new Error(i18n.t("Survey ID expected but could not be resolved"))
                 );
             }
-            return this.surveyRepository
-                .getSurveys({
-                    surveyFormType: surveyFormType,
-                    programId: programId,
-                    orgUnitId: orgUnitId,
-                    chunked: false,
-                    parentId: surveyId,
-                })
+
+            return this.paginatedSurveyRepository
+                .getSurveys(
+                    {
+                        surveyFormType: surveyFormType,
+                        programId: programId,
+                        orgUnitId: orgUnitId,
+                        parentId: surveyId,
+                        page: 0,
+                        pageSize: PAGE_SIZE,
+                    },
+                    false
+                )
                 .flatMap(surveys => {
-                    if (surveys.length > 0) {
+                    if (surveys.objects.length > 0) {
                         const errorMessages = {
                             PrevalenceFacilityLevelForm: i18n.t(
                                 "Prevalence Facility already exists for this Survey."

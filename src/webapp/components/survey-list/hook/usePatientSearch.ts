@@ -1,15 +1,16 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { SURVEY_FORM_TYPES, Survey } from "../../../../domain/entities/Survey";
 import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import i18n from "../../../../utils/i18n";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
+import { SortColumnDetails } from "../../../../domain/entities/TablePagination";
 
 export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
     surveyFormType: SURVEY_FORM_TYPES,
-    page: number,
-    setTotal: Dispatch<SetStateAction<number | undefined>>
+    setTotal: Dispatch<SetStateAction<number | undefined>>,
+    sortDetails: SortColumnDetails | undefined
 ) => {
     const { compositionRoot } = useAppContext();
     const {
@@ -46,50 +47,67 @@ export const usePatientSearch = (
         }
     }, [filteredSurveys, patientCodeSearchKeyword, patientIdSearchKeyword]);
 
-    const filterSurveys = (searchBy: "patientId" | "patientCode") => {
-        const searchKeyword =
-            searchBy === "patientId" ? patientIdSearchKeyword : patientCodeSearchKeyword;
-        if (surveyFormType === "PPSPatientRegister" && searchKeyword) {
-            setIsLoading(true);
-            compositionRoot.surveys.getFilteredPPSPatients
-                .execute(
-                    searchKeyword,
-                    currentHospitalForm?.orgUnitId ?? "",
-                    currentWardRegister?.id ?? "",
-                    searchBy
-                )
-                .run(
-                    response => {
-                        setSearchResultSurveys(response.objects);
-                        setTotal(response.pager.total);
-                        setIsLoading(false);
-                    },
-                    () => {
-                        offlineError(i18n.t("Error fetching surveys"));
-                        setIsLoading(false);
-                    }
-                );
-        } else if (surveyFormType === "PrevalenceCaseReportForm" && searchKeyword) {
-            setIsLoading(true);
-            compositionRoot.surveys.getFilteredPrevalencePatients
-                .execute(
-                    searchKeyword,
-                    currentFacilityLevelForm?.orgUnitId ?? "",
-                    currentPrevalenceSurveyForm?.id ?? ""
-                )
-                .run(
-                    response => {
-                        setSearchResultSurveys(response.objects);
-                        setTotal(response.pager.total);
-                        setIsLoading(false);
-                    },
-                    () => {
-                        offlineError(i18n.t("Error fetching surveys"));
-                        setIsLoading(false);
-                    }
-                );
-        }
-    };
+    const filterSurveys = useCallback(
+        (searchBy: "patientId" | "patientCode") => {
+            const searchKeyword =
+                searchBy === "patientId" ? patientIdSearchKeyword : patientCodeSearchKeyword;
+            if (surveyFormType === "PPSPatientRegister" && searchKeyword) {
+                setIsLoading(true);
+                compositionRoot.surveys.getFilteredPPSPatients
+                    .execute(
+                        searchKeyword,
+                        currentHospitalForm?.orgUnitId ?? "",
+                        currentWardRegister?.id ?? "",
+                        searchBy,
+                        sortDetails
+                    )
+                    .run(
+                        response => {
+                            setSearchResultSurveys(response.objects);
+                            setTotal(response.pager.total);
+                            setIsLoading(false);
+                        },
+                        () => {
+                            offlineError(i18n.t("Error fetching surveys"));
+                            setIsLoading(false);
+                        }
+                    );
+            } else if (surveyFormType === "PrevalenceCaseReportForm" && searchKeyword) {
+                setIsLoading(true);
+                compositionRoot.surveys.getFilteredPrevalencePatients
+                    .execute(
+                        searchKeyword,
+                        currentFacilityLevelForm?.orgUnitId ?? "",
+                        currentPrevalenceSurveyForm?.id ?? "",
+                        sortDetails
+                    )
+                    .run(
+                        response => {
+                            setSearchResultSurveys(response.objects);
+                            setTotal(response.pager.total);
+                            setIsLoading(false);
+                        },
+                        () => {
+                            offlineError(i18n.t("Error fetching surveys"));
+                            setIsLoading(false);
+                        }
+                    );
+            }
+        },
+        [
+            compositionRoot,
+            currentFacilityLevelForm?.orgUnitId,
+            currentHospitalForm?.orgUnitId,
+            currentPrevalenceSurveyForm?.id,
+            currentWardRegister?.id,
+            offlineError,
+            patientCodeSearchKeyword,
+            patientIdSearchKeyword,
+            setTotal,
+            sortDetails,
+            surveyFormType,
+        ]
+    );
 
     const handlePatientIdSearch = (event: React.KeyboardEvent<HTMLDivElement>) => {
         setPatientCodeSearchKeyword("");
