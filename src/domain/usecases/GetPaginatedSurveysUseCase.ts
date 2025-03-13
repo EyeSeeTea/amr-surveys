@@ -44,14 +44,16 @@ export class GetPaginatedSurveysUseCase {
 
         return this.paginatedSurveyRepo
             .getSurveys(
-                surveyFormType,
-                programId,
-                ouId,
-                parentId,
-                page,
-                pageSize,
-                chunked,
-                sortColumnDetails
+                {
+                    surveyFormType: surveyFormType,
+                    programId: programId,
+                    orgUnitId: ouId,
+                    parentId: parentId,
+                    page: page,
+                    pageSize: pageSize,
+                    sortColumnDetails,
+                },
+                chunked
             )
             .flatMap(surveys => {
                 const surveysWithName = surveys.objects.map(survey => {

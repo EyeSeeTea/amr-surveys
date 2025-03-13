@@ -149,13 +149,17 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         });
     }
     getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        _programId: string,
-        orgUnitId: string,
-        parentId: string | undefined,
-        page: number,
-        pageSize: number
+        options: {
+            surveyFormType: SURVEY_FORM_TYPES;
+            programId: string;
+            orgUnitId: string;
+            parentId: string | undefined;
+            page: number;
+            pageSize: number;
+        },
+        _chunked: boolean
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const { orgUnitId, page, pageSize, surveyFormType } = options;
         return Future.success({
             pager: {
                 page: page,

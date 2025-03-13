@@ -56,19 +56,31 @@ type Filter = {
 
 const OU_CHUNK_SIZE = 500;
 
+export type PaginatedSurveyRepositoryProps = {
+    surveyFormType: SURVEY_FORM_TYPES;
+    programId: Id;
+    orgUnitId: Id;
+    parentId: Id | undefined;
+    page: number;
+    pageSize: number;
+    sortColumnDetails?: SortColumnDetails;
+};
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     constructor(private api: D2Api) {}
 
     getSurveys(
-        surveyFormType: SURVEY_FORM_TYPES,
-        programId: Id,
-        orgUnitId: Id,
-        parentId: Id | undefined,
-        page: number,
-        pageSize: number,
-        chunked = false,
-        sortColumnDetails?: SortColumnDetails
+        options: PaginatedSurveyRepositoryProps,
+        chunked = false
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const {
+            surveyFormType,
+            programId,
+            orgUnitId,
+            parentId,
+            page,
+            pageSize,
+            sortColumnDetails,
+        } = options;
         const filter = this.getFilterByParentId(programId, parentId);
         const sortOrder = sortColumnDetails
             ? this.mapColumnToIdForSort(sortColumnDetails, surveyFormType)
@@ -179,7 +191,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             );
         });
 
-        return Future.sequential(allChunkedSurveys).flatMap(listOfSurveys => {
+        return Future.parallel(allChunkedSurveys, { concurrency: 5 }).flatMap(listOfSurveys => {
             return Future.success(_(listOfSurveys).flatten());
         });
     }

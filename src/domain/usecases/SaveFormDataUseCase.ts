@@ -65,7 +65,17 @@ export class SaveFormDataUseCase {
             }
 
             return this.paginatedSurveyRepository
-                .getSurveys(surveyFormType, programId, orgUnitId, surveyId, 0, PAGE_SIZE, false)
+                .getSurveys(
+                    {
+                        surveyFormType: surveyFormType,
+                        programId: programId,
+                        orgUnitId: orgUnitId,
+                        parentId: surveyId,
+                        page: 0,
+                        pageSize: PAGE_SIZE,
+                    },
+                    false
+                )
                 .flatMap(surveys => {
                     if (surveys.objects.length > 0) {
                         const errorMessages = {

@@ -1,4 +1,5 @@
 import { FutureData } from "../../data/api-futures";
+import { Maybe } from "../../utils/ts-utils";
 import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES, SURVEY_TYPES, SurveyBase } from "../entities/Survey";
@@ -17,10 +18,9 @@ export class GetFilteredRootSurveysUseCase {
     public execute(
         orgUnitId: Id,
         surveyFormType: SURVEY_FORM_TYPES,
-        surveyType: SURVEY_TYPES | undefined,
+        surveyType: Maybe<SURVEY_TYPES>,
         page: number,
         pageSize: number,
-
         sortColumnDetails?: SortColumnDetails
     ): FutureData<PaginatedReponse<Survey[]>> {
         return this.paginatedSurveyRepo
