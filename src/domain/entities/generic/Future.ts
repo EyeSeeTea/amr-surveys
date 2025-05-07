@@ -53,6 +53,15 @@ export class Future<E, D> {
         }).cancel;
     }
 
+    runAsync(): Promise<{ data?: D; error?: E }> {
+        return new Promise(resolve => {
+            this.run(
+                data => resolve({ data }),
+                error => resolve({ error })
+            );
+        });
+    }
+
     map<U>(fn: (data: D) => U): Future<E, U> {
         return new Future(() => this._promise().then(fn));
     }

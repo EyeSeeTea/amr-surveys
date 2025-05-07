@@ -31,7 +31,7 @@ export function getDefaultOrCustomProgramId(
     });
 }
 
-export const getProgramId = (
+const getProgramId = (
     surveyFormType: SURVEY_FORM_TYPES,
     surveyParentId: string | undefined,
     modules: AMRSurveyModule[]
