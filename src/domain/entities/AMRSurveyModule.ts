@@ -17,6 +17,9 @@ export type SurveyRule = {
     rules: Rule[];
 };
 
+export type CustomForms = Record<string, CustomForm>;
+export type CustomForm = Record<string, string>;
+
 export interface AMRSurveyModule {
     id: string;
     name: "PPS" | "Prevalence";
@@ -24,4 +27,5 @@ export interface AMRSurveyModule {
     surveyPrograms: NamedRef[];
     userGroups: UserGroups;
     rulesBySurvey: { surveyId: Id; surveyRules: SurveyRule[]; antibioticBlacklist: string[] }[];
+    customForms?: CustomForms;
 }
