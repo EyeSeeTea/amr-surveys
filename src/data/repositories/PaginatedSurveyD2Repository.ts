@@ -22,9 +22,12 @@ import {
     trackedEntityFields,
 } from "../utils/surveyListMappers";
 import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
+import { DataStoreClient } from "../DataStoreClient";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
+import { DataStoreKeys } from "../DataStoreKeys";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
-    constructor(private api: D2Api) {}
+    constructor(private api: D2Api, private dataStoreClient: DataStoreClient) {}
 
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
@@ -200,31 +203,35 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
-        return apiToFuture(
-            this.api.tracker.trackedEntities.get({
-                fields: trackedEntityFields,
-                program: PREVALENCE_CASE_REPORT_FORM_ID,
-                orgUnit: orgUnitId,
-                ouMode: "SELECTED",
-                pageSize: 10,
-                totalPages: true,
-                filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+        return this.getPrevalenceCaseReportId(parentId)
+            .flatMap(prevalenceCaseReportId => {
+                return apiToFuture(
+                    this.api.tracker.trackedEntities.get({
+                        fields: trackedEntityFields,
+                        program: prevalenceCaseReportId,
+                        orgUnit: orgUnitId,
+                        ouMode: "SELECTED",
+                        pageSize: 10,
+                        totalPages: true,
+                        filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                    })
+                );
             })
-        ).flatMap(trackedEntities => {
-            const instances = trackedEntities.instances;
-            const surveys = mapTrackedEntityToSurvey(instances, "PrevalenceCaseReportForm");
+            .flatMap(trackedEntities => {
+                const instances = trackedEntities.instances;
+                const surveys = mapTrackedEntityToSurvey(instances, "PrevalenceCaseReportForm");
 
-            const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                pager: {
-                    page: trackedEntities.page,
-                    pageSize: trackedEntities.pageSize,
-                    total: trackedEntities.total,
-                },
-                objects: surveys,
-            };
+                const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                    pager: {
+                        page: trackedEntities.page,
+                        pageSize: trackedEntities.pageSize,
+                        total: trackedEntities.total,
+                    },
+                    objects: surveys,
+                };
 
-            return Future.success(paginatedSurveys);
-        });
+                return Future.success(paginatedSurveys);
+            });
     }
 
     getPaginatedSurveyChildCount(
@@ -240,5 +247,19 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             secondaryparentId,
             this.api
         );
+    }
+
+    private getPrevalenceCaseReportId(surveyId: string): FutureData<string> {
+        return this.dataStoreClient
+            .listCollection<AMRSurveyModule>(DataStoreKeys.MODULES)
+            .flatMap(modules => {
+                const prevalence = modules.find(module => module.name === "Prevalence");
+
+                const customForm =
+                    prevalence?.customForms?.[surveyId]?.[PREVALENCE_CASE_REPORT_FORM_ID] ||
+                    PREVALENCE_CASE_REPORT_FORM_ID;
+
+                return Future.success(customForm);
+            });
     }
 }
