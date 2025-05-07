@@ -67,28 +67,41 @@ function getCompositionRoot(repositories: Repositories) {
             saveKeyDbLocale: new SaveKeyDbLocaleUseCase(repositories.usersRepository),
         },
         surveys: {
-            getForm: new GetSurveyUseCase(repositories.surveyFormRepository),
-            getPopulatedForm: new GetPopulatedSurveyUseCase(repositories.surveyFormRepository),
+            getForm: new GetSurveyUseCase(
+                repositories.surveyFormRepository,
+                repositories.moduleRepository
+            ),
+            getPopulatedForm: new GetPopulatedSurveyUseCase(
+                repositories.surveyFormRepository,
+                repositories.moduleRepository
+            ),
             saveFormData: new SaveFormDataUseCase(
                 repositories.surveyFormRepository,
-                repositories.astGuidelinesRepository
+                repositories.astGuidelinesRepository,
+                repositories.moduleRepository
             ),
-            getSurveys: new GetAllSurveysUseCase(repositories.surveyFormRepository),
+            getSurveys: new GetAllSurveysUseCase(
+                repositories.surveyFormRepository,
+                repositories.moduleRepository
+            ),
             getFilteredPPSPatients: new GetFilteredPPSPatientsUseCase(
                 repositories.paginatedSurveyRepository,
                 repositories.surveyFormRepository
             ),
             getFilteredPrevalencePatients: new GetFilteredPrevalencePatientsUseCase(
                 repositories.paginatedSurveyRepository,
-                repositories.surveyFormRepository
+                repositories.surveyFormRepository,
+                repositories.moduleRepository
             ),
             getPaginatedSurveys: new GetPaginatedSurveysUseCase(
                 repositories.paginatedSurveyRepository,
-                repositories.surveyFormRepository
+                repositories.surveyFormRepository,
+                repositories.moduleRepository
             ),
             deleteSurvey: new DeleteSurveyUseCase(
                 repositories.surveyFormRepository,
-                repositories.astGuidelinesRepository
+                repositories.astGuidelinesRepository,
+                repositories.moduleRepository
             ),
             applyInitialRules: new ApplyInitialRulesToSurveyUseCase(),
             removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(

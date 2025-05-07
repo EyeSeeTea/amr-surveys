@@ -15,6 +15,7 @@ import {
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
     PREVALENCE_SURVEY_FORM_ID,
 } from "../../data/entities/D2Survey";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import {
     DefaultFormOptions,
@@ -38,7 +39,13 @@ export const PREVALENCE_PATIENT_OPTIONS = [
     "Supranational Result",
 ] as const;
 
-export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
+export const getProgramId = (
+    surveyFormType: SURVEY_FORM_TYPES,
+    surveyParentId: string | undefined,
+    modules: AMRSurveyModule[]
+): string => {
+    const prevalenceModule = modules.find(module => module.name === "Prevalence");
+
     switch (surveyFormType) {
         //PPS Module
         case "PPSSurveyForm":
@@ -58,7 +65,11 @@ export const getProgramId = (surveyFormType: SURVEY_FORM_TYPES): string => {
         case "PrevalenceFacilityLevelForm":
             return PREVALENCE_FACILITY_LEVEL_FORM_ID;
         case "PrevalenceCaseReportForm":
-            return PREVALENCE_CASE_REPORT_FORM_ID;
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_CASE_REPORT_FORM_ID
+            );
         case "PrevalenceSampleShipTrackForm":
             return PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID;
         case "PrevalenceCentralRefLabForm":
@@ -288,3 +299,13 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
             return false;
     }
 };
+function getCustomOrDefaultFormId(
+    surveyParentId: string | undefined,
+    module: AMRSurveyModule | undefined,
+    defaultformId: string
+): string {
+    return (
+        (surveyParentId ? module?.customForms?.[surveyParentId]?.[defaultformId] : undefined) ||
+        defaultformId
+    );
+}

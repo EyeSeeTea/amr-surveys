@@ -8,11 +8,13 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
+import { ModuleRepository } from "../repositories/ModuleRepository";
 
 export class GetPaginatedSurveysUseCase {
     constructor(
         private paginatedSurveyRepo: PaginatedSurveyRepository,
-        private surveyReporsitory: SurveyRepository
+        private surveyReporsitory: SurveyRepository,
+        private moduleRepository: ModuleRepository
     ) {}
 
     public execute(
@@ -24,60 +26,65 @@ export class GetPaginatedSurveysUseCase {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        const programId = getProgramId(surveyFormType);
+        return this.moduleRepository.getAll().flatMap(modules => {
+            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
 
-        const parentId = isPrevalencePatientChild(surveyFormType)
-            ? parentPatientId
-            : surveyFormType === "PPSPatientRegister"
-            ? parentWardRegisterId
-            : parentSurveyId;
+            const parentId = isPrevalencePatientChild(surveyFormType)
+                ? parentPatientId
+                : surveyFormType === "PPSPatientRegister"
+                ? parentWardRegisterId
+                : parentSurveyId;
 
-        return this.paginatedSurveyRepo
-            .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
-            .flatMap(surveys => {
-                const surveysWithName = surveys.objects.map(survey => {
-                    return Future.join2(
-                        this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
-                            survey.rootSurvey.id,
-                            survey.surveyFormType
-                        ),
-                        getChildCount({
-                            surveyFormType: surveyFormType,
-                            orgUnitId: survey.assignedOrgUnit.id,
-                            parentSurveyId: survey.rootSurvey.id,
-                            secondaryparentId: survey.id,
-                            surveyReporsitory: this.paginatedSurveyRepo,
-                        })
-                    ).map(([parentDetails, childCount]): Survey => {
-                        const newRootSurvey: SurveyBase = {
-                            surveyType: survey.rootSurvey.surveyType,
-                            id: survey.rootSurvey.id,
-                            name:
-                                survey.rootSurvey.name === ""
-                                    ? parentDetails.name
-                                    : survey.rootSurvey.name,
-                        };
+            return this.paginatedSurveyRepo
+                .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
+                .flatMap(surveys => {
+                    const surveysWithName = surveys.objects.map(survey => {
+                        return Future.join2(
+                            this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
+                                survey.rootSurvey.id,
+                                survey.surveyFormType
+                            ),
+                            getChildCount({
+                                surveyFormType: surveyFormType,
+                                orgUnitId: survey.assignedOrgUnit.id,
+                                parentSurveyId: survey.rootSurvey.id,
+                                secondaryparentId: survey.id,
+                                surveyReporsitory: this.paginatedSurveyRepo,
+                                programId: programId,
+                            })
+                        ).map(([parentDetails, childCount]): Survey => {
+                            const newRootSurvey: SurveyBase = {
+                                surveyType: survey.rootSurvey.surveyType,
+                                id: survey.rootSurvey.id,
+                                name:
+                                    survey.rootSurvey.name === ""
+                                        ? parentDetails.name
+                                        : survey.rootSurvey.name,
+                            };
 
-                        const updatedSurvey: Survey = {
-                            ...survey,
-                            name:
-                                surveyFormType === "PrevalenceCaseReportForm"
-                                    ? survey.uniquePatient?.id ?? survey.name
-                                    : survey.name,
-                            rootSurvey: newRootSurvey,
-                            childCount: childCount,
-                        };
-                        return updatedSurvey;
+                            const updatedSurvey: Survey = {
+                                ...survey,
+                                name:
+                                    surveyFormType === "PrevalenceCaseReportForm"
+                                        ? survey.uniquePatient?.id ?? survey.name
+                                        : survey.name,
+                                rootSurvey: newRootSurvey,
+                                childCount: childCount,
+                            };
+                            return updatedSurvey;
+                        });
                     });
-                });
 
-                return Future.parallel(surveysWithName, { concurrency: 5 }).map(updatedSurveys => {
-                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                        pager: surveys.pager,
-                        objects: updatedSurveys,
-                    };
-                    return paginatedSurveys;
+                    return Future.parallel(surveysWithName, { concurrency: 5 }).map(
+                        updatedSurveys => {
+                            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                                pager: surveys.pager,
+                                objects: updatedSurveys,
+                            };
+                            return paginatedSurveys;
+                        }
+                    );
                 });
-            });
+        });
     }
 }

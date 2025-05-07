@@ -8,7 +8,6 @@ import {
     SURVEY_FORM_TYPES,
 } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { getProgramId } from "./PPSProgramsHelper";
 import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
@@ -28,6 +27,7 @@ type GetChildCountType = {
     parentSurveyId: Id;
     secondaryparentId?: Id;
     surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
+    programId: Id;
 };
 
 const isPaginatedSurveyRepository = (
@@ -42,11 +42,11 @@ export const getChildCount = ({
     parentSurveyId,
     secondaryparentId,
     surveyReporsitory,
+    programId,
 }: GetChildCountType): FutureData<ChildCountLabel> => {
     if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType))
         return Future.success({ type: "number", value: 0 });
 
-    const programId = getProgramId(surveyFormType);
     const programCountMapFuture = isPaginatedSurveyRepository(surveyReporsitory)
         ? surveyReporsitory.getPaginatedSurveyChildCount(
               programId,

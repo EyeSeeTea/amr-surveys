@@ -22,11 +22,15 @@ import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
+import { ModuleRepository } from "../repositories/ModuleRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import { getProgramId } from "../utils/PPSProgramsHelper";
 
 export class GetSurveyUseCase {
-    constructor(private surveyReporsitory: SurveyRepository) {}
+    constructor(
+        private surveyReporsitory: SurveyRepository,
+        private moduleRepository: ModuleRepository
+    ) {}
 
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
@@ -35,16 +39,19 @@ export class GetSurveyUseCase {
         parentPrevalenceSurveyId: Id | undefined,
         parentCaseReportId: Id | undefined
     ): FutureData<Questionnaire> {
-        const programId = getProgramId(surveyFormType);
-        if (parentPPSSurveyId) {
-            return this.getPPSSurveyForm(programId, parentPPSSurveyId, parentWardRegisterId);
-        } else if (parentPrevalenceSurveyId) {
-            return this.getPrevalenceSurveyForm(
-                programId,
-                parentPrevalenceSurveyId,
-                parentCaseReportId
-            );
-        } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
+        return this.moduleRepository.getAll().flatMap(modules => {
+            const programId = getProgramId(surveyFormType, parentPrevalenceSurveyId, modules);
+
+            if (parentPPSSurveyId) {
+                return this.getPPSSurveyForm(programId, parentPPSSurveyId, parentWardRegisterId);
+            } else if (parentPrevalenceSurveyId) {
+                return this.getPrevalenceSurveyForm(
+                    programId,
+                    parentPrevalenceSurveyId,
+                    parentCaseReportId
+                );
+            } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
+        });
     }
 
     getPPSSurveyForm(

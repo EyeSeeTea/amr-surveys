@@ -15,7 +15,8 @@ export function useDeleteSurvey(
     const { compositionRoot } = useAppContext();
     const [loading, setLoading] = useState<boolean>(false);
     const [deleteCompleteState, setDeleteCompleteState] = useState<ActionOutcome>();
-    const { currentHospitalForm } = useCurrentSurveys();
+    const { currentHospitalForm, currentPrevalenceSurveyForm, currentPPSSurveyForm } =
+        useCurrentSurveys();
 
     const showDeleteErrorMsg = (survey: Survey) => {
         const count =
@@ -42,8 +43,15 @@ export function useDeleteSurvey(
 
         if (formType === "PPSWardRegister" || formType === "PPSPatientRegister")
             orgUnitId = currentHospitalForm?.orgUnitId ?? "";
+
         compositionRoot.surveys.deleteSurvey
-            .execute(formType, orgUnitId, surveyId, astGuidelineType)
+            .execute(
+                formType,
+                orgUnitId,
+                surveyId,
+                astGuidelineType,
+                currentPrevalenceSurveyForm?.id || currentPPSSurveyForm?.id
+            )
             .run(
                 () => {
                     setDeleteCompleteState({
