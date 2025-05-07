@@ -4,7 +4,6 @@ import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";
 import { Id } from "../entities/Ref";
-import { getProgramId } from "../utils/PPSProgramsHelper";
 import { Future } from "../entities/generic/Future";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
@@ -15,6 +14,7 @@ import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion"
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
 import i18n from "../../utils/i18n";
 import { ModuleRepository } from "../repositories/ModuleRepository";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
@@ -30,13 +30,11 @@ export class SaveFormDataUseCase {
         orgUnitId: Id,
         eventId: string | undefined = undefined
     ): FutureData<Id> {
-        return this.moduleRepository.getAll().flatMap(modules => {
-            const programId = getProgramId(
-                surveyFormType,
-                questionnaire.getParentSurveyId(),
-                modules
-            );
-
+        return getDefaultOrCustomProgramId(
+            this.moduleRepository,
+            surveyFormType,
+            questionnaire.getParentSurveyId()
+        ).flatMap(programId => {
             //All PPS Survey Forms are Global.
             const ouId =
                 surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;

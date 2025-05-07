@@ -7,7 +7,7 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { Future } from "../entities/generic/Future";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { ModuleRepository } from "../repositories/ModuleRepository";
-import { getProgramId } from "../utils/PPSProgramsHelper";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetFilteredPrevalencePatientsUseCase {
     constructor(
@@ -21,18 +21,17 @@ export class GetFilteredPrevalencePatientsUseCase {
         orgUnitId: Id,
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
-        return this.moduleRepository.getAll().flatMap(modules => {
-            return this.paginatedSurveyRepo
-                .getFilteredPrevalencePatientSurveysByPatientId(keyword, orgUnitId, parentId)
-                .flatMap(filteredSurveys => {
-                    const surveysWithName = filteredSurveys.objects.map(survey => {
-                        const surveyFormType = "PrevalenceCaseReportForm";
-                        const programId = getProgramId(
-                            surveyFormType,
-                            survey.rootSurvey.id,
-                            modules
-                        );
+        const surveyFormType = "PrevalenceCaseReportForm";
 
+        return this.paginatedSurveyRepo
+            .getFilteredPrevalencePatientSurveysByPatientId(keyword, orgUnitId, parentId)
+            .flatMap(filteredSurveys => {
+                const surveysWithName = filteredSurveys.objects.map(survey => {
+                    return getDefaultOrCustomProgramId(
+                        this.moduleRepository,
+                        surveyFormType,
+                        survey.rootSurvey.id
+                    ).flatMap(programId => {
                         return Future.join2(
                             this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                                 survey.rootSurvey.id,
@@ -64,17 +63,15 @@ export class GetFilteredPrevalencePatientsUseCase {
                             return updatedSurvey;
                         });
                     });
-
-                    return Future.parallel(surveysWithName, { concurrency: 5 }).map(
-                        updatedSurveys => {
-                            const paginatedSurveys: PaginatedReponse<Survey[]> = {
-                                pager: filteredSurveys.pager,
-                                objects: updatedSurveys,
-                            };
-                            return paginatedSurveys;
-                        }
-                    );
                 });
-        });
+
+                return Future.parallel(surveysWithName, { concurrency: 5 }).map(updatedSurveys => {
+                    const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        pager: filteredSurveys.pager,
+                        objects: updatedSurveys,
+                    };
+                    return paginatedSurveys;
+                });
+            });
     }
 }

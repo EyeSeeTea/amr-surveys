@@ -39,57 +39,6 @@ export const PREVALENCE_PATIENT_OPTIONS = [
     "Supranational Result",
 ] as const;
 
-export const getProgramId = (
-    surveyFormType: SURVEY_FORM_TYPES,
-    surveyParentId: string | undefined,
-    modules: AMRSurveyModule[]
-): string => {
-    const prevalenceModule = modules.find(module => module.name === "Prevalence");
-
-    switch (surveyFormType) {
-        //PPS Module
-        case "PPSSurveyForm":
-            return PPS_SURVEY_FORM_ID;
-        case "PPSCountryQuestionnaire":
-            return PPS_COUNTRY_QUESTIONNAIRE_ID;
-        case "PPSHospitalForm":
-            return PPS_HOSPITAL_FORM_ID;
-        case "PPSPatientRegister":
-            return PPS_PATIENT_REGISTER_ID;
-        case "PPSWardRegister":
-            return PPS_WARD_REGISTER_ID;
-
-        //Prevalence Module
-        case "PrevalenceSurveyForm":
-            return PREVALENCE_SURVEY_FORM_ID;
-        case "PrevalenceFacilityLevelForm":
-            return PREVALENCE_FACILITY_LEVEL_FORM_ID;
-        case "PrevalenceCaseReportForm":
-            return getCustomOrDefaultFormId(
-                surveyParentId,
-                prevalenceModule,
-                PREVALENCE_CASE_REPORT_FORM_ID
-            );
-        case "PrevalenceSampleShipTrackForm":
-            return PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID;
-        case "PrevalenceCentralRefLabForm":
-            return PREVALENCE_CENTRAL_REF_LAB_FORM_ID;
-        case "PrevalencePathogenIsolatesLog":
-            return PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID;
-        case "PrevalenceSupranationalRefLabForm":
-            return PREVALENCE_SUPRANATIONAL_REF_LAB_ID;
-        case "PrevalenceD28FollowUp":
-            return PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28;
-        case "PrevalenceDischarge":
-            return PREVALENCE_MORTALITY_DISCHARGE_FORM;
-        case "PrevalenceCohortEnrolment":
-            return PREVALENCE_MORTALITY_COHORT_ENORL_FORM;
-
-        default:
-            throw new Error("Unknown Survey Type");
-    }
-};
-
 export const getChildSurveyType = (
     surveyFormType: SURVEY_FORM_TYPES,
     ppsSurveyType?: string,
@@ -299,13 +248,3 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
             return false;
     }
 };
-function getCustomOrDefaultFormId(
-    surveyParentId: string | undefined,
-    module: AMRSurveyModule | undefined,
-    defaultformId: string
-): string {
-    return (
-        (surveyParentId ? module?.customForms?.[surveyParentId]?.[defaultformId] : undefined) ||
-        defaultformId
-    );
-}

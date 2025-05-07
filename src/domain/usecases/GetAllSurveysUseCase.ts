@@ -3,10 +3,10 @@ import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { ModuleRepository } from "../repositories/ModuleRepository";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetAllSurveysUseCase {
     constructor(
@@ -20,9 +20,11 @@ export class GetAllSurveysUseCase {
         parentSurveyId: Id | undefined,
         chunked = false
     ): FutureData<Survey[]> {
-        return this.moduleRepository.getAll().flatMap(modules => {
-            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
-
+        return getDefaultOrCustomProgramId(
+            this.moduleRepository,
+            surveyFormType,
+            parentSurveyId
+        ).flatMap(programId => {
             //All PPS Survey Forms are Global.
             const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 

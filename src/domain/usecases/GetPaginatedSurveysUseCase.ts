@@ -1,7 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import { Id } from "../entities/Ref";
 import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
-import { getProgramId, isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
+import { isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
@@ -9,6 +9,7 @@ import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
 import { ModuleRepository } from "../repositories/ModuleRepository";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetPaginatedSurveysUseCase {
     constructor(
@@ -26,9 +27,11 @@ export class GetPaginatedSurveysUseCase {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        return this.moduleRepository.getAll().flatMap(modules => {
-            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
-
+        return getDefaultOrCustomProgramId(
+            this.moduleRepository,
+            surveyFormType,
+            parentSurveyId
+        ).flatMap(programId => {
             const parentId = isPrevalencePatientChild(surveyFormType)
                 ? parentPatientId
                 : surveyFormType === "PPSPatientRegister"

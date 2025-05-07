@@ -24,7 +24,7 @@ import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { getProgramId } from "../utils/PPSProgramsHelper";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetSurveyUseCase {
     constructor(
@@ -39,9 +39,11 @@ export class GetSurveyUseCase {
         parentPrevalenceSurveyId: Id | undefined,
         parentCaseReportId: Id | undefined
     ): FutureData<Questionnaire> {
-        return this.moduleRepository.getAll().flatMap(modules => {
-            const programId = getProgramId(surveyFormType, parentPrevalenceSurveyId, modules);
-
+        return getDefaultOrCustomProgramId(
+            this.moduleRepository,
+            surveyFormType,
+            parentPrevalenceSurveyId
+        ).flatMap(programId => {
             if (parentPPSSurveyId) {
                 return this.getPPSSurveyForm(programId, parentPPSSurveyId, parentWardRegisterId);
             } else if (parentPrevalenceSurveyId) {
