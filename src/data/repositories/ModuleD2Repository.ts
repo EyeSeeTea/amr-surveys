@@ -8,11 +8,24 @@ import { DataStoreClient } from "../DataStoreClient";
 import { DataStoreKeys } from "../DataStoreKeys";
 
 export class ModuleD2Repository implements ModuleRepository {
-    constructor(private dataStoreClient: DataStoreClient, private api: D2Api) {}
-    getAll(): FutureData<AMRSurveyModule[]> {
-        return this.dataStoreClient.listCollection<AMRSurveyModule>(DataStoreKeys.MODULES);
+    private modules: AMRSurveyModule[] = [];
+
+    constructor(private dataStoreClient: DataStoreClient, private api: D2Api) {
+        this.dataStoreClient.listCollection<AMRSurveyModule>(DataStoreKeys.MODULES).run(
+            onSuccess => {
+                this.modules = onSuccess;
+            },
+            onError => {
+                console.error("Error fetching modules from DataStore", onError);
+            }
+        );
     }
 
+    getAll(): FutureData<AMRSurveyModule[]> {
+        return Future.success(this.modules);
+    }
+
+    // TODO: this function should not be here because it is not related to module entity
     getProgramsEnrolledInOrgUnit(orgUnitId: Id): FutureData<Id[]> {
         return apiToFuture(
             this.api.models.organisationUnits.get({
