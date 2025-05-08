@@ -48,6 +48,9 @@ import { TrackerPostRequest, TrackerPostResponse } from "@eyeseetea/d2-api/api/t
 import { Maybe } from "../../utils/ts-utils";
 import { D2TrackerEvent, D2TrackerEventToPost } from "@eyeseetea/d2-api/api/trackerEvents";
 import { OrgUnitBasic } from "../../domain/entities/OrgUnit";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
+import { DataStoreClient } from "../DataStoreClient";
+import { DataStoreKeys } from "../DataStoreKeys";
 
 const OU_CHUNK_SIZE = 500;
 
@@ -57,7 +60,18 @@ type Filter = {
 };
 
 export class SurveyD2Repository implements SurveyRepository {
-    constructor(private api: D2Api) {}
+    modules: AMRSurveyModule[] = [];
+
+    constructor(private api: D2Api, private dataStoreClient: DataStoreClient) {
+        this.dataStoreClient.listCollection<AMRSurveyModule>(DataStoreKeys.MODULES).run(
+            onSuccess => {
+                this.modules = onSuccess;
+            },
+            onError => {
+                console.error("Error fetching modules from DataStore", onError);
+            }
+        );
+    }
 
     getForm(
         programId: Id,
@@ -126,7 +140,7 @@ export class SurveyD2Repository implements SurveyRepository {
 
                 //If event specified,populate the form
                 if (eventId) {
-                    if (isTrackerProgram(programId)) {
+                    if (isTrackerProgram(programId, this.modules)) {
                         if (!orgUnitId && programId !== PPS_PATIENT_REGISTER_ID)
                             return Future.error(new Error("Survey not found"));
                         return this.getTrackerProgramById(eventId, programId).flatMap(
@@ -140,6 +154,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                             programDataElements,
                                             dataElementsWithSortOrder,
                                             sortedOptions,
+                                            this.modules,
                                             resp.programStages,
                                             resp.programStageSections,
                                             sortedTrackedentityAttr,
@@ -166,6 +181,7 @@ export class SurveyD2Repository implements SurveyRepository {
                                         programDataElements,
                                         dataElementsWithSortOrder,
                                         sortedOptions,
+                                        this.modules,
                                         resp.programStages,
                                         resp.programStageSections,
                                         sortedTrackedentityAttr,
@@ -190,6 +206,7 @@ export class SurveyD2Repository implements SurveyRepository {
                             programDataElements,
                             dataElementsWithSortOrder,
                             sortedOptions,
+                            this.modules,
                             resp.programStages,
                             resp.programStageSections,
                             sortedTrackedentityAttr,
@@ -212,8 +229,14 @@ export class SurveyD2Repository implements SurveyRepository {
         eventId: string | undefined,
         programId: Id
     ): FutureData<Id> {
-        const $payload = isTrackerProgram(programId)
-            ? mapQuestionnaireToTrackedEntities(questionnaire, orgUnitId, programId, eventId)
+        const $payload = isTrackerProgram(programId, this.modules)
+            ? mapQuestionnaireToTrackedEntities(
+                  questionnaire,
+                  orgUnitId,
+                  programId,
+                  eventId,
+                  this.modules
+              )
             : mapQuestionnaireToEvent(questionnaire, orgUnitId, programId, this.api, eventId);
 
         return $payload.flatMap(payload => {
@@ -222,7 +245,7 @@ export class SurveyD2Repository implements SurveyRepository {
                     if (response && response.status !== "ERROR") {
                         //return the saved survey id.
 
-                        const surveyId = isTrackerProgram(programId)
+                        const surveyId = isTrackerProgram(programId, this.modules)
                             ? response.bundleReport?.typeReportMap?.TRACKED_ENTITY?.objectReports[0]
                                   ?.uid
                             : response.bundleReport?.typeReportMap?.EVENT?.objectReports[0]?.uid;
@@ -248,13 +271,13 @@ export class SurveyD2Repository implements SurveyRepository {
         const { surveyFormType, programId, parentId, orgUnitId, chunked = false } = options;
         const filter = this.getFilterByParentId(programId, parentId);
 
-        return isTrackerProgram(programId)
+        return isTrackerProgram(programId, this.modules)
             ? this.getTrackerProgramSurveys(surveyFormType, programId, orgUnitId, chunked, filter)
             : this.getEventProgramSurveys(surveyFormType, programId, orgUnitId, filter);
     }
 
     private getFilterByParentId(programId: string, parentId: Maybe<string>): Maybe<Filter> {
-        const filterParentDEId = getParentDataElementForProgram(programId);
+        const filterParentDEId = getParentDataElementForProgram(programId, this.modules);
 
         const filter =
             parentId && filterParentDEId
@@ -403,7 +426,11 @@ export class SurveyD2Repository implements SurveyRepository {
         programId: Id,
         orgUnitId: Id | undefined
     ): FutureData<Questionnaire> {
-        if (isTrackerProgram(programId) && !orgUnitId && programId !== PPS_PATIENT_REGISTER_ID)
+        if (
+            isTrackerProgram(programId, this.modules) &&
+            !orgUnitId &&
+            programId !== PPS_PATIENT_REGISTER_ID
+        )
             return Future.error(new Error("Unable to find survey"));
         return this.getForm(programId, eventId, orgUnitId);
     }
@@ -494,12 +521,13 @@ export class SurveyD2Repository implements SurveyRepository {
             orgUnitId,
             parentSurveyId,
             secondaryparentId,
-            this.api
+            this.api,
+            this.modules
         );
     }
 
     deleteSurvey(id: Id, orgUnitId: Id, programId: Id): FutureData<void> {
-        if (isTrackerProgram(programId)) {
+        if (isTrackerProgram(programId, this.modules)) {
             return this.deleteTrackerProgramSurvey(id, orgUnitId, programId);
         } else return this.deleteEventSurvey(id, orgUnitId, programId);
     }
@@ -541,7 +569,7 @@ export class SurveyD2Repository implements SurveyRepository {
         const trackedEntity: D2TrackedEntityInstanceToPost = {
             orgUnit: orgUnitId,
             trackedEntity: teiId,
-            trackedEntityType: getTrackedEntityAttributeType(programId),
+            trackedEntityType: getTrackedEntityAttributeType(programId, this.modules),
             enrollments: [],
             attributes: [],
         };

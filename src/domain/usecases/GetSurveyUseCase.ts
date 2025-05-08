@@ -61,97 +61,95 @@ export class GetSurveyUseCase {
         parentPPSSurveyId: Id | undefined,
         parentWardRegisterId: Id | undefined
     ): FutureData<Questionnaire> {
-        return this.surveyReporsitory
-            .getForm(programId, undefined, undefined)
-            .flatMap(questionnaire => {
-                if (isTrackerProgram(programId) && questionnaire.entity) {
-                    const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
-                        question => {
-                            if (
-                                question.id === WARD_ID_TEA_ID &&
-                                parentWardRegisterId &&
-                                question.type === "text"
-                            ) {
-                                return {
-                                    ...question,
-                                    value: parentWardRegisterId,
-                                };
-                            } else if (
-                                question.id === SURVEY_ID_PATIENT_TEA_ID &&
-                                question.type === "text" &&
-                                parentPPSSurveyId
-                            ) {
-                                return {
-                                    ...question,
-                                    value: parentPPSSurveyId,
-                                };
-                            } else return question;
+        return Future.joinObj({
+            modules: this.moduleRepository.getAll(),
+            questionnaire: this.surveyReporsitory.getForm(programId, undefined, undefined),
+        }).flatMap(({ modules, questionnaire }) => {
+            if (isTrackerProgram(programId, modules) && questionnaire.entity) {
+                const updatedEntityQuestions: Question[] = questionnaire.entity.questions.map(
+                    question => {
+                        if (
+                            question.id === WARD_ID_TEA_ID &&
+                            parentWardRegisterId &&
+                            question.type === "text"
+                        ) {
+                            return {
+                                ...question,
+                                value: parentWardRegisterId,
+                            };
+                        } else if (
+                            question.id === SURVEY_ID_PATIENT_TEA_ID &&
+                            question.type === "text" &&
+                            parentPPSSurveyId
+                        ) {
+                            return {
+                                ...question,
+                                value: parentPPSSurveyId,
+                            };
+                        } else return question;
+                    }
+                );
+
+                const updatedEntity: QuestionnaireEntity = {
+                    ...questionnaire.entity,
+                    questions: updatedEntityQuestions,
+                };
+
+                return Future.success(
+                    Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
+                );
+            } else if (questionnaire.stages && questionnaire.stages[0]) {
+                const updatedSections: QuestionnaireSection[] =
+                    questionnaire.stages[0].sections.map(section => {
+                        //PPS Event Program Questionnaires have only 1 stage
+                        const isSurveyIdSection =
+                            section.questions.find(
+                                question => question.id === SURVEY_ID_DATAELEMENT_ID
+                            ) !== undefined;
+
+                        if (isSurveyIdSection) {
+                            const updatedQuestions: Question[] = section.questions.map(question => {
+                                const isSurveyIdQuestion = question.id === SURVEY_ID_DATAELEMENT_ID;
+
+                                if (isSurveyIdQuestion && question.type === "text") {
+                                    //Survey Id Question, pre-populate value to parent survey id
+                                    const updatedSurveyIdQuestion: Question = {
+                                        ...question,
+                                        value: parentPPSSurveyId,
+                                    };
+                                    return updatedSurveyIdQuestion;
+                                } else {
+                                    //Not survey id question, return without any update
+                                    return question;
+                                }
+                            });
+
+                            return {
+                                ...section,
+                                questions: updatedQuestions,
+                            };
                         }
-                    );
 
-                    const updatedEntity: QuestionnaireEntity = {
-                        ...questionnaire.entity,
-                        questions: updatedEntityQuestions,
-                    };
+                        //Not survey id section, return without any update
+                        return section;
+                    });
 
-                    return Future.success(
-                        Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity)
-                    );
-                } else if (questionnaire.stages && questionnaire.stages[0]) {
-                    const updatedSections: QuestionnaireSection[] =
-                        questionnaire.stages[0].sections.map(section => {
-                            //PPS Event Program Questionnaires have only 1 stage
-                            const isSurveyIdSection =
-                                section.questions.find(
-                                    question => question.id === SURVEY_ID_DATAELEMENT_ID
-                                ) !== undefined;
+                const updatedStage: QuestionnaireStage = {
+                    ...questionnaire.stages[0],
+                    sections: updatedSections,
+                };
 
-                            if (isSurveyIdSection) {
-                                const updatedQuestions: Question[] = section.questions.map(
-                                    question => {
-                                        const isSurveyIdQuestion =
-                                            question.id === SURVEY_ID_DATAELEMENT_ID;
+                const updatedStages = questionnaire.stages.map(stage =>
+                    stage.id === updatedStage.id ? updatedStage : stage
+                );
 
-                                        if (isSurveyIdQuestion && question.type === "text") {
-                                            //Survey Id Question, pre-populate value to parent survey id
-                                            const updatedSurveyIdQuestion: Question = {
-                                                ...question,
-                                                value: parentPPSSurveyId,
-                                            };
-                                            return updatedSurveyIdQuestion;
-                                        } else {
-                                            //Not survey id question, return without any update
-                                            return question;
-                                        }
-                                    }
-                                );
-
-                                return {
-                                    ...section,
-                                    questions: updatedQuestions,
-                                };
-                            }
-
-                            //Not survey id section, return without any update
-                            return section;
-                        });
-
-                    const updatedStage: QuestionnaireStage = {
-                        ...questionnaire.stages[0],
-                        sections: updatedSections,
-                    };
-
-                    const updatedStages = questionnaire.stages.map(stage =>
-                        stage.id === updatedStage.id ? updatedStage : stage
-                    );
-
-                    return Future.success(
-                        Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages)
-                    );
-                } else {
-                    return Future.success(questionnaire);
-                }
-            });
+                return Future.success(
+                    Questionnaire.updateQuestionnaireStages(questionnaire, updatedStages)
+                );
+            } else {
+                return Future.success(questionnaire);
+            }
+        });
     }
 
     getPrevalenceSurveyForm(

@@ -82,7 +82,7 @@ const getProgramId = (
     }
 };
 
-function getCustomOrDefaultFormId(
+export function getCustomOrDefaultFormId(
     surveyParentId: string | undefined,
     module: AMRSurveyModule | undefined,
     defaultformId: string

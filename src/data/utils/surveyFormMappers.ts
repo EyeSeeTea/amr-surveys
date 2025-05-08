@@ -22,7 +22,11 @@ import {
     QuestionnaireStage,
 } from "../../domain/entities/Questionnaire/Questionnaire";
 import { QuestionnaireSection } from "../../domain/entities/Questionnaire/QuestionnaireSection";
-import { getTrackedEntityAttributeType, isTrackerProgram } from "./surveyProgramHelper";
+import {
+    getParentDataElementForProgram,
+    getTrackedEntityAttributeType,
+    isTrackerProgram,
+} from "./surveyProgramHelper";
 import { QuestionnaireRule } from "../../domain/entities/Questionnaire/QuestionnaireRules";
 import {
     Question,
@@ -45,6 +49,7 @@ import { DataValue } from "@eyeseetea/d2-api";
 import { generateUid } from "../../utils/uid";
 import i18n from "../../utils/i18n";
 import { TrackerPostRequest } from "@eyeseetea/d2-api/api/tracker";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 
 const AntibioticTreatmentHospitalEpisodeSectionName =
     `Antibiotic treatments during hospital episode`.toLowerCase();
@@ -61,6 +66,7 @@ export const mapProgramToQuestionnaire = (
     programDataElements: Ref[],
     dataElements: ProgramDataElement[],
     options: Option[],
+    modules: AMRSurveyModule[],
     programStages?: ProgramStage[],
     programStageSections?: ProgramStageSection[],
     trackedEntityAttributes?: TrackedEntityAttibute[],
@@ -72,7 +78,7 @@ export const mapProgramToQuestionnaire = (
     const sections: QuestionnaireSection[] = programStageSections
         ? programStageSections.map(section => {
               const questions = mapProgramDataElementToQuestions(
-                  isTrackerProgram(program.id),
+                  isTrackerProgram(program.id, modules),
                   section.dataElements,
                   dataElements,
                   options,
@@ -99,7 +105,7 @@ export const mapProgramToQuestionnaire = (
                   title: "Survey Info",
                   code: "default",
                   questions: mapProgramDataElementToQuestions(
-                      isTrackerProgram(program.id),
+                      isTrackerProgram(program.id, modules),
                       programDataElements,
                       dataElements,
                       options,
@@ -127,7 +133,7 @@ export const mapProgramToQuestionnaire = (
           )
         : getDefaultProgramStage(sections);
 
-    const orgUnitId = isTrackerProgram(program.id)
+    const orgUnitId = isTrackerProgram(program.id, modules)
         ? trackedEntity?.orgUnit ?? ""
         : event?.orgUnit ?? "";
 
@@ -154,6 +160,14 @@ export const mapProgramToQuestionnaire = (
         rules: questionnaireRules,
     };
 
+    const stageQuestions = stages.flatMap((stage: QuestionnaireStage) => {
+        return stage.sections.flatMap(section => {
+            return section.questions.map(question => question);
+        });
+    });
+
+    const parentDataElementId = getParentDataElementForProgram(form.id, modules);
+
     if (trackedEntityAttributes) {
         const profileQuestions: Question[] = mapTrackedAttributesToQuestions(
             trackedEntityAttributes,
@@ -169,9 +183,21 @@ export const mapProgramToQuestionnaire = (
             stageId: "PROFILE",
         };
 
-        return Questionnaire.create({ ...form, entity: profileSection });
+        const entityQuestions = profileSection.questions || [];
+        const allQuestions = [...stageQuestions, ...entityQuestions];
+
+        const parentSurveyId = allQuestions
+            .find(question => question.id === parentDataElementId)
+            ?.value?.toString();
+
+        return Questionnaire.create({ ...form, entity: profileSection, parentSurveyId });
     }
-    return Questionnaire.create(form);
+
+    const parentSurveyId = stageQuestions
+        .find(question => question.id === parentDataElementId)
+        ?.value?.toString();
+
+    return Questionnaire.create({ ...form, parentSurveyId });
 };
 
 const getParsedProgramStages = (
@@ -391,7 +417,8 @@ export const mapQuestionnaireToTrackedEntities = (
     questionnaire: Questionnaire,
     orgUnitId: string,
     programId: Id,
-    teiId: string | undefined = undefined
+    teiId: string | undefined = undefined,
+    modules: AMRSurveyModule[]
 ): FutureData<TrackerPostRequest> => {
     let eventsByStage: D2TrackerEventToPost[] = [];
     try {
@@ -429,7 +456,7 @@ export const mapQuestionnaireToTrackedEntities = (
             orgUnit: orgUnitId,
             program: programId,
             enrollment: questionnaire.subLevelDetails?.enrollmentId ?? "",
-            trackedEntityType: getTrackedEntityAttributeType(programId),
+            trackedEntityType: getTrackedEntityAttributeType(programId, modules),
             notes: [],
             attributes: attributes,
             events: eventsByStage as D2TrackerEvent[],
@@ -450,7 +477,7 @@ export const mapQuestionnaireToTrackedEntities = (
     const entity: D2TrackedEntityInstanceToPost = {
         orgUnit: orgUnitId,
         trackedEntity: teiId ?? "",
-        trackedEntityType: getTrackedEntityAttributeType(programId),
+        trackedEntityType: getTrackedEntityAttributeType(programId, modules),
         createdAt: new Date().toISOString(),
         createdAtClient: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

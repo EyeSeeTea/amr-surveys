@@ -2,6 +2,7 @@ import { Id } from "@eyeseetea/d2-api";
 import { FutureData, apiToFuture } from "../api-futures";
 import {
     getChildProgramId,
+    getDefaultProgram,
     getParentDataElementForProgram,
     isTrackerProgram,
 } from "./surveyProgramHelper";
@@ -16,22 +17,26 @@ import { D2Api } from "@eyeseetea/d2-api/2.36";
 import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { TrackedEntitiesParamsBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { ChildCount } from "../../domain/entities/Survey";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 
 export const getSurveyChildCount = (
     parentProgram: Id,
     orgUnitId: Id,
     parentSurveyId: Id,
     secondaryparentId: Id | undefined,
-    api: D2Api
+    api: D2Api,
+    modules: AMRSurveyModule[]
 ): FutureData<ChildCount> => {
-    const childIds = getChildProgramId(parentProgram);
+    const defaultParentProgramId = getDefaultProgram(parentProgram, modules);
+
+    const childIds = getChildProgramId(defaultParentProgramId, modules, parentSurveyId);
 
     //As of now, all child programs for a given program are of the same type,
     //so we will check only the first child
     const childId = childIds.type === "singleChild" ? childIds.value : childIds.value[0];
 
     if (childId) {
-        const isTracker = isTrackerProgram(childId);
+        const isTracker = isTrackerProgram(childId, modules);
 
         if (isTracker) {
             if (
@@ -39,24 +44,32 @@ export const getSurveyChildCount = (
                 childId === PPS_PATIENT_REGISTER_ID &&
                 secondaryparentId
             ) {
-                return getTrackerSurveyCount(childId, orgUnitId, secondaryparentId, api).map(
-                    eventCount => {
-                        return { type: "number", value: eventCount };
-                    }
-                );
+                return getTrackerSurveyCount(
+                    childId,
+                    orgUnitId,
+                    secondaryparentId,
+                    api,
+                    modules
+                ).map(eventCount => {
+                    return { type: "number", value: eventCount };
+                });
             } else if (childIds.type === "singleChild") {
-                return getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api).map(
+                return getTrackerSurveyCount(childId, orgUnitId, parentSurveyId, api, modules).map(
                     eventCount => {
                         return { type: "number", value: eventCount };
                     }
                 );
             } else if (secondaryparentId) {
                 const eventCountsFuture = childIds.value.map(id => {
-                    return getTrackerSurveyCount(id, orgUnitId, secondaryparentId, api).map(
-                        count => {
-                            return { id: id, count: count };
-                        }
-                    );
+                    return getTrackerSurveyCount(
+                        id,
+                        orgUnitId,
+                        secondaryparentId,
+                        api,
+                        modules
+                    ).map(count => {
+                        return { id: id, count: count };
+                    });
                 });
                 const eventCounts = Future.parallel(eventCountsFuture, { concurrency: 5 });
 
@@ -75,7 +88,8 @@ export const getSurveyChildCount = (
                     orgUnitId,
                     parentSurveyId,
                     secondaryparentId,
-                    api
+                    api,
+                    modules
                 ).map(eventCount => {
                     return { type: "number", value: eventCount };
                 });
@@ -128,13 +142,14 @@ const getEventSurveyCount = (
     orgUnitId: Id,
     parentSurveyId: Id,
     secondaryParentId: Id | undefined,
-    api: D2Api
+    api: D2Api,
+    modules: AMRSurveyModule[]
 ): FutureData<number> => {
     const ouMode =
         programId === PPS_HOSPITAL_FORM_ID || programId === PPS_COUNTRY_QUESTIONNAIRE_ID
             ? "DESCENDANTS"
             : "SELECTED";
-    const filterParentDEId = getParentDataElementForProgram(programId);
+    const filterParentDEId = getParentDataElementForProgram(programId, modules);
 
     const filterStr =
         secondaryParentId === ""
@@ -157,9 +172,10 @@ const getTrackerSurveyCount = (
     programId: Id,
     orgUnitId: Id,
     parentSurveyId: Id,
-    api: D2Api
+    api: D2Api,
+    modules: AMRSurveyModule[]
 ): FutureData<number> => {
-    const filterParentDEId = getParentDataElementForProgram(programId);
+    const filterParentDEId = getParentDataElementForProgram(programId, modules);
 
     const ouMode =
         orgUnitId !== "" && programId === PREVALENCE_FACILITY_LEVEL_FORM_ID
