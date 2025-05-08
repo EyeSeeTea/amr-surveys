@@ -21,7 +21,7 @@ import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSect
 
 export interface QuestionnaireBase {
     id: Id;
-    parentSurveyId?: Id | undefined;
+    parentDataElementId: Id;
     name: string;
     description: string;
     orgUnit: Ref;
@@ -100,13 +100,16 @@ export class Questionnaire {
     }
 
     getParentSurveyId(): Id | undefined {
-        return this.data.parentSurveyId;
+        return this.getAllQuestions()
+            .find(question => question.id === this.data.parentDataElementId)
+            ?.value?.toString();
     }
 
     public static create(data: QuestionnaireData): Questionnaire {
         //TO DO : Add validations if any
         return new Questionnaire({
             id: data.id,
+            parentDataElementId: data.parentDataElementId,
             name: data.name,
             description: data.description,
             orgUnit: data.orgUnit,

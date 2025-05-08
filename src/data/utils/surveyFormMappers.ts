@@ -160,12 +160,6 @@ export const mapProgramToQuestionnaire = (
         rules: questionnaireRules,
     };
 
-    const stageQuestions = stages.flatMap((stage: QuestionnaireStage) => {
-        return stage.sections.flatMap(section => {
-            return section.questions.map(question => question);
-        });
-    });
-
     const parentDataElementId = getParentDataElementForProgram(form.id, modules);
 
     if (trackedEntityAttributes) {
@@ -183,21 +177,10 @@ export const mapProgramToQuestionnaire = (
             stageId: "PROFILE",
         };
 
-        const entityQuestions = profileSection.questions || [];
-        const allQuestions = [...stageQuestions, ...entityQuestions];
-
-        const parentSurveyId = allQuestions
-            .find(question => question.id === parentDataElementId)
-            ?.value?.toString();
-
-        return Questionnaire.create({ ...form, entity: profileSection, parentSurveyId });
+        return Questionnaire.create({ ...form, entity: profileSection, parentDataElementId });
     }
 
-    const parentSurveyId = stageQuestions
-        .find(question => question.id === parentDataElementId)
-        ?.value?.toString();
-
-    return Questionnaire.create({ ...form, parentSurveyId });
+    return Questionnaire.create({ ...form, parentDataElementId });
 };
 
 const getParsedProgramStages = (
