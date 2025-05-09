@@ -77,8 +77,7 @@ function getCompositionRoot(repositories: Repositories) {
             ),
             saveFormData: new SaveFormDataUseCase(
                 repositories.surveyFormRepository,
-                repositories.astGuidelinesRepository,
-                repositories.moduleRepository
+                repositories.astGuidelinesRepository
             ),
             getSurveys: new GetAllSurveysUseCase(
                 repositories.surveyFormRepository,

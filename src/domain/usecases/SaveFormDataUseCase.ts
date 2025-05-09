@@ -13,15 +13,12 @@ import { ASTGUIDELINE_TYPES } from "../entities/ASTGuidelines";
 import { SelectQuestion } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { ASTGuidelinesRepository } from "../repositories/ASTGuidelinesRepository";
 import i18n from "../../utils/i18n";
-import { ModuleRepository } from "../repositories/ModuleRepository";
-import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export const GLOBAL_OU_ID = "H8RixfF8ugH";
 export class SaveFormDataUseCase {
     constructor(
         private surveyRepository: SurveyRepository,
-        private astGuidelineRepository: ASTGuidelinesRepository,
-        private moduleRepository: ModuleRepository
+        private astGuidelineRepository: ASTGuidelinesRepository
     ) {}
 
     public execute(
@@ -30,19 +27,19 @@ export class SaveFormDataUseCase {
         orgUnitId: Id,
         eventId: string | undefined = undefined
     ): FutureData<Id> {
-        return getDefaultOrCustomProgramId(
-            this.moduleRepository,
-            surveyFormType,
-            questionnaire.getParentSurveyId()
-        ).flatMap(programId => {
-            //All PPS Survey Forms are Global.
-            const ouId =
-                surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
+        //All PPS Survey Forms are Global.
+        const ouId =
+            surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
-            return this.validate(surveyFormType, questionnaire, ouId, programId, eventId).flatMap(
-                () => this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId)
-            );
-        });
+        return this.validate(
+            surveyFormType,
+            questionnaire,
+            ouId,
+            questionnaire.id,
+            eventId
+        ).flatMap(() =>
+            this.saveFormData(surveyFormType, questionnaire, ouId, questionnaire.id, eventId)
+        );
     }
 
     validate = (
