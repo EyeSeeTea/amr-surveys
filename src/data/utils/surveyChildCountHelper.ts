@@ -2,7 +2,6 @@ import { Id } from "@eyeseetea/d2-api";
 import { FutureData, apiToFuture } from "../api-futures";
 import {
     getChildProgramId,
-    getDefaultProgram,
     getParentDataElementForProgram,
     isTrackerProgram,
 } from "./surveyProgramHelper";
@@ -18,6 +17,7 @@ import { TrackerEventsResponse } from "@eyeseetea/d2-api/api/trackerEvents";
 import { TrackedEntitiesParamsBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { ChildCount } from "../../domain/entities/Survey";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
+import { getDefaultProgram } from "./getDefaultProgram";
 
 export const getSurveyChildCount = (
     parentProgram: Id,

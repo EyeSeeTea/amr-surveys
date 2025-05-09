@@ -31,7 +31,7 @@ export function getDefaultOrCustomProgramId(
     });
 }
 
-const getProgramId = (
+export const getProgramId = (
     surveyFormType: SURVEY_FORM_TYPES,
     surveyParentId: string | undefined,
     modules: AMRSurveyModule[]
@@ -75,8 +75,11 @@ const getProgramId = (
         case "PrevalenceDischarge":
             return PREVALENCE_MORTALITY_DISCHARGE_FORM;
         case "PrevalenceCohortEnrolment":
-            return PREVALENCE_MORTALITY_COHORT_ENORL_FORM;
-
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_MORTALITY_COHORT_ENORL_FORM
+            );
         default:
             throw new Error("Unknown Survey Type");
     }

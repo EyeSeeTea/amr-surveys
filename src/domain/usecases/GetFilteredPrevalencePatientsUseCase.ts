@@ -7,7 +7,7 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { Future } from "../entities/generic/Future";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { ModuleRepository } from "../repositories/ModuleRepository";
-import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
+import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetFilteredPrevalencePatientsUseCase {
     constructor(
@@ -27,11 +27,13 @@ export class GetFilteredPrevalencePatientsUseCase {
             .getFilteredPrevalencePatientSurveysByPatientId(keyword, orgUnitId, parentId)
             .flatMap(filteredSurveys => {
                 const surveysWithName = filteredSurveys.objects.map(survey => {
-                    return getDefaultOrCustomProgramId(
-                        this.moduleRepository,
-                        surveyFormType,
-                        survey.rootSurvey.id
-                    ).flatMap(programId => {
+                    return this.moduleRepository.getAll().flatMap(modules => {
+                        const programId = getProgramId(
+                            surveyFormType,
+                            survey.rootSurvey.id,
+                            modules
+                        );
+
                         return Future.join2(
                             this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
                                 survey.rootSurvey.id,
@@ -44,6 +46,7 @@ export class GetFilteredPrevalencePatientsUseCase {
                                 secondaryparentId: survey.id,
                                 surveyReporsitory: this.paginatedSurveyRepo,
                                 programId: programId,
+                                modules,
                             })
                         ).map(([parentDetails, childCount]): Survey => {
                             const newRootSurvey: SurveyBase = {

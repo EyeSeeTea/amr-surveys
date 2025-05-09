@@ -20,6 +20,8 @@ import {
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
 import { Future } from "../entities/generic/Future";
 import i18n from "@eyeseetea/feedback-component/locales";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+import { getDefaultProgram } from "../../data/utils/getDefaultProgram";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -28,6 +30,7 @@ type GetChildCountType = {
     secondaryparentId?: Id;
     surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
     programId: Id;
+    modules: AMRSurveyModule[];
 };
 
 const isPaginatedSurveyRepository = (
@@ -43,6 +46,7 @@ export const getChildCount = ({
     secondaryparentId,
     surveyReporsitory,
     programId,
+    modules,
 }: GetChildCountType): FutureData<ChildCountLabel> => {
     if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType))
         return Future.success({ type: "number", value: 0 });
@@ -65,15 +69,17 @@ export const getChildCount = ({
         if (programCountMap.type === "number") {
             return Future.success({ type: "number", value: programCountMap.value });
         } else if (programCountMap.type === "map") {
-            const programOptionsMap = mapOptionToLabel(programCountMap);
+            const programOptionsMap = mapOptionToLabel(programCountMap, modules);
             return Future.success({ type: "map", value: programOptionsMap });
         } else return Future.error(new Error("Invalid program count map type"));
     });
 };
 
-const mapOptionToLabel = (programCountMap: ChildCountOption) => {
+const mapOptionToLabel = (programCountMap: ChildCountOption, modules: AMRSurveyModule[]) => {
     const programOptionsMap: ProgramOptionCountMap = programCountMap.value.map(pc => {
-        switch (pc.id) {
+        const defaultProgram = getDefaultProgram(pc.id, modules);
+
+        switch (defaultProgram) {
             case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
                 return {
                     option: { label: i18n.t(`List Sample Shipments (${pc.count})`) },

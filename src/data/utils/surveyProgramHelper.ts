@@ -1,4 +1,4 @@
-import { AMRSurveyModule, CustomForm } from "../../domain/entities/AMRSurveyModule";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { Id } from "../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
 import { getCustomOrDefaultFormId } from "../../domain/utils/getDefaultOrCustomProgramId";
@@ -37,6 +37,7 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     PPS_PATIENT_TET,
 } from "../entities/D2Survey";
+import { getDefaultProgram } from "./getDefaultProgram";
 
 export const isTrackerProgram = (programId: Id, modules: AMRSurveyModule[]) => {
     const defaultProgram = getDefaultProgram(programId, modules);
@@ -186,7 +187,11 @@ export const getChildProgramId = (
                     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
                     PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
                     PREVALENCE_MORTALITY_DISCHARGE_FORM,
-                    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_MORTALITY_COHORT_ENORL_FORM
+                    ),
                 ],
             };
         default:
@@ -216,17 +221,3 @@ export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Preva
             return "Prevalence";
     }
 };
-
-export function getDefaultProgram(programId: Id, modules: AMRSurveyModule[]): string {
-    const customForms: CustomForm[] = modules
-        .map(module => Object.values(module.customForms || {}))
-        .flat();
-
-    const defaultProgramByProgramId = customForms.find(form =>
-        Object.values(form).includes(programId)
-    );
-
-    return defaultProgramByProgramId
-        ? Object.keys(defaultProgramByProgramId)[0] || programId
-        : programId;
-}

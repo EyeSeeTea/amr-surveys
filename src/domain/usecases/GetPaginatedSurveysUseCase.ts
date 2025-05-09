@@ -9,7 +9,7 @@ import _ from "../entities/generic/Collection";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
 import { ModuleRepository } from "../repositories/ModuleRepository";
-import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
+import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetPaginatedSurveysUseCase {
     constructor(
@@ -27,11 +27,9 @@ export class GetPaginatedSurveysUseCase {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        return getDefaultOrCustomProgramId(
-            this.moduleRepository,
-            surveyFormType,
-            parentSurveyId
-        ).flatMap(programId => {
+        return this.moduleRepository.getAll().flatMap(modules => {
+            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
+
             const parentId = isPrevalencePatientChild(surveyFormType)
                 ? parentPatientId
                 : surveyFormType === "PPSPatientRegister"
@@ -54,6 +52,7 @@ export class GetPaginatedSurveysUseCase {
                                 secondaryparentId: survey.id,
                                 surveyReporsitory: this.paginatedSurveyRepo,
                                 programId: programId,
+                                modules,
                             })
                         ).map(([parentDetails, childCount]): Survey => {
                             const newRootSurvey: SurveyBase = {

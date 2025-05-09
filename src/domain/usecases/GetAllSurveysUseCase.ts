@@ -6,7 +6,7 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { ModuleRepository } from "../repositories/ModuleRepository";
-import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
+import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetAllSurveysUseCase {
     constructor(
@@ -20,70 +20,70 @@ export class GetAllSurveysUseCase {
         parentSurveyId: Id | undefined,
         chunked = false
     ): FutureData<Survey[]> {
-        return getDefaultOrCustomProgramId(
-            this.moduleRepository,
-            surveyFormType,
-            parentSurveyId
-        ).flatMap(programId => {
+        return this.moduleRepository.getAll().flatMap(modules => {
+            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
+
             //All PPS Survey Forms are Global.
             const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
-            return this.surveyReporsitory
-                .getSurveys({
+            return Future.joinObj({
+                surveys: this.surveyReporsitory.getSurveys({
                     surveyFormType: surveyFormType,
                     programId: programId,
                     parentId: parentSurveyId,
                     orgUnitId: ouId,
                     chunked: chunked,
-                })
-                .flatMap(surveys => {
-                    const surveysWithName = surveys.map(survey => {
-                        return Future.join2(
-                            this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
-                                survey.rootSurvey.id,
-                                survey.surveyFormType
-                            ),
-                            getChildCount({
-                                surveyFormType: surveyFormType,
-                                orgUnitId: survey.assignedOrgUnit.id,
-                                parentSurveyId: survey.rootSurvey.id,
-                                surveyReporsitory: this.surveyReporsitory,
-                                secondaryparentId:
-                                    surveyFormType === "PPSWardRegister" ? survey.id : "",
-                                programId: programId,
-                            })
-                        ).map(([parentDetails, childCount]): Survey => {
-                            const rootName =
-                                survey.rootSurvey.name === ""
+                }),
+                modules: Future.success(modules),
+            }).flatMap(({ surveys, modules }) => {
+                const surveysWithName = surveys.map(survey => {
+                    return Future.join2(
+                        this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
+                            survey.rootSurvey.id,
+                            survey.surveyFormType
+                        ),
+                        getChildCount({
+                            surveyFormType: surveyFormType,
+                            orgUnitId: survey.assignedOrgUnit.id,
+                            parentSurveyId: survey.rootSurvey.id,
+                            surveyReporsitory: this.surveyReporsitory,
+                            secondaryparentId:
+                                surveyFormType === "PPSWardRegister" ? survey.id : "",
+                            programId: programId,
+                            modules,
+                        })
+                    ).map(([parentDetails, childCount]): Survey => {
+                        const rootName =
+                            survey.rootSurvey.name === ""
+                                ? parentDetails.name
+                                : survey.rootSurvey.name;
+
+                        const newRootSurvey: SurveyBase = {
+                            surveyType: survey.rootSurvey.surveyType,
+                            id: survey.rootSurvey.id,
+                            name: rootName,
+                            astGuideline: survey.rootSurvey.astGuideline
+                                ? survey.rootSurvey.astGuideline
+                                : parentDetails.astGuidelineType,
+                        };
+
+                        const updatedSurvey: Survey = {
+                            ...survey,
+                            name:
+                                surveyFormType === "PrevalenceSurveyForm"
                                     ? parentDetails.name
-                                    : survey.rootSurvey.name;
-
-                            const newRootSurvey: SurveyBase = {
-                                surveyType: survey.rootSurvey.surveyType,
-                                id: survey.rootSurvey.id,
-                                name: rootName,
-                                astGuideline: survey.rootSurvey.astGuideline
-                                    ? survey.rootSurvey.astGuideline
-                                    : parentDetails.astGuidelineType,
-                            };
-
-                            const updatedSurvey: Survey = {
-                                ...survey,
-                                name:
-                                    surveyFormType === "PrevalenceSurveyForm"
-                                        ? parentDetails.name
-                                        : surveyFormType === "PrevalenceFacilityLevelForm"
-                                        ? survey.facilityCode ?? survey.name
-                                        : survey.name,
-                                rootSurvey: newRootSurvey,
-                                childCount: childCount,
-                            };
-                            return updatedSurvey;
-                        });
+                                    : surveyFormType === "PrevalenceFacilityLevelForm"
+                                    ? survey.facilityCode ?? survey.name
+                                    : survey.name,
+                            rootSurvey: newRootSurvey,
+                            childCount: childCount,
+                        };
+                        return updatedSurvey;
                     });
-
-                    return Future.parallel(surveysWithName, { concurrency: 5 });
                 });
+
+                return Future.parallel(surveysWithName, { concurrency: 5 });
+            });
         });
     }
 }
