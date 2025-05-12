@@ -90,7 +90,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                   surveyFormType === "PrevalenceSampleShipTrackForm" ||
                   surveyFormType === "PrevalenceSupranationalRefLabForm" ||
                   surveyFormType === "PrevalenceCohortEnrolment" ||
-                  surveyFormType === "PrevalenceDischarge"
+                  surveyFormType === "PrevalenceDischarge" ||
+                  surveyFormType === "PrevalenceD28FollowUp"
                 ? currentPrevalenceSurveyForm?.id
                 : surveyFormType === "PPSPatientRegister"
                 ? currentWardRegister?.id

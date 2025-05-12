@@ -185,7 +185,11 @@ export const getChildProgramId = (
                     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
                     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
                     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-                    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28
+                    ),
                     getCustomOrDefaultFormId(
                         parentSurveyId,
                         prevalenceModule,
