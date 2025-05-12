@@ -73,7 +73,11 @@ export const getProgramId = (
         case "PrevalenceD28FollowUp":
             return PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28;
         case "PrevalenceDischarge":
-            return PREVALENCE_MORTALITY_DISCHARGE_FORM;
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_MORTALITY_DISCHARGE_FORM
+            );
         case "PrevalenceCohortEnrolment":
             return getCustomOrDefaultFormId(
                 surveyParentId,
