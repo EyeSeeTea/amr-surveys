@@ -181,7 +181,12 @@ export const getChildProgramId = (
             return {
                 type: "multipleChildren",
                 value: [
-                    PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID
+                    ),
+
                     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
                     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
                     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,

@@ -63,7 +63,11 @@ export const getProgramId = (
                 PREVALENCE_CASE_REPORT_FORM_ID
             );
         case "PrevalenceSampleShipTrackForm":
-            return PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID;
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID
+            );
         case "PrevalenceCentralRefLabForm":
             return PREVALENCE_CENTRAL_REF_LAB_FORM_ID;
         case "PrevalencePathogenIsolatesLog":
