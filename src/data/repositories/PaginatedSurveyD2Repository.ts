@@ -224,7 +224,10 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                         ouMode: "SELECTED",
                         pageSize: 10,
                         totalPages: true,
-                        filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                        filter: [
+                            `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}`,
+                            `${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                        ].join(","),
                     })
                 );
             })
