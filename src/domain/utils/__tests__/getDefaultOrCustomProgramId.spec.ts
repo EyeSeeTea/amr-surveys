@@ -22,9 +22,9 @@ describe("getDefaultOrCustomProgramId", () => {
                 moduleRepository,
                 "PrevalenceCaseReportForm",
                 parentSurveyId
-            ).runAsync();
+            ).toPromise();
 
-            expect(programIdResponse.data).toBe(customProgramId);
+            expect(programIdResponse).toBe(customProgramId);
         });
     });
 
@@ -36,9 +36,9 @@ describe("getDefaultOrCustomProgramId", () => {
                 moduleRepository,
                 "PrevalenceCaseReportForm",
                 parentSurveyId
-            ).runAsync();
+            ).toPromise();
 
-            expect(programIdResponse.data).toBe(PREVALENCE_CASE_REPORT_FORM_ID);
+            expect(programIdResponse).toBe(PREVALENCE_CASE_REPORT_FORM_ID);
         });
     });
 });
