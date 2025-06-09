@@ -22,9 +22,23 @@ import {
     trackedEntityFields,
 } from "../utils/surveyListMappers";
 import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
+import { DataStoreClient } from "../DataStoreClient";
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
+import { DataStoreKeys } from "../DataStoreKeys";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
-    constructor(private api: D2Api) {}
+    modules: AMRSurveyModule[] = [];
+
+    constructor(private api: D2Api, private dataStoreClient: DataStoreClient) {
+        this.dataStoreClient.listCollection<AMRSurveyModule>(DataStoreKeys.MODULES).run(
+            onSuccess => {
+                this.modules = onSuccess;
+            },
+            onError => {
+                console.error("Error fetching modules from DataStore", onError);
+            }
+        );
+    }
 
     getSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
@@ -34,7 +48,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         page: number,
         pageSize: number
     ): FutureData<PaginatedReponse<Survey[]>> {
-        return isTrackerProgram(programId)
+        return isTrackerProgram(programId, this.modules)
             ? this.getTrackerProgramSurveys(
                   surveyFormType,
                   programId,
@@ -63,7 +77,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode = "SELECTED";
 
-        const filterParentDEId = getParentDataElementForProgram(programId);
+        const filterParentDEId = getParentDataElementForProgram(programId, this.modules);
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -200,15 +214,20 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id
     ): FutureData<PaginatedReponse<Survey[]>> {
+        const prevalenceCaseReportId = this.getPrevalenceCaseReportId(parentId);
+
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: trackedEntityFields,
-                program: PREVALENCE_CASE_REPORT_FORM_ID,
+                program: prevalenceCaseReportId,
                 orgUnit: orgUnitId,
                 ouMode: "SELECTED",
                 pageSize: 10,
                 totalPages: true,
-                filter: `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword},${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                filter: [
+                    `${AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID}:like:${keyword}`,
+                    `${AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF}:eq:${parentId}`,
+                ].join(","),
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -238,7 +257,18 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
             orgUnitId,
             parentSurveyId,
             secondaryparentId,
-            this.api
+            this.api,
+            this.modules
         );
+    }
+
+    private getPrevalenceCaseReportId(surveyId: string): string {
+        const prevalence = this.modules.find(module => module.name === "Prevalence");
+
+        const customForm =
+            prevalence?.customForms?.[surveyId]?.[PREVALENCE_CASE_REPORT_FORM_ID] ||
+            PREVALENCE_CASE_REPORT_FORM_ID;
+
+        return customForm;
     }
 }
