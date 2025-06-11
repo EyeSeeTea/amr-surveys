@@ -4,7 +4,6 @@ import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
 import _ from "../../domain/entities/generic/Collection";
 import { Id } from "../entities/Ref";
-import { getProgramId } from "../utils/PPSProgramsHelper";
 import { Future } from "../entities/generic/Future";
 import {
     AMR_SURVEYS_PREVALENCE_DEA_AST_GUIDELINES,
@@ -28,14 +27,18 @@ export class SaveFormDataUseCase {
         orgUnitId: Id,
         eventId: string | undefined = undefined
     ): FutureData<Id> {
-        const programId = getProgramId(surveyFormType);
-
         //All PPS Survey Forms are Global.
         const ouId =
             surveyFormType === "PPSSurveyForm" && orgUnitId === "" ? GLOBAL_OU_ID : orgUnitId;
 
-        return this.validate(surveyFormType, questionnaire, ouId, programId, eventId).flatMap(() =>
-            this.saveFormData(surveyFormType, questionnaire, ouId, programId, eventId)
+        return this.validate(
+            surveyFormType,
+            questionnaire,
+            ouId,
+            questionnaire.id,
+            eventId
+        ).flatMap(() =>
+            this.saveFormData(surveyFormType, questionnaire, ouId, questionnaire.id, eventId)
         );
     }
 

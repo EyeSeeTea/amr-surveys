@@ -2,19 +2,28 @@ import { FutureData } from "../../data/api-futures";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
 import { Id } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
-
+import { ModuleRepository } from "../repositories/ModuleRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { getProgramId } from "../utils/PPSProgramsHelper";
+import { getDefaultOrCustomProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetPopulatedSurveyUseCase {
-    constructor(private surveyReporsitory: SurveyRepository) {}
+    constructor(
+        private surveyReporsitory: SurveyRepository,
+        private moduleRepository: ModuleRepository
+    ) {}
 
     public execute(
         eventId: Id,
         surveyFormType: SURVEY_FORM_TYPES,
-        orgUnitId: Id | undefined
+        orgUnitId: Id | undefined,
+        parentSurveyId: Id | undefined
     ): FutureData<Questionnaire> {
-        const programId = getProgramId(surveyFormType);
-        return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId, orgUnitId);
+        return getDefaultOrCustomProgramId(
+            this.moduleRepository,
+            surveyFormType,
+            parentSurveyId
+        ).flatMap(programId => {
+            return this.surveyReporsitory.getPopulatedSurveyById(eventId, programId, orgUnitId);
+        });
     }
 }

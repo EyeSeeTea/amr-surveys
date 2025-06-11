@@ -110,7 +110,12 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
 
             //If Event Id has been specified, pre-populate event data in Questionnaire form
             return compositionRoot.surveys.getPopulatedForm
-                .execute(eventId, formType, orgUnitId)
+                .execute(
+                    eventId,
+                    formType,
+                    orgUnitId,
+                    currentPrevalenceSurveyForm?.id || currentPPSSurveyForm?.id
+                )
                 .run(
                     questionnaireWithData => {
                         //apply rules

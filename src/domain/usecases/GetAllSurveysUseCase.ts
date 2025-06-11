@@ -3,12 +3,16 @@ import { Future } from "../entities/generic/Future";
 import { Id } from "../entities/Ref";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../entities/Survey";
 import { SurveyRepository } from "../repositories/SurveyRepository";
-import { getProgramId } from "../utils/PPSProgramsHelper";
 import { GLOBAL_OU_ID } from "./SaveFormDataUseCase";
 import { getChildCount } from "../utils/getChildCountHelper";
+import { ModuleRepository } from "../repositories/ModuleRepository";
+import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
 
 export class GetAllSurveysUseCase {
-    constructor(private surveyReporsitory: SurveyRepository) {}
+    constructor(
+        private surveyReporsitory: SurveyRepository,
+        private moduleRepository: ModuleRepository
+    ) {}
 
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
@@ -16,20 +20,22 @@ export class GetAllSurveysUseCase {
         parentSurveyId: Id | undefined,
         chunked = false
     ): FutureData<Survey[]> {
-        const programId = getProgramId(surveyFormType);
+        return this.moduleRepository.getAll().flatMap(modules => {
+            const programId = getProgramId(surveyFormType, parentSurveyId, modules);
 
-        //All PPS Survey Forms are Global.
-        const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
+            //All PPS Survey Forms are Global.
+            const ouId = surveyFormType === "PPSSurveyForm" ? GLOBAL_OU_ID : orgUnitId;
 
-        return this.surveyReporsitory
-            .getSurveys({
-                surveyFormType: surveyFormType,
-                programId: programId,
-                parentId: parentSurveyId,
-                orgUnitId: ouId,
-                chunked: chunked,
-            })
-            .flatMap(surveys => {
+            return Future.joinObj({
+                surveys: this.surveyReporsitory.getSurveys({
+                    surveyFormType: surveyFormType,
+                    programId: programId,
+                    parentId: parentSurveyId,
+                    orgUnitId: ouId,
+                    chunked: chunked,
+                }),
+                modules: Future.success(modules),
+            }).flatMap(({ surveys, modules }) => {
                 const surveysWithName = surveys.map(survey => {
                     return Future.join2(
                         this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
@@ -43,6 +49,8 @@ export class GetAllSurveysUseCase {
                             surveyReporsitory: this.surveyReporsitory,
                             secondaryparentId:
                                 surveyFormType === "PPSWardRegister" ? survey.id : "",
+                            programId: programId,
+                            modules,
                         })
                     ).map(([parentDetails, childCount]): Survey => {
                         const rootName =
@@ -76,5 +84,6 @@ export class GetAllSurveysUseCase {
 
                 return Future.parallel(surveysWithName, { concurrency: 5 });
             });
+        });
     }
 }

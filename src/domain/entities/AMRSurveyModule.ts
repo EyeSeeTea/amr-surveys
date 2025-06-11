@@ -17,11 +17,17 @@ export type SurveyRule = {
     rules: Rule[];
 };
 
+export type CustomForms = Record<string, CustomForm>;
+export type CustomForm = Record<string, string>;
+
+export type ModuleName = "PPS" | "Prevalence";
+
 export interface AMRSurveyModule {
     id: string;
-    name: "PPS" | "Prevalence";
+    name: ModuleName;
     color: string;
     surveyPrograms: NamedRef[];
     userGroups: UserGroups;
     rulesBySurvey: { surveyId: Id; surveyRules: SurveyRule[]; antibioticBlacklist: string[] }[];
+    customForms?: CustomForms;
 }

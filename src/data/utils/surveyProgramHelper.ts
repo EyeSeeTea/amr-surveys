@@ -1,5 +1,7 @@
+import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { Id } from "../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import { getCustomOrDefaultFormId } from "../../domain/utils/getDefaultOrCustomProgramId";
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     PPS_COUNTRY_QUESTIONNAIRE_ID,
@@ -35,9 +37,12 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     PPS_PATIENT_TET,
 } from "../entities/D2Survey";
+import { getDefaultProgram } from "./getDefaultProgram";
 
-export const isTrackerProgram = (programId: Id) => {
-    switch (programId) {
+export const isTrackerProgram = (programId: Id, modules: AMRSurveyModule[]) => {
+    const defaultProgram = getDefaultProgram(programId, modules);
+
+    switch (defaultProgram) {
         case PREVALENCE_FACILITY_LEVEL_FORM_ID:
         case PREVALENCE_CASE_REPORT_FORM_ID:
         case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
@@ -54,8 +59,10 @@ export const isTrackerProgram = (programId: Id) => {
     }
 };
 
-export const getTrackedEntityAttributeType = (programId: Id) => {
-    switch (programId) {
+export const getTrackedEntityAttributeType = (programId: Id, modules: AMRSurveyModule[]) => {
+    const defaultProgram = getDefaultProgram(programId, modules);
+
+    switch (defaultProgram) {
         case PREVALENCE_CASE_REPORT_FORM_ID:
             return PREVALENCE_CASE_REPORT_TET;
         case PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID:
@@ -109,8 +116,10 @@ export const getSurveyNameBySurveyFormType = (
     }
 };
 
-export const getParentDataElementForProgram = (programId: Id): Id => {
-    switch (programId) {
+export const getParentDataElementForProgram = (programId: Id, modules: AMRSurveyModule[]) => {
+    const defaultProgram = getDefaultProgram(programId, modules);
+
+    switch (defaultProgram) {
         case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
             return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2;
         case PREVALENCE_MORTALITY_DISCHARGE_FORM:
@@ -142,8 +151,12 @@ export const getParentDataElementForProgram = (programId: Id): Id => {
 };
 
 export const getChildProgramId = (
-    programId: Id
+    programId: Id,
+    modules: AMRSurveyModule[],
+    parentSurveyId: Id | undefined
 ): { type: "singleChild"; value: Id } | { type: "multipleChildren"; value: Id[] } => {
+    const prevalenceModule = modules.find(module => module.name === "Prevalence");
+
     switch (programId) {
         case PPS_SURVEY_FORM_ID:
             return { type: "singleChild", value: PPS_COUNTRY_QUESTIONNAIRE_ID };
@@ -153,22 +166,45 @@ export const getChildProgramId = (
             return { type: "singleChild", value: PPS_WARD_REGISTER_ID };
         case PPS_WARD_REGISTER_ID:
             return { type: "singleChild", value: PPS_PATIENT_REGISTER_ID };
-
         case PREVALENCE_SURVEY_FORM_ID:
             return { type: "singleChild", value: PREVALENCE_FACILITY_LEVEL_FORM_ID };
-        case PREVALENCE_FACILITY_LEVEL_FORM_ID:
-            return { type: "singleChild", value: PREVALENCE_CASE_REPORT_FORM_ID };
+        case PREVALENCE_FACILITY_LEVEL_FORM_ID: {
+            const formId = getCustomOrDefaultFormId(
+                parentSurveyId,
+                prevalenceModule,
+                PREVALENCE_CASE_REPORT_FORM_ID
+            );
+
+            return { type: "singleChild", value: formId };
+        }
         case PREVALENCE_CASE_REPORT_FORM_ID:
             return {
                 type: "multipleChildren",
                 value: [
-                    PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID
+                    ),
+
                     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
                     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
                     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
-                    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
-                    PREVALENCE_MORTALITY_DISCHARGE_FORM,
-                    PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28
+                    ),
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_MORTALITY_DISCHARGE_FORM
+                    ),
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
+                        PREVALENCE_MORTALITY_COHORT_ENORL_FORM
+                    ),
                 ],
             };
         default:

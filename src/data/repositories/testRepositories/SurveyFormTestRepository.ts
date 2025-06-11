@@ -39,6 +39,7 @@ export class SurveyTestRepository implements SurveyRepository {
     getForm(programId: string): FutureData<Questionnaire> {
         const questionnaire: Questionnaire = Questionnaire.create({
             id: programId,
+            parentDataElementId: "1234",
             name: "Test Questionnaire",
             description: "Test Questionnaire",
             stages: [
