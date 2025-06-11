@@ -2,7 +2,6 @@ import {
     PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
     PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
 } from "../../../data/utils/surveyFormMappers";
-import { getParentDataElementForProgram } from "../../../data/utils/surveyProgramHelper";
 import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
 import { Id, Ref } from "../Ref";
@@ -22,6 +21,7 @@ import { QuestionnaireSection, QuestionnaireSectionM } from "./QuestionnaireSect
 
 export interface QuestionnaireBase {
     id: Id;
+    parentDataElementId: Id;
     name: string;
     description: string;
     orgUnit: Ref;
@@ -100,9 +100,8 @@ export class Questionnaire {
     }
 
     getParentSurveyId(): Id | undefined {
-        const dataElementId = getParentDataElementForProgram(this.id);
         return this.getAllQuestions()
-            .find(question => question.id === dataElementId)
+            .find(question => question.id === this.data.parentDataElementId)
             ?.value?.toString();
     }
 
@@ -110,6 +109,7 @@ export class Questionnaire {
         //TO DO : Add validations if any
         return new Questionnaire({
             id: data.id,
+            parentDataElementId: data.parentDataElementId,
             name: data.name,
             description: data.description,
             orgUnit: data.orgUnit,

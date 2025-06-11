@@ -74,6 +74,7 @@
         "prettier": "^2.8.7",
         "sanitize-filename": "^1.6.3",
         "source-map-explorer": "^2.5.3",
+        "ts-mockito": "^2.6.1",
         "ts-node": "^10.9.1",
         "ts-prune": "^0.10.3",
         "typedoc": "^0.25.1",
