@@ -2,7 +2,16 @@ import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { NamedRef } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 
-export const getUserAccess = (module: AMRSurveyModule, currentUserGroups: NamedRef[]) => {
+export type UserAccess = {
+    hasReadAccess: boolean;
+    hasCaptureAccess: boolean;
+    hasAdminAccess: boolean;
+};
+
+export const getUserAccess = (
+    module: AMRSurveyModule,
+    currentUserGroups: NamedRef[]
+): UserAccess => {
     const hasReadAccess =
         currentUserGroups.filter(cug =>
             module.userGroups.readAccess?.some(raug => raug.id === cug.id)

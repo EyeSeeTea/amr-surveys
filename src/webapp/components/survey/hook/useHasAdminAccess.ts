@@ -1,22 +1,9 @@
-import { useState, useEffect } from "react";
-import { useAppContext } from "../../../contexts/app-context";
-import { useCurrentModule } from "../../../contexts/current-module-context";
-import { getUserAccess } from "../../../../domain/utils/menuHelper";
+import useUserAccess from "./useUserAccess";
 
 const useHasAdminAccess = () => {
-    const { currentUser } = useAppContext();
-    const { currentModule } = useCurrentModule();
-    const [hasAdminAccess, setHasAdminAccess] = useState<boolean>(false);
+    const userAccess = useUserAccess();
 
-    useEffect(() => {
-        if (currentModule) {
-            const { hasAdminAccess } = getUserAccess(currentModule, currentUser.userGroups);
-
-            setHasAdminAccess(hasAdminAccess);
-        }
-    }, [currentModule, currentUser]);
-
-    return { hasAdminAccess };
+    return { hasAdminAccess: userAccess.hasAdminAccess };
 };
 
 export default useHasAdminAccess;

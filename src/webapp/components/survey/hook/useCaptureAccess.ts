@@ -1,25 +1,9 @@
-import { useState, useEffect } from "react";
-import { useAppContext } from "../../../contexts/app-context";
-import { useCurrentModule } from "../../../contexts/current-module-context";
-import { getUserAccess } from "../../../../domain/utils/menuHelper";
+import useUserAccess from "./useUserAccess";
 
 const useCaptureAccess = () => {
-    const { currentUser } = useAppContext();
-    const { currentModule } = useCurrentModule();
-    const [hasCaptureAccess, setHasCaptureAccess] = useState<boolean>(false);
+    const userAccess = useUserAccess();
 
-    useEffect(() => {
-        if (currentModule) {
-            const { hasCaptureAccess, hasAdminAccess } = getUserAccess(
-                currentModule,
-                currentUser.userGroups
-            );
-
-            setHasCaptureAccess(hasCaptureAccess || hasAdminAccess);
-        }
-    }, [currentModule, currentUser]);
-
-    return { hasCaptureAccess };
+    return { hasCaptureAccess: userAccess.hasCaptureAccess || userAccess.hasAdminAccess };
 };
 
 export default useCaptureAccess;
