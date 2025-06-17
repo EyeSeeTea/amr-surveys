@@ -51,8 +51,7 @@ export const getBaseSurveyFormType = (
                 module,
                 currentUserGroups
             );
-            if (hasAdminAccess) return "PrevalenceSurveyForm";
-            else if (hasReadAccess || hasCaptureAccess) return "PrevalenceFacilityLevelForm";
+            if (hasAdminAccess || hasReadAccess || hasCaptureAccess) return "PrevalenceSurveyForm";
             else
                 throw new Error(
                     "You dont have the neccessary permissions. Please contact your system administrator."
