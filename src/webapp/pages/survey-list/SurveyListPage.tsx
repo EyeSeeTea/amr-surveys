@@ -33,7 +33,6 @@ export const SurveyListPage: React.FC = React.memo(() => {
                 (formType === "PrevalenceFacilityLevelForm" || formType === "PPSHospitalForm"))
         ) {
             resetCurrentPPSSurveyForm();
-            resetCurrentPrevalenceSurveyForm();
         } else if (shouldRedirectToHome(formType)) {
             //Redirecting to home page.
             history.push("/");
