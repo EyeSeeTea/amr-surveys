@@ -399,14 +399,14 @@ export class SurveyD2Repository implements SurveyRepository {
                 programId === PPS_COUNTRY_QUESTIONNAIRE_ID ||
                 programId === PREVALENCE_SURVEY_FORM_ID)
                 ? "DESCENDANTS"
-                : "SELECTED";
+                : undefined;
 
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
                 program: programId,
-                orgUnit: orgUnitId,
-                ouMode: ouMode,
+                ...(orgUnitId !== "" && { orgUnit: orgUnitId }),
+                ...(ouMode && { ouMode: ouMode }),
                 filter: filter ? `${filter.id}:eq:${filter.value}` : undefined,
             })
         ).flatMap(response => {
