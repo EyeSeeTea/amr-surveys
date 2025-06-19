@@ -196,7 +196,8 @@ export const hideCreateNewButton = (
             currentPPSFormType === "NATIONAL" &&
             surveys !== undefined &&
             surveys.length >= 1) ||
-        (surveyFormType === "PrevalenceFacilityLevelForm" && !hasCaptureAccess)
+        (surveyFormType === "PrevalenceFacilityLevelForm" && !hasCaptureAccess) ||
+        (surveyFormType === "PrevalenceSurveyForm" && !isAdmin)
     );
 };
 
