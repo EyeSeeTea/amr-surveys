@@ -13,9 +13,6 @@ import {
     hideCreateNewButton,
     isPaginatedSurveyList,
 } from "../../../domain/utils/PPSProgramsHelper";
-import { getUserAccess } from "../../../domain/utils/menuHelper";
-import { useAppContext } from "../../contexts/app-context";
-import { useCurrentModule } from "../../contexts/current-module-context";
 import { SurveyListTable } from "./table/SurveyListTable";
 import { SurveyListFilters } from "./SurveyListFilters";
 import _ from "../../../domain/entities/generic/Collection";
@@ -23,19 +20,17 @@ import { useFilteredSurveys } from "./hook/useFilteredSurveys";
 import { PaginatedSurveyListTable } from "./table/PaginatedSurveyListTable";
 import { usePatientSearch } from "./hook/usePatientSearch";
 import useReadOnlyAccess from "../survey/hook/useReadOnlyAccess";
+import useCaptureAccess from "../survey/hook/useCaptureAccess";
+import useHasAdminAccess from "../survey/hook/useHasAdminAccess";
 
 interface SurveyListProps {
     surveyFormType: SURVEY_FORM_TYPES;
 }
 export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
     const { currentPPSSurveyForm } = useCurrentSurveys();
-    const { currentUser } = useAppContext();
-    const { currentModule } = useCurrentModule();
-    const { hasReadOnlyAccess } = useReadOnlyAccess();
-
-    const isAdmin = currentModule
-        ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
-        : false;
+    const { hasReadOnlyAccess: hasOnlyReadAccess } = useReadOnlyAccess();
+    const { hasCaptureAccess } = useCaptureAccess();
+    const { hasAdminAccess } = useHasAdminAccess();
 
     const {
         surveys,
@@ -55,7 +50,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         surveyTypeFilter,
         setSurveyTypeFilter,
         filteredSurveys,
-    } = useFilteredSurveys(surveyFormType, isAdmin, surveys);
+    } = useFilteredSurveys(surveyFormType, hasAdminAccess, surveys);
 
     const {
         searchResultSurveys,
@@ -76,8 +71,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                     <>
                         {!hideCreateNewButton(
                             surveyFormType,
-                            isAdmin,
-                            hasReadOnlyAccess,
+                            hasAdminAccess,
+                            hasOnlyReadAccess,
+                            hasCaptureAccess,
                             currentPPSSurveyForm?.surveyType
                                 ? currentPPSSurveyForm?.surveyType
                                 : "",

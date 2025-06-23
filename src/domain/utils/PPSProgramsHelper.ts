@@ -183,19 +183,21 @@ export const getParentOUIdFromPath = (path: string | undefined) => {
 export const hideCreateNewButton = (
     surveyFormType: SURVEY_FORM_TYPES,
     isAdmin: boolean,
-    hasReadAccess: boolean,
+    hasOnlyReadAccess: boolean,
+    hasCaptureAccess: boolean,
     currentPPSFormType: string,
     surveys: Survey[] | undefined
 ): boolean => {
     return (
-        hasReadAccess ||
+        hasOnlyReadAccess ||
         (surveyFormType === "PPSHospitalForm" && !isAdmin) ||
         // For PPS Survey Forms of National Type, only one child survey(country) should be allowed.
         (surveyFormType === "PPSCountryQuestionnaire" &&
             currentPPSFormType === "NATIONAL" &&
             surveys !== undefined &&
             surveys.length >= 1) ||
-        (surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin)
+        (surveyFormType === "PrevalenceFacilityLevelForm" && !hasCaptureAccess) ||
+        (surveyFormType === "PrevalenceSurveyForm" && !isAdmin)
     );
 };
 

@@ -63,6 +63,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             case "PrevalenceCohortEnrolment":
             case "PrevalenceDischarge":
                 return currentFacilityLevelForm?.orgUnitId;
+            case "PrevalenceSurveyForm":
+                return undefined;
             default:
                 return GLOBAL_OU_ID;
         }
@@ -99,7 +101,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
         const orgUnitId = getOrgUnitByFormType();
 
-        if (!orgUnitId) {
+        if (!orgUnitId && surveyFormType !== "PrevalenceSurveyForm") {
             setSurveysError(i18n.t("Could not resolve Org Unit for current form"));
             return;
         }
@@ -111,7 +113,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             compositionRoot.surveys.getPaginatedSurveys
                 .execute(
                     surveyFormType,
-                    orgUnitId,
+                    orgUnitId || "",
                     parentSurveyId,
                     currentWardRegister?.id,
                     currentCaseReportForm?.id,
@@ -136,7 +138,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                 surveyFormType === "PrevalenceFacilityLevelForm" && !isAdmin;
             //Other forms are not paginated.
             compositionRoot.surveys.getSurveys
-                .execute(surveyFormType, orgUnitId, parentSurveyId, makeChunkedCall)
+                .execute(surveyFormType, orgUnitId || "", parentSurveyId, makeChunkedCall)
                 .run(
                     nonPaginatedSurveys => {
                         setSurveys(nonPaginatedSurveys);
