@@ -238,7 +238,7 @@ export const mapQuestionsToDataValues = (questions: Question[]): DataValue[] => 
                     return {
                         ...baseQuestion,
                         dataElement: question.id,
-                        value: question.value ? question.value.toString() : "",
+                        value: question.value !== undefined ? question.value.toString() : "",
                     };
                 }
             }
