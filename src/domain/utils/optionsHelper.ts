@@ -9,7 +9,7 @@ export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAcces
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Country",
+            label: "New Country",
             isHidden: hasReadAccess,
         },
         {
@@ -22,7 +22,7 @@ export const PPSSurveyHospitalOptions = (hasReadAccess: boolean, hasCaptureAcces
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Hospital",
+            label: "New Hospital",
             isHidden: hasReadAccess,
         },
         {
@@ -35,7 +35,7 @@ export const PPSSurveyDefaultOptions = (hasReadAccess: boolean, hasCaptureAccess
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Country",
+            label: "New Country",
             isHidden: hasReadAccess,
         },
         {
@@ -47,7 +47,7 @@ export const PPSSurveyDefaultOptions = (hasReadAccess: boolean, hasCaptureAccess
 export const PPSCountryFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
     return [
         {
-            label: "Add New Hospital",
+            label: "New Hospital",
             isHidden: hasReadAccess,
         },
         {
@@ -61,7 +61,7 @@ export const PPSHospitalFormOptions = (hasReadAccess: boolean, hasCaptureAccess:
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Ward",
+            label: "New Ward",
             isHidden: hasReadAccess,
         },
         {
@@ -74,7 +74,7 @@ export const PPSWardFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boo
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Patient",
+            label: "New Patient",
             isHidden: hasReadAccess,
         },
         {
@@ -87,7 +87,7 @@ export const PrevalenceSurveyFormOptions = (hasReadAccess: boolean, hasCaptureAc
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Facility",
+            label: "New Facility",
             isHidden: hasReadAccess,
         },
         {
@@ -103,7 +103,7 @@ export const PrevalenceFacilityLevelFormOptions = (
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
-            label: "Add New Patient",
+            label: "New Patient",
             isHidden: hasReadAccess,
         },
         {
@@ -123,28 +123,28 @@ export const PrevalenceCaseReportFormOptions = (
             isSubMenu: true,
             subMenu: [
                 {
-                    label: "Add New Sample Shipment",
+                    label: "New Sample Shipment",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List Sample Shipments",
                 },
                 {
-                    label: "Add New Central Ref Lab Results",
+                    label: "New Central Ref Lab Results",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List Central Ref Labs Results",
                 },
                 {
-                    label: "Add New Pathogen Isolates Log",
+                    label: "New Pathogen Isolates Log",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List Pathogen Isolates Logs",
                 },
                 {
-                    label: "Add New Supranational Ref Results",
+                    label: "New Supranational Ref Results",
                     isHidden: hasReadAccess,
                 },
                 {
@@ -157,21 +157,21 @@ export const PrevalenceCaseReportFormOptions = (
             isSubMenu: true,
             subMenu: [
                 {
-                    label: "Add New D28 Follow-up",
+                    label: "New D28 Follow-up",
                     isHidden: hasReadAccess,
                 },
                 {
                     label: "List D28 Follow-up",
                 },
                 {
-                    label: "Add New Discharge",
+                    label: "New Discharge - Clinical",
                     isHidden: hasReadAccess,
                 },
                 {
-                    label: "List Discharge",
+                    label: "List Discharge - Clinical",
                 },
                 {
-                    label: "Add New Cohort enrolment",
+                    label: "New Cohort enrolment",
                     isHidden: hasReadAccess,
                 },
                 {

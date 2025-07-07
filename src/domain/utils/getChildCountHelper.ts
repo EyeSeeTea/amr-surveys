@@ -107,7 +107,7 @@ const mapOptionToLabel = (programCountMap: ChildCountOption, modules: AMRSurveyM
                 };
             case PREVALENCE_MORTALITY_DISCHARGE_FORM:
                 return {
-                    option: { label: i18n.t(`List Discharge (${pc.count})`) },
+                    option: { label: i18n.t(`List Discharge - Clinical (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:

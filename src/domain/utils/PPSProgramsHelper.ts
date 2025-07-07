@@ -49,31 +49,31 @@ export const getChildSurveyType = (
             return "PrevalenceCaseReportForm";
         case "PrevalenceCaseReportForm": {
             switch (true) {
-                case option === "Add New Sample Shipment":
+                case option === "New Sample Shipment":
                 case option?.startsWith("List Sample Shipments"):
                     return "PrevalenceSampleShipTrackForm";
 
-                case option === "Add New Central Ref Lab Results":
+                case option === "New Central Ref Lab Results":
                 case option?.startsWith("List Central Ref Labs Results"):
                     return "PrevalenceCentralRefLabForm";
 
-                case option === "Add New Pathogen Isolates Log":
+                case option === "New Pathogen Isolates Log":
                 case option?.startsWith("List Pathogen Isolates Logs"):
                     return "PrevalencePathogenIsolatesLog";
 
-                case option === "Add New Supranational Ref Results":
+                case option === "New Supranational Ref Results":
                 case option?.startsWith("List Supranational Refs Results"):
                     return "PrevalenceSupranationalRefLabForm";
 
-                case option === "Add New D28 Follow-up":
+                case option === "New D28 Follow-up":
                 case option?.startsWith("List D28 Follow-up"):
                     return "PrevalenceD28FollowUp";
 
-                case option === "Add New Discharge":
-                case option?.startsWith("List Discharge"):
+                case option === "New Discharge":
+                case option?.startsWith("List Discharge - Clinical"):
                     return "PrevalenceDischarge";
 
-                case option === "Add New Cohort enrolment":
+                case option === "New Cohort enrolment":
                 case option?.startsWith("List Cohort enrolment"):
                     return "PrevalenceCohortEnrolment";
 
@@ -164,7 +164,7 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
         case "PrevalenceD28FollowUp":
             return "D28 Follow-up";
         case "PrevalenceDischarge":
-            return "Discharge";
+            return "Discharge - Clinical";
         case "PrevalenceCohortEnrolment":
             return "Cohort Enrolment";
         default:
