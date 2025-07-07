@@ -26,7 +26,7 @@ export function useSaveSurvey(formType: SURVEY_FORM_TYPES, orgUnitId: Id, survey
             case "PrevalencePathogenIsolatesLog":
             case "PrevalenceSupranationalRefLabForm":
             case "PrevalenceD28FollowUp":
-            case "PrevalenceDischarge":
+            case "PrevalenceDischargeClinical":
             case "PrevalenceCohortEnrolment":
                 return currentFacilityLevelForm?.orgUnitId ?? "";
             default:

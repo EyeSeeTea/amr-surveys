@@ -61,7 +61,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
             case "PrevalenceSupranationalRefLabForm":
             case "PrevalenceD28FollowUp":
             case "PrevalenceCohortEnrolment":
-            case "PrevalenceDischarge":
+            case "PrevalenceDischargeClinical":
                 return currentFacilityLevelForm?.orgUnitId;
             case "PrevalenceSurveyForm":
                 return undefined;
@@ -92,7 +92,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                   surveyFormType === "PrevalenceSampleShipTrackForm" ||
                   surveyFormType === "PrevalenceSupranationalRefLabForm" ||
                   surveyFormType === "PrevalenceCohortEnrolment" ||
-                  surveyFormType === "PrevalenceDischarge" ||
+                  surveyFormType === "PrevalenceDischargeClinical" ||
                   surveyFormType === "PrevalenceD28FollowUp"
                 ? currentPrevalenceSurveyForm?.id
                 : surveyFormType === "PPSPatientRegister"

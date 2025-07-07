@@ -71,7 +71,7 @@ export const getChildSurveyType = (
 
                 case option === "New Discharge":
                 case option?.startsWith("List Discharge - Clinical"):
-                    return "PrevalenceDischarge";
+                    return "PrevalenceDischargeClinical";
 
                 case option === "New Cohort enrolment":
                 case option?.startsWith("List Cohort enrolment"):
@@ -126,7 +126,7 @@ export const getSurveyOptions = (
         case "PrevalenceSupranationalRefLabForm":
         case "PPSPatientRegister":
         case "PrevalenceD28FollowUp":
-        case "PrevalenceDischarge":
+        case "PrevalenceDischargeClinical":
         case "PrevalenceCohortEnrolment":
         default:
             return DefaultFormOptions(hasReadAccess, hasCaptureAccess);
@@ -163,7 +163,7 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Supranational Result";
         case "PrevalenceD28FollowUp":
             return "D28 Follow-up";
-        case "PrevalenceDischarge":
+        case "PrevalenceDischargeClinical":
             return "Discharge - Clinical";
         case "PrevalenceCohortEnrolment":
             return "Cohort Enrolment";
@@ -211,7 +211,7 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
         case "PrevalenceSupranationalRefLabForm":
         case "PrevalenceD28FollowUp":
         case "PrevalenceCohortEnrolment":
-        case "PrevalenceDischarge":
+        case "PrevalenceDischargeClinical":
             return true;
         default:
             return false;
@@ -225,7 +225,7 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
         case "PrevalenceD28FollowUp":
-        case "PrevalenceDischarge":
+        case "PrevalenceDischargeClinical":
         case "PrevalenceCohortEnrolment":
             return true;
         default:
