@@ -102,6 +102,8 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const actionClick = (ppsSurveyType: string, survey?: Survey) => {
         setOptionLoading(true);
         const currentOptions = getSurveyOptions(
+            survey?.rootSurvey.id || "",
+            currentModule,
             surveyFormType,
             hasReadOnlyAccess,
             hasCaptureAccess,

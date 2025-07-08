@@ -1,3 +1,4 @@
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { Survey, SURVEY_FORM_TYPES } from "../entities/Survey";
 import {
     DefaultFormOptions,
@@ -92,6 +93,8 @@ export const getChildSurveyType = (
 };
 
 export const getSurveyOptions = (
+    parentSurveyId: string,
+    currentModule: AMRSurveyModule | undefined,
     surveyFormType: SURVEY_FORM_TYPES,
     hasReadAccess: boolean,
     hasCaptureAccess: boolean,
@@ -123,7 +126,12 @@ export const getSurveyOptions = (
             return PrevalenceFacilityLevelFormOptions(hasReadAccess, hasCaptureAccess);
 
         case "PrevalenceCaseReportForm":
-            return PrevalenceCaseReportFormOptions(hasReadAccess, hasCaptureAccess);
+            return PrevalenceCaseReportFormOptions(
+                parentSurveyId,
+                currentModule,
+                hasReadAccess,
+                hasCaptureAccess
+            );
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceCentralRefLabForm":
         case "PrevalencePathogenIsolatesLog":

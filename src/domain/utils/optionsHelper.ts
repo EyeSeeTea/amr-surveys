@@ -1,8 +1,28 @@
+import { PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM } from "../../data/entities/D2Survey";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+
 export type OptionType = {
     label: string;
     isHidden?: boolean;
     isSubMenu?: boolean;
     subMenu?: OptionType[];
+};
+
+export const DefaultFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
+    return [
+        {
+            label: "Edit",
+            isHidden: hasReadAccess,
+        },
+        {
+            label: "View",
+            isHidden: hasCaptureAccess,
+        },
+        {
+            label: "Delete",
+            isHidden: hasReadAccess,
+        },
+    ];
 };
 
 export const PPSSurveyNationalOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
@@ -113,9 +133,13 @@ export const PrevalenceFacilityLevelFormOptions = (
 };
 
 export const PrevalenceCaseReportFormOptions = (
+    parentSurveyId: string,
+    currentModule: AMRSurveyModule | undefined,
     hasReadAccess: boolean,
     hasCaptureAccess: boolean
 ) => {
+    const disabledForms = getDisabledForms(currentModule, parentSurveyId);
+
     return [
         ...DefaultFormOptions(hasReadAccess, hasCaptureAccess),
         {
@@ -172,10 +196,13 @@ export const PrevalenceCaseReportFormOptions = (
                 },
                 {
                     label: "New Discharge - Economic",
-                    isHidden: hasReadAccess,
+                    isHidden:
+                        hasReadAccess ||
+                        disabledForms.includes(PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM),
                 },
                 {
                     label: "List Discharge - Economic",
+                    isHidden: disabledForms.includes(PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM),
                 },
                 {
                     label: "New Cohort enrolment",
@@ -189,19 +216,14 @@ export const PrevalenceCaseReportFormOptions = (
     ];
 };
 
-export const DefaultFormOptions = (hasReadAccess: boolean, hasCaptureAccess: boolean) => {
-    return [
-        {
-            label: "Edit",
-            isHidden: hasReadAccess,
-        },
-        {
-            label: "View",
-            isHidden: hasCaptureAccess,
-        },
-        {
-            label: "Delete",
-            isHidden: hasReadAccess,
-        },
-    ];
-};
+function getDisabledForms(currentModule: AMRSurveyModule | undefined, parentSurveyId: string) {
+    const customFormsBySurvey = currentModule?.customForms?.[parentSurveyId];
+
+    const disabledForms = customFormsBySurvey
+        ? Object.entries(customFormsBySurvey)
+              .filter(([_, value]) => !value || value === "")
+              .map(([key]) => key)
+        : [];
+
+    return disabledForms;
+}
