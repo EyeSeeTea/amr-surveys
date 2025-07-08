@@ -12,6 +12,7 @@ import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
     PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM,
     PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
@@ -108,6 +109,11 @@ const mapOptionToLabel = (programCountMap: ChildCountOption, modules: AMRSurveyM
             case PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM:
                 return {
                     option: { label: i18n.t(`List Discharge - Clinical (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM:
+                return {
+                    option: { label: i18n.t(`List Discharge - Economic (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:

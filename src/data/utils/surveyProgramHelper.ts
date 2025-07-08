@@ -36,6 +36,9 @@ import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     PPS_PATIENT_TET,
+    PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC,
+    PREVALENCE_MORTALITY_ARM_FOLLOW_UP_TET,
 } from "../entities/D2Survey";
 import { getDefaultProgram } from "./getDefaultProgram";
 
@@ -51,6 +54,7 @@ export const isTrackerProgram = (programId: Id, modules: AMRSurveyModule[]) => {
         case PREVALENCE_SUPRANATIONAL_REF_LAB_ID:
         case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
         case PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM:
+        case PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM:
         case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
         case PPS_PATIENT_REGISTER_ID:
             return true;
@@ -79,6 +83,8 @@ export const getTrackedEntityAttributeType = (programId: Id, modules: AMRSurveyM
         case PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM:
         case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
             return PREVALENCE_MORTALITY_FOLLOW_UP_TET;
+        case PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM:
+            return PREVALENCE_MORTALITY_ARM_FOLLOW_UP_TET;
         case PPS_PATIENT_REGISTER_ID:
             return PPS_PATIENT_TET;
 
@@ -124,6 +130,8 @@ export const getParentDataElementForProgram = (programId: Id, modules: AMRSurvey
             return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2;
         case PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM:
             return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2;
+        case PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM:
+            return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC;
         case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:
             return AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
 
@@ -203,6 +211,11 @@ export const getChildProgramId = (
                     getCustomOrDefaultFormId(
                         parentSurveyId,
                         prevalenceModule,
+                        PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM
+                    ),
+                    getCustomOrDefaultFormId(
+                        parentSurveyId,
+                        prevalenceModule,
                         PREVALENCE_MORTALITY_COHORT_ENORL_FORM
                     ),
                 ],
@@ -229,6 +242,7 @@ export const getSurveyType = (surveyFormType: SURVEY_FORM_TYPES): "PPS" | "Preva
         case "PrevalenceSupranationalRefLabForm":
         case "PrevalenceD28FollowUp":
         case "PrevalenceDischargeClinical":
+        case "PrevalenceDischargeEconomic":
         case "PrevalenceCohortEnrolment":
         default:
             return "Prevalence";

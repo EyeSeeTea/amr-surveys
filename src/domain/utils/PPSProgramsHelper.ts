@@ -69,9 +69,13 @@ export const getChildSurveyType = (
                 case option?.startsWith("List D28 Follow-up"):
                     return "PrevalenceD28FollowUp";
 
-                case option === "New Discharge":
+                case option === "New Discharge - Clinical":
                 case option?.startsWith("List Discharge - Clinical"):
                     return "PrevalenceDischargeClinical";
+
+                case option === "New Discharge - Economic":
+                case option?.startsWith("List Discharge - Economic"):
+                    return "PrevalenceDischargeEconomic";
 
                 case option === "New Cohort enrolment":
                 case option?.startsWith("List Cohort enrolment"):
@@ -127,6 +131,7 @@ export const getSurveyOptions = (
         case "PPSPatientRegister":
         case "PrevalenceD28FollowUp":
         case "PrevalenceDischargeClinical":
+        case "PrevalenceDischargeEconomic":
         case "PrevalenceCohortEnrolment":
         default:
             return DefaultFormOptions(hasReadAccess, hasCaptureAccess);
@@ -165,6 +170,8 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "D28 Follow-up";
         case "PrevalenceDischargeClinical":
             return "Discharge - Clinical";
+        case "PrevalenceDischargeEconomic":
+            return "Discharge - Economic";
         case "PrevalenceCohortEnrolment":
             return "Cohort Enrolment";
         default:
@@ -212,6 +219,7 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
         case "PrevalenceD28FollowUp":
         case "PrevalenceCohortEnrolment":
         case "PrevalenceDischargeClinical":
+        case "PrevalenceDischargeEconomic":
             return true;
         default:
             return false;
@@ -226,6 +234,7 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
         case "PrevalenceSupranationalRefLabForm":
         case "PrevalenceD28FollowUp":
         case "PrevalenceDischargeClinical":
+        case "PrevalenceDischargeEconomic":
         case "PrevalenceCohortEnrolment":
             return true;
         default:

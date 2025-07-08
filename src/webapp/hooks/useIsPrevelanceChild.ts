@@ -11,6 +11,7 @@ export function useIsPrevelanceChild(formType: SURVEY_FORM_TYPES) {
             formType === "PrevalenceSampleShipTrackForm" ||
             formType === "PrevalenceSupranationalRefLabForm" ||
             formType === "PrevalenceDischargeClinical" ||
+            formType === "PrevalenceDischargeEconomic" ||
             formType === "PrevalenceD28FollowUp" ||
             formType === "PrevalenceCohortEnrolment"
         );

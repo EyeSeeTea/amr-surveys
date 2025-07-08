@@ -1,6 +1,7 @@
 import { FutureData } from "../../data/api-futures";
 import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
@@ -177,6 +178,7 @@ export class GetSurveyUseCase {
                             question.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
+                            question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC ||
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
 
                         if (isSurveyIdQuestion && question.type === "text") {

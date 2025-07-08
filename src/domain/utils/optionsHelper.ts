@@ -171,6 +171,13 @@ export const PrevalenceCaseReportFormOptions = (
                     label: "List Discharge - Clinical",
                 },
                 {
+                    label: "New Discharge - Economic",
+                    isHidden: hasReadAccess,
+                },
+                {
+                    label: "List Discharge - Economic",
+                },
+                {
                     label: "New Cohort enrolment",
                     isHidden: hasReadAccess,
                 },

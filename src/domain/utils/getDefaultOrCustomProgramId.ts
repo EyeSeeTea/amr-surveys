@@ -10,6 +10,7 @@ import {
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
     PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM,
     PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
@@ -85,6 +86,12 @@ export const getProgramId = (
                 surveyParentId,
                 prevalenceModule,
                 PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM
+            );
+        case "PrevalenceDischargeEconomic":
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM
             );
         case "PrevalenceCohortEnrolment":
             return getCustomOrDefaultFormId(
