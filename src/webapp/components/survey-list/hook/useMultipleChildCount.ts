@@ -26,6 +26,7 @@ export const useMultipleChildCount = (
                 return supranationalRefsResultsSortDirection;
             case "D28 Follow-up":
             case "Discharge - Clinical":
+            case "Discharge - Economic":
             case "Cohort enrolment":
                 return "asc";
 
