@@ -89,7 +89,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
-                        <Table>
+                        <StyledTable>
                             <TableHead>
                                 <TableRow>
                                     <TableCell
@@ -344,7 +344,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     </TableRow>
                                 </StyledTableBody>
                             )}
-                        </Table>
+                        </StyledTable>
                     </TableContainer>
 
                     <TablePagination
@@ -424,4 +424,7 @@ const StyledTableBody = styled(TableBody)`
             }
         }
     }
+`;
+const StyledTable = styled(Table)`
+    table-layout: fixed;
 `;
