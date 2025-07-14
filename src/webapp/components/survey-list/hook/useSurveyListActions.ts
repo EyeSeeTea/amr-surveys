@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
@@ -7,12 +7,15 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { getUserAccess } from "../../../../domain/utils/menuHelper";
 import { useAppContext } from "../../../contexts/app-context";
-import { OptionType } from "../../../../domain/utils/optionsHelper";
+import { getDisabledForms, OptionType } from "../../../../domain/utils/optionsHelper";
 import useReadOnlyAccess from "../../survey/hook/useReadOnlyAccess";
 import useCaptureAccess from "../../survey/hook/useCaptureAccess";
 import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
+import { getChildrenName } from "../../../../domain/utils/getChildrenName";
+import { PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM } from "../../../../data/entities/D2Survey";
+import i18n from "@eyeseetea/feedback-component/locales";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -40,6 +43,19 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const isAdmin = currentModule
         ? getUserAccess(currentModule, currentUser.userGroups).hasAdminAccess
         : false;
+
+    const columnNames = useMemo(() => {
+        const parentSurveyId =
+            sortedSurveys?.find(survey => survey.rootSurvey.id)?.rootSurvey.id || "";
+        const disabledForms = getDisabledForms(currentModule, parentSurveyId);
+
+        const columns = getChildrenName(surveyFormType);
+        if (disabledForms?.includes(PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM)) {
+            return columns.filter(column => column !== i18n.t("Discharge - Economic"));
+        }
+
+        return columns;
+    }, [currentModule, sortedSurveys, surveyFormType]);
 
     const goToSurvey = (survey: Survey) => {
         updateSelectedSurveyDetails(
@@ -218,6 +234,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     };
 
     return {
+        columnNames,
         options,
         sortedSurveys,
         optionLoading,

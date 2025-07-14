@@ -216,7 +216,10 @@ export const PrevalenceCaseReportFormOptions = (
     ];
 };
 
-function getDisabledForms(currentModule: AMRSurveyModule | undefined, parentSurveyId: string) {
+export function getDisabledForms(
+    currentModule: AMRSurveyModule | undefined,
+    parentSurveyId: string
+) {
     const customFormsBySurvey = currentModule?.customForms?.[parentSurveyId];
 
     const disabledForms = customFormsBySurvey
