@@ -15,7 +15,7 @@ export const getChildrenName = (
                 i18n.t("Central Ref Lab Results"),
                 i18n.t("Pathogen Isolates Logs"),
                 i18n.t("Supranational Ref Results"),
-                i18n.t("D28 Follow-up"),
+                i18n.t("Follow-up"),
                 i18n.t("Discharge - Clinical"),
                 i18n.t("Discharge - Economic"),
                 i18n.t("Cohort enrolment"),

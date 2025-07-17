@@ -66,9 +66,9 @@ export const getChildSurveyType = (
                 case option?.startsWith("List Supranational Refs Results"):
                     return "PrevalenceSupranationalRefLabForm";
 
-                case option === "New D28 Follow-up":
-                case option?.startsWith("List D28 Follow-up"):
-                    return "PrevalenceD28FollowUp";
+                case option === "New Follow-up":
+                case option?.startsWith("List Follow-up"):
+                    return "PrevalenceFollowUp";
 
                 case option === "New Discharge - Clinical":
                 case option?.startsWith("List Discharge - Clinical"):
@@ -137,7 +137,7 @@ export const getSurveyOptions = (
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSupranationalRefLabForm":
         case "PPSPatientRegister":
-        case "PrevalenceD28FollowUp":
+        case "PrevalenceFollowUp":
         case "PrevalenceDischargeClinical":
         case "PrevalenceDischargeEconomic":
         case "PrevalenceCohortEnrolment":
@@ -174,8 +174,8 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
             return "Pathogen Isolate";
         case "PrevalenceSupranationalRefLabForm":
             return "Supranational Result";
-        case "PrevalenceD28FollowUp":
-            return "D28 Follow-up";
+        case "PrevalenceFollowUp":
+            return "Follow-up";
         case "PrevalenceDischargeClinical":
             return "Discharge - Clinical";
         case "PrevalenceDischargeEconomic":
@@ -224,7 +224,7 @@ export const isPaginatedSurveyList = (surveyFormType: SURVEY_FORM_TYPES): boolea
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
-        case "PrevalenceD28FollowUp":
+        case "PrevalenceFollowUp":
         case "PrevalenceCohortEnrolment":
         case "PrevalenceDischargeClinical":
         case "PrevalenceDischargeEconomic":
@@ -240,7 +240,7 @@ export const isPrevalencePatientChild = (surveyFormType: SURVEY_FORM_TYPES): boo
         case "PrevalencePathogenIsolatesLog":
         case "PrevalenceSampleShipTrackForm":
         case "PrevalenceSupranationalRefLabForm":
-        case "PrevalenceD28FollowUp":
+        case "PrevalenceFollowUp":
         case "PrevalenceDischargeClinical":
         case "PrevalenceDischargeEconomic":
         case "PrevalenceCohortEnrolment":
