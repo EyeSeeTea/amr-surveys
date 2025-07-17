@@ -181,11 +181,11 @@ export const PrevalenceCaseReportFormOptions = (
             isSubMenu: true,
             subMenu: [
                 {
-                    label: "New D28 Follow-up",
+                    label: "New Follow-up",
                     isHidden: hasReadAccess,
                 },
                 {
-                    label: "List D28 Follow-up",
+                    label: "List Follow-up",
                 },
                 {
                     label: "New Discharge - Clinical",
