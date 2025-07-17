@@ -104,7 +104,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                       formType === "PrevalenceSupranationalRefLabForm" ||
                       formType === "PrevalenceDischargeClinical" ||
                       formType === "PrevalenceDischargeEconomic" ||
-                      formType === "PrevalenceD28FollowUp" ||
+                      formType === "PrevalenceFollowUp" ||
                       formType === "PrevalenceCohortEnrolment"
                     ? currentFacilityLevelForm?.orgUnitId
                     : undefined;

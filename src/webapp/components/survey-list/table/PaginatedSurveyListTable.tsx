@@ -292,12 +292,12 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "New D28 Follow-up",
+                                                            option: "New Follow-up",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option: "List D28 Follow-up",
+                                                            option: "List Follow-up",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },

@@ -16,7 +16,7 @@ export type SURVEY_FORM_TYPES =
     | "PrevalenceCentralRefLabForm"
     | "PrevalencePathogenIsolatesLog"
     | "PrevalenceSupranationalRefLabForm"
-    | "PrevalenceD28FollowUp"
+    | "PrevalenceFollowUp"
     | "PrevalenceDischargeClinical"
     | "PrevalenceDischargeEconomic"
     | "PrevalenceCohortEnrolment";

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2025-07-11T08:11:22.143Z\n"
+"POT-Creation-Date: 2025-07-17T09:41:44.545Z\n"
 "PO-Revision-Date: 2018-10-25T09:02:35.143Z\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -41,7 +41,7 @@ msgstr ""
 msgid "Supranational Ref Results"
 msgstr ""
 
-msgid "D28 Follow-up"
+msgid "Follow-up"
 msgstr ""
 
 msgid "Discharge - Clinical"

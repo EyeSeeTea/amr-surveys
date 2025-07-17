@@ -24,7 +24,7 @@ export const useMultipleChildCount = (
                 return pathogenIsolatesLogsSortDirection;
             case "Supranational Ref Results":
                 return supranationalRefsResultsSortDirection;
-            case "D28 Follow-up":
+            case "Follow-up":
             case "Discharge - Clinical":
             case "Discharge - Economic":
             case "Cohort enrolment":
