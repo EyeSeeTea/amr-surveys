@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Survey, SurveyBase, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import {
+    Survey,
+    SurveyBase,
+    SURVEY_FORM_TYPES,
+    SURVEYS_WITH_CHILD_COUNT,
+} from "../../../../domain/entities/Survey";
 import { getChildSurveyType, getSurveyOptions } from "../../../../domain/utils/PPSProgramsHelper";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
@@ -14,8 +19,6 @@ import { GLOBAL_OU_ID } from "../../../../domain/usecases/SaveFormDataUseCase";
 import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-guidelines-context";
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
-import { PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM } from "../../../../data/entities/D2Survey";
-import i18n from "@eyeseetea/feedback-component/locales";
 
 export type SortDirection = "asc" | "desc";
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
@@ -49,10 +52,8 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
             sortedSurveys?.find(survey => survey.rootSurvey.id)?.rootSurvey.id || "";
         const disabledForms = getDisabledForms(currentModule, parentSurveyId);
 
-        const columns = getChildrenName(surveyFormType);
-        if (disabledForms?.includes(PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM)) {
-            return columns.filter(column => column !== i18n.t("Discharge - Economic"));
-        }
+        if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType)) return [];
+        const columns = getChildrenName(surveyFormType, disabledForms);
 
         return columns;
     }, [currentModule, sortedSurveys, surveyFormType]);

@@ -164,26 +164,24 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     )}
 
                                     <>
-                                        {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
-                                            columnNames.map(childName => (
-                                                <TableCell
-                                                    onClick={childOnClick(childName)}
-                                                    key={childName}
-                                                >
-                                                    <span>
-                                                        <Typography variant="caption">
-                                                            {childName}
-                                                        </Typography>
-                                                        {childName &&
-                                                        getCurrentSortDirection(childName) ===
-                                                            "asc" ? (
-                                                            <ArrowUpward fontSize="small" />
-                                                        ) : (
-                                                            <ArrowDownward fontSize="small" />
-                                                        )}
-                                                    </span>
-                                                </TableCell>
-                                            ))}
+                                        {columnNames.map(childName => (
+                                            <TableCell
+                                                onClick={childOnClick(childName)}
+                                                key={childName}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {childName}
+                                                    </Typography>
+                                                    {childName &&
+                                                    getCurrentSortDirection(childName) === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
+                                            </TableCell>
+                                        ))}
                                     </>
 
                                     <TableCell>
