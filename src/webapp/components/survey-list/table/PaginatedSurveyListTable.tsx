@@ -251,7 +251,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 ),
                                                         },
                                                         {
-                                                            option: "Add New Sample Shipment",
+                                                            option: "New Sample Shipment",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
@@ -261,7 +261,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "Add New Central Ref Lab Results",
+                                                            option: "New Central Ref Lab Results",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
@@ -272,7 +272,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         },
 
                                                         {
-                                                            option: "Add New Pathogen Isolates Log",
+                                                            option: "New Pathogen Isolates Log",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
@@ -282,7 +282,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "Add New Supranational Ref Results",
+                                                            option: "New Supranational Ref Results",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
@@ -292,27 +292,37 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "Add New D28 Follow-up",
+                                                            option: "New Follow-up",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option: "List D28 Follow-up",
+                                                            option: "List Follow-up",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "Add New Discharge",
+                                                            option: "New Discharge - Clinical",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },
                                                         {
-                                                            option: "List Discharge",
+                                                            option: "List Discharge - Clinical",
                                                             handler: option =>
                                                                 listChildren(survey, option),
                                                         },
                                                         {
-                                                            option: "Add New Cohort enrolment",
+                                                            option: "New Discharge - Economic",
+                                                            handler: option =>
+                                                                assignChild(survey, option),
+                                                        },
+                                                        {
+                                                            option: "List Discharge - Economic",
+                                                            handler: option =>
+                                                                listChildren(survey, option),
+                                                        },
+                                                        {
+                                                            option: "New Cohort enrolment",
                                                             handler: option =>
                                                                 assignChild(survey, option),
                                                         },

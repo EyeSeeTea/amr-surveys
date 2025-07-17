@@ -10,8 +10,9 @@ export function useIsPrevelanceChild(formType: SURVEY_FORM_TYPES) {
             formType === "PrevalencePathogenIsolatesLog" ||
             formType === "PrevalenceSampleShipTrackForm" ||
             formType === "PrevalenceSupranationalRefLabForm" ||
-            formType === "PrevalenceDischarge" ||
-            formType === "PrevalenceD28FollowUp" ||
+            formType === "PrevalenceDischargeClinical" ||
+            formType === "PrevalenceDischargeEconomic" ||
+            formType === "PrevalenceFollowUp" ||
             formType === "PrevalenceCohortEnrolment"
         );
     }, [formType]);

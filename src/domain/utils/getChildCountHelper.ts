@@ -11,8 +11,9 @@ import { SurveyRepository } from "../repositories/SurveyRepository";
 import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
-    PREVALENCE_MORTALITY_DISCHARGE_FORM,
-    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
+    PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM,
+    PREVALENCE_MORTALITY_FOLLOWUP_FORM,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
@@ -100,14 +101,19 @@ const mapOptionToLabel = (programCountMap: ChildCountOption, modules: AMRSurveyM
                     option: { label: i18n.t(`List Supranational Refs Results (${pc.count})`) },
                     count: pc.count,
                 };
-            case PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28:
+            case PREVALENCE_MORTALITY_FOLLOWUP_FORM:
                 return {
-                    option: { label: i18n.t(`List D28 Follow-up (${pc.count})`) },
+                    option: { label: i18n.t(`List Follow-up (${pc.count})`) },
                     count: pc.count,
                 };
-            case PREVALENCE_MORTALITY_DISCHARGE_FORM:
+            case PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM:
                 return {
-                    option: { label: i18n.t(`List Discharge (${pc.count})`) },
+                    option: { label: i18n.t(`List Discharge - Clinical (${pc.count})`) },
+                    count: pc.count,
+                };
+            case PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM:
+                return {
+                    option: { label: i18n.t(`List Discharge - Economic (${pc.count})`) },
                     count: pc.count,
                 };
             case PREVALENCE_MORTALITY_COHORT_ENORL_FORM:

@@ -9,8 +9,9 @@ import {
     PREVALENCE_CENTRAL_REF_LAB_FORM_ID,
     PREVALENCE_FACILITY_LEVEL_FORM_ID,
     PREVALENCE_MORTALITY_COHORT_ENORL_FORM,
-    PREVALENCE_MORTALITY_DISCHARGE_FORM,
-    PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28,
+    PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM,
+    PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM,
+    PREVALENCE_MORTALITY_FOLLOWUP_FORM,
     PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID,
     PREVALENCE_SAMPLE_SHIP_TRACK_FORM_ID,
     PREVALENCE_SUPRANATIONAL_REF_LAB_ID,
@@ -74,17 +75,23 @@ export const getProgramId = (
             return PREVALENCE_PATHOGEN_ISO_STORE_TRACK_ID;
         case "PrevalenceSupranationalRefLabForm":
             return PREVALENCE_SUPRANATIONAL_REF_LAB_ID;
-        case "PrevalenceD28FollowUp":
+        case "PrevalenceFollowUp":
             return getCustomOrDefaultFormId(
                 surveyParentId,
                 prevalenceModule,
-                PREVALENCE_MORTALITY_FOLLOWUP_FORM_D28
+                PREVALENCE_MORTALITY_FOLLOWUP_FORM
             );
-        case "PrevalenceDischarge":
+        case "PrevalenceDischargeClinical":
             return getCustomOrDefaultFormId(
                 surveyParentId,
                 prevalenceModule,
-                PREVALENCE_MORTALITY_DISCHARGE_FORM
+                PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM
+            );
+        case "PrevalenceDischargeEconomic":
+            return getCustomOrDefaultFormId(
+                surveyParentId,
+                prevalenceModule,
+                PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM
             );
         case "PrevalenceCohortEnrolment":
             return getCustomOrDefaultFormId(

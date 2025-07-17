@@ -102,8 +102,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                       formType === "PrevalencePathogenIsolatesLog" ||
                       formType === "PrevalenceSampleShipTrackForm" ||
                       formType === "PrevalenceSupranationalRefLabForm" ||
-                      formType === "PrevalenceDischarge" ||
-                      formType === "PrevalenceD28FollowUp" ||
+                      formType === "PrevalenceDischargeClinical" ||
+                      formType === "PrevalenceDischargeEconomic" ||
+                      formType === "PrevalenceFollowUp" ||
                       formType === "PrevalenceCohortEnrolment"
                     ? currentFacilityLevelForm?.orgUnitId
                     : undefined;

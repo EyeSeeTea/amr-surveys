@@ -16,8 +16,9 @@ export type SURVEY_FORM_TYPES =
     | "PrevalenceCentralRefLabForm"
     | "PrevalencePathogenIsolatesLog"
     | "PrevalenceSupranationalRefLabForm"
-    | "PrevalenceD28FollowUp"
-    | "PrevalenceDischarge"
+    | "PrevalenceFollowUp"
+    | "PrevalenceDischargeClinical"
+    | "PrevalenceDischargeEconomic"
     | "PrevalenceCohortEnrolment";
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";

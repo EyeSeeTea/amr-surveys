@@ -15,6 +15,7 @@ import { Id } from "../../domain/entities/Ref";
 import { Option, ProgramDataElement, TrackedEntityAttibute } from "../entities/D2Program";
 import {
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2,
+    AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2,
     AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2,
     AMR_SURVEYS_PREVALENCE_DEA_SURVEY_ID,
@@ -390,6 +391,7 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_FUP2 ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DF2 ||
+                    currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2 ||
                     currentQuestion.id === SURVEY_ID_PATIENT_TEA_ID ||
                     currentQuestion.id === WARD_ID_TEA_ID)
