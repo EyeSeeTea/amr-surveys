@@ -334,7 +334,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                                 option:
                                                                     options.find(option =>
                                                                         option.label.startsWith(
-                                                                            "Add"
+                                                                            "New"
                                                                         )
                                                                     )?.label || "",
                                                                 handler: () => assignChild(survey),
