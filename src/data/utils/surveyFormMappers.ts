@@ -427,7 +427,7 @@ export const mapQuestionnaireToTrackedEntities = (
               } else {
                   return {
                       attribute: question.id,
-                      value: question.value ? question.value.toString() : "",
+                      value: question.value !== undefined ? question.value.toString() : "",
                   };
               }
           })
