@@ -24,7 +24,6 @@ import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
 import { ContentLoader } from "../../content-loader/ContentLoader";
 import { useSurveyListActions } from "../hook/useSurveyListActions";
-import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 import { useMultipleChildCount } from "../hook/useMultipleChildCount";
 import { isPrevalencePatientChild } from "../../../../domain/utils/PPSProgramsHelper";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
@@ -60,6 +59,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         refreshSurveys
     );
     const {
+        columnNames,
         options,
         optionLoading,
         sortedSurveys,
@@ -89,7 +89,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
             {sortedSurveys && (
                 <TableContentWrapper>
                     <TableContainer component={Paper}>
-                        <Table>
+                        <StyledTable>
                             <TableHead>
                                 <TableRow>
                                     <TableCell
@@ -164,26 +164,24 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     )}
 
                                     <>
-                                        {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) &&
-                                            getChildrenName(surveyFormType).map(childName => (
-                                                <TableCell
-                                                    onClick={childOnClick(childName)}
-                                                    key={childName}
-                                                >
-                                                    <span>
-                                                        <Typography variant="caption">
-                                                            {childName}
-                                                        </Typography>
-                                                        {childName &&
-                                                        getCurrentSortDirection(childName) ===
-                                                            "asc" ? (
-                                                            <ArrowUpward fontSize="small" />
-                                                        ) : (
-                                                            <ArrowDownward fontSize="small" />
-                                                        )}
-                                                    </span>
-                                                </TableCell>
-                                            ))}
+                                        {columnNames.map(childName => (
+                                            <TableCell
+                                                onClick={childOnClick(childName)}
+                                                key={childName}
+                                            >
+                                                <span>
+                                                    <Typography variant="caption">
+                                                        {childName}
+                                                    </Typography>
+                                                    {childName &&
+                                                    getCurrentSortDirection(childName) === "asc" ? (
+                                                        <ArrowUpward fontSize="small" />
+                                                    ) : (
+                                                        <ArrowDownward fontSize="small" />
+                                                    )}
+                                                </span>
+                                            </TableCell>
+                                        ))}
                                     </>
 
                                     <TableCell>
@@ -344,7 +342,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     </TableRow>
                                 </StyledTableBody>
                             )}
-                        </Table>
+                        </StyledTable>
                     </TableContainer>
 
                     <TablePagination
@@ -424,4 +422,7 @@ const StyledTableBody = styled(TableBody)`
             }
         }
     }
+`;
+const StyledTable = styled(Table)`
+    table-layout: fixed;
 `;

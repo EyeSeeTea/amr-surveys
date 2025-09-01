@@ -113,15 +113,16 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         //Only Patient Forms are paginated.
         if (isPaginatedSurveyList(surveyFormType)) {
             compositionRoot.surveys.getPaginatedSurveys
-                .execute(
-                    surveyFormType,
-                    orgUnitId || "",
-                    parentSurveyId,
-                    currentWardRegister?.id,
-                    currentCaseReportForm?.id,
-                    page,
-                    PAGE_SIZE
-                )
+                .execute({
+                    surveyFormType: surveyFormType,
+                    orgUnitId: orgUnitId || "",
+                    currentModule: currentModule,
+                    parentSurveyId: parentSurveyId,
+                    parentWardRegisterId: currentWardRegister?.id,
+                    parentPatientId: currentCaseReportForm?.id,
+                    page: page,
+                    pageSize: PAGE_SIZE,
+                })
                 .run(
                     paginatedSurveys => {
                         setSurveys(paginatedSurveys.objects);
@@ -165,6 +166,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         getOrgUnitByFormType,
         isAdmin,
         currentCaseReportForm?.id,
+        currentModule,
     ]);
 
     return {

@@ -10,6 +10,18 @@ import { getChildCount } from "../utils/getChildCountHelper";
 import { Future } from "../entities/generic/Future";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+
+type GetPaginatedSurveysOptions = {
+    surveyFormType: SURVEY_FORM_TYPES;
+    orgUnitId: Id;
+    parentSurveyId: Id | undefined;
+    parentWardRegisterId: Id | undefined;
+    parentPatientId: Id | undefined;
+    page: number;
+    pageSize: number;
+    currentModule?: AMRSurveyModule;
+};
 
 export class GetPaginatedSurveysUseCase {
     constructor(
@@ -18,15 +30,16 @@ export class GetPaginatedSurveysUseCase {
         private moduleRepository: ModuleRepository
     ) {}
 
-    public execute(
-        surveyFormType: SURVEY_FORM_TYPES,
-        orgUnitId: Id,
-        parentSurveyId: Id | undefined,
-        parentWardRegisterId: Id | undefined,
-        parentPatientId: Id | undefined,
-        page: number,
-        pageSize: number
-    ): FutureData<PaginatedReponse<Survey[]>> {
+    public execute({
+        surveyFormType,
+        orgUnitId,
+        parentSurveyId,
+        parentWardRegisterId,
+        parentPatientId,
+        page,
+        pageSize,
+        currentModule,
+    }: GetPaginatedSurveysOptions): FutureData<PaginatedReponse<Survey[]>> {
         return this.moduleRepository.getAll().flatMap(modules => {
             const programId = getProgramId(surveyFormType, parentSurveyId, modules);
 
@@ -52,7 +65,8 @@ export class GetPaginatedSurveysUseCase {
                                 secondaryparentId: survey.id,
                                 surveyReporsitory: this.paginatedSurveyRepo,
                                 programId: programId,
-                                modules,
+                                modules: modules,
+                                currentModule: currentModule,
                             })
                         ).map(([parentDetails, childCount]): Survey => {
                             const newRootSurvey: SurveyBase = {
