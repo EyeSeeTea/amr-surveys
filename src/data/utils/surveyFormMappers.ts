@@ -441,7 +441,7 @@ export const mapQuestionnaireToTrackedEntities = (
             enrollment: questionnaire.subLevelDetails?.enrollmentId ?? "",
             trackedEntityType: getTrackedEntityAttributeType(programId, modules),
             notes: [],
-            attributes: attributes,
+            attributes: [],
             events: eventsByStage as D2TrackerEvent[],
             enrolledAt: new Date().getTime().toString(),
             occurredAt: new Date().getTime().toString(),
