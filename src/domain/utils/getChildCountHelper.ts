@@ -23,7 +23,7 @@ import { Future } from "../entities/generic/Future";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { getDefaultProgram } from "../../data/utils/getDefaultProgram";
-import { getDisabledForms } from "./optionsHelper";
+import { getDisabledForms } from "./getDisabledForms";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;

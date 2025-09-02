@@ -1,5 +1,6 @@
 import { PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM } from "../../data/entities/D2Survey";
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+import { getDisabledForms } from "./getDisabledForms";
 
 export type OptionType = {
     label: string;
@@ -215,18 +216,3 @@ export const PrevalenceCaseReportFormOptions = (
         },
     ];
 };
-
-export function getDisabledForms(
-    currentModule: AMRSurveyModule | undefined,
-    parentSurveyId: string
-) {
-    const customFormsBySurvey = currentModule?.customForms?.[parentSurveyId];
-
-    const disabledForms = customFormsBySurvey
-        ? Object.entries(customFormsBySurvey)
-              .filter(([_, value]) => !value || value === "")
-              .map(([key]) => key)
-        : [];
-
-    return disabledForms;
-}
