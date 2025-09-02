@@ -23,6 +23,7 @@ import { Future } from "../entities/generic/Future";
 import i18n from "@eyeseetea/feedback-component/locales";
 import { AMRSurveyModule } from "../entities/AMRSurveyModule";
 import { getDefaultProgram } from "../../data/utils/getDefaultProgram";
+import { getDisabledForms } from "./getDisabledForms";
 
 type GetChildCountType = {
     surveyFormType: SURVEY_FORM_TYPES;
@@ -32,6 +33,7 @@ type GetChildCountType = {
     surveyReporsitory: SurveyRepository | PaginatedSurveyRepository;
     programId: Id;
     modules: AMRSurveyModule[];
+    currentModule?: AMRSurveyModule;
 };
 
 const isPaginatedSurveyRepository = (
@@ -48,6 +50,7 @@ export const getChildCount = ({
     surveyReporsitory,
     programId,
     modules,
+    currentModule,
 }: GetChildCountType): FutureData<ChildCountLabel> => {
     if (!SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType))
         return Future.success({ type: "number", value: 0 });
@@ -70,7 +73,12 @@ export const getChildCount = ({
         if (programCountMap.type === "number") {
             return Future.success({ type: "number", value: programCountMap.value });
         } else if (programCountMap.type === "map") {
-            const programOptionsMap = mapOptionToLabel(programCountMap, modules);
+            const disabledForms = getDisabledForms(currentModule, parentSurveyId);
+            const filteredProgramMap = {
+                ...programCountMap,
+                value: programCountMap.value.filter(pc => !disabledForms.includes(pc.id)),
+            };
+            const programOptionsMap = mapOptionToLabel(filteredProgramMap, modules);
             return Future.success({ type: "map", value: programOptionsMap });
         } else return Future.error(new Error("Invalid program count map type"));
     });
