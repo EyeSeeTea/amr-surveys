@@ -85,9 +85,11 @@ export class SurveyD2Repository implements SurveyRepository {
             })
         ).flatMap(resp => {
             if (resp.programs[0]) {
-                const programDataElements = resp.programStageDataElements.map(
-                    psde => psde.dataElement
-                );
+                const programStageDataElements = resp.programStages
+                    .map(ps => ps.programStageDataElements)
+                    .flat();
+
+                const programDataElements = programStageDataElements.map(psde => psde.dataElement);
 
                 const dataElementsWithSortOrder: ProgramDataElement[] = resp.programStageSections
                     ? resp.programStageSections.flatMap(section => {
@@ -113,15 +115,19 @@ export class SurveyD2Repository implements SurveyRepository {
                     : resp.dataElements.map(de => {
                           return {
                               ...de,
-                              sortOrder: resp.programStageDataElements.find(
+                              sortOrder: programStageDataElements.find(
                                   psde => psde.dataElement.id === de.id
                               )?.sortOrder,
                           };
                       });
 
-                const sortedTrackedentityAttr = resp.programTrackedEntityAttributes
+                const programTrackedEntityAttributes = resp.programs
+                    .map(program => program.programTrackedEntityAttributes)
+                    .flat();
+
+                const sortedTrackedentityAttr = programTrackedEntityAttributes
                     ? _(
-                          _(resp.programTrackedEntityAttributes)
+                          _(programTrackedEntityAttributes)
                               .sortBy(te => te.sortOrder)
                               .value()
                               .map(pste =>

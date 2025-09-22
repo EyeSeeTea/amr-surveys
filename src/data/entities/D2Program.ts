@@ -17,6 +17,7 @@ export interface Program {
     code: string;
     id: string;
     name: string;
+    programTrackedEntityAttributes: ProgramTrackedEntityAttibute[];
 }
 
 export interface ProgramStageDataElement {
@@ -39,6 +40,7 @@ export interface ProgramStage {
     sortOrder: number;
     repeatable: boolean;
     ProgramStageSection: ProgramStageSection[];
+    programStageDataElements: ProgramStageDataElement[];
 }
 
 export interface ProgramDataElement {
@@ -82,13 +84,11 @@ export interface ProgramTrackedEntityAttibute {
 }
 export interface ProgramMetadata {
     programs: Program[];
-    programStageDataElements: ProgramStageDataElement[];
     programStageSections?: ProgramStageSection[];
     dataElements: ProgramDataElement[];
     optionSets: OptionSet[];
     options: Option[];
     trackedEntityAttributes?: TrackedEntityAttibute[];
-    programTrackedEntityAttributes: ProgramTrackedEntityAttibute[];
     programStages: ProgramStage[];
     programRules: D2ProgramRule[];
     programRuleVariables: D2ProgramRuleVariable[];
