@@ -379,6 +379,7 @@ const TableContentWrapper = styled.div`
             vertical-align: bottom;
             position: relative;
             padding-block-end: 30px;
+            min-width: 70px;
             &:not(:last-child):after {
                 content: "";
                 height: 25px;
@@ -424,5 +425,7 @@ const StyledTableBody = styled(TableBody)`
     }
 `;
 const StyledTable = styled(Table)`
-    table-layout: fixed;
+    @media (min-width: 1280px) {
+        table-layout: fixed;
+    }
 `;

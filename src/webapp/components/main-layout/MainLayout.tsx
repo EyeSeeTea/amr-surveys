@@ -26,13 +26,22 @@ export const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
             </div>
             <LandingContainer>
                 <Grid container spacing={6}>
-                    <Grid item xs={12} sm={2} style={{ display: showMenu ? "block" : "none" }}>
+                    <Grid
+                        item
+                        xs={12}
+                        sm={4}
+                        md={3}
+                        lg={2}
+                        style={{ display: showMenu ? "block" : "none" }}
+                    >
                         <LeftNav />
                     </Grid>
                     <Grid
                         item
                         xs={12}
-                        sm={10}
+                        sm={8}
+                        md={9}
+                        lg={10}
                         style={{
                             overflow: "auto",
                         }}

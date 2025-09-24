@@ -1,5 +1,5 @@
 import i18n from "@eyeseetea/feedback-component/locales";
-import { Backdrop, Button, CircularProgress, TextField, Typography } from "@material-ui/core";
+import { Backdrop, Button, CircularProgress, Grid, TextField, Typography } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import { useSurveys } from "../../hooks/useSurveys";
@@ -79,54 +79,72 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                                 : "",
                             surveys
                         ) && (
-                            <ButtonWrapper>
-                                {surveyFormType === "PPSPatientRegister" && (
-                                    <>
-                                        <TextField
-                                            label={i18n.t("Search Patient ID")}
-                                            helperText={i18n.t("Filter by patient id")}
-                                            value={patientIdSearchKeyword}
-                                            onChange={e =>
-                                                setPatientIdSearchKeyword(e.target.value)
-                                            }
-                                            onKeyDown={handlePatientIdSearch}
-                                        />
-                                        <TextField
-                                            label={i18n.t("Search Patient Code")}
-                                            helperText={i18n.t("Filter by patientcode")}
-                                            value={patientCodeSearchKeyword}
-                                            onChange={e =>
-                                                setPatientCodeSearchKeyword(e.target.value)
-                                            }
-                                            onKeyDown={handlePatientCodeSearch}
-                                        />
-                                    </>
+                            <StyledGrid container>
+                                {(surveyFormType === "PPSPatientRegister" ||
+                                    surveyFormType === "PrevalenceCaseReportForm") && (
+                                    <StyledGridItem item xs={12} md={5}>
+                                        {surveyFormType === "PPSPatientRegister" && (
+                                            <>
+                                                <TextField
+                                                    label={i18n.t("Search Patient ID")}
+                                                    helperText={i18n.t("Filter by patient id")}
+                                                    value={patientIdSearchKeyword}
+                                                    onChange={e =>
+                                                        setPatientIdSearchKeyword(e.target.value)
+                                                    }
+                                                    onKeyDown={handlePatientIdSearch}
+                                                />
+                                                <TextField
+                                                    label={i18n.t("Search Patient Code")}
+                                                    helperText={i18n.t("Filter by patientcode")}
+                                                    value={patientCodeSearchKeyword}
+                                                    onChange={e =>
+                                                        setPatientCodeSearchKeyword(e.target.value)
+                                                    }
+                                                    onKeyDown={handlePatientCodeSearch}
+                                                />
+                                            </>
+                                        )}
+                                        {surveyFormType === "PrevalenceCaseReportForm" && (
+                                            <>
+                                                <TextField
+                                                    label={i18n.t("Search Patient ID")}
+                                                    helperText={i18n.t("Filter by patient id")}
+                                                    value={patientIdSearchKeyword}
+                                                    onChange={e =>
+                                                        setPatientIdSearchKeyword(e.target.value)
+                                                    }
+                                                    onKeyDown={handlePatientIdSearch}
+                                                />
+                                            </>
+                                        )}
+                                    </StyledGridItem>
                                 )}
-                                {surveyFormType === "PrevalenceCaseReportForm" && (
-                                    <>
-                                        <TextField
-                                            label={i18n.t("Search Patient ID")}
-                                            helperText={i18n.t("Filter by patient id")}
-                                            value={patientIdSearchKeyword}
-                                            onChange={e =>
-                                                setPatientIdSearchKeyword(e.target.value)
-                                            }
-                                            onKeyDown={handlePatientIdSearch}
-                                        />
-                                    </>
-                                )}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    component={NavLink}
-                                    to={{
-                                        pathname: `/new-survey/${surveyFormType}`,
-                                    }}
-                                    exact={true}
+                                <StyledGridItem
+                                    item
+                                    xs={12}
+                                    md={
+                                        surveyFormType === "PPSPatientRegister" ||
+                                        surveyFormType === "PrevalenceCaseReportForm"
+                                            ? 5
+                                            : 12
+                                    }
                                 >
-                                    {i18n.t(`Create New ${getSurveyDisplayName(surveyFormType)}`)}
-                                </Button>
-                            </ButtonWrapper>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        component={NavLink}
+                                        to={{
+                                            pathname: `/new-survey/${surveyFormType}`,
+                                        }}
+                                        exact={true}
+                                    >
+                                        {i18n.t(
+                                            `Create New ${getSurveyDisplayName(surveyFormType)}`
+                                        )}
+                                    </Button>
+                                </StyledGridItem>
+                            </StyledGrid>
                         )}
                     </>
 
@@ -185,10 +203,22 @@ const ContentWrapper = styled.div`
     }
 `;
 
-const ButtonWrapper = styled.div`
-    margin: 20px;
+const StyledGrid = styled(Grid)`
+    margin: 0px;
+
+    @media (max-width: 599px) {
+        padding: 10px !important;
+    }
+`;
+
+const StyledGridItem = styled(Grid)`
+    margin: 20px !important;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
+
+    @media (max-width: 599px) {
+        margin: 10px !important;
+    }
 `;
