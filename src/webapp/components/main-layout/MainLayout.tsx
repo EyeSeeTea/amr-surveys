@@ -39,9 +39,9 @@ export const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
                     <Grid
                         item
                         xs={12}
-                        sm={8}
-                        md={9}
-                        lg={10}
+                        sm={showMenu ? 8 : 12}
+                        md={showMenu ? 9 : 12}
+                        lg={showMenu ? 10 : 12}
                         style={{
                             overflow: "auto",
                         }}
