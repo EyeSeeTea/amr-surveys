@@ -4,6 +4,7 @@ import { useAppContext } from "../../../contexts/app-context";
 import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import i18n from "../../../../utils/i18n";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
+import { useCurrentModule } from "../../../contexts/current-module-context";
 
 export const usePatientSearch = (
     filteredSurveys: Survey[] | undefined,
@@ -19,6 +20,7 @@ export const usePatientSearch = (
         currentPrevalenceSurveyForm,
     } = useCurrentSurveys();
     const { offlineError } = useOfflineSnackbar();
+    const { currentModule } = useCurrentModule();
 
     const [patientIdSearchKeyword, setPatientIdSearchKeyword] = useState("");
     const [patientCodeSearchKeyword, setPatientCodeSearchKeyword] = useState("");
@@ -75,7 +77,8 @@ export const usePatientSearch = (
                 .execute(
                     searchKeyword,
                     currentFacilityLevelForm?.orgUnitId ?? "",
-                    currentPrevalenceSurveyForm?.id ?? ""
+                    currentPrevalenceSurveyForm?.id ?? "",
+                    currentModule
                 )
                 .run(
                     response => {
