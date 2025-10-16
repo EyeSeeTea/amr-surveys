@@ -22,6 +22,7 @@ import {
 } from "../../../data/utils/surveyFormMappers";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
+import DropdownSelectWidget from "../survey-questions/widgets/DropdownSelectWidget";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -49,6 +50,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         questionnaire,
         surveyStages,
         loading,
+        selectedPeriod,
+        setSelectedPeriod,
+        selectablePeriods,
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
@@ -135,6 +139,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     setCurrentOrgUnit={setCurrentOrgUnit}
                     currentSurveyId={props.currentSurveyId}
                 />
+
+                {props.formType === "WardSummaryStatisticsForm" && (
+                    <DropdownSelectWidget
+                        label="Period"
+                        value={selectedPeriod}
+                        options={selectablePeriods}
+                        onChange={value => setSelectedPeriod(value?.id)}
+                        disabled={false}
+                    />
+                )}
 
                 {questionnaire?.entity && (
                     <PaddedDiv>
@@ -250,7 +264,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
     );
 };
 
-const PageFooter = styled.div`
+export const PageFooter = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: flex-end;

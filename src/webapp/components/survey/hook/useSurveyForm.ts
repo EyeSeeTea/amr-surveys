@@ -46,6 +46,8 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const [error, setError] = useState<string>();
+    const [selectedPeriod, setSelectedPeriod] = useState<string>();
+
     const { currentModule } = useCurrentModule();
 
     const shouldDisableSave = useMemo(() => {
@@ -60,6 +62,10 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
 
     useEffect(() => {
         setLoading(true);
+        if (formType === "WardSummaryStatisticsForm") {
+            setLoading(false);
+            return;
+        }
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
             return compositionRoot.surveys.getForm
@@ -186,6 +192,14 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         refreshQuestionnaire,
     ]);
 
+    const selectablePeriods = useMemo(() => {
+        const currentYear = new Date().getFullYear();
+        return Array.from({ length: 6 }, (_, i) => ({
+            id: (currentYear - i).toString(),
+            name: (currentYear - i).toString(),
+        }));
+    }, []);
+
     const updateQuestion = useCallback((question: Question, stageId?: string) => {
         setQuestionnaire(prevQuestionniare => {
             if (prevQuestionniare) {
@@ -242,6 +256,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         loading,
         currentOrgUnit,
         setCurrentOrgUnit,
+        selectedPeriod,
+        setSelectedPeriod,
+        selectablePeriods,
         setLoading,
         error,
         shouldDisableSave,

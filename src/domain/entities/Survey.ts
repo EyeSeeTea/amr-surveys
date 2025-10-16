@@ -19,7 +19,8 @@ export type SURVEY_FORM_TYPES =
     | "PrevalenceFollowUp"
     | "PrevalenceDischargeClinical"
     | "PrevalenceDischargeEconomic"
-    | "PrevalenceCohortEnrolment";
+    | "PrevalenceCohortEnrolment"
+    | "WardSummaryStatisticsForm";
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
@@ -39,6 +40,7 @@ export const SURVEYS_WITH_ORG_UNIT_SELECTOR: readonly SURVEY_FORM_TYPES[] = [
     "PPSHospitalForm",
     "PrevalenceSurveyForm",
     "PrevalenceFacilityLevelForm",
+    "WardSummaryStatisticsForm",
 ];
 
 export interface SurveyBase extends NamedRef {
