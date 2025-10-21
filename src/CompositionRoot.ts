@@ -38,6 +38,10 @@ import { ASTGuidelinesD2Repository } from "./data/repositories/ASTGuidelinesD2Re
 import { ASTGuidelinesTestRepository } from "./data/repositories/testRepositories/ASTGuidelinesTestRepository";
 import { RemoveRepeatableProgramStageUseCase } from "./domain/usecases/RemoveRepeatableProgramStageUseCase";
 import { GetFilteredPrevalencePatientsUseCase } from "./domain/usecases/GetFilteredPrevalencePatientsUseCase";
+import { GetWardFormUseCase } from "./domain/usecases/GetWardFormUseCase";
+import { WardFormRepository } from "./domain/repositories/WardFormRepository";
+import { WardFormD2Repository } from "./data/repositories/WardFormD2Repository";
+import { WardFormTestRepository } from "./data/repositories/testRepositories/WardFormTestRepository";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -47,6 +51,7 @@ type Repositories = {
     moduleRepository: ModuleRepository;
     surveyFormRepository: SurveyRepository;
     paginatedSurveyRepository: PaginatedSurveyRepository;
+    wardFormRepository: WardFormRepository;
     astGuidelinesRepository: ASTGuidelinesRepository;
 };
 
@@ -106,6 +111,7 @@ function getCompositionRoot(repositories: Repositories) {
             removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(
                 repositories.surveyFormRepository
             ),
+            getWardForm: new GetWardFormUseCase(repositories.wardFormRepository),
         },
         astGuidelines: {
             getGuidelines: new GetASTGuidelinesUseCase(repositories.astGuidelinesRepository),
@@ -122,6 +128,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         surveyFormRepository: new SurveyD2Repository(api, dataStoreClient),
         paginatedSurveyRepository: new PaginatedSurveyD2Repository(api, dataStoreClient),
         astGuidelinesRepository: new ASTGuidelinesD2Repository(dataStoreClient),
+        wardFormRepository: new WardFormD2Repository(api),
     };
 
     return getCompositionRoot(repositories);
@@ -135,6 +142,7 @@ export function getTestCompositionRoot(nonAdminUser?: boolean) {
         surveyFormRepository: new SurveyTestRepository(),
         paginatedSurveyRepository: new PaginatedSurveyTestRepository(),
         astGuidelinesRepository: new ASTGuidelinesTestRepository(),
+        wardFormRepository: new WardFormTestRepository(),
     };
 
     return getCompositionRoot(repositories);

@@ -22,7 +22,7 @@ import {
 } from "../../../data/utils/surveyFormMappers";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 import { Questionnaire } from "../../../domain/entities/Questionnaire/Questionnaire";
-import DropdownSelectWidget from "../survey-questions/widgets/DropdownSelectWidget";
+import { WardSummaryForm } from "../ward-summary-form/WardSummaryForm";
 
 export interface SurveyFormProps {
     hideForm: () => void;
@@ -51,8 +51,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         surveyStages,
         loading,
         selectedPeriod,
-        setSelectedPeriod,
-        selectablePeriods,
+        updateWardSummaryPeriod,
+        getWardSummaryForm,
+        wardSummaryForm,
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
@@ -141,12 +142,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 />
 
                 {props.formType === "WardSummaryStatisticsForm" && (
-                    <DropdownSelectWidget
-                        label="Period"
-                        value={selectedPeriod}
-                        options={selectablePeriods}
-                        onChange={value => setSelectedPeriod(value?.id)}
-                        disabled={false}
+                    <WardSummaryForm
+                        currentOrgUnit={currentOrgUnit}
+                        currentSurveyId={props.currentSurveyId}
+                        hasReadOnlyAccess={hasReadOnlyAccess}
+                        selectedPeriod={selectedPeriod}
+                        wardSummaryForm={wardSummaryForm}
+                        getWardSummaryForm={getWardSummaryForm}
+                        updateWardSummaryPeriod={updateWardSummaryPeriod}
                     />
                 )}
 
@@ -246,25 +249,28 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     );
                 })}
             </ContentLoader>
-            <PageFooter>
-                <CancelButton variant="outlined" onClick={onCancel}>
-                    {i18n.t("Cancel")}
-                </CancelButton>
 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={saveSurveyForm}
-                    disabled={shouldDisableSave}
-                >
-                    {i18n.t("Save")}
-                </Button>
-            </PageFooter>
+            {props.formType !== "WardSummaryStatisticsForm" && (
+                <PageFooter>
+                    <CancelButton variant="outlined" onClick={onCancel}>
+                        {i18n.t("Cancel")}
+                    </CancelButton>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={saveSurveyForm}
+                        disabled={shouldDisableSave}
+                    >
+                        {i18n.t("Save")}
+                    </Button>
+                </PageFooter>
+            )}
         </div>
     );
 };
 
-export const PageFooter = styled.div`
+const PageFooter = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: flex-end;

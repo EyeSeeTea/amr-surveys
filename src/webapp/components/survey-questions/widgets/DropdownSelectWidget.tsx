@@ -1,6 +1,4 @@
 import React, { useCallback, useState } from "react";
-// @ts-ignore
-import { Button } from "@dhis2/ui";
 import { BaseWidgetProps } from "./BaseWidget";
 import { FormControl, InputLabel, makeStyles, MenuItem, Select } from "@material-ui/core";
 import { Maybe } from "../../../../utils/ts-utils";
@@ -50,14 +48,6 @@ const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
                     </MenuItem>
                 ))}
             </Select>
-            <Button
-                small
-                onClick={() => notifyChange(undefined)}
-                tabIndex="-1"
-                disabled={props.disabled}
-            >
-                ✕
-            </Button>
         </FormControl>
     );
 };

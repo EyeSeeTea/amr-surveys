@@ -15,6 +15,7 @@ import "./App.css";
 import muiThemeLegacy from "./themes/dhis2-legacy.theme";
 import { muiTheme } from "./themes/dhis2.theme";
 import { ASTGuidelinesContextProvider } from "../../contexts/CurrentASTGuidelinesContextProvider";
+import { ThemeProvider } from "styled-components";
 
 export interface AppProps {
     compositionRoot: CompositionRoot;
@@ -56,28 +57,30 @@ function App(props: AppProps) {
 
     return (
         <MuiThemeProvider theme={muiTheme}>
-            <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
-                <SnackbarProvider>
-                    {appConfig.feedback && appContext && (
-                        <Feedback
-                            options={appConfig.feedback}
-                            username={appContext.currentUser.username}
-                        />
-                    )}
+            <ThemeProvider theme={muiTheme}>
+                <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
+                    <SnackbarProvider>
+                        {appConfig.feedback && appContext && (
+                            <Feedback
+                                options={appConfig.feedback}
+                                username={appContext.currentUser.username}
+                            />
+                        )}
 
-                    <div id="app" className="content">
-                        <AppContext.Provider value={appContext}>
-                            <ASTGuidelinesContextProvider>
-                                <CurrentModuleContextProvider>
-                                    <Router />
-                                </CurrentModuleContextProvider>
-                            </ASTGuidelinesContextProvider>
-                        </AppContext.Provider>
-                    </div>
+                        <div id="app" className="content">
+                            <AppContext.Provider value={appContext}>
+                                <ASTGuidelinesContextProvider>
+                                    <CurrentModuleContextProvider>
+                                        <Router />
+                                    </CurrentModuleContextProvider>
+                                </ASTGuidelinesContextProvider>
+                            </AppContext.Provider>
+                        </div>
 
-                    <Share visible={showShareButton} />
-                </SnackbarProvider>
-            </OldMuiThemeProvider>
+                        <Share visible={showShareButton} />
+                    </SnackbarProvider>
+                </OldMuiThemeProvider>
+            </ThemeProvider>
         </MuiThemeProvider>
     );
 }
