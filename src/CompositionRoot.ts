@@ -42,6 +42,7 @@ import { GetWardFormUseCase } from "./domain/usecases/GetWardFormUseCase";
 import { WardFormRepository } from "./domain/repositories/WardFormRepository";
 import { WardFormD2Repository } from "./data/repositories/WardFormD2Repository";
 import { WardFormTestRepository } from "./data/repositories/testRepositories/WardFormTestRepository";
+import { SaveWardFormUseCase } from "./domain/usecases/SaveWardFormUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -112,6 +113,7 @@ function getCompositionRoot(repositories: Repositories) {
                 repositories.surveyFormRepository
             ),
             getWardForm: new GetWardFormUseCase(repositories.wardFormRepository),
+            saveWardForm: new SaveWardFormUseCase(repositories.wardFormRepository),
         },
         astGuidelines: {
             getGuidelines: new GetASTGuidelinesUseCase(repositories.astGuidelinesRepository),

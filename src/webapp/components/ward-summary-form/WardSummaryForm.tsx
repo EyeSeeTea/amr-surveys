@@ -1,42 +1,34 @@
 import { Maybe } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "../survey-questions/widgets/DropdownSelectWidget";
-import { OrgUnitAccess } from "../../../domain/entities/User";
 import i18n from "@eyeseetea/d2-ui-components/locales";
-import { Id, NamedRef } from "../../../domain/entities/Ref";
-import { WardForm } from "../../../domain/entities/Questionnaire/WardForm";
 import styled from "styled-components";
-import { useMemo } from "react";
 import Collapsible from "../collapsible/Collapsible";
 import { WardSummarySection } from "./WardSummarySection";
 import { Button } from "@material-ui/core";
+import { useSelectablePeriods } from "./hooks/useSelectablePeriods";
+import { useWardSummaryForm } from "./hooks/useWardSummaryForm";
+import { ContentLoader } from "../content-loader/ContentLoader";
+import { Id } from "../../../domain/entities/Ref";
 
 type WardSummaryFormProps = {
-    currentOrgUnit: Maybe<OrgUnitAccess>;
-    currentSurveyId: Maybe<Id>;
+    currentOrgUnitId: Maybe<Id>;
     hasReadOnlyAccess: boolean;
-    selectedPeriod: Maybe<string>;
-    wardSummaryForm: WardForm[];
-    getWardSummaryForm: () => void;
-    updateWardSummaryPeriod: (periodItem: Maybe<NamedRef>) => void;
 };
 
 export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
-    const {
-        currentOrgUnit,
-        hasReadOnlyAccess,
-        selectedPeriod,
-        wardSummaryForm,
-        getWardSummaryForm,
-        updateWardSummaryPeriod,
-    } = props;
+    const { currentOrgUnitId, hasReadOnlyAccess } = props;
 
-    const selectablePeriods = useMemo(() => {
-        const currentYear = new Date().getFullYear();
-        return Array.from({ length: 6 }, (_, i) => ({
-            id: (currentYear - i).toString(),
-            name: (currentYear - i).toString(),
-        }));
-    }, []);
+    const {
+        error,
+        loading,
+        selectedPeriod,
+        wardSummaryForms,
+        getCellBackgroundColor,
+        getWardSummaryForm,
+        saveWardSummaryForm,
+        updateWardSummaryPeriod,
+    } = useWardSummaryForm(currentOrgUnitId);
+    const selectablePeriods = useSelectablePeriods();
 
     return (
         <Container>
@@ -53,24 +45,28 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
                     variant="contained"
                     color="primary"
                     onClick={getWardSummaryForm}
-                    disabled={!currentOrgUnit || !selectedPeriod}
+                    disabled={!currentOrgUnitId || !selectedPeriod}
                 >
                     {i18n.t("Load Ward Summary Form")}
                 </Button>
             </FormFilters>
 
-            {wardSummaryForm.map((wardSummarySection, index) => (
-                <Collapsible
-                    key={wardSummarySection.title}
-                    title={wardSummarySection.title}
-                    defaultOpen={index === 0}
-                >
-                    <WardSummarySection
-                        hasReadOnlyAccess={hasReadOnlyAccess}
-                        wardSummarySection={wardSummarySection}
-                    />
-                </Collapsible>
-            ))}
+            <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+                {wardSummaryForms.map((wardSummarySection, index) => (
+                    <Collapsible
+                        key={wardSummarySection.title}
+                        title={wardSummarySection.title}
+                        defaultOpen={index === 0}
+                    >
+                        <WardSummarySection
+                            getCellBackgroundColor={getCellBackgroundColor}
+                            hasReadOnlyAccess={hasReadOnlyAccess}
+                            wardSummarySection={wardSummarySection}
+                            saveWardSummaryForm={saveWardSummaryForm}
+                        />
+                    </Collapsible>
+                ))}
+            </ContentLoader>
         </Container>
     );
 };

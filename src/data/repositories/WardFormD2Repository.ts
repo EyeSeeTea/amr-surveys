@@ -1,5 +1,5 @@
 import { D2Api, MetadataPick } from "@eyeseetea/d2-api/2.36";
-import { WardForm } from "../../domain/entities/Questionnaire/WardForm";
+import { FormValue, WardForm } from "../../domain/entities/Questionnaire/WardForm";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { WardFormRepository } from "../../domain/repositories/WardFormRepository";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -9,11 +9,11 @@ import {
     WARD_SUMMARY_STATISTICS_FORM_ID,
 } from "../entities/D2Survey";
 import _c from "../../domain/entities/generic/Collection";
-import { DataValue } from "@eyeseetea/d2-api/api/trackerEvents";
 import { Maybe } from "../../utils/ts-utils";
+import { DataValue as D2DataValue } from "@eyeseetea/d2-api/api/trackerEvents";
 
 type WardEvent = {
-    eventId: string;
+    formId: Id;
     wardId: string;
     specialtyCode: string;
 };
@@ -21,7 +21,7 @@ type WardEvent = {
 type D2Event = {
     event: Id;
     programStage: Id;
-    dataValues: DataValue[];
+    dataValues: D2DataValue[];
 };
 
 type WardSummaryDataSet = {
@@ -29,59 +29,141 @@ type WardSummaryDataSet = {
     dataElements: Array<NamedRef & { categoryOptionCombos: NamedRef[] }>;
 };
 
+const WARD_IDS = [
+    "W01",
+    "W02",
+    "W03",
+    "W04",
+    "W05",
+    "W06",
+    "W07",
+    "W08",
+    "W09",
+    "W10",
+    "W11",
+    "W12",
+    "W13",
+    "W14",
+    "W15",
+    "W16",
+    "W17",
+    "W18",
+    "W19",
+    "W20",
+    "W21",
+    "W22",
+    "W23",
+    "W24",
+    "W25",
+    "W26",
+    "W27",
+    "W28",
+    "W29",
+    "W30",
+    "W31",
+    "32",
+];
+
 export class WardFormD2Repository implements WardFormRepository {
     constructor(private api: D2Api) {}
 
     get(facilityId: Id, period: string): FutureData<WardForm[]> {
-        // +4h
-        // get ward data in PREVALENCE_FACILITY_LEVEL_FORM_ID tracker program for that facilty
-        // get data values for the ward dataset with facility id ou, period, specialty code and ward id
-        // 1. get attribute option combos using specialty codes and ward ids from above
-        // 2. get data values for WARD_SUMMARY_STATISTICS_FORM_ID dataset for the facility, period and attribute option combos from above
-        // 3. ward forms can have a classical table structure with sections, rows and columns
-
-        return Future.joinObj({
-            wardFormData: this.getWardFormData(facilityId),
-            dataValuesResponse: this.getDataValues(facilityId, period),
-        }).flatMap(({ wardFormData, dataValuesResponse }) => {
-            console.log({ wardFormData, dataValuesResponse });
-
-            return Future.success(wardFormData);
-        });
-    }
-
-    private getDataValues(facilityId: Id, period: string) {
-        return this.getWardAttrIds(facilityId).flatMap(cocIds =>
-            apiToFuture(
-                this.api.dataValues.getSet({
-                    dataSet: [WARD_SUMMARY_STATISTICS_FORM_ID],
-                    orgUnit: [facilityId],
-                    period: [period],
-                    attributeOptionCombo: cocIds,
-                })
+        return this.getWardEvents(facilityId).flatMap(wardEvents =>
+            this.getDataValues(facilityId, period, wardEvents).flatMap(dataValues =>
+                this.getWardFormData(wardEvents, dataValues).flatMap(wardForms =>
+                    Future.success(wardForms)
+                )
             )
         );
     }
 
-    private getWardFormData(facilityId: Id) {
-        return Future.joinObj({
-            wardEvents: this.getWardEvents(facilityId),
-            dataSet: this.getWardSummaryDataSet(),
-        }).map(({ wardEvents, dataSet }) => {
+    save(formValue: FormValue, facilityId: Id, period: string): FutureData<void> {
+        return apiToFuture(
+            this.api.dataValues.postSet(
+                {},
+                {
+                    dataSet: WARD_SUMMARY_STATISTICS_FORM_ID,
+                    orgUnit: facilityId,
+                    period: period,
+                    attributeOptionCombo: formValue.formId,
+                    dataValues: [
+                        {
+                            dataElement: formValue.rowId,
+                            categoryOptionCombo: formValue.columnId,
+                            value: formValue.value ?? "",
+                        },
+                    ],
+                }
+            )
+        ).flatMap(response => {
+            if (response.status !== "SUCCESS")
+                return Future.error(new Error("Failed to save form value"));
+            return Future.success(undefined);
+        });
+    }
+
+    private getDataValues(
+        facilityId: Id,
+        period: string,
+        wardEvents: WardEvent[]
+    ): FutureData<FormValue[]> {
+        return apiToFuture(
+            this.api.dataValues.getSet({
+                dataSet: [WARD_SUMMARY_STATISTICS_FORM_ID],
+                orgUnit: [facilityId],
+                period: [period],
+                attributeOptionCombo: wardEvents.map(wardEvent => wardEvent.formId),
+            })
+        ).flatMap(({ dataValues }) => {
+            const formValues = dataValues.map(dataValue => ({
+                formId: dataValue.attributeOptionCombo,
+                rowId: dataValue.dataElement,
+                columnId: dataValue.categoryOptionCombo,
+                value: dataValue.value,
+            }));
+
+            return Future.success(formValues);
+        });
+    }
+
+    private getWardFormData(
+        wardEvents: WardEvent[],
+        formValues: FormValue[]
+    ): FutureData<WardForm[]> {
+        return this.getWardSummaryDataSet().map(dataSet => {
             return _c(wardEvents)
-                .map(we => {
-                    const title = `${we.wardId} - ${we.specialtyCode}`;
+                .compactMap(wardEvent => {
+                    const title = `${wardEvent.wardId} - ${wardEvent.specialtyCode}`;
                     const columns = dataSet.dataElements[0]?.categoryOptionCombos ?? [];
-                    const rows = dataSet.dataElements.map(dataElement => ({
-                        id: dataElement.id,
-                        name: dataElement.name,
-                        items: columns.map(column => ({
-                            column: column,
-                            dataElement: dataElement.id,
-                        })),
-                    }));
+                    const rows = _c(dataSet.dataElements)
+                        .map(dataElement => {
+                            const rowItems = columns.map(column => {
+                                return (
+                                    formValues.find(
+                                        dv =>
+                                            dv.rowId === dataElement.id &&
+                                            dv.columnId === column.id &&
+                                            dv.formId === wardEvent.formId
+                                    ) ?? {
+                                        rowId: dataElement.id,
+                                        columnId: column.id,
+                                        formId: wardEvent.formId,
+                                        value: undefined,
+                                    }
+                                );
+                            });
+
+                            return {
+                                id: dataElement.id,
+                                name: dataElement.name,
+                                rowItems: rowItems,
+                            };
+                        })
+                        .sortBy(row => row.name)
+                        .value();
 
                     return {
+                        formId: wardEvent.formId,
                         title: title,
                         columns: columns,
                         rows: rows,
@@ -100,8 +182,8 @@ export class WardFormD2Repository implements WardFormRepository {
                     fields: dataSetFields,
                 },
             })
-        ).flatMap(dataSetResponse => {
-            const dataSet = dataSetResponse.dataSets[0];
+        ).flatMap(({ dataSets }) => {
+            const dataSet = dataSets[0];
             if (!dataSet)
                 return Future.error(new Error("Ward Summary Statistics DataSet not found"));
 
@@ -121,34 +203,12 @@ export class WardFormD2Repository implements WardFormRepository {
         });
     }
 
-    private getWardAttrIds(faciltyId: Id): FutureData<Id[]> {
-        return Future.join2(this.getWardEvents(faciltyId), this.getD2Cocs()).flatMap(
-            ([wardEvents, categoryOptionCombos]) => {
-                const uniqueCocIds = _c(wardEvents)
-                    .compactMap(wardEvent => {
-                        const wardEventCoc = categoryOptionCombos.find(coc => {
-                            const cocNames = coc.categoryOptions.map(co => co.name);
-
-                            return (
-                                cocNames.includes(wardEvent.specialtyCode) &&
-                                cocNames.includes(wardEvent.wardId)
-                            );
-                        });
-                        if (!wardEventCoc) return undefined;
-
-                        return wardEventCoc.id;
-                    })
-                    .uniq()
-                    .value();
-
-                return Future.success(uniqueCocIds);
-            }
-        );
-    }
-
     private getWardEvents(facilityId: Id): FutureData<WardEvent[]> {
-        return this.getD2Events(facilityId).flatMap(events => {
-            const filteredWardEvents = _c(events)
+        return Future.joinObj({
+            events: this.getD2Events(facilityId),
+            categoryOptionCombos: this.getWardCocs(),
+        }).flatMap(({ events, categoryOptionCombos }) => {
+            const wardEvents = _c(events)
                 .compactMap(event => {
                     if (event.programStage !== WARD_DATA_PROGRAM_STAGE_ID) return undefined;
 
@@ -160,9 +220,24 @@ export class WardFormD2Repository implements WardFormRepository {
                         event.dataValues,
                         dataElementIds.SPECIALTY_CODE
                     );
+
                     if (uniqueWardId && specialtyCode) {
+                        const wardEventCoc = categoryOptionCombos.find(coc => {
+                            const cocNames = coc.categoryOptions.map(co => co.name);
+                            return (
+                                cocNames.includes(specialtyCode) && cocNames.includes(uniqueWardId)
+                            );
+                        });
+
+                        if (!wardEventCoc) {
+                            console.warn(
+                                `No matching category option combo for ward event with ward ID ${uniqueWardId} and specialty code ${specialtyCode}`
+                            );
+                            return undefined;
+                        }
+
                         return {
-                            eventId: event.event,
+                            formId: wardEventCoc.id,
                             wardId: uniqueWardId,
                             specialtyCode: specialtyCode,
                         };
@@ -172,28 +247,24 @@ export class WardFormD2Repository implements WardFormRepository {
                 })
                 .value();
 
-            return Future.success(filteredWardEvents);
+            return Future.success(wardEvents);
         });
     }
 
-    private getD2Cocs(): FutureData<D2CategoryOption["categoryOptionCombos"]> {
+    private getWardCocs(): FutureData<D2CategoryOptionCombo[]> {
         return apiToFuture(
             this.api.metadata.get({
-                categoryCombos: {
+                categoryOptionCombos: {
+                    fields: categoryOptionComboFields,
                     filter: {
-                        id: {
-                            eq: AMR_WARD_ID_MED_SPE_CAT_COMBO_ID,
-                        },
+                        "categoryCombo.id": { eq: AMR_WARD_ID_MED_SPE_CAT_COMBO_ID },
+                        "categoryOptions.name": { in: WARD_IDS },
                     },
-                    fields: categoryOptionFields,
+                    paging: false,
                 },
             })
-        ).flatMap(categoryComboResponse => {
-            const categoryCombo = categoryComboResponse.categoryCombos[0];
-            if (!categoryCombo)
-                return Future.error(new Error("AMR Ward Id MED SPE category combo not found"));
-
-            return Future.success(categoryCombo.categoryOptionCombos);
+        ).flatMap(({ categoryOptionCombos }) => {
+            return Future.success(categoryOptionCombos);
         });
     }
 
@@ -216,15 +287,15 @@ export class WardFormD2Repository implements WardFormRepository {
                 orgUnit: facilityId,
                 ouMode: "SELECTED",
             })
-        ).map(response =>
-            response.instances.flatMap(trackedEntity =>
+        ).map(({ instances }) =>
+            instances.flatMap(trackedEntity =>
                 trackedEntity.enrollments.flatMap(enrollment => enrollment.events)
             )
         );
     }
 }
 
-function getDataValueByElementId(dataValues: DataValue[], dataElementId: string): Maybe<string> {
+function getDataValueByElementId(dataValues: D2DataValue[], dataElementId: string): Maybe<string> {
     return dataValues.find(dataValue => dataValue.dataElement === dataElementId)?.value;
 }
 
@@ -252,16 +323,14 @@ const dataSetFields = {
     },
 } as const;
 
-const categoryOptionFields = {
-    categoryOptionCombos: {
+const categoryOptionComboFields = {
+    id: true,
+    categoryOptions: {
         id: true,
-        categoryOptions: {
-            id: true,
-            name: true,
-        },
+        name: true,
     },
 } as const;
 
-type D2CategoryOption = MetadataPick<{
-    categoryOptions: { fields: typeof categoryOptionFields };
-}>["categoryOptions"][number];
+type D2CategoryOptionCombo = MetadataPick<{
+    categoryOptionCombos: { fields: typeof categoryOptionComboFields };
+}>["categoryOptionCombos"][number];

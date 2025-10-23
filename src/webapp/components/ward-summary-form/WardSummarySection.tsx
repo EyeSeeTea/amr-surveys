@@ -6,16 +6,21 @@ import {
     TableHead,
     TableRow,
 } from "@material-ui/core";
-import { WardForm } from "../../../domain/entities/Questionnaire/WardForm";
+import { FormValue, WardForm } from "../../../domain/entities/Questionnaire/WardForm";
 import styled from "styled-components";
+import { DataElementCell } from "./DataElementCell";
+import { Maybe } from "../../../utils/ts-utils";
 
 type WardSummarySectionProps = {
     hasReadOnlyAccess: boolean;
     wardSummarySection: WardForm;
+    getCellBackgroundColor: (formValue: FormValue) => string;
+    saveWardSummaryForm: (newValue: Maybe<string>, formValue: any) => void;
 };
 
 export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
-    const { wardSummarySection } = props;
+    const { hasReadOnlyAccess, wardSummarySection, getCellBackgroundColor, saveWardSummaryForm } =
+        props;
 
     return (
         <TableContainer>
@@ -42,13 +47,20 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
                                 {row.name}
                             </StyledTableCell>
 
-                            {row.items.map(item => (
+                            {row.rowItems.map(formValue => (
                                 <StyledTableCell
                                     isWhite={true}
-                                    key={`${item.column.id} - ${item.dataElement}`}
+                                    key={getCellId(formValue)}
                                     align="center"
                                 >
-                                    {`${item.column.id} - ${item.dataElement}`}
+                                    <DataElementCell
+                                        backgroundColor={getCellBackgroundColor(formValue)}
+                                        dataValue={formValue.value}
+                                        disabled={hasReadOnlyAccess}
+                                        onChange={newValue =>
+                                            saveWardSummaryForm(newValue, formValue)
+                                        }
+                                    />
                                 </StyledTableCell>
                             ))}
                         </TableRow>
@@ -64,3 +76,6 @@ const StyledTableCell = styled(TableCell)<{ isWhite?: boolean }>`
         props.isWhite ? props.theme.palette.white : props.theme.palette.background.hover};
     border-inline-end: 1px solid ${props => props.theme.palette.shadow};
 `;
+
+export const getCellId = (formValue: FormValue) =>
+    `${formValue.formId}-${formValue.rowId}-${formValue.columnId}`;

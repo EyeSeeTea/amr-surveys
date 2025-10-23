@@ -50,10 +50,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         questionnaire,
         surveyStages,
         loading,
-        selectedPeriod,
-        updateWardSummaryPeriod,
-        getWardSummaryForm,
-        wardSummaryForm,
         setLoading,
         currentOrgUnit,
         setCurrentOrgUnit,
@@ -143,13 +139,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
 
                 {props.formType === "WardSummaryStatisticsForm" && (
                     <WardSummaryForm
-                        currentOrgUnit={currentOrgUnit}
-                        currentSurveyId={props.currentSurveyId}
+                        currentOrgUnitId={currentOrgUnit?.orgUnitId}
                         hasReadOnlyAccess={hasReadOnlyAccess}
-                        selectedPeriod={selectedPeriod}
-                        wardSummaryForm={wardSummaryForm}
-                        getWardSummaryForm={getWardSummaryForm}
-                        updateWardSummaryPeriod={updateWardSummaryPeriod}
                     />
                 )}
 

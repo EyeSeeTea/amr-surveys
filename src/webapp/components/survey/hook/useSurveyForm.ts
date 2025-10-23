@@ -14,10 +14,9 @@ import { useCurrentSurveys } from "../../../contexts/current-surveys-context";
 import useReadOnlyAccess from "./useReadOnlyAccess";
 import { useCurrentModule } from "../../../contexts/current-module-context";
 import { Code, Question } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
-import { Id, NamedRef } from "../../../../domain/entities/Ref";
+import { Id } from "../../../../domain/entities/Ref";
 import { Maybe } from "../../../../utils/ts-utils";
 import _c from "../../../../domain/entities/generic/Collection";
-import { WardForm } from "../../../../domain/entities/Questionnaire/WardForm";
 
 type RepeatableStage = {
     title: string;
@@ -47,8 +46,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const [error, setError] = useState<string>();
-    const [selectedPeriod, setSelectedPeriod] = useState<string>();
-    const [wardSummaryForm, setWardSummaryForm] = useState<WardForm[]>([]);
 
     const { currentModule } = useCurrentModule();
 
@@ -61,30 +58,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         }
         return isDisabled;
     }, [hasReadOnlyAccess, questionnaire, currentOrgUnit, formType]);
-
-    const getWardSummaryForm = useCallback(() => {
-        if (currentOrgUnit && selectedPeriod) {
-            setLoading(true);
-            return compositionRoot.surveys.getWardForm
-                .execute(currentOrgUnit.orgUnitId, selectedPeriod)
-                .run(
-                    wardSummaryForm => {
-                        setWardSummaryForm(wardSummaryForm);
-                        setLoading(false);
-                    },
-                    err => {
-                        setError(err.message);
-                        setLoading(false);
-                    }
-                );
-        }
-    }, [currentOrgUnit, selectedPeriod, compositionRoot.surveys]);
-
-    const updateWardSummaryPeriod = useCallback((periodItem: Maybe<NamedRef>) => {
-        if (periodItem) {
-            setSelectedPeriod(periodItem.id);
-        }
-    }, []);
 
     useEffect(() => {
         setLoading(true);
@@ -274,10 +247,6 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         loading,
         currentOrgUnit,
         setCurrentOrgUnit,
-        selectedPeriod,
-        updateWardSummaryPeriod,
-        getWardSummaryForm,
-        wardSummaryForm,
         setLoading,
         error,
         shouldDisableSave,
