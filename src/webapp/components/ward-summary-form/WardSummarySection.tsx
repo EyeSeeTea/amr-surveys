@@ -40,7 +40,7 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
                     {wardSummarySection.rows.map((row, rowIndex) => (
                         <TableRow key={row.id}>
                             <StyledTableCell
-                                isWhite={rowIndex % 2 !== 0}
+                                $isWhite={rowIndex % 2 !== 0}
                                 component="th"
                                 scope="row"
                             >
@@ -49,7 +49,7 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
 
                             {row.rowItems.map(formValue => (
                                 <StyledTableCell
-                                    isWhite={true}
+                                    $isWhite={true}
                                     key={getCellId(formValue)}
                                     align="center"
                                 >
@@ -71,9 +71,9 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
     );
 };
 
-const StyledTableCell = styled(TableCell)<{ isWhite?: boolean }>`
+const StyledTableCell = styled(TableCell)<{ $isWhite?: boolean }>`
     background-color: ${props =>
-        props.isWhite ? props.theme.palette.white : props.theme.palette.background.hover};
+        props.$isWhite ? props.theme.palette.white : props.theme.palette.background.hover};
     border-inline-end: 1px solid ${props => props.theme.palette.shadow};
 `;
 

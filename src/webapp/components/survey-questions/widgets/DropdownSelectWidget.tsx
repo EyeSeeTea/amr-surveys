@@ -15,12 +15,12 @@ type Option = NamedRef;
 const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
     const { onChange: onValueChange, value, options, disabled, label } = props;
 
-    const [stateValue, setStateValue] = useState(value);
+    const [stateValue, setStateValue] = useState(value ?? "");
 
     const notifyChange = useCallback(
         (selectedId: Maybe<Id>) => {
             const option = options.find(option => option.id === selectedId);
-            setStateValue(selectedId);
+            setStateValue(selectedId ?? "");
             onValueChange(option);
         },
         [onValueChange, options]
