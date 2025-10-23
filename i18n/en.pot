@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-07-17T09:41:44.545Z\n"
-"PO-Revision-Date: 2025-07-17T09:41:44.545Z\n"
+"POT-Creation-Date: 2025-10-23T10:00:49.617Z\n"
+"PO-Revision-Date: 2025-10-23T10:00:49.617Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -306,6 +306,9 @@ msgid "Database language updated successfully"
 msgstr ""
 
 msgid "Error updating database language."
+msgstr ""
+
+msgid "Load Ward Summary Form"
 msgstr ""
 
 msgid "Could not resolve Org Unit for current form"
