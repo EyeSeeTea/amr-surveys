@@ -10,7 +10,7 @@ export type FormValue = {
     value: Maybe<string>;
 };
 
-type Row = NamedRef & {
+export type Row = NamedRef & {
     rowItems: FormValue[];
 };
 

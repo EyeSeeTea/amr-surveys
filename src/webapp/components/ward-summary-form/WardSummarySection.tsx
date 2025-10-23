@@ -8,14 +8,14 @@ import {
 } from "@material-ui/core";
 import { FormValue, WardForm } from "../../../domain/entities/Questionnaire/WardForm";
 import styled from "styled-components";
-import { DataElementCell } from "./DataElementCell";
+import DataElementCell from "./DataElementCell";
 import { Maybe } from "../../../utils/ts-utils";
 
 type WardSummarySectionProps = {
     hasReadOnlyAccess: boolean;
     wardSummarySection: WardForm;
     getCellBackgroundColor: (formValue: FormValue) => string;
-    saveWardSummaryForm: (newValue: Maybe<string>, formValue: any) => void;
+    saveWardSummaryForm: (newValue: Maybe<string>, formValue: FormValue) => void;
 };
 
 export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {

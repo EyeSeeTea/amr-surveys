@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { FormValue, WardForm } from "../../../../domain/entities/Questionnaire/WardForm";
 import { useAppContext } from "../../../contexts/app-context";
 import { Maybe } from "../../../../utils/ts-utils";
-import { Id, NamedRef } from "../../../../domain/entities/Ref";
+import { Id } from "../../../../domain/entities/Ref";
 import { getCellId } from "../WardSummarySection";
+import { palette } from "../../../pages/app/themes/dhis2.theme";
 
 export enum SAVE_FORM_STATE {
     ERROR = "error",
@@ -48,17 +49,11 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         (formValue: FormValue) => {
             const cellId = getCellId(formValue);
             const cellState = cellSaveStates.get(cellId);
+            const stateKey = cellState?.toLowerCase() || "idle";
 
-            switch (cellState) {
-                case SAVE_FORM_STATE.SAVING:
-                    return "#fff3cd";
-                case SAVE_FORM_STATE.SUCCESS:
-                    return "#b9ffb9";
-                case SAVE_FORM_STATE.ERROR:
-                    return "#f8d7da";
-                default:
-                    return "transparent";
-            }
+            return stateKey in palette.status
+                ? palette.status[stateKey as keyof typeof palette.status]
+                : "transparent";
         },
         [cellSaveStates]
     );
@@ -93,26 +88,25 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
 
     const saveWardSummaryForm = useCallback(
         (newValue: Maybe<string>, formValue: FormValue) => {
+            if (!currentOrgUnitId || !selectedPeriod) {
+                setError("Missing facility or period information");
+                return;
+            }
+
             updateCellSaveState(formValue, SAVE_FORM_STATE.SAVING);
 
-            if (currentOrgUnitId && selectedPeriod) {
-                const formValueToSave = {
-                    ...formValue,
-                    value: newValue ?? "",
-                };
-
-                compositionRoot.surveys.saveWardForm
-                    .execute(formValueToSave, currentOrgUnitId, selectedPeriod)
-                    .run(
-                        () => {
-                            updateCellSaveState(formValue, SAVE_FORM_STATE.SUCCESS);
-                        },
-                        error => {
-                            console.error("Error saving ward summary form:", error);
-                            updateCellSaveState(formValue, SAVE_FORM_STATE.ERROR);
-                        }
-                    );
-            }
+            const formValueToSave = { ...formValue, value: newValue ?? "" };
+            compositionRoot.surveys.saveWardForm
+                .execute(formValueToSave, currentOrgUnitId, selectedPeriod)
+                .run(
+                    () => {
+                        updateCellSaveState(formValue, SAVE_FORM_STATE.SUCCESS);
+                    },
+                    error => {
+                        console.error("Error saving ward summary form:", error);
+                        updateCellSaveState(formValue, SAVE_FORM_STATE.ERROR);
+                    }
+                );
         },
         [
             updateCellSaveState,
@@ -122,9 +116,9 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         ]
     );
 
-    const updateWardSummaryPeriod = useCallback((periodItem: Maybe<NamedRef>) => {
-        if (periodItem) {
-            setSelectedPeriod(periodItem.id);
+    const updateWardSummaryPeriod = useCallback((period: Maybe<Id>) => {
+        if (period) {
+            setSelectedPeriod(period);
         }
     }, []);
 

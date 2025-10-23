@@ -1,5 +1,5 @@
 import { D2Api, MetadataPick } from "@eyeseetea/d2-api/2.36";
-import { FormValue, WardForm } from "../../domain/entities/Questionnaire/WardForm";
+import { FormValue, Row, WardForm } from "../../domain/entities/Questionnaire/WardForm";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { WardFormRepository } from "../../domain/repositories/WardFormRepository";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -28,41 +28,6 @@ type WardSummaryDataSet = {
     name: string;
     dataElements: Array<NamedRef & { categoryOptionCombos: NamedRef[] }>;
 };
-
-const WARD_IDS = [
-    "W01",
-    "W02",
-    "W03",
-    "W04",
-    "W05",
-    "W06",
-    "W07",
-    "W08",
-    "W09",
-    "W10",
-    "W11",
-    "W12",
-    "W13",
-    "W14",
-    "W15",
-    "W16",
-    "W17",
-    "W18",
-    "W19",
-    "W20",
-    "W21",
-    "W22",
-    "W23",
-    "W24",
-    "W25",
-    "W26",
-    "W27",
-    "W28",
-    "W29",
-    "W30",
-    "W31",
-    "32",
-];
 
 export class WardFormD2Repository implements WardFormRepository {
     constructor(private api: D2Api) {}
@@ -130,48 +95,61 @@ export class WardFormD2Repository implements WardFormRepository {
         wardEvents: WardEvent[],
         formValues: FormValue[]
     ): FutureData<WardForm[]> {
-        return this.getWardSummaryDataSet().map(dataSet => {
-            return _c(wardEvents)
-                .compactMap(wardEvent => {
-                    const title = `${wardEvent.wardId} - ${wardEvent.specialtyCode}`;
-                    const columns = dataSet.dataElements[0]?.categoryOptionCombos ?? [];
-                    const rows = _c(dataSet.dataElements)
-                        .map(dataElement => {
-                            const rowItems = columns.map(column => {
-                                return (
-                                    formValues.find(
-                                        dv =>
-                                            dv.rowId === dataElement.id &&
-                                            dv.columnId === column.id &&
-                                            dv.formId === wardEvent.formId
-                                    ) ?? {
-                                        rowId: dataElement.id,
-                                        columnId: column.id,
-                                        formId: wardEvent.formId,
-                                        value: undefined,
-                                    }
-                                );
-                            });
+        return this.getWardSummaryDataSet().map(dataSet =>
+            this.mapToWardForms(wardEvents, formValues, dataSet)
+        );
+    }
 
-                            return {
-                                id: dataElement.id,
-                                name: dataElement.name,
-                                rowItems: rowItems,
-                            };
-                        })
-                        .sortBy(row => row.name)
-                        .value();
+    private mapToWardForms(
+        wardEvents: WardEvent[],
+        formValues: FormValue[],
+        dataSet: WardSummaryDataSet
+    ): WardForm[] {
+        return _c(wardEvents)
+            .compactMap(event => this.mapEventToWardForm(event, formValues, dataSet))
+            .sortBy(form => form.title)
+            .value();
+    }
 
-                    return {
-                        formId: wardEvent.formId,
-                        title: title,
-                        columns: columns,
-                        rows: rows,
-                    };
-                })
-                .sortBy(wardEvent => wardEvent.title)
-                .value();
-        });
+    private mapEventToWardForm(
+        wardEvent: WardEvent,
+        formValues: FormValue[],
+        dataSet: WardSummaryDataSet
+    ): Maybe<WardForm> {
+        const title = `${wardEvent.wardId} - ${wardEvent.specialtyCode}`;
+        const columns = dataSet.dataElements[0]?.categoryOptionCombos ?? [];
+        const rows = this.getRows(wardEvent, formValues, dataSet, columns);
+
+        return { formId: wardEvent.formId, title, columns, rows };
+    }
+
+    private getRows(
+        wardEvent: WardEvent,
+        formValues: FormValue[],
+        dataSet: WardSummaryDataSet,
+        columns: NamedRef[]
+    ): Row[] {
+        return _c(dataSet.dataElements)
+            .map(dataElement => this.getSingleRow(dataElement, columns, wardEvent, formValues))
+            .sortBy(row => row.name)
+            .value();
+    }
+
+    private getSingleRow(
+        dataElement: NamedRef & { categoryOptionCombos: NamedRef[] },
+        columns: NamedRef[],
+        wardEvent: WardEvent,
+        formValues: FormValue[]
+    ): Row {
+        const rowItems = columns.map(column =>
+            findOrCreateFormValue(dataElement.id, column.id, wardEvent.formId, formValues)
+        );
+
+        return {
+            id: dataElement.id,
+            name: dataElement.name,
+            rowItems: rowItems,
+        };
     }
 
     private getWardSummaryDataSet(): FutureData<WardSummaryDataSet> {
@@ -258,7 +236,7 @@ export class WardFormD2Repository implements WardFormRepository {
                     fields: categoryOptionComboFields,
                     filter: {
                         "categoryCombo.id": { eq: AMR_WARD_ID_MED_SPE_CAT_COMBO_ID },
-                        "categoryOptions.name": { in: WARD_IDS },
+                        "categoryOptions.name": { in: generateWardIds(WARD_COUNT) },
                     },
                     paging: false,
                 },
@@ -299,12 +277,36 @@ function getDataValueByElementId(dataValues: D2DataValue[], dataElementId: strin
     return dataValues.find(dataValue => dataValue.dataElement === dataElementId)?.value;
 }
 
+function findOrCreateFormValue(
+    rowId: Id,
+    columnId: Id,
+    formId: Id,
+    formValues: FormValue[]
+): FormValue {
+    return (
+        formValues.find(
+            formValue =>
+                formValue.rowId === rowId &&
+                formValue.columnId === columnId &&
+                formValue.formId === formId
+        ) ?? {
+            rowId,
+            columnId,
+            formId,
+            value: undefined,
+        }
+    );
+}
+
 const dataElementIds = {
     WARD_ID: "yAA33dsnWmY",
     SPECIALTY_CODE: "iowb9y894y2",
 };
 const WARD_DATA_PROGRAM_STAGE_ID = "ikaExmORX0F";
 const AMR_WARD_ID_MED_SPE_CAT_COMBO_ID = "xVP6NkmUPA9";
+const WARD_COUNT = 32;
+const generateWardIds = (count: number): string[] =>
+    Array.from({ length: count }, (_, i) => `W${String(i + 1).padStart(2, "0")}`);
 
 const dataSetFields = {
     name: true,

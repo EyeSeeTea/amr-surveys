@@ -1,13 +1,14 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { BaseWidgetProps } from "./BaseWidget";
 import { FormControl, InputLabel, makeStyles, MenuItem, Select } from "@material-ui/core";
 import { Maybe } from "../../../../utils/ts-utils";
 import { Id, NamedRef } from "../../../../domain/entities/Ref";
 
-export interface SingleSelectWidgetProps extends BaseWidgetProps<Option> {
+export interface SingleSelectWidgetProps extends BaseWidgetProps<Id> {
     value: Maybe<Id>;
     options: Option[];
     label?: string;
+    onChange: (selectedId: Maybe<Id>) => void;
 }
 
 type Option = NamedRef;
@@ -15,28 +16,21 @@ type Option = NamedRef;
 const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
     const { onChange: onValueChange, value, options, disabled, label } = props;
 
-    const [stateValue, setStateValue] = useState(value ?? "");
-
     const notifyChange = useCallback(
-        (selectedId: Maybe<Id>) => {
-            const option = options.find(option => option.id === selectedId);
-            setStateValue(selectedId ?? "");
-            onValueChange(option);
-        },
-        [onValueChange, options]
+        (selectedId: Maybe<Id>) => onValueChange(selectedId),
+        [onValueChange]
     );
 
     const classes = useStyles();
 
     return (
         <FormControl className={classes.horizontalWrapper}>
-            {label && (
-                <InputLabel className={classes.label} id="select-label">
-                    {label}
-                </InputLabel>
-            )}
+            <InputLabel className={classes.label} id="select-label">
+                {label || ""}
+            </InputLabel>
+
             <Select
-                value={stateValue}
+                value={value ?? ""}
                 onChange={option => notifyChange(option.target.value as string)}
                 disabled={disabled}
                 labelId="select-label"

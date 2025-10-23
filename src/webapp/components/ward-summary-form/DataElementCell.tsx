@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { Maybe } from "../../../utils/ts-utils";
+import React from "react";
 
 type DataElementItemProps = {
     backgroundColor?: string;
@@ -8,19 +9,39 @@ type DataElementItemProps = {
     onChange: (value: Maybe<string>) => void;
 };
 
-export const DataElementCell: React.FC<DataElementItemProps> = props => {
+const DataElementCell: React.FC<DataElementItemProps> = props => {
     const { backgroundColor, dataValue, disabled, onChange: notifyChange } = props;
+
+    const handleChange = (value: string) => {
+        const numericValue = value.trim();
+        if (numericValue === "") {
+            notifyChange(undefined);
+            return;
+        }
+
+        const parsed = parseInt(numericValue, 10);
+        if (!isNaN(parsed) && parsed >= 0) {
+            notifyChange(numericValue);
+        }
+    };
 
     return (
         <CustomInput
             type="number"
-            onBlur={e => notifyChange(e.target.value)}
+            onBlur={e => handleChange(e.target.value)}
+            onKeyDown={e => {
+                if (e.key === "Enter") {
+                    handleChange((e.target as HTMLInputElement).value);
+                }
+            }}
             defaultValue={dataValue}
             disabled={disabled}
             style={{ backgroundColor: backgroundColor ?? "transparent" }}
         />
     );
 };
+
+export default React.memo(DataElementCell);
 
 export const CustomInput = styled.input`
     width: 100%;
