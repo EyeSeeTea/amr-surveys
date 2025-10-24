@@ -45,6 +45,22 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         };
     }, [cellSaveStates]);
 
+    useEffect(() => {
+        if (currentOrgUnitId && selectedPeriod) {
+            setLoading(true);
+            compositionRoot.surveys.getWardForm.execute(currentOrgUnitId, selectedPeriod).run(
+                wardSummaryForm => {
+                    setWardSummaryForm(wardSummaryForm);
+                    setLoading(false);
+                },
+                err => {
+                    setError(err.message);
+                    setLoading(false);
+                }
+            );
+        }
+    }, [currentOrgUnitId, selectedPeriod, compositionRoot.surveys]);
+
     const getCellBackgroundColor = useCallback(
         (formValue: FormValue) => {
             const cellId = getCellId(formValue);
@@ -57,24 +73,6 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         },
         [cellSaveStates]
     );
-
-    const getWardSummaryForm = useCallback(() => {
-        if (currentOrgUnitId && selectedPeriod) {
-            setLoading(true);
-            return compositionRoot.surveys.getWardForm
-                .execute(currentOrgUnitId, selectedPeriod)
-                .run(
-                    wardSummaryForm => {
-                        setWardSummaryForm(wardSummaryForm);
-                        setLoading(false);
-                    },
-                    err => {
-                        setError(err.message);
-                        setLoading(false);
-                    }
-                );
-        }
-    }, [currentOrgUnitId, selectedPeriod, compositionRoot.surveys]);
 
     const updateCellSaveState = useCallback((formValue: FormValue, state: SAVE_FORM_STATE) => {
         setCellSaveStates(prev => {
@@ -128,7 +126,6 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         selectedPeriod: selectedPeriod,
         wardSummaryForms: wardSummaryForms,
         getCellBackgroundColor: getCellBackgroundColor,
-        getWardSummaryForm: getWardSummaryForm,
         saveWardSummaryForm: saveWardSummaryForm,
         updateWardSummaryPeriod: updateWardSummaryPeriod,
     };

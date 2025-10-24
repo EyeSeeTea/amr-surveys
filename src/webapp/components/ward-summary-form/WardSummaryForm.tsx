@@ -1,10 +1,8 @@
 import { Maybe } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "../survey-questions/widgets/DropdownSelectWidget";
-import i18n from "@eyeseetea/d2-ui-components/locales";
 import styled from "styled-components";
 import Collapsible from "../collapsible/Collapsible";
 import { WardSummarySection } from "./WardSummarySection";
-import { Button } from "@material-ui/core";
 import { useSelectablePeriods } from "./hooks/useSelectablePeriods";
 import { useWardSummaryForm } from "./hooks/useWardSummaryForm";
 import { ContentLoader } from "../content-loader/ContentLoader";
@@ -24,7 +22,6 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
         selectedPeriod,
         wardSummaryForms,
         getCellBackgroundColor,
-        getWardSummaryForm,
         saveWardSummaryForm,
         updateWardSummaryPeriod,
     } = useWardSummaryForm(currentOrgUnitId);
@@ -40,15 +37,6 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
                     onChange={updateWardSummaryPeriod}
                     disabled={false}
                 />
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={getWardSummaryForm}
-                    disabled={!currentOrgUnitId || !selectedPeriod}
-                >
-                    {i18n.t("Load Ward Summary Form")}
-                </Button>
             </FormFilters>
 
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>

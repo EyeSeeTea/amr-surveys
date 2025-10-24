@@ -51,7 +51,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         alignItems: "end",
-        width: "200px",
+        width: "240px",
         gap: 10,
         paddingBlock: 15,
     },
