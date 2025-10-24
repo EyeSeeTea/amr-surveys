@@ -194,35 +194,47 @@ export class WardFormD2Repository implements WardFormRepository {
                         event.dataValues,
                         dataElementIds.WARD_ID
                     );
-                    const specialtyCode = getDataValueByElementId(
+                    const specialtyCode11 = getDataValueByElementId(
                         event.dataValues,
-                        dataElementIds.SPECIALTY_CODE
+                        dataElementIds.WARD_TYPE_11
+                    );
+                    const specialtyCode112 = getDataValueByElementId(
+                        event.dataValues,
+                        dataElementIds.WARD_TYPE_112
                     );
 
-                    if (uniqueWardId && specialtyCode) {
-                        const wardEventCoc = categoryOptionCombos.find(coc => {
-                            const cocNames = coc.categoryOptions.map(co => co.name);
-                            return (
-                                cocNames.includes(specialtyCode) && cocNames.includes(uniqueWardId)
-                            );
-                        });
+                    if (uniqueWardId && (specialtyCode11 || specialtyCode112)) {
+                        return _c([specialtyCode11, specialtyCode112])
+                            .compactMap(specialtyCode => {
+                                if (!specialtyCode) return undefined;
 
-                        if (!wardEventCoc) {
-                            console.warn(
-                                `No matching category option combo for ward event with ward ID ${uniqueWardId} and specialty code ${specialtyCode}`
-                            );
-                            return undefined;
-                        }
+                                const wardEventCoc = categoryOptionCombos.find(coc => {
+                                    const cocNames = coc.categoryOptions.map(co => co.name);
+                                    return (
+                                        cocNames.includes(uniqueWardId) &&
+                                        cocNames.includes(specialtyCode)
+                                    );
+                                });
 
-                        return {
-                            formId: wardEventCoc.id,
-                            wardId: uniqueWardId,
-                            specialtyCode: specialtyCode,
-                        };
+                                if (!wardEventCoc) {
+                                    console.warn(
+                                        `No matching category option combo for ward event with ward ID ${uniqueWardId} and specialty code ${specialtyCode}`
+                                    );
+                                    return undefined;
+                                }
+
+                                return {
+                                    formId: wardEventCoc.id,
+                                    wardId: uniqueWardId,
+                                    specialtyCode: specialtyCode,
+                                };
+                            })
+                            .value();
                     }
 
                     return undefined;
                 })
+                .flatten()
                 .value();
 
             return Future.success(wardEvents);
@@ -300,7 +312,8 @@ function findOrCreateFormValue(
 
 const dataElementIds = {
     WARD_ID: "yAA33dsnWmY",
-    SPECIALTY_CODE: "iowb9y894y2",
+    WARD_TYPE_11: "iowb9y894y2",
+    WARD_TYPE_112: "yoctlOcQ4jK",
 };
 const WARD_DATA_PROGRAM_STAGE_ID = "ikaExmORX0F";
 const AMR_WARD_ID_MED_SPE_CAT_COMBO_ID = "xVP6NkmUPA9";
