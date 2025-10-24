@@ -19,7 +19,7 @@ type CollapsibleProps = {
 
 export default function Collapsible({
     title,
-    defaultOpen = false,
+    defaultOpen = true,
     children,
     actions,
 }: CollapsibleProps) {

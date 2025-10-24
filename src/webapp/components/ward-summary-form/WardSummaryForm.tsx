@@ -52,12 +52,8 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
             </FormFilters>
 
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
-                {wardSummaryForms.map((wardSummarySection, index) => (
-                    <Collapsible
-                        key={wardSummarySection.title}
-                        title={wardSummarySection.title}
-                        defaultOpen={index === 0}
-                    >
+                {wardSummaryForms.map(wardSummarySection => (
+                    <Collapsible key={wardSummarySection.title} title={wardSummarySection.title}>
                         <WardSummarySection
                             getCellBackgroundColor={getCellBackgroundColor}
                             hasReadOnlyAccess={hasReadOnlyAccess}
