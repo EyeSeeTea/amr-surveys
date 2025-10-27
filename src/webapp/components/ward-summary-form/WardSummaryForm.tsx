@@ -48,7 +48,7 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
                 />
 
                 {wardSummaryForms.map(wardSummarySection => (
-                    <Collapsible key={wardSummarySection.title} title={wardSummarySection.title}>
+                    <Collapsible key={wardSummarySection.formId} title={wardSummarySection.title}>
                         <WardSummarySection
                             getCellBackgroundColor={getCellBackgroundColor}
                             hasReadOnlyAccess={hasReadOnlyAccess}
