@@ -1,4 +1,4 @@
-import { D2Api, MetadataPick } from "@eyeseetea/d2-api/2.36";
+import { D2Api, MetadataPick } from "../../types/d2-api";
 import { FormValue, Row, WardForm } from "../../domain/entities/Questionnaire/WardForm";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { WardFormRepository } from "../../domain/repositories/WardFormRepository";
