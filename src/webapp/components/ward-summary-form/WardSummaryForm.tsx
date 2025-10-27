@@ -7,6 +7,7 @@ import { useSelectablePeriods } from "./hooks/useSelectablePeriods";
 import { useWardSummaryForm } from "./hooks/useWardSummaryForm";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { Id } from "../../../domain/entities/Ref";
+import i18n from "../../../utils/i18n";
 
 type WardSummaryFormProps = {
     currentOrgUnitId: Maybe<Id>;
@@ -40,6 +41,12 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
             </FormFilters>
 
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+                <NoFormsMessage
+                    currentOrgUnitId={currentOrgUnitId}
+                    selectedPeriod={selectedPeriod}
+                    wardSummaryFormsLength={wardSummaryForms.length}
+                />
+
                 {wardSummaryForms.map(wardSummarySection => (
                     <Collapsible key={wardSummarySection.title} title={wardSummarySection.title}>
                         <WardSummarySection
@@ -53,6 +60,30 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
             </ContentLoader>
         </Container>
     );
+};
+
+const NoFormsMessage: React.FC<{
+    currentOrgUnitId: Maybe<Id>;
+    selectedPeriod: Maybe<string>;
+    wardSummaryFormsLength: number;
+}> = ({ currentOrgUnitId, selectedPeriod, wardSummaryFormsLength }) => {
+    if (!selectedPeriod || !currentOrgUnitId)
+        return (
+            <p>
+                {i18n.t(
+                    "Please select a period and org unit to view ward summary statistics forms."
+                )}
+            </p>
+        );
+    else if (selectedPeriod && wardSummaryFormsLength === 0)
+        return (
+            <p>
+                {i18n.t(
+                    "No ward summary statistics forms found for the selected period and org unit."
+                )}
+            </p>
+        );
+    return null;
 };
 
 const Container = styled.div`

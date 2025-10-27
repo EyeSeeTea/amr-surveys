@@ -27,7 +27,7 @@ type RepeatableStage = {
     repeatableStages: QuestionnaireStage[];
 };
 
-type SurveyStage = QuestionnaireStage | RepeatableStage;
+export type SurveyStage = QuestionnaireStage | RepeatableStage;
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser, ppsHospitals, prevalenceHospitals } = useAppContext();

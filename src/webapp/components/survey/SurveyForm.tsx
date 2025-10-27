@@ -137,108 +137,118 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                     currentSurveyId={props.currentSurveyId}
                 />
 
-                {props.formType === "WardSummaryStatisticsForm" && (
+                {props.formType === "WardSummaryStatisticsForm" ? (
                     <WardSummaryForm
                         currentOrgUnitId={currentOrgUnit?.orgUnitId}
                         hasReadOnlyAccess={hasReadOnlyAccess}
                     />
-                )}
+                ) : (
+                    <>
+                        {questionnaire?.entity && (
+                            <PaddedDiv>
+                                <Typography>{i18n.t(`Stage - Profile`)}</Typography>
+                                <SurveySection
+                                    title={questionnaire.entity.title}
+                                    updateQuestion={updateQuestion}
+                                    questions={questionnaire.entity.questions}
+                                    viewOnly={hasReadOnlyAccess}
+                                />
+                            </PaddedDiv>
+                        )}
 
-                {questionnaire?.entity && (
-                    <PaddedDiv>
-                        <Typography>{i18n.t(`Stage - Profile`)}</Typography>
-                        <SurveySection
-                            title={questionnaire.entity.title}
-                            updateQuestion={updateQuestion}
-                            questions={questionnaire.entity.questions}
-                            viewOnly={hasReadOnlyAccess}
-                        />
-                    </PaddedDiv>
-                )}
+                        {surveyStages.map(stage => {
+                            if (!stage?.isVisible) return null;
 
-                {surveyStages.map(stage => {
-                    if (!stage?.isVisible) return null;
+                            return (
+                                <PaddedDiv key={stage.title}>
+                                    {"repeatableStages" in stage ? (
+                                        <>
+                                            {stage.repeatableStages.map(repeatableStage => (
+                                                <PaddedDiv key={repeatableStage.id}>
+                                                    <span>
+                                                        <Typography
+                                                            style={{ display: "inline-block" }}
+                                                        >
+                                                            {i18n.t(`Stage - ${stage.title}`)}
+                                                        </Typography>
+                                                        {repeatableStage.subTitle && (
+                                                            <Typography
+                                                                style={{ display: "inline-block" }}
+                                                                variant="body2"
+                                                            >
+                                                                {i18n.t(
+                                                                    ` (${repeatableStage.subTitle})`
+                                                                )}
+                                                            </Typography>
+                                                        )}
+                                                    </span>
 
-                    return (
-                        <PaddedDiv key={stage.title}>
-                            {"repeatableStages" in stage ? (
-                                <>
-                                    {stage.repeatableStages.map(repeatableStage => (
-                                        <PaddedDiv key={repeatableStage.id}>
-                                            <span>
-                                                <Typography style={{ display: "inline-block" }}>
-                                                    {i18n.t(`Stage - ${stage.title}`)}
-                                                </Typography>
-                                                {repeatableStage.subTitle && (
-                                                    <Typography
-                                                        style={{ display: "inline-block" }}
-                                                        variant="body2"
-                                                    >
-                                                        {i18n.t(` (${repeatableStage.subTitle})`)}
-                                                    </Typography>
-                                                )}
-                                            </span>
+                                                    {repeatableStage.sections.map(section => (
+                                                        <SurveyStageSection
+                                                            key={section.code}
+                                                            section={section}
+                                                            stage={repeatableStage}
+                                                            viewOnly={hasReadOnlyAccess}
+                                                            removeProgramStage={removeProgramStage}
+                                                            updateQuestion={updateQuestion}
+                                                            removeLinkedStage={removeLinkedStage}
+                                                            treatmentOptions={treatmentOptions}
+                                                            indicationOptions={indicationOptions}
+                                                        />
+                                                    ))}
+                                                    {(stage.code ===
+                                                        PPS_PATIENT_TRACKER_INDICATION_STAGE_ID ||
+                                                        stage.code ===
+                                                            PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID) && (
+                                                        <RightAlignedDiv>
+                                                            <Button
+                                                                variant="contained"
+                                                                color="primary"
+                                                                onClick={
+                                                                    saveSurveyFormWithoutRedirect
+                                                                }
+                                                                disabled={shouldDisableSave}
+                                                            >
+                                                                {i18n.t("Save")}
+                                                            </Button>
+                                                        </RightAlignedDiv>
+                                                    )}
+                                                </PaddedDiv>
+                                            ))}
 
-                                            {repeatableStage.sections.map(section => (
+                                            <RightAlignedDiv>
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={() => addProgramStage(stage.code)}
+                                                >
+                                                    {i18n.t(`Add Another ${stage.title}`)}
+                                                </Button>
+                                            </RightAlignedDiv>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Typography>
+                                                {i18n.t(`Stage - ${stage.title}`)}
+                                            </Typography>
+
+                                            {stage.sections.map(section => (
                                                 <SurveyStageSection
                                                     key={section.code}
                                                     section={section}
-                                                    stage={repeatableStage}
+                                                    stage={stage}
                                                     viewOnly={hasReadOnlyAccess}
                                                     removeProgramStage={removeProgramStage}
                                                     updateQuestion={updateQuestion}
-                                                    removeLinkedStage={removeLinkedStage}
-                                                    treatmentOptions={treatmentOptions}
-                                                    indicationOptions={indicationOptions}
                                                 />
                                             ))}
-                                            {(stage.code ===
-                                                PPS_PATIENT_TRACKER_INDICATION_STAGE_ID ||
-                                                stage.code ===
-                                                    PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID) && (
-                                                <RightAlignedDiv>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={saveSurveyFormWithoutRedirect}
-                                                        disabled={shouldDisableSave}
-                                                    >
-                                                        {i18n.t("Save")}
-                                                    </Button>
-                                                </RightAlignedDiv>
-                                            )}
-                                        </PaddedDiv>
-                                    ))}
-
-                                    <RightAlignedDiv>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => addProgramStage(stage.code)}
-                                        >
-                                            {i18n.t(`Add Another ${stage.title}`)}
-                                        </Button>
-                                    </RightAlignedDiv>
-                                </>
-                            ) : (
-                                <>
-                                    <Typography>{i18n.t(`Stage - ${stage.title}`)}</Typography>
-
-                                    {stage.sections.map(section => (
-                                        <SurveyStageSection
-                                            key={section.code}
-                                            section={section}
-                                            stage={stage}
-                                            viewOnly={hasReadOnlyAccess}
-                                            removeProgramStage={removeProgramStage}
-                                            updateQuestion={updateQuestion}
-                                        />
-                                    ))}
-                                </>
-                            )}
-                        </PaddedDiv>
-                    );
-                })}
+                                        </>
+                                    )}
+                                </PaddedDiv>
+                            );
+                        })}
+                    </>
+                )}
             </ContentLoader>
 
             {props.formType !== "WardSummaryStatisticsForm" && (
