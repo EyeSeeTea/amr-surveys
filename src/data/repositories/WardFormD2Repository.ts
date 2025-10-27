@@ -33,11 +33,15 @@ export class WardFormD2Repository implements WardFormRepository {
     constructor(private api: D2Api) {}
 
     get(facilityId: Id, period: string): FutureData<WardForm[]> {
-        return this.getWardEvents(facilityId).flatMap(wardEvents =>
-            this.getDataValues(facilityId, period, wardEvents).flatMap(dataValues =>
-                this.getWardFormData(wardEvents, dataValues).flatMap(wardForms =>
-                    Future.success(wardForms)
-                )
+        return Future.joinObj(
+            {
+                wardEvents: this.getWardEvents(facilityId),
+                dataSet: this.getWardSummaryDataSet(),
+            },
+            { concurrency: 2 }
+        ).flatMap(({ wardEvents, dataSet }) =>
+            this.getDataValues(facilityId, period, wardEvents).map(dataValues =>
+                this.mapToWardForms(wardEvents, dataValues, dataSet)
             )
         );
     }
@@ -62,7 +66,9 @@ export class WardFormD2Repository implements WardFormRepository {
             )
         ).flatMap(response => {
             if (response.status !== "SUCCESS")
-                return Future.error(new Error("Failed to save form value"));
+                return Future.error(
+                    new Error("Failed to save form value: " + response.description)
+                );
             return Future.success(undefined);
         });
     }
@@ -89,15 +95,6 @@ export class WardFormD2Repository implements WardFormRepository {
 
             return Future.success(formValues);
         });
-    }
-
-    private getWardFormData(
-        wardEvents: WardEvent[],
-        formValues: FormValue[]
-    ): FutureData<WardForm[]> {
-        return this.getWardSummaryDataSet().map(dataSet =>
-            this.mapToWardForms(wardEvents, formValues, dataSet)
-        );
     }
 
     private mapToWardForms(
@@ -190,18 +187,12 @@ export class WardFormD2Repository implements WardFormRepository {
                 .compactMap(event => {
                     if (event.programStage !== WARD_DATA_PROGRAM_STAGE_ID) return undefined;
 
-                    const uniqueWardId = getDataValueByElementId(
-                        event.dataValues,
-                        dataElementIds.WARD_ID
-                    );
-                    const specialtyCode11 = getDataValueByElementId(
-                        event.dataValues,
-                        dataElementIds.WARD_TYPE_11
-                    );
-                    const specialtyCode112 = getDataValueByElementId(
-                        event.dataValues,
-                        dataElementIds.WARD_TYPE_112
-                    );
+                    const getDataValue = (id: string) =>
+                        event.dataValues.find(dv => dv.dataElement === id)?.value;
+
+                    const uniqueWardId = getDataValue(dataElementIds.WARD_ID);
+                    const specialtyCode11 = getDataValue(dataElementIds.WARD_TYPE_11);
+                    const specialtyCode112 = getDataValue(dataElementIds.WARD_TYPE_112);
 
                     if (uniqueWardId && (specialtyCode11 || specialtyCode112)) {
                         return _c([specialtyCode11, specialtyCode112])
@@ -283,10 +274,6 @@ export class WardFormD2Repository implements WardFormRepository {
             )
         );
     }
-}
-
-function getDataValueByElementId(dataValues: D2DataValue[], dataElementId: string): Maybe<string> {
-    return dataValues.find(dataValue => dataValue.dataElement === dataElementId)?.value;
 }
 
 function findOrCreateFormValue(
