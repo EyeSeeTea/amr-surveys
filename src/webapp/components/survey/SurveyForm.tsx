@@ -130,20 +130,18 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
         <div>
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
-                <SurveyFormOUSelector
-                    formType={props.formType}
-                    currentOrgUnit={currentOrgUnit}
-                    setCurrentOrgUnit={setCurrentOrgUnit}
-                    currentSurveyId={props.currentSurveyId}
-                />
 
                 {props.formType === "WardSummaryStatisticsForm" ? (
-                    <WardSummaryForm
-                        currentOrgUnitId={currentOrgUnit?.orgUnitId}
-                        hasReadOnlyAccess={hasReadOnlyAccess}
-                    />
+                    <WardSummaryForm hasReadOnlyAccess={hasReadOnlyAccess} />
                 ) : (
                     <>
+                        <SurveyFormOUSelector
+                            formType={props.formType}
+                            currentOrgUnit={currentOrgUnit}
+                            setCurrentOrgUnit={setCurrentOrgUnit}
+                            currentSurveyId={props.currentSurveyId}
+                        />
+
                         {questionnaire?.entity && (
                             <PaddedDiv>
                                 <Typography>{i18n.t(`Stage - Profile`)}</Typography>

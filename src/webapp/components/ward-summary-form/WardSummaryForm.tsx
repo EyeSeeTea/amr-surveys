@@ -8,15 +8,20 @@ import { useWardSummaryForm } from "./hooks/useWardSummaryForm";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { Id } from "../../../domain/entities/Ref";
 import i18n from "../../../utils/i18n";
+import { SurveyFormOUSelector } from "../survey/SurveyFormOUSelector";
+import { useSurveyForm } from "../survey/hook/useSurveyForm";
 
 type WardSummaryFormProps = {
-    currentOrgUnitId: Maybe<Id>;
     hasReadOnlyAccess: boolean;
 };
 
 export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
-    const { currentOrgUnitId, hasReadOnlyAccess } = props;
+    const { hasReadOnlyAccess } = props;
 
+    const { currentOrgUnit, setCurrentOrgUnit } = useSurveyForm(
+        "WardSummaryStatisticsForm",
+        undefined
+    );
     const {
         error,
         loading,
@@ -25,11 +30,18 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
         getCellBackgroundColor,
         saveWardSummaryForm,
         updateWardSummaryPeriod,
-    } = useWardSummaryForm(currentOrgUnitId);
+    } = useWardSummaryForm(currentOrgUnit?.orgUnitId);
     const selectablePeriods = useSelectablePeriods();
 
     return (
         <Container>
+            <SurveyFormOUSelector
+                formType={"WardSummaryStatisticsForm"}
+                currentOrgUnit={currentOrgUnit}
+                setCurrentOrgUnit={setCurrentOrgUnit}
+                currentSurveyId={undefined}
+            />
+
             <FormFilters>
                 <DropdownSelectWidget
                     label="Period"
@@ -42,7 +54,7 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
 
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <NoFormsMessage
-                    currentOrgUnitId={currentOrgUnitId}
+                    currentOrgUnitId={currentOrgUnit?.orgUnitId}
                     selectedPeriod={selectedPeriod}
                     wardSummaryFormsLength={wardSummaryForms.length}
                 />
