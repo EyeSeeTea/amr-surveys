@@ -1,4 +1,4 @@
-import { D2Api } from "@eyeseetea/d2-api/2.36";
+import { D2Api } from "../../types/d2-api";
 import { LocalesRepository } from "../../domain/repositories/LocalesRepository";
 import { LocalesType } from "../../domain/usecases/GetDatabaseLocalesUseCase";
 import { apiToFuture, FutureData } from "../api-futures";

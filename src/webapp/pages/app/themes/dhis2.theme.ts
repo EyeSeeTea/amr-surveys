@@ -63,6 +63,11 @@ export const palette = {
         warning: colors.warning,
         positive: colors.positive,
         info: colors.info,
+
+        // input cell save statuses
+        saving: "#fff3cd",
+        success: "#b9ffb9",
+        error: "#f8d7da",
     },
     background: {
         paper: colors.white,

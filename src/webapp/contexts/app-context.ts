@@ -1,4 +1,4 @@
-import { D2Api } from "@eyeseetea/d2-api/2.36";
+import { D2Api } from "../../types/d2-api";
 import React, { useContext } from "react";
 import { CompositionRoot } from "../../CompositionRoot";
 import { OrgUnitAccess, User } from "../../domain/entities/User";

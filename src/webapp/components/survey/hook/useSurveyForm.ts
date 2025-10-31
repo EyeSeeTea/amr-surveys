@@ -27,7 +27,7 @@ type RepeatableStage = {
     repeatableStages: QuestionnaireStage[];
 };
 
-type SurveyStage = QuestionnaireStage | RepeatableStage;
+export type SurveyStage = QuestionnaireStage | RepeatableStage;
 
 export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | undefined) {
     const { compositionRoot, currentUser, ppsHospitals, prevalenceHospitals } = useAppContext();
@@ -46,6 +46,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const { hasReadOnlyAccess } = useReadOnlyAccess();
 
     const [error, setError] = useState<string>();
+
     const { currentModule } = useCurrentModule();
 
     const shouldDisableSave = useMemo(() => {
@@ -60,6 +61,10 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
 
     useEffect(() => {
         setLoading(true);
+        if (formType === "WardSummaryStatisticsForm") {
+            setLoading(false);
+            return;
+        }
         if (!eventId) {
             //If Event id not specified, load an Empty Questionnaire form
             return compositionRoot.surveys.getForm

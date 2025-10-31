@@ -43,7 +43,7 @@ import {
 import { getProgramRules } from "./ruleHelper";
 import { FutureData, apiToFuture } from "../api-futures";
 import { Future } from "../../domain/entities/generic/Future";
-import { D2Api } from "@eyeseetea/d2-api/2.36";
+import { D2Api } from "../../types/d2-api";
 import { D2TrackerEnrollment } from "@eyeseetea/d2-api/api/trackerEnrollments";
 import { DataValue } from "@eyeseetea/d2-api";
 import { generateUid } from "../../utils/uid";
