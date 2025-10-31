@@ -8,6 +8,8 @@ import { Future } from "../entities/generic/Future";
 import { getChildCount } from "../utils/getChildCountHelper";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import { getProgramId } from "../utils/getDefaultOrCustomProgramId";
+import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+import { Maybe } from "../../utils/ts-utils";
 
 export class GetFilteredPrevalencePatientsUseCase {
     constructor(
@@ -19,7 +21,8 @@ export class GetFilteredPrevalencePatientsUseCase {
     public execute(
         keyword: string,
         orgUnitId: Id,
-        parentId: Id
+        parentId: Id,
+        currentModule: Maybe<AMRSurveyModule>
     ): FutureData<PaginatedReponse<Survey[]>> {
         const surveyFormType = "PrevalenceCaseReportForm";
 
@@ -47,6 +50,7 @@ export class GetFilteredPrevalencePatientsUseCase {
                                 surveyReporsitory: this.paginatedSurveyRepo,
                                 programId: programId,
                                 modules,
+                                currentModule,
                             })
                         ).map(([parentDetails, childCount]): Survey => {
                             const newRootSurvey: SurveyBase = {
