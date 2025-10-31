@@ -1,41 +1,40 @@
-import React from "react";
-// @ts-ignore
-import { Button } from "@dhis2/ui";
+import React, { useCallback } from "react";
 import { BaseWidgetProps } from "./BaseWidget";
-import { makeStyles, MenuItem, Select } from "@material-ui/core";
+import { FormControl, InputLabel, makeStyles, MenuItem, Select } from "@material-ui/core";
 import { Maybe } from "../../../../utils/ts-utils";
-import { Id } from "../../../../domain/entities/Ref";
+import { Id, NamedRef } from "../../../../domain/entities/Ref";
 
-export interface SingleSelectWidgetProps extends BaseWidgetProps<Option> {
+export interface SingleSelectWidgetProps extends BaseWidgetProps<Id> {
     value: Maybe<Id>;
     options: Option[];
+    label?: string;
+    onChange: (selectedId: Maybe<Id>) => void;
 }
 
-type Option = { id: string; name: string };
+type Option = NamedRef;
 
 const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
-    const { onChange: onValueChange, value, options, disabled } = props;
+    const { onChange: onValueChange, value, options, disabled, label } = props;
 
-    const [stateValue, setStateValue] = React.useState(value);
-    React.useEffect(() => setStateValue(value), [value]);
-
-    const notifyChange = React.useCallback(
-        (selectedId: Maybe<Id>) => {
-            const option = options.find(option => option.id === selectedId);
-            setStateValue(selectedId);
-            onValueChange(option);
-        },
-        [onValueChange, options]
+    const notifyChange = useCallback(
+        (selectedId: Maybe<Id>) => onValueChange(selectedId),
+        [onValueChange]
     );
 
     const classes = useStyles();
 
     return (
-        <div className={classes.horizontalWrapper}>
+        <FormControl className={classes.horizontalWrapper}>
+            <InputLabel className={classes.label} id="select-label">
+                {label || ""}
+            </InputLabel>
+
             <Select
-                value={stateValue}
+                value={value ?? ""}
                 onChange={option => notifyChange(option.target.value as string)}
                 disabled={disabled}
+                labelId="select-label"
+                className={classes.select}
             >
                 {options.map(option => (
                     <MenuItem key={option.id} value={option.id}>
@@ -43,20 +42,25 @@ const DropdownSelectWidget: React.FC<SingleSelectWidgetProps> = props => {
                     </MenuItem>
                 ))}
             </Select>
-            <Button
-                small
-                onClick={() => notifyChange(undefined)}
-                tabIndex="-1"
-                disabled={props.disabled}
-            >
-                ✕
-            </Button>
-        </div>
+        </FormControl>
     );
 };
 
 const useStyles = makeStyles({
-    horizontalWrapper: { display: "flex", gap: 10, padding: 5 },
+    horizontalWrapper: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "end",
+        width: "240px",
+        gap: 10,
+        paddingBlock: 15,
+    },
+    label: {
+        paddingBlock: 15,
+    },
+    select: {
+        width: "100%",
+    },
 });
 
 export default React.memo(DropdownSelectWidget);

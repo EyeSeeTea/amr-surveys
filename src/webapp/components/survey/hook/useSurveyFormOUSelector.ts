@@ -41,7 +41,10 @@ export function useSurveyFormOUSelector(
                             setOUSelectorErrMsg(`You do not have access to this country.`);
                             setShouldRefresh({});
                         }
-                    } else if (formType === "PrevalenceFacilityLevelForm") {
+                    } else if (
+                        formType === "PrevalenceFacilityLevelForm" ||
+                        formType === "WardSummaryStatisticsForm"
+                    ) {
                         const currentHospital = prevalenceHospitals.find(
                             hospital => hospital.orgUnitId === selectedOU
                         );
