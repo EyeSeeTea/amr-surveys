@@ -2,7 +2,11 @@ import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
 import { useEffect, useMemo } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
-import { SURVEYS_WITH_ORG_UNIT_SELECTOR, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import {
+    SURVEYS_WITH_COUNTRY_LEVEL_OU,
+    SURVEYS_WITH_ORG_UNIT_SELECTOR,
+    SURVEY_FORM_TYPES,
+} from "../../../domain/entities/Survey";
 import { OrgUnitAccess, UserOrgUnit } from "../../../domain/entities/User";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
@@ -72,14 +76,8 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
     ]);
 
     const selectableLevels = useMemo(() => {
-        switch (formType) {
-            case "PPSCountryQuestionnaire":
-            case "PrevalenceSurveyForm":
-            case "WardSummaryStatisticsForm":
-                return HOSPITAL_OU_LEVELS;
-            default:
-                return [COUNTRY_OU_LEVEL];
-        }
+        if (SURVEYS_WITH_COUNTRY_LEVEL_OU.includes(formType)) return [COUNTRY_OU_LEVEL];
+        return [HOSPITAL_OU_LEVELS];
     }, [formType]);
 
     return (
