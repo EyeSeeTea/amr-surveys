@@ -201,10 +201,12 @@ export class WardFormD2Repository implements WardFormRepository {
 
                                 const wardEventCoc = categoryOptionCombos.find(coc => {
                                     const cocNames = coc.categoryOptions.map(co => co.name);
-                                    return (
-                                        cocNames.includes(uniqueWardId) &&
-                                        cocNames.includes(specialtyCode)
+                                    const hasWardId = cocNames.some(cocName =>
+                                        uniqueWardId.endsWith(cocName)
                                     );
+                                    const hasSpecialtyCode = cocNames.includes(specialtyCode);
+
+                                    return hasWardId && hasSpecialtyCode;
                                 });
 
                                 if (!wardEventCoc) {

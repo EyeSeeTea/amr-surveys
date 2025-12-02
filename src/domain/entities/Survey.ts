@@ -43,6 +43,11 @@ export const SURVEYS_WITH_ORG_UNIT_SELECTOR: readonly SURVEY_FORM_TYPES[] = [
     "WardSummaryStatisticsForm",
 ];
 
+export const SURVEYS_WITH_COUNTRY_LEVEL_OU: SURVEY_FORM_TYPES[] = [
+    "PPSCountryQuestionnaire",
+    "PrevalenceSurveyForm",
+];
+
 export interface SurveyBase extends NamedRef {
     surveyType: string;
     astGuideline?: ASTGUIDELINE_TYPES;
