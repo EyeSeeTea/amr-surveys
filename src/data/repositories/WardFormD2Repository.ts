@@ -27,6 +27,7 @@ type D2Event = {
 type WardSummaryDataSet = {
     name: string;
     dataElements: Array<NamedRef & { categoryOptionCombos: NamedRef[] }>;
+    sectionDataElementOrder: Id[];
 };
 
 export class WardFormD2Repository implements WardFormRepository {
@@ -126,10 +127,16 @@ export class WardFormD2Repository implements WardFormRepository {
         dataSet: WardSummaryDataSet,
         columns: NamedRef[]
     ): Row[] {
-        return _c(dataSet.dataElements)
-            .map(dataElement => this.getSingleRow(dataElement, columns, wardEvent, formValues))
-            .sortBy(row => row.name)
-            .value();
+        const dataElements =
+            dataSet.sectionDataElementOrder.length > 0
+                ? dataSet.sectionDataElementOrder
+                      .map(id => dataSet.dataElements.find(dataElement => dataElement.id === id))
+                      .filter((dataElement): dataElement is NonNullable<typeof dataElement> => !!dataElement)
+                : dataSet.dataElements;
+
+        return dataElements.map(dataElement =>
+            this.getSingleRow(dataElement, columns, wardEvent, formValues)
+        );
     }
 
     private getSingleRow(
@@ -162,6 +169,10 @@ export class WardFormD2Repository implements WardFormRepository {
             if (!dataSet)
                 return Future.error(new Error("Ward Summary Statistics DataSet not found"));
 
+            const sectionDataElementOrder =
+                dataSet.sections?.flatMap(section => section.dataElements?.map(de => de.id) ?? []) ??
+                [];
+
             return Future.success({
                 name: dataSet.name,
                 dataElements: dataSet.dataSetElements.map(({ dataElement }) => ({
@@ -174,6 +185,7 @@ export class WardFormD2Repository implements WardFormRepository {
                         })
                     ),
                 })),
+                sectionDataElementOrder,
             });
         });
     }
@@ -312,6 +324,11 @@ const generateWardIds = (count: number): string[] =>
 
 const dataSetFields = {
     name: true,
+    sections: {
+        dataElements: {
+            id: true,
+        },
+    },
     dataSetElements: {
         dataElement: {
             id: true,
