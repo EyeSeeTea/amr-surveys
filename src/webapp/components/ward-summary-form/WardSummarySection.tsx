@@ -22,19 +22,31 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
     const { hasReadOnlyAccess, wardSummarySection, getCellBackgroundColor, saveWardSummaryForm } =
         props;
 
+    const normalizedColumnNames = wardSummarySection.columns.map(
+        column => column.name?.trim().toLowerCase() ?? ""
+    );
+    const shouldShowHeader = normalizedColumnNames.some(name => name && name !== "default");
+
     return (
         <TableContainer>
             <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell colSpan={1}></TableCell>
-                        {wardSummarySection.columns.map(column => (
-                            <StyledTableCell key={column.id} align="center">
-                                {column.name}
-                            </StyledTableCell>
-                        ))}
-                    </TableRow>
-                </TableHead>
+                {wardSummarySection.columns.length > 0 && shouldShowHeader && (
+                    <TableHead>
+                        <TableRow>
+                            <TableCell colSpan={1}></TableCell>
+                            {wardSummarySection.columns.map(column => {
+                                const columnName = column.name?.trim() ?? "";
+                                const displayName =
+                                    columnName.toLowerCase() === "default" ? "" : columnName;
+                                return (
+                                    <StyledTableCell key={column.id} align="center">
+                                        {displayName}
+                                    </StyledTableCell>
+                                );
+                            })}
+                        </TableRow>
+                    </TableHead>
+                )}
 
                 <TableBody>
                     {wardSummarySection.rows.map((row, rowIndex) => (
