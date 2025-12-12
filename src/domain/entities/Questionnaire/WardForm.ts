@@ -1,7 +1,7 @@
 import { Maybe } from "../../../utils/ts-utils";
 import { Id, NamedRef } from "../Ref";
 
-type Column = NamedRef;
+export type Column = NamedRef & { displayName: string };
 
 export type FormValue = {
     columnId: Id;

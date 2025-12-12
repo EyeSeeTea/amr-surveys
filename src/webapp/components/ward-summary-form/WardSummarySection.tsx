@@ -34,16 +34,11 @@ export const WardSummarySection: React.FC<WardSummarySectionProps> = props => {
                     <TableHead>
                         <TableRow>
                             <TableCell colSpan={1}></TableCell>
-                            {wardSummarySection.columns.map(column => {
-                                const columnName = column.name?.trim() ?? "";
-                                const displayName =
-                                    columnName.toLowerCase() === "default" ? "" : columnName;
-                                return (
-                                    <StyledTableCell key={column.id} align="center">
-                                        {displayName}
-                                    </StyledTableCell>
-                                );
-                            })}
+                            {wardSummarySection.columns.map(column => (
+                                <StyledTableCell key={column.id} align="center">
+                                    {column.displayName}
+                                </StyledTableCell>
+                            ))}
                         </TableRow>
                     </TableHead>
                 )}

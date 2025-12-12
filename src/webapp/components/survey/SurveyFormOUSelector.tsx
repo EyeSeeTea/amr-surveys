@@ -80,13 +80,18 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         return HOSPITAL_OU_LEVELS;
     }, [formType]);
 
+    const selected = useMemo(
+        () => (currentOrgUnit?.orgUnitPath ? [currentOrgUnit.orgUnitPath] : []),
+        [currentOrgUnit?.orgUnitPath]
+    );
+
     return (
         <>
             {SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType) && (
                 <OrgUnitsSelector
                     api={api}
                     fullWidth={false}
-                    selected={currentOrgUnit?.orgUnitPath ? [currentOrgUnit.orgUnitPath] : []}
+                    selected={selected}
                     initiallyExpanded={
                         currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
                     }

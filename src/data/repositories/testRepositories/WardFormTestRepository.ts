@@ -13,8 +13,8 @@ export class WardFormTestRepository implements WardFormRepository {
                 formId: "wardForm1",
                 title: "Ward Form Example",
                 columns: [
-                    { id: "col1", name: "Column 1" },
-                    { id: "col2", name: "Column 2" },
+                    { id: "col1", name: "Column 1", displayName: "Column 1" },
+                    { id: "col2", name: "Column 2", displayName: "Column 2" },
                 ],
                 rows: [
                     {

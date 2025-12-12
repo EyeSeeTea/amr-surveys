@@ -1,5 +1,5 @@
 import { D2Api, MetadataPick } from "../../types/d2-api";
-import { FormValue, Row, WardForm } from "../../domain/entities/Questionnaire/WardForm";
+import { Column, FormValue, Row, WardForm } from "../../domain/entities/Questionnaire/WardForm";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { WardFormRepository } from "../../domain/repositories/WardFormRepository";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -115,10 +115,24 @@ export class WardFormD2Repository implements WardFormRepository {
         dataSet: WardSummaryDataSet
     ): Maybe<WardForm> {
         const title = `${wardEvent.wardId} - ${wardEvent.specialtyCode}`;
-        const columns = dataSet.dataElements[0]?.categoryOptionCombos ?? [];
+        const columns = this.getColumns(dataSet);
         const rows = this.getRows(wardEvent, formValues, dataSet, columns);
 
         return { formId: wardEvent.formId, title, columns, rows };
+    }
+
+    private getColumns(dataSet: WardSummaryDataSet): Column[] {
+        const categoryOptionCombos = dataSet.dataElements[0]?.categoryOptionCombos ?? [];
+
+        return categoryOptionCombos.map(coc => {
+            const columnName = coc.name?.trim() ?? "";
+
+            return {
+                id: coc.id,
+                name: columnName,
+                displayName: coc.name.toLowerCase() === "default" ? "" : columnName,
+            };
+        });
     }
 
     private getRows(
@@ -131,7 +145,10 @@ export class WardFormD2Repository implements WardFormRepository {
             dataSet.sectionDataElementOrder.length > 0
                 ? dataSet.sectionDataElementOrder
                       .map(id => dataSet.dataElements.find(dataElement => dataElement.id === id))
-                      .filter((dataElement): dataElement is NonNullable<typeof dataElement> => !!dataElement)
+                      .filter(
+                          (dataElement): dataElement is NonNullable<typeof dataElement> =>
+                              !!dataElement
+                      )
                 : dataSet.dataElements;
 
         return dataElements.map(dataElement =>
@@ -169,9 +186,9 @@ export class WardFormD2Repository implements WardFormRepository {
             if (!dataSet)
                 return Future.error(new Error("Ward Summary Statistics DataSet not found"));
 
-            const sectionDataElementOrder =
-                dataSet.sections?.flatMap(section => section.dataElements?.map(de => de.id) ?? []) ??
-                [];
+            const sectionDataElementOrder = dataSet.sections?.flatMap(
+                section => section.dataElements?.map(de => de.id) ?? []
+            );
 
             return Future.success({
                 name: dataSet.name,
@@ -185,7 +202,7 @@ export class WardFormD2Repository implements WardFormRepository {
                         })
                     ),
                 })),
-                sectionDataElementOrder,
+                sectionDataElementOrder: sectionDataElementOrder,
             });
         });
     }
