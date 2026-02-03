@@ -43,6 +43,10 @@ import { WardFormRepository } from "./domain/repositories/WardFormRepository";
 import { WardFormD2Repository } from "./data/repositories/WardFormD2Repository";
 import { WardFormTestRepository } from "./data/repositories/testRepositories/WardFormTestRepository";
 import { SaveWardFormUseCase } from "./domain/usecases/SaveWardFormUseCase";
+import { WardEventD2Repository } from "./data/repositories/WardEventD2Repository";
+import { WardEventRepository } from "./domain/repositories/WardEventRepository";
+import { WardEventTestRepository } from "./data/repositories/testRepositories/WardEventTestRepository";
+import { GetWardEventsUseCase } from "./domain/usecases/GetWardEventsUseCase";
 
 export type CompositionRoot = ReturnType<typeof getCompositionRoot>;
 
@@ -52,6 +56,7 @@ type Repositories = {
     moduleRepository: ModuleRepository;
     surveyFormRepository: SurveyRepository;
     paginatedSurveyRepository: PaginatedSurveyRepository;
+    wardEventRepository: WardEventRepository;
     wardFormRepository: WardFormRepository;
     astGuidelinesRepository: ASTGuidelinesRepository;
 };
@@ -112,6 +117,7 @@ function getCompositionRoot(repositories: Repositories) {
             removeRepeatableStage: new RemoveRepeatableProgramStageUseCase(
                 repositories.surveyFormRepository
             ),
+            getWardEvents: new GetWardEventsUseCase(repositories.wardEventRepository),
             getWardForm: new GetWardFormUseCase(repositories.wardFormRepository),
             saveWardForm: new SaveWardFormUseCase(repositories.wardFormRepository),
         },
@@ -130,6 +136,7 @@ export function getWebappCompositionRoot(api: D2Api) {
         surveyFormRepository: new SurveyD2Repository(api, dataStoreClient),
         paginatedSurveyRepository: new PaginatedSurveyD2Repository(api, dataStoreClient),
         astGuidelinesRepository: new ASTGuidelinesD2Repository(dataStoreClient),
+        wardEventRepository: new WardEventD2Repository(api),
         wardFormRepository: new WardFormD2Repository(api),
     };
 
@@ -144,6 +151,7 @@ export function getTestCompositionRoot(nonAdminUser?: boolean) {
         surveyFormRepository: new SurveyTestRepository(),
         paginatedSurveyRepository: new PaginatedSurveyTestRepository(),
         astGuidelinesRepository: new ASTGuidelinesTestRepository(),
+        wardEventRepository: new WardEventTestRepository(),
         wardFormRepository: new WardFormTestRepository(),
     };
 

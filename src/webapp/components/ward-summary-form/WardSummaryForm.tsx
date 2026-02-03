@@ -9,7 +9,6 @@ import { ContentLoader } from "../content-loader/ContentLoader";
 import { Id } from "../../../domain/entities/Ref";
 import i18n from "../../../utils/i18n";
 import { SurveyFormOUSelector } from "../survey/SurveyFormOUSelector";
-import { useSurveyForm } from "../survey/hook/useSurveyForm";
 
 type WardSummaryFormProps = {
     hasReadOnlyAccess: boolean;
@@ -17,28 +16,26 @@ type WardSummaryFormProps = {
 
 export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
     const { hasReadOnlyAccess } = props;
-
-    const { currentOrgUnit, setCurrentOrgUnit } = useSurveyForm(
-        "WardSummaryStatisticsForm",
-        undefined
-    );
     const {
+        currentOrgUnit,
         error,
         loading,
         selectedPeriod,
+        wardEvents,
         wardSummaryForms,
         getCellBackgroundColor,
+        saveCurrentOrgUnit,
         saveWardSummaryForm,
         updateWardSummaryPeriod,
-    } = useWardSummaryForm(currentOrgUnit?.orgUnitId);
-    const selectablePeriods = useSelectablePeriods();
+    } = useWardSummaryForm();
+    const selectablePeriods = useSelectablePeriods(wardEvents);
 
     return (
         <Container>
             <SurveyFormOUSelector
                 formType={"WardSummaryStatisticsForm"}
                 currentOrgUnit={currentOrgUnit}
-                setCurrentOrgUnit={setCurrentOrgUnit}
+                setCurrentOrgUnit={saveCurrentOrgUnit}
                 currentSurveyId={undefined}
             />
 
