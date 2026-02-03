@@ -28,9 +28,10 @@ export class WardEventD2Repository implements WardEventRepository {
                     if (event.programStage !== WARD_DATA_PROGRAM_STAGE_ID) return undefined;
 
                     const getDataValue = (id: string) =>
-                        event.dataValues.find(dv => dv.dataElement === id)?.value;
+                        event.dataValues.find(dv => dv.dataElement === id)?.value.trim();
 
-                    const uniqueWardId = getDataValue(dataElementIds.WARD_ID);
+                    const rawWardId = getDataValue(dataElementIds.WARD_ID);
+                    const uniqueWardId = rawWardId ? normalizeWardId(rawWardId) : undefined;
                     const specialtyCode11 = getDataValue(dataElementIds.WARD_TYPE_11);
                     const specialtyCode112 = getDataValue(dataElementIds.WARD_TYPE_112);
 
@@ -135,6 +136,14 @@ const AMR_WARD_ID_MED_SPE_CAT_COMBO_ID = "xVP6NkmUPA9";
 const WARD_COUNT = 32;
 const generateWardIds = (count: number): string[] =>
     Array.from({ length: count }, (_, i) => `W${String(i + 1).padStart(2, "0")}`);
+
+const normalizeWardId = (wardId: string): string => {
+    const match = wardId.match(/W([1-9])$/);
+    if (match && match[1]) {
+        return wardId.slice(0, -2) + `W${match[1].padStart(2, "0")}`;
+    }
+    return wardId;
+};
 
 const categoryOptionComboFields = {
     id: true,
