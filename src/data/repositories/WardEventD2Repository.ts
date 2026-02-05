@@ -95,33 +95,23 @@ export class WardEventD2Repository implements WardEventRepository {
 
     private getD2Events(facilityId: string): FutureData<D2Event[]> {
         return apiToFuture(
-            this.api.tracker.trackedEntities.get({
+            this.api.tracker.events.get({
                 fields: {
-                    enrollments: {
-                        enrolledAt: true,
-                        events: {
-                            event: true,
-                            programStage: true,
-                            dataValues: {
-                                dataElement: true,
-                                value: true,
-                            },
-                        },
+                    event: true,
+                    occurredAt: true,
+                    programStage: true,
+                    dataValues: {
+                        dataElement: true,
+                        value: true,
                     },
                 },
                 program: PREVALENCE_FACILITY_LEVEL_FORM_ID,
                 orgUnit: facilityId,
                 ouMode: "SELECTED",
+                programStage: WARD_DATA_PROGRAM_STAGE_ID,
             })
         ).map(({ instances }) =>
-            instances.flatMap(trackedEntity =>
-                trackedEntity.enrollments.flatMap(enrollment =>
-                    enrollment.events.map(event => ({
-                        ...event,
-                        eventDate: enrollment.enrolledAt,
-                    }))
-                )
-            )
+            instances.map(event => ({ ...event, eventDate: event.occurredAt }))
         );
     }
 }

@@ -16,7 +16,7 @@ export function useSelectablePeriods(wardEvents: Maybe<WardEvent[]>): Period[] {
 }
 
 function getPeriodsFromWardEvents(wardEvents: WardEvent[]): Period[] {
-    const eventDates = wardEvents.map(event => new Date(event.eventDate));
+    const eventDates = wardEvents.map(event => event.eventDate);
     const minDate = new Date(Math.min(...eventDates.map(d => d.getTime())));
     const maxDate = new Date(Math.max(...eventDates.map(d => d.getTime())));
 
