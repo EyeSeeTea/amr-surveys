@@ -37,6 +37,11 @@ interface PaginatedSurveyListTableProps {
     setPageSize: Dispatch<SetStateAction<number>>;
     pageSize: number;
     total?: number;
+    setSortPatientBy: Dispatch<SetStateAction<"patientId" | "patientCode">>;
+    patientIdDir: "asc" | "desc";
+    setPatientIdDir: Dispatch<SetStateAction<"asc" | "desc">>;
+    patientCodeDir: "asc" | "desc";
+    setPatientCodeDir: Dispatch<SetStateAction<"asc" | "desc">>;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -49,12 +54,15 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     pageSize,
     setPageSize,
     total,
+    setSortPatientBy,
+    patientIdDir,
+    setPatientIdDir,
+    patientCodeDir,
+    setPatientCodeDir,
 }) => {
     const { snackbar, offlineError } = useOfflineSnackbar();
     //states for column sort
     const [surveyNameSortDirection, setSurveyNameSortDirection] = useState<SortDirection>("asc");
-    const [patientIdSortDirection, setPatientIdSortDirection] = useState<SortDirection>("asc");
-    const [patientCodeSortDirection, setPatientCodeSortDirection] = useState<SortDirection>("asc");
 
     const { deleteSurvey, loading, deleteCompleteState } = useDeleteSurvey(
         surveyFormType,
@@ -129,19 +137,18 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         isPrevalencePatientChild(surveyFormType)) && (
                                         <TableCell
                                             onClick={() => {
-                                                const nextDir: SortDirection =
-                                                    patientIdSortDirection === "asc"
-                                                        ? "desc"
-                                                        : "asc";
-                                                setPatientIdSortDirection(nextDir);
-                                                sortByColumn("uniquePatient.id", nextDir);
+                                                const nextDir =
+                                                    patientIdDir === "asc" ? "desc" : "asc";
+                                                setSortPatientBy("patientId");
+                                                setPatientIdDir(nextDir);
+                                                setPage(0);
                                             }}
                                         >
                                             <span>
                                                 <Typography variant="caption">
                                                     {i18n.t("Patient Id")}
                                                 </Typography>
-                                                {patientIdSortDirection === "asc" ? (
+                                                {patientIdDir === "asc" ? (
                                                     <ArrowUpward fontSize="small" />
                                                 ) : (
                                                     <ArrowDownward fontSize="small" />
@@ -152,19 +159,18 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     {surveyFormType === "PPSPatientRegister" && (
                                         <TableCell
                                             onClick={() => {
-                                                const nextDir: SortDirection =
-                                                    patientCodeSortDirection === "asc"
-                                                        ? "desc"
-                                                        : "asc";
-                                                setPatientCodeSortDirection(nextDir);
-                                                sortByColumn("uniquePatient.code", nextDir);
+                                                const nextDir =
+                                                    patientCodeDir === "asc" ? "desc" : "asc";
+                                                setSortPatientBy("patientCode");
+                                                setPatientCodeDir(nextDir);
+                                                setPage(0);
                                             }}
                                         >
                                             <span>
                                                 <Typography variant="caption">
                                                     {i18n.t("Patient Code")}
                                                 </Typography>
-                                                {patientCodeSortDirection === "asc" ? (
+                                                {patientCodeDir === "asc" ? (
                                                     <ArrowUpward fontSize="small" />
                                                 ) : (
                                                     <ArrowDownward fontSize="small" />
@@ -174,9 +180,9 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     )}
 
                                     <>
-                                        {columnNames.map(childName => (
+                                        {columnNames.map((childName, childIndex) => (
                                             <TableCell
-                                                onClick={childOnClick(childName)}
+                                                onClick={childOnClick(childName, childIndex)}
                                                 key={childName}
                                             >
                                                 <span>

@@ -165,7 +165,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     };
 
     const sortByColumn = useCallback(
-        (columnName: SortableColumn, sortDirection: SortDirection, childLabel?: string) => {
+        (columnName: SortableColumn, sortDirection: SortDirection, childIndex?: number) => {
             setSortedSurveys(prevSurveys => {
                 if (!prevSurveys) return prevSurveys;
 
@@ -176,31 +176,19 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     if (count.type === "number") return Number(count.value ?? 0);
 
                     if (count.type === "map") {
-                        const item = (count.value ?? []).find(value =>
-                            value?.option?.label
-                                ?.toLowerCase()
-                                .trim()
-                                .includes(childLabel?.toLowerCase().trim() ?? "")
-                        );
+                        if (childIndex == null) return 0;
+                        const item = (count.value ?? [])[childIndex];
                         return Number(item?.count ?? 0);
                     }
                     return 0;
                 };
 
                 const getValue = (survey: Survey) => {
-                    if (columnName === "childCount") {
-                        return childLabel ? getChildValue(survey) : 0;
-                    }
-
-                    if (columnName === "uniquePatient.id") {
-                        return survey.uniquePatient?.id ?? "";
-                    }
-
-                    if (columnName === "uniquePatient.code") {
+                    if (columnName === "childCount") return getChildValue(survey);
+                    if (columnName === "uniquePatient.id") return survey.uniquePatient?.id ?? "";
+                    if (columnName === "uniquePatient.code")
                         return survey.uniquePatient?.code ?? "";
-                    }
-
-                    return survey[columnName as keyof Survey];
+                    return survey[columnName];
                 };
 
                 return _(prevSurveys)

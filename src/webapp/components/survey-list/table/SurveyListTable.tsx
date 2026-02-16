@@ -250,9 +250,7 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                                         ? "desc"
                                                         : "asc";
                                                 setChildrenSortDirection(nextDir);
-                                                const columnName =
-                                                    getChildrenName(surveyFormType)[0] || "";
-                                                sortByColumn("childCount", nextDir, columnName);
+                                                sortByColumn("childCount", nextDir);
                                             }}
                                         >
                                             <span>

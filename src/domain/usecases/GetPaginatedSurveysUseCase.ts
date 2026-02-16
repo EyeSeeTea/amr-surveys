@@ -21,6 +21,8 @@ type GetPaginatedSurveysOptions = {
     page: number;
     pageSize: number;
     currentModule?: AMRSurveyModule;
+    sortDir?: "asc" | "desc";
+    sortPatientBy?: "patientId" | "patientCode";
 };
 
 export class GetPaginatedSurveysUseCase {
@@ -39,6 +41,8 @@ export class GetPaginatedSurveysUseCase {
         page,
         pageSize,
         currentModule,
+        sortPatientBy,
+        sortDir,
     }: GetPaginatedSurveysOptions): FutureData<PaginatedReponse<Survey[]>> {
         return this.moduleRepository.getAll().flatMap(modules => {
             const programId = getProgramId(surveyFormType, parentSurveyId, modules);
@@ -50,7 +54,16 @@ export class GetPaginatedSurveysUseCase {
                 : parentSurveyId;
 
             return this.paginatedSurveyRepo
-                .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
+                .getSurveys(
+                    surveyFormType,
+                    programId,
+                    orgUnitId,
+                    parentId,
+                    page,
+                    pageSize,
+                    sortPatientBy,
+                    sortDir
+                )
                 .flatMap(surveys => {
                     if (surveys.objects.length === 0) return Future.success(surveys);
 

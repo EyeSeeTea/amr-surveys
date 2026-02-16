@@ -43,6 +43,11 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         total,
         setTotal,
         setRefreshSurveys,
+        directionSortPatientId,
+        setDirectionSortPatientId,
+        directionSortPatientCode,
+        setDirectionSortPatientCode,
+        setSortPatientBy,
     } = useSurveys(surveyFormType);
 
     const {
@@ -175,6 +180,11 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             setPageSize={setPageSize}
                             total={total}
                             refreshSurveys={setRefreshSurveys}
+                            setSortPatientBy={setSortPatientBy}
+                            setPatientIdDir={setDirectionSortPatientId}
+                            patientIdDir={directionSortPatientId}
+                            setPatientCodeDir={setDirectionSortPatientCode}
+                            patientCodeDir={directionSortPatientCode}
                         />
                     ) : (
                         <SurveyListTable

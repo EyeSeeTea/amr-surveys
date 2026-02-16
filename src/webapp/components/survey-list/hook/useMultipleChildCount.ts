@@ -6,7 +6,7 @@ export const useMultipleChildCount = (
     sortByColumn: (
         columnName: keyof Survey,
         sortDirection: SortDirection,
-        childLabel?: string
+        childIndex?: number
     ) => void
 ) => {
     const [sampleShipmentsSortDirection, setSampleShipmentsSortDirection] =
@@ -39,35 +39,38 @@ export const useMultipleChildCount = (
         }
     };
 
-    const childOnClick = (childOptionName: string): MouseEventHandler | undefined => {
+    const childOnClick = (
+        childOptionName: string,
+        childIndex: number
+    ): MouseEventHandler | undefined => {
         switch (childOptionName) {
             case "Sample Shipment":
                 return () => {
                     const nextDir: SortDirection =
                         sampleShipmentsSortDirection === "asc" ? "desc" : "asc";
                     setSampleShipmentsSortDirection(nextDir);
-                    sortByColumn("childCount", nextDir, "Sample Shipment");
+                    sortByColumn("childCount", nextDir, childIndex);
                 };
             case "Central Ref Lab Results":
                 return () => {
                     const nextDir: SortDirection =
                         centralRefLabsResultsSortDirection === "asc" ? "desc" : "asc";
                     setCentralRefLabsResultsSortDirection(nextDir);
-                    sortByColumn("childCount", nextDir, "Central Ref Lab Results");
+                    sortByColumn("childCount", nextDir, childIndex);
                 };
             case "Pathogen Isolates Logs":
                 return () => {
                     const nextDir: SortDirection =
                         pathogenIsolatesLogsSortDirection === "asc" ? "desc" : "asc";
                     setPathogenIsolatesLogsSortDirection(nextDir);
-                    sortByColumn("childCount", nextDir, "Pathogen Isolates Logs");
+                    sortByColumn("childCount", nextDir, childIndex);
                 };
             case "Supranational Ref Results":
                 return () => {
                     const nextDir: SortDirection =
                         supranationalRefsResultsSortDirection === "asc" ? "desc" : "asc";
                     setSupranationalRefsResultsSortDirection(nextDir);
-                    sortByColumn("childCount", nextDir, "Supranational Ref Results");
+                    sortByColumn("childCount", nextDir, childIndex);
                 };
             default:
                 return undefined;

@@ -7,6 +7,7 @@ import { getUserAccess } from "../../domain/utils/menuHelper";
 import { useCurrentModule } from "../contexts/current-module-context";
 import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 import i18n from "../../utils/i18n";
+import { SortDirection } from "../components/survey-list/hook/useSurveyListActions";
 
 const PAGE_SIZE = 10;
 
@@ -20,6 +21,15 @@ const getPageSizeFromLocalStorage = (): number => {
     }
 };
 
+export type PatientSortByForForm<T extends SURVEY_FORM_TYPES> = T extends "PPSPatientRegister"
+    ? "patientId" | "patientCode"
+    : T extends "PrevalenceCaseReportForm"
+    ? "patientId"
+    : "patientId";
+
+const defaultSortBy = (surveyFormType: SURVEY_FORM_TYPES) =>
+    surveyFormType === "PPSPatientRegister" ? "patientCode" : "patientId";
+
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot, prevalenceHospitals } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
@@ -29,6 +39,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const [page, setPage] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(getPageSizeFromLocalStorage());
     const [total, setTotal] = useState<number>();
+    const [sortPatientBy, setSortPatientBy] = useState<"patientId" | "patientCode">(
+        defaultSortBy(surveyFormType)
+    );
+    const [directionSortPatientId, setDirectionSortPatientId] = useState<SortDirection>("asc");
+    const [directionSortPatientCode, setDirectionSortPatientCode] = useState<SortDirection>("asc");
+
     const {
         currentPPSSurveyForm,
         currentCountryQuestionnaire,
@@ -45,6 +61,13 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     } = useAppContext();
 
     const isAdmin = currentModule ? getUserAccess(currentModule, userGroups).hasAdminAccess : false;
+
+    useEffect(() => {
+        setSortPatientBy(defaultSortBy(surveyFormType));
+        setDirectionSortPatientId("asc");
+        setDirectionSortPatientCode("asc");
+        setPage(0);
+    }, [surveyFormType]);
 
     const getOrgUnitByFormType = useCallback(() => {
         const currentPrevalenceHospitals = prevalenceHospitals
@@ -123,6 +146,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
 
         //Only Patient Forms are paginated.
         if (isPaginatedSurveyList(surveyFormType)) {
+            const effectiveSortBy =
+                surveyFormType === "PPSPatientRegister" ? sortPatientBy : "patientId";
+
+            const directionSortPatientBy =
+                effectiveSortBy === "patientId" ? directionSortPatientId : directionSortPatientCode;
+
             compositionRoot.surveys.getPaginatedSurveys
                 .execute({
                     surveyFormType: surveyFormType,
@@ -133,6 +162,8 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                     parentPatientId: currentCaseReportForm?.id,
                     page: page,
                     pageSize: pageSize,
+                    sortPatientBy: effectiveSortBy,
+                    sortDir: directionSortPatientBy,
                 })
                 .run(
                     paginatedSurveys => {
@@ -178,6 +209,9 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         currentCaseReportForm?.id,
         currentModule,
         pageSize,
+        sortPatientBy,
+        directionSortPatientId,
+        directionSortPatientCode,
     ]);
 
     return {
@@ -191,5 +225,10 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         setPageSize,
         total,
         setTotal,
+        directionSortPatientId,
+        setDirectionSortPatientId,
+        directionSortPatientCode,
+        setDirectionSortPatientCode,
+        setSortPatientBy,
     };
 }
