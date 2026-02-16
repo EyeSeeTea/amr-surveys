@@ -359,7 +359,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                     </TableContainer>
 
                     <TablePagination
-                        rowsPerPageOptions={[1, 10, 25]}
+                        rowsPerPageOptions={[10, 25, 50]}
                         component="div"
                         count={total || 0}
                         rowsPerPage={pageSize}

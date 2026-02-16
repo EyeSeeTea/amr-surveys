@@ -1,6 +1,6 @@
 import { FutureData } from "../../data/api-futures";
 import { Id } from "../entities/Ref";
-import { Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
+import { SurveyParentDetails, Survey, SURVEY_FORM_TYPES, SurveyBase } from "../entities/Survey";
 import { isPrevalencePatientChild } from "../utils/PPSProgramsHelper";
 import { PaginatedReponse } from "../entities/TablePagination";
 import { PaginatedSurveyRepository } from "../repositories/PaginatedSurveyRepository";
@@ -52,13 +52,27 @@ export class GetPaginatedSurveysUseCase {
             return this.paginatedSurveyRepo
                 .getSurveys(surveyFormType, programId, orgUnitId, parentId, page, pageSize)
                 .flatMap(surveys => {
-                    const surveysWithName = surveys.objects.map(survey => {
-                        return Future.join2(
-                            this.surveyReporsitory.getSurveyNameAndASTGuidelineFromId(
-                                survey.rootSurvey.id,
-                                survey.surveyFormType
-                            ),
-                            getChildCount({
+                    if (surveys.objects.length === 0) return Future.success(surveys);
+
+                    const $surveyParentDetails: Array<
+                        FutureData<readonly [Id, SurveyParentDetails]>
+                    > = _(surveys.objects)
+                        .groupBy(s => s.rootSurvey.id)
+                        .toPairs()
+                        .map(([rootSurveyId]) =>
+                            this.surveyReporsitory
+                                .getSurveyNameAndASTGuidelineFromId(rootSurveyId, surveyFormType)
+                                .map(details => [rootSurveyId, details] as const)
+                        );
+
+                    const $surveyParentDetailsByRootId: FutureData<Map<Id, SurveyParentDetails>> =
+                        Future.parallel($surveyParentDetails, { concurrency: 5 }).map(
+                            pairs => new Map<Id, SurveyParentDetails>(pairs)
+                        );
+
+                    return $surveyParentDetailsByRootId.flatMap(parentDetailsMap => {
+                        const surveysWithName = surveys.objects.map(survey => {
+                            return getChildCount({
                                 surveyFormType: surveyFormType,
                                 orgUnitId: survey.assignedOrgUnit.id,
                                 parentSurveyId: survey.rootSurvey.id,
@@ -67,39 +81,37 @@ export class GetPaginatedSurveysUseCase {
                                 programId: programId,
                                 modules: modules,
                                 currentModule: currentModule,
-                            })
-                        ).map(([parentDetails, childCount]): Survey => {
-                            const newRootSurvey: SurveyBase = {
-                                surveyType: survey.rootSurvey.surveyType,
-                                id: survey.rootSurvey.id,
-                                name:
-                                    survey.rootSurvey.name === ""
-                                        ? parentDetails.name
-                                        : survey.rootSurvey.name,
-                            };
+                            }).map((childCount): Survey => {
+                                const parentDetails = parentDetailsMap.get(survey.rootSurvey.id);
 
-                            const updatedSurvey: Survey = {
-                                ...survey,
-                                name:
-                                    surveyFormType === "PrevalenceCaseReportForm"
-                                        ? survey.uniquePatient?.id ?? survey.name
-                                        : survey.name,
-                                rootSurvey: newRootSurvey,
-                                childCount: childCount,
-                            };
-                            return updatedSurvey;
+                                const newRootSurvey: SurveyBase = {
+                                    surveyType: survey.rootSurvey.surveyType,
+                                    id: survey.rootSurvey.id,
+                                    name:
+                                        survey.rootSurvey.name === ""
+                                            ? parentDetails?.name ?? ""
+                                            : survey.rootSurvey.name,
+                                };
+
+                                return {
+                                    ...survey,
+                                    name:
+                                        surveyFormType === "PrevalenceCaseReportForm"
+                                            ? survey.uniquePatient?.id ?? survey.name
+                                            : survey.name,
+                                    rootSurvey: newRootSurvey,
+                                    childCount: childCount,
+                                };
+                            });
                         });
-                    });
 
-                    return Future.parallel(surveysWithName, { concurrency: 5 }).map(
-                        updatedSurveys => {
-                            const paginatedSurveys: PaginatedReponse<Survey[]> = {
+                        return Future.parallel(surveysWithName, { concurrency: 5 }).map(
+                            updatedSurveys => ({
                                 pager: surveys.pager,
                                 objects: updatedSurveys,
-                            };
-                            return paginatedSurveys;
-                        }
-                    );
+                            })
+                        );
+                    });
                 });
         });
     }

@@ -94,3 +94,5 @@ export interface Survey extends SurveyBase {
     childCount?: ChildCountLabel;
     facilityCode?: string;
 }
+
+export type SurveyParentDetails = { name: string; astGuidelineType?: ASTGUIDELINE_TYPES };
