@@ -134,7 +134,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         ? "desc"
                                                         : "asc";
                                                 setPatientIdSortDirection(nextDir);
-                                                sortByColumn("name", nextDir);
+                                                sortByColumn("uniquePatient.id", nextDir);
                                             }}
                                         >
                                             <span>
@@ -157,10 +157,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                         ? "desc"
                                                         : "asc";
                                                 setPatientCodeSortDirection(nextDir);
-                                                sortByColumn(
-                                                    "uniquePatient.code" as keyof Survey,
-                                                    nextDir
-                                                );
+                                                sortByColumn("uniquePatient.code", nextDir);
                                             }}
                                         >
                                             <span>

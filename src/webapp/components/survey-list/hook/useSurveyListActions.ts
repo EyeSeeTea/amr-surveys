@@ -22,6 +22,9 @@ import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
 export type SortDirection = "asc" | "desc";
+
+type SortableColumn = keyof Survey | "uniquePatient.id" | "uniquePatient.code";
+
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
@@ -162,7 +165,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     };
 
     const sortByColumn = useCallback(
-        (columnName: keyof Survey, sortDirection: SortDirection, childLabel?: string) => {
+        (columnName: SortableColumn, sortDirection: SortDirection, childLabel?: string) => {
             setSortedSurveys(prevSurveys => {
                 if (!prevSurveys) return prevSurveys;
 
@@ -188,7 +191,16 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                     if (columnName === "childCount") {
                         return childLabel ? getChildValue(survey) : 0;
                     }
-                    return survey[columnName];
+
+                    if (columnName === "uniquePatient.id") {
+                        return survey.uniquePatient?.id ?? "";
+                    }
+
+                    if (columnName === "uniquePatient.code") {
+                        return survey.uniquePatient?.code ?? "";
+                    }
+
+                    return survey[columnName as keyof Survey];
                 };
 
                 return _(prevSurveys)
