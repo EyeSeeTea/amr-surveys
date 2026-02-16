@@ -87,10 +87,10 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                 <TableRow>
                                     <TableCell
                                         onClick={() => {
-                                            surveyNameSortDirection === "asc"
-                                                ? setSurveyNameSortDirection("desc")
-                                                : setSurveyNameSortDirection("asc");
-                                            sortByColumn("name", surveyNameSortDirection);
+                                            const nextDir: SortDirection =
+                                                surveyNameSortDirection === "asc" ? "desc" : "asc";
+                                            setSurveyNameSortDirection(nextDir);
+                                            sortByColumn("name", nextDir);
                                         }}
                                     >
                                         <span>
@@ -127,13 +127,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                         <>
                                             <TableCell
                                                 onClick={() => {
-                                                    startDateSortDirection === "asc"
-                                                        ? setStartDateSortDirection("desc")
-                                                        : setStartDateSortDirection("asc");
-                                                    sortByColumn(
-                                                        "startDate",
-                                                        startDateSortDirection
-                                                    );
+                                                    const nextDir: SortDirection =
+                                                        startDateSortDirection === "asc"
+                                                            ? "desc"
+                                                            : "asc";
+                                                    setStartDateSortDirection(nextDir);
+                                                    sortByColumn("startDate", nextDir);
                                                 }}
                                             >
                                                 <span>
@@ -150,10 +149,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
 
                                             <TableCell
                                                 onClick={() => {
-                                                    statusSortDirection === "asc"
-                                                        ? setStatusSortDirection("desc")
-                                                        : setStatusSortDirection("asc");
-                                                    sortByColumn("status", statusSortDirection);
+                                                    const nextDir: SortDirection =
+                                                        statusSortDirection === "asc"
+                                                            ? "desc"
+                                                            : "asc";
+                                                    setStatusSortDirection(nextDir);
+                                                    sortByColumn("status", nextDir);
                                                 }}
                                             >
                                                 <span>
@@ -171,13 +172,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                             {surveyFormType === "PPSSurveyForm" && (
                                                 <TableCell
                                                     onClick={() => {
-                                                        surveyTypeSortDirection === "asc"
-                                                            ? setSurveyTypeSortDirection("desc")
-                                                            : setSurveyTypeSortDirection("asc");
-                                                        sortByColumn(
-                                                            "surveyType",
-                                                            surveyTypeSortDirection
-                                                        );
+                                                        const nextDir: SortDirection =
+                                                            surveyTypeSortDirection === "asc"
+                                                                ? "desc"
+                                                                : "asc";
+                                                        setSurveyTypeSortDirection(nextDir);
+                                                        sortByColumn("surveyType", nextDir);
                                                     }}
                                                 >
                                                     <span>
@@ -197,10 +197,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     {surveyFormType === "PPSWardRegister" && (
                                         <TableCell
                                             onClick={() => {
-                                                wardCodeSortDirection === "asc"
-                                                    ? setWardCodeSortDirection("desc")
-                                                    : setWardCodeSortDirection("asc");
-                                                sortByColumn("name", wardCodeSortDirection);
+                                                const nextDir: SortDirection =
+                                                    wardCodeSortDirection === "asc"
+                                                        ? "desc"
+                                                        : "asc";
+                                                setWardCodeSortDirection(nextDir);
+                                                sortByColumn("name", nextDir);
                                             }}
                                         >
                                             <span>
@@ -219,10 +221,12 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     {surveyFormType === "PPSHospitalForm" && (
                                         <TableCell
                                             onClick={() => {
-                                                hospitalCodeSortDirection === "asc"
-                                                    ? setHospitalCodeSortDirection("desc")
-                                                    : setHospitalCodeSortDirection("asc");
-                                                sortByColumn("name", hospitalCodeSortDirection);
+                                                const nextDir: SortDirection =
+                                                    hospitalCodeSortDirection === "asc"
+                                                        ? "desc"
+                                                        : "asc";
+                                                setHospitalCodeSortDirection(nextDir);
+                                                sortByColumn("name", nextDir);
                                             }}
                                         >
                                             <span>
@@ -241,10 +245,14 @@ export const SurveyListTable: React.FC<SurveyListTableProps> = ({
                                     {SURVEYS_WITH_CHILD_COUNT.includes(surveyFormType) && (
                                         <TableCell
                                             onClick={() => {
-                                                childrenSortDirection === "asc"
-                                                    ? setChildrenSortDirection("desc")
-                                                    : setChildrenSortDirection("asc");
-                                                sortByColumn("childCount", childrenSortDirection);
+                                                const nextDir: SortDirection =
+                                                    childrenSortDirection === "asc"
+                                                        ? "desc"
+                                                        : "asc";
+                                                setChildrenSortDirection(nextDir);
+                                                const columnName =
+                                                    getChildrenName(surveyFormType)[0] || "";
+                                                sortByColumn("childCount", nextDir, columnName);
                                             }}
                                         >
                                             <span>

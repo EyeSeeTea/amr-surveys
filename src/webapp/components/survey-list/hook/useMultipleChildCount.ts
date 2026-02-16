@@ -3,7 +3,11 @@ import { SortDirection } from "../table/PaginatedSurveyListTable";
 import { Survey } from "../../../../domain/entities/Survey";
 
 export const useMultipleChildCount = (
-    sortByColumn: (columnName: keyof Survey, sortDirection: SortDirection) => void
+    sortByColumn: (
+        columnName: keyof Survey,
+        sortDirection: SortDirection,
+        childLabel?: string
+    ) => void
 ) => {
     const [sampleShipmentsSortDirection, setSampleShipmentsSortDirection] =
         useState<SortDirection>("asc");
@@ -39,31 +43,31 @@ export const useMultipleChildCount = (
         switch (childOptionName) {
             case "Sample Shipment":
                 return () => {
-                    sampleShipmentsSortDirection === "asc"
-                        ? setSampleShipmentsSortDirection("desc")
-                        : setSampleShipmentsSortDirection("asc");
-                    sortByColumn("childCount", sampleShipmentsSortDirection);
+                    const nextDir: SortDirection =
+                        sampleShipmentsSortDirection === "asc" ? "desc" : "asc";
+                    setSampleShipmentsSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, "Sample Shipment");
                 };
             case "Central Ref Lab Results":
                 return () => {
-                    centralRefLabsResultsSortDirection === "asc"
-                        ? setCentralRefLabsResultsSortDirection("desc")
-                        : setCentralRefLabsResultsSortDirection("asc");
-                    sortByColumn("childCount", centralRefLabsResultsSortDirection);
+                    const nextDir: SortDirection =
+                        centralRefLabsResultsSortDirection === "asc" ? "desc" : "asc";
+                    setCentralRefLabsResultsSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, "Central Ref Lab Results");
                 };
             case "Pathogen Isolates Logs":
                 return () => {
-                    pathogenIsolatesLogsSortDirection === "asc"
-                        ? setPathogenIsolatesLogsSortDirection("desc")
-                        : setPathogenIsolatesLogsSortDirection("asc");
-                    sortByColumn("childCount", pathogenIsolatesLogsSortDirection);
+                    const nextDir: SortDirection =
+                        pathogenIsolatesLogsSortDirection === "asc" ? "desc" : "asc";
+                    setPathogenIsolatesLogsSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, "Pathogen Isolates Logs");
                 };
             case "Supranational Ref Results":
                 return () => {
-                    supranationalRefsResultsSortDirection === "asc"
-                        ? setSupranationalRefsResultsSortDirection("desc")
-                        : setSupranationalRefsResultsSortDirection("asc");
-                    sortByColumn("childCount", supranationalRefsResultsSortDirection);
+                    const nextDir: SortDirection =
+                        supranationalRefsResultsSortDirection === "asc" ? "desc" : "asc";
+                    setSupranationalRefsResultsSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, "Supranational Ref Results");
                 };
             default:
                 return undefined;

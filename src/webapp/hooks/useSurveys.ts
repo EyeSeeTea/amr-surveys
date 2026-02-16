@@ -9,6 +9,17 @@ import { GLOBAL_OU_ID } from "../../domain/usecases/SaveFormDataUseCase";
 import i18n from "../../utils/i18n";
 
 const PAGE_SIZE = 10;
+
+const getPageSizeFromLocalStorage = (): number => {
+    try {
+        const storedPageSize = localStorage.getItem("pageSize");
+        const parsed = storedPageSize ? parseInt(storedPageSize, 10) : NaN;
+        return Number.isFinite(parsed) ? parsed : PAGE_SIZE;
+    } catch {
+        return PAGE_SIZE;
+    }
+};
+
 export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot, prevalenceHospitals } = useAppContext();
     const [surveys, setSurveys] = useState<Survey[]>();
@@ -16,7 +27,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
     const [surveysError, setSurveysError] = useState<string>();
     const [shouldRefreshSurveys, setRefreshSurveys] = useState({});
     const [page, setPage] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
+    const [pageSize, setPageSize] = useState<number>(getPageSizeFromLocalStorage());
     const [total, setTotal] = useState<number>();
     const {
         currentPPSSurveyForm,
@@ -121,13 +132,12 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
                     parentWardRegisterId: currentWardRegister?.id,
                     parentPatientId: currentCaseReportForm?.id,
                     page: page,
-                    pageSize: PAGE_SIZE,
+                    pageSize: pageSize,
                 })
                 .run(
                     paginatedSurveys => {
                         setSurveys(paginatedSurveys.objects);
                         setTotal(paginatedSurveys.pager.total);
-                        setPageSize(paginatedSurveys.pager.pageSize);
                         setLoadingSurveys(false);
                     },
                     err => {
@@ -167,6 +177,7 @@ export function useSurveys(surveyFormType: SURVEY_FORM_TYPES) {
         isAdmin,
         currentCaseReportForm?.id,
         currentModule,
+        pageSize,
     ]);
 
     return {

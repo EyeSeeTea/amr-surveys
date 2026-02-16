@@ -39,6 +39,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
         page,
         setPage,
         pageSize,
+        setPageSize,
         total,
         setTotal,
         setRefreshSurveys,
@@ -171,6 +172,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ surveyFormType }) => {
                             page={page}
                             setPage={setPage}
                             pageSize={pageSize}
+                            setPageSize={setPageSize}
                             total={total}
                             refreshSurveys={setRefreshSurveys}
                         />

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import {
     Survey,
@@ -161,14 +161,43 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-        setSortedSurveys(surveys => {
-            if (surveys)
-                return _(surveys)
-                    .sortBy(x => x[columnName], { direction: sortDirection })
+    const sortByColumn = useCallback(
+        (columnName: keyof Survey, sortDirection: SortDirection, childLabel?: string) => {
+            setSortedSurveys(prevSurveys => {
+                if (!prevSurveys) return prevSurveys;
+
+                const getChildValue = (survey: Survey) => {
+                    const count = survey.childCount;
+                    if (!count) return 0;
+
+                    if (count.type === "number") return Number(count.value ?? 0);
+
+                    if (count.type === "map") {
+                        const item = (count.value ?? []).find(value =>
+                            value?.option?.label
+                                ?.toLowerCase()
+                                .trim()
+                                .includes(childLabel?.toLowerCase().trim() ?? "")
+                        );
+                        return Number(item?.count ?? 0);
+                    }
+                    return 0;
+                };
+
+                const getValue = (survey: Survey) => {
+                    if (columnName === "childCount") {
+                        return childLabel ? getChildValue(survey) : 0;
+                    }
+                    return survey[columnName];
+                };
+
+                return _(prevSurveys)
+                    .sortBy(s => getValue(s), { direction: sortDirection })
                     .value();
-        });
-    };
+            });
+        },
+        []
+    );
 
     const updateSelectedSurveyDetails = (
         survey: SurveyBase,

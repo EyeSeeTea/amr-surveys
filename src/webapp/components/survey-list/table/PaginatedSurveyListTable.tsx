@@ -18,7 +18,7 @@ import {
 import i18n from "@eyeseetea/feedback-component/locales";
 import { ActionMenuButton } from "../../action-menu-button/ActionMenuButton";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import _ from "../../../../domain/entities/generic/Collection";
 import { useDeleteSurvey } from "../hook/useDeleteSurvey";
@@ -34,6 +34,7 @@ interface PaginatedSurveyListTableProps {
     refreshSurveys: Dispatch<SetStateAction<{}>>;
     page: number;
     setPage: Dispatch<SetStateAction<number>>;
+    setPageSize: Dispatch<SetStateAction<number>>;
     pageSize: number;
     total?: number;
 }
@@ -46,6 +47,7 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
     page,
     setPage,
     pageSize,
+    setPageSize,
     total,
 }) => {
     const { snackbar, offlineError } = useOfflineSnackbar();
@@ -84,6 +86,16 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
         }
     }, [deleteCompleteState, snackbar, surveys, offlineError, setSortedSurveys]);
 
+    const handleChangeRowsPerPage = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const nextPageSize = parseInt(event.target.value, 10);
+            setPageSize(nextPageSize);
+            setPage(0);
+            localStorage.setItem("pageSize", String(nextPageSize));
+        },
+        [setPage, setPageSize]
+    );
+
     return (
         <ContentLoader loading={loading} error="" showErrorAsSnackbar={false}>
             {sortedSurveys && (
@@ -94,10 +106,10 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                 <TableRow>
                                     <TableCell
                                         onClick={() => {
-                                            surveyNameSortDirection === "asc"
-                                                ? setSurveyNameSortDirection("desc")
-                                                : setSurveyNameSortDirection("asc");
-                                            sortByColumn("name", surveyNameSortDirection);
+                                            const nextDir: SortDirection =
+                                                surveyNameSortDirection === "asc" ? "desc" : "asc";
+                                            setSurveyNameSortDirection(nextDir);
+                                            sortByColumn("name", nextDir);
                                         }}
                                     >
                                         <span>
@@ -117,13 +129,12 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                         isPrevalencePatientChild(surveyFormType)) && (
                                         <TableCell
                                             onClick={() => {
-                                                patientIdSortDirection === "asc"
-                                                    ? setPatientIdSortDirection("desc")
-                                                    : setPatientIdSortDirection("asc");
-                                                sortByColumn(
-                                                    "uniquePatient.id" as keyof Survey,
-                                                    patientIdSortDirection
-                                                );
+                                                const nextDir: SortDirection =
+                                                    patientIdSortDirection === "asc"
+                                                        ? "desc"
+                                                        : "asc";
+                                                setPatientIdSortDirection(nextDir);
+                                                sortByColumn("name", nextDir);
                                             }}
                                         >
                                             <span>
@@ -141,12 +152,14 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                     {surveyFormType === "PPSPatientRegister" && (
                                         <TableCell
                                             onClick={() => {
-                                                patientCodeSortDirection === "asc"
-                                                    ? setPatientCodeSortDirection("desc")
-                                                    : setPatientCodeSortDirection("asc");
+                                                const nextDir: SortDirection =
+                                                    patientCodeSortDirection === "asc"
+                                                        ? "desc"
+                                                        : "asc";
+                                                setPatientCodeSortDirection(nextDir);
                                                 sortByColumn(
                                                     "uniquePatient.code" as keyof Survey,
-                                                    patientCodeSortDirection
+                                                    nextDir
                                                 );
                                             }}
                                         >
@@ -346,12 +359,13 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                     </TableContainer>
 
                     <TablePagination
-                        rowsPerPageOptions={[]}
+                        rowsPerPageOptions={[1, 10, 25]}
                         component="div"
                         count={total || 0}
                         rowsPerPage={pageSize}
                         page={page}
                         onPageChange={(_e, page) => setPage(page)}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </TableContentWrapper>
             )}
