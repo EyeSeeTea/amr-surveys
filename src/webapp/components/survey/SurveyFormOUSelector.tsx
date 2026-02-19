@@ -15,11 +15,12 @@ import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { useSurveyFormOUSelector } from "./hook/useSurveyFormOUSelector";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
 import _c from "../../../domain/entities/generic/Collection";
+import { Maybe } from "../../../utils/ts-utils";
 
 export interface SurveyFormOUSelectorProps {
     formType: SURVEY_FORM_TYPES;
     currentOrgUnit: OrgUnitAccess | undefined;
-    setCurrentOrgUnit: React.Dispatch<React.SetStateAction<OrgUnitAccess | undefined>>;
+    setCurrentOrgUnit: (orgUnit: Maybe<OrgUnitAccess>) => void;
     currentSurveyId: Id | undefined;
 }
 

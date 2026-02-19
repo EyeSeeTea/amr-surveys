@@ -3,10 +3,11 @@ import { Id } from "../../../../domain/entities/Ref";
 import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useAppContext } from "../../../contexts/app-context";
+import { Maybe } from "../../../../utils/ts-utils";
 
 export function useSurveyFormOUSelector(
     formType: SURVEY_FORM_TYPES,
-    setCurrentOrgUnit: React.Dispatch<React.SetStateAction<OrgUnitAccess | undefined>>,
+    setCurrentOrgUnit: (orgUnit: Maybe<OrgUnitAccess>) => void,
     currentSurveyId: Id | undefined
 ) {
     const [ouSelectorErrMsg, setOUSelectorErrMsg] = useState<string>();
