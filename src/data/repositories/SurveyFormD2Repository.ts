@@ -5,7 +5,12 @@ import { SurveyRepository } from "../../domain/repositories/SurveyRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import _ from "../../domain/entities/generic/Collection";
 import { ImportStrategy } from "../../domain/entities/Program";
-import { ChildCount, Survey, SURVEY_FORM_TYPES } from "../../domain/entities/Survey";
+import {
+    ChildCount,
+    Survey,
+    SURVEY_FORM_TYPES,
+    SurveyParentDetails,
+} from "../../domain/entities/Survey";
 import {
     TrackedEntitiesGetResponse,
     D2TrackedEntityInstanceToPost,
@@ -42,7 +47,6 @@ import {
     trackedEntityFields,
 } from "../utils/surveyListMappers";
 import { Questionnaire } from "../../domain/entities/Questionnaire/Questionnaire";
-import { ASTGUIDELINE_TYPES } from "../../domain/entities/ASTGuidelines";
 import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
 import { TrackerPostRequest, TrackerPostResponse } from "@eyeseetea/d2-api/api/tracker";
 import { Maybe } from "../../utils/ts-utils";
@@ -477,7 +481,7 @@ export class SurveyD2Repository implements SurveyRepository {
     getSurveyNameAndASTGuidelineFromId(
         id: Id,
         surveyFormType: SURVEY_FORM_TYPES
-    ): FutureData<{ name: string; astGuidelineType?: ASTGUIDELINE_TYPES }> {
+    ): FutureData<SurveyParentDetails> {
         const parentSurveyType = getSurveyType(surveyFormType);
 
         return this.getEventProgramById(id)

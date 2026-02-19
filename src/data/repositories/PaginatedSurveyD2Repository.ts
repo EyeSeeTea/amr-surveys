@@ -10,6 +10,7 @@ import { getParentDataElementForProgram, isTrackerProgram } from "../utils/surve
 import {
     AMR_SURVEYS_PREVALENCE_TEA_SURVEY_ID_CRF,
     AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
+    keyToDataElementMap,
     PPS_PATIENT_REGISTER_ID,
     PREVALENCE_CASE_REPORT_FORM_ID,
     SURVEY_PATIENT_CODE_TEA_ID,
@@ -25,6 +26,7 @@ import { getSurveyChildCount } from "../utils/surveyChildCountHelper";
 import { DataStoreClient } from "../DataStoreClient";
 import { AMRSurveyModule } from "../../domain/entities/AMRSurveyModule";
 import { DataStoreKeys } from "../DataStoreKeys";
+import { TrackedOrderBase } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 
 export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
     modules: AMRSurveyModule[] = [];
@@ -46,7 +48,9 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortPatientBy?: "patientId" | "patientCode",
+        sortDir?: "asc" | "desc"
     ): FutureData<PaginatedReponse<Survey[]>> {
         return isTrackerProgram(programId, this.modules)
             ? this.getTrackerProgramSurveys(
@@ -55,7 +59,9 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   orgUnitId,
                   parentId,
                   page,
-                  pageSize
+                  pageSize,
+                  sortDir,
+                  sortPatientBy
               )
             : this.getEventProgramSurveys(
                   surveyFormType,
@@ -63,8 +69,36 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                   orgUnitId,
                   parentId,
                   page,
-                  pageSize
+                  pageSize,
+                  sortDir,
+                  sortPatientBy
               );
+    }
+
+    private buildOrderForTrackerEntitiesSort(
+        surveyFormType: SURVEY_FORM_TYPES,
+        sortDir?: "asc" | "desc",
+        sortPatientBy?: "patientId" | "patientCode"
+    ): TrackedOrderBase[] | undefined {
+        if (!sortDir) return undefined;
+
+        if (surveyFormType === "PrevalenceCaseReportForm") {
+            return [
+                {
+                    type: "trackedEntityAttributeId",
+                    id: AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
+                    direction: sortDir,
+                },
+            ];
+        }
+        if (surveyFormType === "PPSPatientRegister") {
+            const effective = sortPatientBy ?? "patientId";
+            const id =
+                effective === "patientCode" ? SURVEY_PATIENT_CODE_TEA_ID : SURVEY_PATIENT_ID_TEA_ID;
+            return [{ type: "trackedEntityAttributeId", id, direction: sortDir }];
+        }
+
+        return undefined;
     }
 
     getTrackerProgramSurveys(
@@ -73,11 +107,15 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         orgUnitId: Id,
         parentId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortDir?: "asc" | "desc",
+        sortPatientBy?: "patientId" | "patientCode"
     ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode = "SELECTED";
 
         const filterParentDEId = getParentDataElementForProgram(programId, this.modules);
+
+        const order = this.buildOrderForTrackerEntitiesSort(surveyFormType, sortDir, sortPatientBy);
 
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
@@ -89,6 +127,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize,
                 totalPages: true,
                 filter: `${filterParentDEId}:eq:${parentId}`,
+                ...(order ? { order: order } : {}),
             })
         ).flatMap(trackedEntities => {
             const instances = trackedEntities.instances;
@@ -107,15 +146,33 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
         });
     }
 
+    private getDataElementUidForEventSort(
+        surveyFormType: SURVEY_FORM_TYPES,
+        sortPatientBy?: "patientId" | "patientCode"
+    ): string | undefined {
+        const effectiveSortBy =
+            surveyFormType === "PrevalenceCaseReportForm"
+                ? "patientId"
+                : sortPatientBy ?? "patientId";
+
+        const entry = keyToDataElementMap.find(m => m.key === effectiveSortBy);
+        return entry?.dataElements?.[0];
+    }
+
     getEventProgramSurveys(
         surveyFormType: SURVEY_FORM_TYPES,
         programId: Id,
         orgUnitId: Id,
         parentId: Id | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortDir?: "asc" | "desc",
+        sortPatientBy?: "patientId" | "patientCode"
     ): FutureData<PaginatedReponse<Survey[]>> {
         const ouMode = "SELECTED";
+        const dataElementUid = this.getDataElementUidForEventSort(surveyFormType, sortPatientBy);
+        const order = sortDir && dataElementUid ? `${dataElementUid}:${sortDir}` : undefined;
+
         return apiToFuture(
             this.api.tracker.events.get({
                 fields: { $all: true },
@@ -126,6 +183,7 @@ export class PaginatedSurveyD2Repository implements PaginatedSurveyRepository {
                 pageSize,
                 totalPages: true,
                 filter: `${WARD_ID_TEA_ID}:eq:${parentId}`,
+                ...(order ? { order: order } : {}),
             })
         ).flatMap(response => {
             const events = response.instances;
