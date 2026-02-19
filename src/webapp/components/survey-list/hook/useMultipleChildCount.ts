@@ -17,6 +17,13 @@ export const useMultipleChildCount = (
         useState<SortDirection>("asc");
     const [supranationalRefsResultsSortDirection, setSupranationalRefsResultsSortDirection] =
         useState<SortDirection>("asc");
+    const [followUpSortDirection, setFollowUpSortDirection] = useState<SortDirection>("asc");
+    const [dischargeClinicalSortDirection, setDischargeClinicalSortDirection] =
+        useState<SortDirection>("asc");
+    const [dischargeEconomicSortDirection, setDischargeEconomicSortDirection] =
+        useState<SortDirection>("asc");
+    const [cohortEnrolmentSortDirection, setCohortEnrolmentSortDirection] =
+        useState<SortDirection>("asc");
 
     const getCurrentSortDirection = (childOptionName: string): SortDirection => {
         switch (childOptionName) {
@@ -29,10 +36,13 @@ export const useMultipleChildCount = (
             case "Supranational Ref Results":
                 return supranationalRefsResultsSortDirection;
             case "Follow-up":
+                return followUpSortDirection;
             case "Discharge - Clinical":
+                return dischargeClinicalSortDirection;
             case "Discharge - Economic":
+                return dischargeEconomicSortDirection;
             case "Cohort enrolment":
-                return "asc";
+                return cohortEnrolmentSortDirection;
 
             default:
                 throw new Error(`Invalid child option name: ${childOptionName}`);
@@ -72,6 +82,34 @@ export const useMultipleChildCount = (
                     setSupranationalRefsResultsSortDirection(nextDir);
                     sortByColumn("childCount", nextDir, childIndex);
                 };
+            case "Follow-up":
+                return () => {
+                    const nextDir: SortDirection = followUpSortDirection === "asc" ? "desc" : "asc";
+                    setFollowUpSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, childIndex);
+                };
+            case "Discharge - Clinical":
+                return () => {
+                    const nextDir: SortDirection =
+                        dischargeClinicalSortDirection === "asc" ? "desc" : "asc";
+                    setDischargeClinicalSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, childIndex);
+                };
+            case "Discharge - Economic":
+                return () => {
+                    const nextDir: SortDirection =
+                        dischargeEconomicSortDirection === "asc" ? "desc" : "asc";
+                    setDischargeEconomicSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, childIndex);
+                };
+            case "Cohort enrolment":
+                return () => {
+                    const nextDir: SortDirection =
+                        cohortEnrolmentSortDirection === "asc" ? "desc" : "asc";
+                    setCohortEnrolmentSortDirection(nextDir);
+                    sortByColumn("childCount", nextDir, childIndex);
+                };
+
             default:
                 return undefined;
         }
