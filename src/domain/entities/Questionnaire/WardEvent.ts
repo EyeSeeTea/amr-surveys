@@ -1,8 +1,14 @@
 import { Id } from "../Ref";
 
-export type WardEvent = {
-    eventDate: Date;
+export type WardEventDetails = {
     formId: Id;
     specialtyCode: string;
     wardId: string;
+};
+
+export type WardEvent = {
+    rootSurveyId: Id;
+    rootSurveyName: string;
+    startDate: Date;
+    events: WardEventDetails[];
 };

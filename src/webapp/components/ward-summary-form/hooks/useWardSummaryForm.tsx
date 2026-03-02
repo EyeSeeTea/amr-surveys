@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormValue, WardForm } from "../../../../domain/entities/Questionnaire/WardForm";
 import { useAppContext } from "../../../contexts/app-context";
 import { Maybe } from "../../../../utils/ts-utils";
@@ -23,6 +23,7 @@ export function useWardSummaryForm() {
     const [wardEvents, setWardEvents] = useState<WardEvent[]>();
     const [error, setError] = useState<string>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [selectedRootSurvey, setSelectedRootSurvey] = useState<Id>();
     const [selectedPeriod, setSelectedPeriod] = useState<string>();
     const [wardSummaryForms, setWardSummaryForm] = useState<WardForm[]>([]);
 
@@ -51,9 +52,17 @@ export function useWardSummaryForm() {
 
     useEffect(() => {
         if (currentOrgUnit?.orgUnitId && selectedPeriod && wardEvents) {
+            const wardEventDetails = wardEvents.find(
+                wardEvent => wardEvent.rootSurveyId === selectedRootSurvey
+            )?.events;
+
+            if (!wardEventDetails) {
+                setError("No ward event found for the selected root survey");
+                return;
+            }
             setLoading(true);
             compositionRoot.surveys.getWardForm
-                .execute(currentOrgUnit.orgUnitId, selectedPeriod, wardEvents)
+                .execute(currentOrgUnit.orgUnitId, selectedPeriod, wardEventDetails)
                 .run(
                     wardSummaryForm => {
                         setWardSummaryForm(wardSummaryForm);
@@ -65,7 +74,16 @@ export function useWardSummaryForm() {
                     }
                 );
         }
-    }, [currentOrgUnit, selectedPeriod, compositionRoot.surveys, wardEvents]);
+    }, [currentOrgUnit, selectedPeriod, compositionRoot.surveys, wardEvents, selectedRootSurvey]);
+
+    const rootSurveyOptions = useMemo(
+        () =>
+            wardEvents?.map(wardEvent => ({
+                id: wardEvent.rootSurveyId,
+                name: wardEvent.rootSurveyName,
+            })) ?? [],
+        [wardEvents]
+    );
 
     const getCellBackgroundColor = useCallback(
         (formValue: FormValue) => {
@@ -85,11 +103,12 @@ export function useWardSummaryForm() {
             if (!orgUnit) return;
 
             setSelectedPeriod(undefined);
+            setSelectedRootSurvey(undefined);
             setWardSummaryForm([]);
             setWardEvents(undefined);
             setError(undefined);
             setLoading(true);
-            compositionRoot.surveys.getWardEvents.execute(orgUnit.orgUnitId).run(
+            compositionRoot.surveys.getWardEvents.execute(orgUnit).run(
                 wardEvents => {
                     setWardEvents(wardEvents);
                     setCurrentOrgUnit(orgUnit);
@@ -145,16 +164,25 @@ export function useWardSummaryForm() {
         }
     }, []);
 
+    const updateRootSurvey = useCallback((rootSurveyId: Maybe<Id>) => {
+        if (rootSurveyId) {
+            setSelectedRootSurvey(rootSurveyId);
+        }
+    }, []);
+
     return {
         currentOrgUnit: currentOrgUnit,
         wardEvents: wardEvents,
         error: error,
         loading: loading,
+        rootSurveyOptions: rootSurveyOptions,
         selectedPeriod: selectedPeriod,
+        selectedRootSurvey: selectedRootSurvey,
         wardSummaryForms: wardSummaryForms,
         getCellBackgroundColor: getCellBackgroundColor,
         saveCurrentOrgUnit: saveCurrentOrgUnit,
         saveWardSummaryForm: saveWardSummaryForm,
+        updateRootSurvey: updateRootSurvey,
         updateWardSummaryPeriod: updateWardSummaryPeriod,
     };
 }
