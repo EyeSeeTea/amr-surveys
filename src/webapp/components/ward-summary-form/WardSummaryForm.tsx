@@ -49,7 +49,7 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
                     value={selectedRootSurvey}
                     options={rootSurveyOptions}
                     onChange={updateRootSurvey}
-                    disabled={wardEvents?.length === 0}
+                    disabled={!currentOrgUnit}
                 />
 
                 <DropdownSelectWidget
