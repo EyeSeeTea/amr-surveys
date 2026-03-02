@@ -42,8 +42,6 @@ export class WardEventD2Repository implements WardEventRepository {
                 };
             });
 
-            console.log({ surveyWardEvents, wardEvents });
-
             return Future.success(wardEvents);
         });
     }
