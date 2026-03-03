@@ -112,6 +112,7 @@ export function useWardSummaryForm() {
                 wardEvents => {
                     setWardEvents(wardEvents);
                     setCurrentOrgUnit(orgUnit);
+                    if (wardEvents.length === 1) setSelectedRootSurvey(wardEvents[0]?.rootSurveyId);
                     setLoading(false);
                 },
                 error => {

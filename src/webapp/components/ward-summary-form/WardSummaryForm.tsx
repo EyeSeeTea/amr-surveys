@@ -45,7 +45,7 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
 
             <FormFilters>
                 <DropdownSelectWidget
-                    label="Root survey"
+                    label="Survey"
                     value={selectedRootSurvey}
                     options={rootSurveyOptions}
                     onChange={updateRootSurvey}
