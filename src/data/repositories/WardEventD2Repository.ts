@@ -56,69 +56,70 @@ export class WardEventD2Repository implements WardEventRepository {
                 orgUnit: countryOU.orgUnitId,
                 ouMode: "SELECTED",
             })
-        )
-            .flatMap(({ instances }) => {
-                const events = _c(instances)
-                    .compactMap(instance => {
-                        const getDataValue = (dataElementId: string) =>
-                            instance.dataValues.find(dv => dv.dataElement === dataElementId)?.value;
-                        const rootSurveyName = getDataValue(PREVALENCE_SURVEY_NAME_DATAELEMENT_ID);
-                        const startDate = getDataValue(PREVALENCE_START_DATE_DATAELEMENT_ID);
+        ).flatMap(({ instances }) => {
+            const events = _c(instances)
+                .compactMap(instance => {
+                    const getDataValue = (dataElementId: string) =>
+                        instance.dataValues.find(dv => dv.dataElement === dataElementId)?.value;
+                    const rootSurveyName = getDataValue(PREVALENCE_SURVEY_NAME_DATAELEMENT_ID);
+                    const startDate = getDataValue(PREVALENCE_START_DATE_DATAELEMENT_ID);
 
-                        if (!rootSurveyName || !startDate) {
-                            console.warn(
-                                `Missing root survey name or start date for survey with id ${instance.event}`
-                            );
-                            return undefined;
-                        }
+                    if (!rootSurveyName || !startDate) {
+                        console.warn(
+                            `Missing root survey name or start date for survey with id ${instance.event}`
+                        );
+                        return undefined;
+                    }
 
-                        return {
-                            rootSurveyId: instance.event,
-                            rootSurveyName: rootSurveyName,
-                            startDate: new Date(startDate),
-                        };
-                    })
-                    .value();
+                    return {
+                        rootSurveyId: instance.event,
+                        rootSurveyName: rootSurveyName,
+                        startDate: new Date(startDate),
+                    };
+                })
+                .value();
 
-                return Future.parallel(
-                    events.map(countryEvent =>
-                        this.getFacilityEvents(facility.orgUnitId, countryEvent)
-                    ),
-                    { concurrency: 5 }
-                );
-            })
-            .flatMap(facilityEvents =>
-                Future.success(
-                    facilityEvents.filter(facilityEvent => facilityEvent.events.length > 0)
-                )
-            );
+            return this.getFacilityEvents(facility.orgUnitId, events);
+        });
     }
 
     private getFacilityEvents(
         facilityId: Id,
-        countryEvent: { rootSurveyId: string; rootSurveyName: string; startDate: Date }
+        events: { rootSurveyId: string; rootSurveyName: string; startDate: Date }[]
     ) {
+        const rootSurveyIds = events.map(e => e.rootSurveyId).join(";");
         return apiToFuture(
             this.api.tracker.trackedEntities.get({
                 fields: trackedEntityFields,
                 program: PREVALENCE_FACILITY_LEVEL_FORM_ID,
                 orgUnit: facilityId,
                 ouMode: "DESCENDANTS",
-                filter: `${SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID}:eq:${countryEvent.rootSurveyId}`,
+                filter: `${SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID}:in:${rootSurveyIds}`,
             })
         ).flatMap(({ instances }) =>
-            Future.success({
-                ...countryEvent,
-                events: instances
-                    .flatMap(instance =>
-                        instance.enrollments.flatMap(enrollment => enrollment.events)
-                    )
-                    .filter(
-                        event =>
-                            event.programStage === WARD_DATA_PROGRAM_STAGE_ID &&
-                            event.dataValues.length > 0
-                    ),
-            })
+            Future.success(
+                events
+                    .map(event => ({
+                        ...event,
+                        events: instances.flatMap(instance => {
+                            const matchesRootSurveyId =
+                                instance.attributes.find(
+                                    attr =>
+                                        attr.attribute === SURVEY_ID_FACILITY_LEVEL_DATAELEMENT_ID
+                                )?.value === event.rootSurveyId;
+                            if (!matchesRootSurveyId) return [];
+
+                            return instance.enrollments
+                                .flatMap(enrollment => enrollment.events)
+                                .filter(
+                                    event =>
+                                        event.programStage === WARD_DATA_PROGRAM_STAGE_ID &&
+                                        event.dataValues.length > 0
+                                );
+                        }),
+                    }))
+                    .filter(facilityEvent => facilityEvent.events.length > 0)
+            )
         );
     }
 
