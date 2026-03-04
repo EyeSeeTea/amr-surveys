@@ -21,15 +21,18 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
         currentOrgUnit,
         error,
         loading,
+        rootSurveyOptions,
         selectedPeriod,
+        selectedRootSurvey,
         wardEvents,
         wardSummaryForms,
         getCellBackgroundColor,
         saveCurrentOrgUnit,
         saveWardSummaryForm,
+        updateRootSurvey,
         updateWardSummaryPeriod,
     } = useWardSummaryForm();
-    const selectablePeriods = useSelectablePeriods(wardEvents);
+    const selectablePeriods = useSelectablePeriods(selectedRootSurvey, wardEvents);
 
     return (
         <Container>
@@ -42,11 +45,19 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
 
             <FormFilters>
                 <DropdownSelectWidget
+                    label="Survey"
+                    value={selectedRootSurvey}
+                    options={rootSurveyOptions}
+                    onChange={updateRootSurvey}
+                    disabled={!currentOrgUnit}
+                />
+
+                <DropdownSelectWidget
                     label="Period"
                     value={selectedPeriod}
                     options={selectablePeriods}
                     onChange={updateWardSummaryPeriod}
-                    disabled={wardEvents?.length === 0}
+                    disabled={wardEvents?.length === 0 || !selectedRootSurvey}
                 />
             </FormFilters>
 
@@ -85,7 +96,7 @@ const NoFormsMessage: React.FC<{
         return (
             <p>
                 {i18n.t(
-                    "Please select a period and org unit to view ward summary statistics forms."
+                    "Please select a root survey, period, and org unit to view ward summary statistics forms."
                 )}
             </p>
         );
@@ -93,7 +104,7 @@ const NoFormsMessage: React.FC<{
         return (
             <p>
                 {i18n.t(
-                    "No ward summary statistics forms found for the selected period and org unit."
+                    "No ward summary statistics forms found for the selected root survey, period and org unit."
                 )}
             </p>
         );

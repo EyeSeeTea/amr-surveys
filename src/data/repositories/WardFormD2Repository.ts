@@ -7,7 +7,7 @@ import { Future } from "../../domain/entities/generic/Future";
 import { WARD_SUMMARY_STATISTICS_FORM_ID } from "../entities/D2Survey";
 import _c from "../../domain/entities/generic/Collection";
 import { Maybe } from "../../utils/ts-utils";
-import { WardEvent } from "../../domain/entities/Questionnaire/WardEvent";
+import { WardEventDetails } from "../../domain/entities/Questionnaire/WardEvent";
 
 type WardSummaryDataSet = {
     name: string;
@@ -18,7 +18,7 @@ type WardSummaryDataSet = {
 export class WardFormD2Repository implements WardFormRepository {
     constructor(private api: D2Api) {}
 
-    get(facilityId: Id, period: string, wardEvents: WardEvent[]): FutureData<WardForm[]> {
+    get(facilityId: Id, period: string, wardEvents: WardEventDetails[]): FutureData<WardForm[]> {
         return this.getWardSummaryDataSet().flatMap(dataSet =>
             this.getDataValues(facilityId, period, wardEvents).map(dataValues =>
                 this.mapToWardForms(wardEvents, dataValues, dataSet)
@@ -56,7 +56,7 @@ export class WardFormD2Repository implements WardFormRepository {
     private getDataValues(
         facilityId: Id,
         period: string,
-        wardEvents: WardEvent[]
+        wardEvents: WardEventDetails[]
     ): FutureData<FormValue[]> {
         return apiToFuture(
             this.api.dataValues.getSet({
@@ -78,7 +78,7 @@ export class WardFormD2Repository implements WardFormRepository {
     }
 
     private mapToWardForms(
-        wardEvents: WardEvent[],
+        wardEvents: WardEventDetails[],
         formValues: FormValue[],
         dataSet: WardSummaryDataSet
     ): WardForm[] {
@@ -89,7 +89,7 @@ export class WardFormD2Repository implements WardFormRepository {
     }
 
     private mapEventToWardForm(
-        wardEvent: WardEvent,
+        wardEvent: WardEventDetails,
         formValues: FormValue[],
         dataSet: WardSummaryDataSet
     ): Maybe<WardForm> {
@@ -115,7 +115,7 @@ export class WardFormD2Repository implements WardFormRepository {
     }
 
     private getRows(
-        wardEvent: WardEvent,
+        wardEvent: WardEventDetails,
         formValues: FormValue[],
         dataSet: WardSummaryDataSet,
         columns: NamedRef[]
@@ -138,7 +138,7 @@ export class WardFormD2Repository implements WardFormRepository {
     private getSingleRow(
         dataElement: NamedRef & { categoryOptionCombos: NamedRef[] },
         columns: NamedRef[],
-        wardEvent: WardEvent,
+        wardEvent: WardEventDetails,
         formValues: FormValue[]
     ): Row {
         const rowItems = columns.map(column =>
