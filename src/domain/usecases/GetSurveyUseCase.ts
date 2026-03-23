@@ -7,12 +7,14 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
+    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_TEA_ID,
     WARD_ID_TEA_ID,
     parentPrevalenceSurveyIdList,
 } from "../../data/entities/D2Survey";
 import { isTrackerProgram } from "../../data/utils/surveyProgramHelper";
+import { Maybe } from "../../utils/ts-utils";
 import { Future } from "../entities/generic/Future";
 import {
     Questionnaire,
@@ -21,7 +23,7 @@ import {
 } from "../entities/Questionnaire/Questionnaire";
 import { Question } from "../entities/Questionnaire/QuestionnaireQuestion";
 import { QuestionnaireSection } from "../entities/Questionnaire/QuestionnaireSection";
-import { Id } from "../entities/Ref";
+import { Id, NamedRef } from "../entities/Ref";
 import { SURVEY_FORM_TYPES } from "../entities/Survey";
 import { ModuleRepository } from "../repositories/ModuleRepository";
 import { SurveyRepository } from "../repositories/SurveyRepository";
@@ -35,10 +37,10 @@ export class GetSurveyUseCase {
 
     public execute(
         surveyFormType: SURVEY_FORM_TYPES,
-        parentPPSSurveyId: Id | undefined,
-        parentWardRegisterId: Id | undefined,
-        parentPrevalenceSurveyId: Id | undefined,
-        parentCaseReportId: Id | undefined
+        parentPPSSurveyId: Maybe<Id>,
+        parentWardRegisterId: Maybe<Id>,
+        parentPrevalenceSurveyId: Maybe<Id>,
+        parentCaseReport: Maybe<NamedRef>
     ): FutureData<Questionnaire> {
         return getDefaultOrCustomProgramId(
             this.moduleRepository,
@@ -51,7 +53,7 @@ export class GetSurveyUseCase {
                 return this.getPrevalenceSurveyForm(
                     programId,
                     parentPrevalenceSurveyId,
-                    parentCaseReportId
+                    parentCaseReport
                 );
             } else return this.surveyReporsitory.getForm(programId, undefined, undefined);
         });
@@ -59,8 +61,8 @@ export class GetSurveyUseCase {
 
     getPPSSurveyForm(
         programId: Id,
-        parentPPSSurveyId: Id | undefined,
-        parentWardRegisterId: Id | undefined
+        parentPPSSurveyId: Maybe<Id>,
+        parentWardRegisterId: Maybe<Id>
     ): FutureData<Questionnaire> {
         return Future.joinObj({
             modules: this.moduleRepository.getAll(),
@@ -156,7 +158,7 @@ export class GetSurveyUseCase {
     getPrevalenceSurveyForm(
         programId: Id,
         parentPrevalenceSurveyId: Id,
-        parentCaseReportId: Id | undefined
+        parentCaseReport: Maybe<NamedRef>
     ): FutureData<Questionnaire> {
         return this.surveyReporsitory
             .getForm(programId, undefined, undefined)
@@ -181,6 +183,9 @@ export class GetSurveyUseCase {
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC ||
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
 
+                        const isUniquePatientIdQuestion =
+                            question.id === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID;
+
                         if (isSurveyIdQuestion && question.type === "text") {
                             return {
                                 ...question,
@@ -189,7 +194,12 @@ export class GetSurveyUseCase {
                         } else if (isPatientIdQuestion && question.type === "text") {
                             return {
                                 ...question,
-                                value: parentCaseReportId,
+                                value: parentCaseReport?.id,
+                            };
+                        } else if (isUniquePatientIdQuestion && question.type === "text") {
+                            return {
+                                ...question,
+                                value: parentCaseReport?.name,
                             };
                         } else {
                             return question;

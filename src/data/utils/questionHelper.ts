@@ -22,6 +22,7 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
+    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_TEA_ID,
     WARD2_ID_DATAELEMENT_ID,
@@ -394,7 +395,8 @@ export const mapTrackedAttributesToQuestions = (
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC ||
                     currentQuestion.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2 ||
                     currentQuestion.id === SURVEY_ID_PATIENT_TEA_ID ||
-                    currentQuestion.id === WARD_ID_TEA_ID)
+                    currentQuestion.id === WARD_ID_TEA_ID ||
+                    currentQuestion.id === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID)
             ) {
                 currentQuestion.disabled = true;
             }
