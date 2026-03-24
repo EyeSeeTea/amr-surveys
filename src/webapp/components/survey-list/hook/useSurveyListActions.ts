@@ -69,6 +69,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                uniquePatientName: survey.uniquePatient?.name,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -85,11 +86,13 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                uniquePatientName: survey.uniquePatient?.name,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
         );
         const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
+
         if (childSurveyType) {
             history.push({
                 pathname: `/new-survey/${childSurveyType}`,
@@ -106,6 +109,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                uniquePatientName: survey.uniquePatient?.name,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -260,8 +264,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                         );
             }
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnit.id);
-        } else if (surveyFormType === "PrevalenceCaseReportForm")
-            changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
+        } else if (surveyFormType === "PrevalenceCaseReportForm") {
+            changeCurrentCaseReportForm({
+                id: survey.id,
+                name: survey.uniquePatientName ?? survey.name,
+            });
+        }
     };
 
     return {

@@ -51,6 +51,7 @@ export const SURVEYS_WITH_COUNTRY_LEVEL_OU: SURVEY_FORM_TYPES[] = [
 export interface SurveyBase extends NamedRef {
     surveyType: string;
     astGuideline?: ASTGUIDELINE_TYPES;
+    uniquePatientName?: string;
 }
 
 export interface OrgUnitNamedRef extends NamedRef {
