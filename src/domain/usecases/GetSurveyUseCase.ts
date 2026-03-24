@@ -197,10 +197,16 @@ export class GetSurveyUseCase {
                                 value: parentCaseReport?.id,
                             };
                         } else if (isUniquePatientIdQuestion && question.type === "text") {
-                            return {
-                                ...question,
-                                value: parentCaseReport?.name,
-                            };
+                            // Only set value and disable if inheriting from parent case report
+                            // For new PrevalenceCaseReportForm, leave editable so user can enter it
+                            if (parentCaseReport?.name) {
+                                return {
+                                    ...question,
+                                    value: parentCaseReport.name,
+                                    disabled: true,
+                                };
+                            }
+                            return question;
                         } else {
                             return question;
                         }
