@@ -216,8 +216,8 @@ export const PaginatedSurveyListTable: React.FC<PaginatedSurveyListTableProps> =
                                                 surveyFormType === "PrevalenceCaseReportForm" ||
                                                 isPrevalencePatientChild(surveyFormType)) && (
                                                 <TableCell>
-                                                    {survey.uniquePatient?.name ??
-                                                        survey.uniquePatient?.code}
+                                                    {survey.uniquePatient?.surveyPatientId ||
+                                                        survey.uniquePatient?.id}
                                                 </TableCell>
                                             )}
                                             {surveyFormType === "PPSPatientRegister" && (

@@ -99,7 +99,7 @@ export const mapTrackedEntityToSurvey = (
             parentWardRegisterId: parentWardId,
             surveyFormType: surveyFormType,
             childCount: undefined,
-            uniquePatient: { id: patientId, code: patientCode, name: patientName },
+            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: patientName },
             facilityCode: facilityCode,
         };
         return survey;
@@ -189,7 +189,7 @@ export const mapEventToSurvey = (
                 : astGuideline === "EUCAST"
                 ? "EUCAST"
                 : "CLSI",
-            uniquePatient: { id: patientId, code: patientCode, name: patientName },
+            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: patientName },
         };
         return survey;
     });

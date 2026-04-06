@@ -90,7 +90,7 @@ export interface Survey extends SurveyBase {
     assignedOrgUnit: OrgUnitBasic;
     surveyFormType: SURVEY_FORM_TYPES;
     parentWardRegisterId?: Id;
-    uniquePatient?: { id: string; code: string; name: string };
+    uniquePatient?: { id: string; code: string; surveyPatientId: string };
     childCount?: ChildCountLabel;
     facilityCode?: string;
 }

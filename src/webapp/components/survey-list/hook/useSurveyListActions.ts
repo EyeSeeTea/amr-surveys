@@ -21,7 +21,7 @@ import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-gu
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
-type SurveyBaseWithPatientName = SurveyBase & { uniquePatientName?: string };
+type SurveyBaseWithSurveyPatientId = SurveyBase & { surveyPatientId?: string };
 
 export type SortDirection = "asc" | "desc";
 
@@ -71,7 +71,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
-                uniquePatientName: survey.uniquePatient?.name,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -88,7 +88,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
-                uniquePatientName: survey.uniquePatient?.name,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -111,7 +111,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
-                uniquePatientName: survey.uniquePatient?.name,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -206,7 +206,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     );
 
     const updateSelectedSurveyDetails = (
-        survey: SurveyBaseWithPatientName,
+        survey: SurveyBaseWithSurveyPatientId,
         orgUnit: OrgUnitBasic,
         rootSurvey: SurveyBase
     ) => {
@@ -269,7 +269,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         } else if (surveyFormType === "PrevalenceCaseReportForm") {
             changeCurrentCaseReportForm({
                 id: survey.id,
-                name: survey.uniquePatientName ?? survey.name,
+                name: survey.surveyPatientId || survey.name,
             });
         }
     };
