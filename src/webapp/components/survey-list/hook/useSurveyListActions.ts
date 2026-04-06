@@ -21,6 +21,8 @@ import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-gu
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
+type SurveyBaseWithPatientName = SurveyBase & { uniquePatientName?: string };
+
 export type SortDirection = "asc" | "desc";
 
 type SortableColumn = keyof Survey | "uniquePatient.id" | "uniquePatient.code";
@@ -204,7 +206,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     );
 
     const updateSelectedSurveyDetails = (
-        survey: SurveyBase,
+        survey: SurveyBaseWithPatientName,
         orgUnit: OrgUnitBasic,
         rootSurvey: SurveyBase
     ) => {
