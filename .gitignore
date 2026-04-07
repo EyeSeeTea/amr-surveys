@@ -39,6 +39,9 @@ cypress/fixtures/
 # IntelliJ
 .idea/*
 
+# Claude Code (personal, per-developer)
+.claude/settings.local.json
+
 docs/
 
 # build output
