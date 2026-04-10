@@ -74,6 +74,31 @@ Now in your browser, go to `http://localhost:8081`.
 $ yarn test
 ```
 
+## Smoke test
+
+Minimum check to run after every code change, before committing or opening a PR.
+It catches runtime regressions that the type-checker and unit tests do not.
+
+1. **Type-check**: `yarn tsc --noEmit` — must pass clean.
+2. **Lint**: `yarn lint` — must pass clean.
+3. **Boot the dev server**: `yarn start` and wait for vite to report `ready in …`.
+4. **Browse the app** at `http://localhost:8081` (a headless browser such as
+   Playwright works well for automating this):
+    - Log in (DHIS2 basic-auth proxy uses the credentials in `.env.local`).
+    - Open the **Prevalence** module → pick a country survey → drill into a
+      facility → open the patients list (Case Reports) → open one case report
+      form.
+    - Open the **PPS** module → pick a country survey → drill into a hospital →
+      open the patients list.
+    - Open **Ward Summary Statistics**.
+5. **Pass criteria**: zero uncaught exceptions in the browser console
+   (`error`-level messages), no `Failed to fetch` toasts, every page reaches a
+   rendered state (no infinite spinners).
+
+If any step fails, the change is not ready to commit. The smoke test does
+**not** replace unit tests or manual QA against real data — it is the floor,
+not the ceiling.
+
 ## Some development tips
 
 ### Clean architecture folder structure

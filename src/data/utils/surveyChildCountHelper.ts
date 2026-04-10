@@ -124,7 +124,6 @@ const asyncGetEventSurveyChildCount = async (
                 fields: { event: true },
                 pageSize: pageSize,
                 page: page,
-                totalPages: true,
                 program: programId,
                 orgUnit: ouId,
                 ouMode: ouMode,
@@ -133,7 +132,7 @@ const asyncGetEventSurveyChildCount = async (
             .getData();
         count += response.instances.length;
         page++;
-    } while (response.page < Math.ceil((response.total as number) / pageSize));
+    } while (response.instances.length === pageSize);
 
     return count;
 };
@@ -185,7 +184,7 @@ const getTrackerSurveyCount = (
     return apiToFuture(
         api.tracker.trackedEntities.get({
             fields: { trackedEntity: true },
-            pageSize: 250,
+            pageSize: 1,
             totalPages: true,
             program: programId,
             orgUnit: orgUnitId,
