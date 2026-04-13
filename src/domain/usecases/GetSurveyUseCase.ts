@@ -7,7 +7,6 @@ import {
     AMR_SURVEYS_PREVALENCE_TEA_AMRPATIENT_IDPREVALENCE,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_ID,
     AMR_SURVEYS_PREVALENCE_TEA_PATIENT_IDA19,
-    AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID,
     SURVEY_ID_DATAELEMENT_ID,
     SURVEY_ID_PATIENT_TEA_ID,
     WARD_ID_TEA_ID,
@@ -183,9 +182,6 @@ export class GetSurveyUseCase {
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_DEC ||
                             question.id === AMR_SURVEYS_MORTALITY_TEA_PAT_ID_COH2;
 
-                        const isUniquePatientIdQuestion =
-                            question.id === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID;
-
                         if (isSurveyIdQuestion && question.type === "text") {
                             return {
                                 ...question,
@@ -196,17 +192,6 @@ export class GetSurveyUseCase {
                                 ...question,
                                 value: parentCaseReport?.id,
                             };
-                        } else if (isUniquePatientIdQuestion && question.type === "text") {
-                            // Only set value and disable if inheriting from parent case report
-                            // For new PrevalenceCaseReportForm, leave editable so user can enter it
-                            if (parentCaseReport?.name) {
-                                return {
-                                    ...question,
-                                    value: parentCaseReport.name,
-                                    disabled: true,
-                                };
-                            }
-                            return question;
                         } else {
                             return question;
                         }

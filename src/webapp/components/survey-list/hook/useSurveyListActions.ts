@@ -269,7 +269,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         } else if (surveyFormType === "PrevalenceCaseReportForm") {
             changeCurrentCaseReportForm({
                 id: survey.id,
-                name: survey.surveyPatientId || survey.name,
+                name: survey.surveyPatientId ?? "",
             });
         }
     };

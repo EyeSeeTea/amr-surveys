@@ -9,6 +9,12 @@ import _ from "../generic/Collection";
 import { Questionnaire, QuestionnaireStage } from "./Questionnaire";
 import _c from "../generic/Collection";
 
+export function isRequiredQuestionUnanswered(question: Question): boolean {
+    if (!question.required) return false;
+    const value = question.value?.toString().trim() ?? "";
+    return value === "";
+}
+
 export type Code = string;
 export type Question =
     | SelectQuestion
@@ -29,6 +35,7 @@ export interface QuestionBase {
     errors: string[];
     stageId?: Id; //For repeatable stages processing.
     computed?: boolean; // true if value is the result of "assign" actions program rules
+    required?: boolean; // true if the question must be answered before the form can be saved
 }
 
 export interface SpeciesQuestion extends SelectQuestion {

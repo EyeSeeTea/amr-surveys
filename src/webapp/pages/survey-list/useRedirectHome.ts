@@ -39,7 +39,7 @@ export function useRedirectHome() {
                     formType === "PrevalencePathogenIsolatesLog" ||
                     formType === "PrevalenceSampleShipTrackForm" ||
                     formType === "PrevalenceSupranationalRefLabForm") &&
-                    !currentCaseReportForm)
+                    (!currentCaseReportForm || !currentCaseReportForm.name))
             )
                 return true;
             else return false;
