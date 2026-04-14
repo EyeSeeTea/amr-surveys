@@ -9,12 +9,6 @@ import _ from "../generic/Collection";
 import { Questionnaire, QuestionnaireStage } from "./Questionnaire";
 import _c from "../generic/Collection";
 
-export function isRequiredQuestionUnanswered(question: Question): boolean {
-    if (!question.required) return false;
-    const value = question.value?.toString().trim() ?? "";
-    return value === "";
-}
-
 export type Code = string;
 export type Question =
     | SelectQuestion
@@ -201,6 +195,12 @@ export type UpdateQuestionOptions = {
 };
 
 export class QuestionnaireQuestion {
+    static isRequiredQuestionUnanswered(question: Question): boolean {
+        if (!question.required) return false;
+        const value = question.value?.toString().trim() ?? "";
+        return value === "";
+    }
+
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
         if (!isNumber(s)) return false;

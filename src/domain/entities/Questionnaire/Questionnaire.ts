@@ -17,7 +17,6 @@ import {
     QuestionnaireQuestion,
     isAntibioticQuestion,
     isPPSIndicationLinkQuestion,
-    isRequiredQuestionUnanswered,
     mapIndicationsToTreatments,
 } from "./QuestionnaireQuestion";
 import { getApplicableRules, QuestionnaireRule } from "./QuestionnaireRules";
@@ -389,7 +388,9 @@ export class Questionnaire {
     }
 
     static hasUnansweredRequiredQuestions(questionnaire: Questionnaire): boolean {
-        return questionnaire.getAllQuestions().some(isRequiredQuestionUnanswered);
+        return questionnaire
+            .getAllQuestions()
+            .some(QuestionnaireQuestion.isRequiredQuestionUnanswered);
     }
 
     static addProgramStage(questionnaire: Questionnaire, stageCode: Id): Questionnaire {
