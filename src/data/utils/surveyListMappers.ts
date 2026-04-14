@@ -58,7 +58,7 @@ export const mapTrackedEntityToSurvey = (
                 attribute => attribute.attribute === SURVEY_PATIENT_CODE_TEA_ID
             )?.value ?? "";
 
-        const patientName =
+        const surveyPatientId =
             trackedEntityInstance.attributes?.find(
                 attribute => attribute.attribute === AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID
             )?.value ?? "";
@@ -99,7 +99,7 @@ export const mapTrackedEntityToSurvey = (
             parentWardRegisterId: parentWardId,
             surveyFormType: surveyFormType,
             childCount: undefined,
-            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: patientName },
+            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: surveyPatientId },
             facilityCode: facilityCode,
         };
         return survey;
@@ -130,7 +130,7 @@ export const mapEventToSurvey = (
         const wardCode = surveyProperties.get("wardCode") ?? "";
         const patientId = surveyProperties.get("patientId") ?? "";
         const patientCode = surveyProperties.get("patientCode") ?? "";
-        const patientName = surveyProperties.get("uniqueSurveyPatientId") ?? "";
+        const surveyPatientId = surveyProperties.get("uniqueSurveyPatientId") ?? "";
         const parentPPSSurveyId = surveyProperties.get("parentPPSSurveyId") ?? "";
         const surveyType = surveyProperties.get("surveyType") ?? "";
         const parentWardRegisterId = surveyProperties.get("parentWardRegisterId") ?? "";
@@ -189,7 +189,7 @@ export const mapEventToSurvey = (
                 : astGuideline === "EUCAST"
                 ? "EUCAST"
                 : "CLSI",
-            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: patientName },
+            uniquePatient: { id: patientId, code: patientCode, surveyPatientId: surveyPatientId },
         };
         return survey;
     });
