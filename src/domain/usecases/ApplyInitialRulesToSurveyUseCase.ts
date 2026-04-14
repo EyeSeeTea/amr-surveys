@@ -46,28 +46,30 @@ export class ApplyInitialRulesToSurveyUseCase {
     ) {
         const steps: ((questionnaireInput: Questionnaire) => Questionnaire)[] = [
             //1. Apply survey rules defined in the datastore
-            questionnaire =>
+            baseQuestionnaire =>
                 currentFormRule
                     ? Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
-                          questionnaire,
+                          baseQuestionnaire,
                           currentFormRule
                       )
-                    : questionnaire,
+                    : baseQuestionnaire,
             //2. Apply antibiotic blacklist rules defined in the datastore
-            questionnaire =>
+            surveyRuleUpdated =>
                 currentSurveyAntibioticBlacklist
                     ? Questionnaire.applyAntibioticsBlacklist(
-                          questionnaire,
+                          surveyRuleUpdated,
                           currentSurveyAntibioticBlacklist
                       )
-                    : questionnaire,
+                    : surveyRuleUpdated,
             //3. Apply program rules defined in metadata
-            questionnaire =>
-                Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(questionnaire),
+            antibioticBlacklistUpdated =>
+                Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(
+                    antibioticBlacklistUpdated
+                ),
             //4. Apply unique patient ID rules (required on case report, read-only on sub-forms)
-            questionnaire =>
+            programRulesUpdated =>
                 Questionnaire.applyUniquePatientIdRules(
-                    questionnaire,
+                    programRulesUpdated,
                     surveyFormType,
                     parentCaseReport
                 ),
