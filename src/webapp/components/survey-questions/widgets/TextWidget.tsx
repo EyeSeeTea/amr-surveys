@@ -16,12 +16,9 @@ const TextWidget: React.FC<TextWidgetProps> = props => {
     const [stateValue, setStateValue] = React.useState(value);
     React.useEffect(() => setStateValue(value), [value]);
 
-    const updateState = React.useCallback(({ value }: { value: string }) => {
-        setStateValue(value);
-    }, []);
-
-    const notifyChange = React.useCallback(
+    const handleChange = React.useCallback(
         ({ value: newValue }: { value: string }) => {
+            setStateValue(newValue);
             if (value !== newValue) onValueChange(newValue);
         },
         [onValueChange, value]
@@ -31,16 +28,14 @@ const TextWidget: React.FC<TextWidgetProps> = props => {
         <>
             {props.multiline ? (
                 <TextArea
-                    onBlur={notifyChange}
-                    onChange={updateState}
+                    onChange={handleChange}
                     value={stateValue || ""}
                     disabled={props.disabled}
                 />
             ) : (
                 <Input
                     placeholder={placeholder}
-                    onBlur={notifyChange}
-                    onChange={updateState}
+                    onChange={handleChange}
                     value={stateValue || ""}
                     disabled={props.disabled}
                 />
