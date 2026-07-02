@@ -41,6 +41,10 @@ cypress/fixtures/
 
 # Claude Code (personal, per-developer)
 .claude/settings.local.json
+.claude/progress/
+
+# Playwright MCP
+.playwright-mcp/
 
 docs/
 
