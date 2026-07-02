@@ -1,13 +1,17 @@
-import { AMRSurveyModule } from "../entities/AMRSurveyModule";
+import { AMRSurveyModule, SurveyRule } from "../entities/AMRSurveyModule";
 import { Questionnaire } from "../entities/Questionnaire/Questionnaire";
-import { Id } from "../entities/Ref";
+import { Id, NamedRef } from "../entities/Ref";
+import { SURVEY_FORM_TYPES } from "../entities/Survey";
+import { Maybe } from "../../utils/ts-utils";
 
 export class ApplyInitialRulesToSurveyUseCase {
     public execute(
         questionnaire: Questionnaire,
-        module: AMRSurveyModule | undefined,
-        currentPPSSurveyForm: Id | undefined,
-        currentPrevalenceSurveyForm: Id | undefined
+        module: Maybe<AMRSurveyModule>,
+        currentPPSSurveyForm: Maybe<Id>,
+        currentPrevalenceSurveyForm: Maybe<Id>,
+        surveyFormType: SURVEY_FORM_TYPES,
+        parentCaseReport: Maybe<NamedRef>
     ): Questionnaire {
         const currentParentId =
             module?.name === "PPS" ? currentPPSSurveyForm : currentPrevalenceSurveyForm;
@@ -24,28 +28,53 @@ export class ApplyInitialRulesToSurveyUseCase {
             rule => rule.surveyId === currentParentId
         )?.antibioticBlacklist;
 
-        //1. Apply survey rules defined in the datastore
-        const surveyRuleUpdatedQuestionnaire = currentFormRule
-            ? Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
-                  questionnaire,
-                  currentFormRule
-              )
-            : questionnaire;
+        return this.processQuestionnaireRules(
+            currentFormRule,
+            currentSurveyAntibioticBlacklist,
+            surveyFormType,
+            parentCaseReport,
+            questionnaire
+        );
+    }
 
-        //2. Apply antibiotic blacklist rules defined in the datastore
-        const antibioticBlacklistUpdatedQuestionnaire = currentSurveyAntibioticBlacklist
-            ? Questionnaire.applyAntibioticsBlacklist(
-                  surveyRuleUpdatedQuestionnaire,
-                  currentSurveyAntibioticBlacklist
-              )
-            : surveyRuleUpdatedQuestionnaire;
+    private processQuestionnaireRules(
+        currentFormRule: Maybe<SurveyRule>,
+        currentSurveyAntibioticBlacklist: Maybe<string[]>,
+        surveyFormType: SURVEY_FORM_TYPES,
+        parentCaseReport: Maybe<NamedRef>,
+        questionnaire: Questionnaire
+    ) {
+        const steps: ((questionnaireInput: Questionnaire) => Questionnaire)[] = [
+            //1. Apply survey rules defined in the datastore
+            baseQuestionnaire =>
+                currentFormRule
+                    ? Questionnaire.applySurveyRulesOnQuestionnaireInitialLoad(
+                          baseQuestionnaire,
+                          currentFormRule
+                      )
+                    : baseQuestionnaire,
+            //2. Apply antibiotic blacklist rules defined in the datastore
+            surveyRuleUpdated =>
+                currentSurveyAntibioticBlacklist
+                    ? Questionnaire.applyAntibioticsBlacklist(
+                          surveyRuleUpdated,
+                          currentSurveyAntibioticBlacklist
+                      )
+                    : surveyRuleUpdated,
+            //3. Apply program rules defined in metadata
+            antibioticBlacklistUpdated =>
+                Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(
+                    antibioticBlacklistUpdated
+                ),
+            //4. Apply unique patient ID rules (required on case report, read-only on sub-forms)
+            programRulesUpdated =>
+                Questionnaire.applyUniquePatientIdRules(
+                    programRulesUpdated,
+                    surveyFormType,
+                    parentCaseReport
+                ),
+        ];
 
-        //3. Apply program rules defined in metadata
-        const programRuleUpdatedQuestionnaire =
-            Questionnaire.applyProgramRulesOnQuestionnaireInitialLoad(
-                antibioticBlacklistUpdatedQuestionnaire
-            );
-
-        return programRuleUpdatedQuestionnaire;
+        return steps.reduce((q, step) => step(q), questionnaire);
     }
 }

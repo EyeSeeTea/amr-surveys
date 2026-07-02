@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import {
     Survey,
@@ -21,7 +21,12 @@ import { useCurrentASTGuidelinesContext } from "../../../contexts/current-ast-gu
 import { OrgUnitBasic } from "../../../../domain/entities/OrgUnit";
 import { getChildrenName } from "../../../../domain/utils/getChildrenName";
 
+type SurveyBaseWithSurveyPatientId = SurveyBase & { surveyPatientId?: string };
+
 export type SortDirection = "asc" | "desc";
+
+type SortableColumn = keyof Survey | "uniquePatient.id" | "uniquePatient.code";
+
 export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
     const { compositionRoot } = useAppContext();
     const history = useHistory();
@@ -66,6 +71,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -82,11 +88,13 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
         );
         const childSurveyType = getChildSurveyType(surveyFormType, survey.surveyType, option);
+
         if (childSurveyType) {
             history.push({
                 pathname: `/new-survey/${childSurveyType}`,
@@ -103,6 +111,7 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                 name: survey.name,
                 surveyType: survey.surveyType,
                 astGuideline: survey.astGuideline,
+                surveyPatientId: survey.uniquePatient?.surveyPatientId,
             },
             survey.assignedOrgUnit,
             survey.rootSurvey
@@ -161,17 +170,43 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
         }
     };
 
-    const sortByColumn = (columnName: keyof Survey, sortDirection: SortDirection) => {
-        setSortedSurveys(surveys => {
-            if (surveys)
-                return _(surveys)
-                    .sortBy(x => x[columnName], { direction: sortDirection })
+    const sortByColumn = useCallback(
+        (columnName: SortableColumn, sortDirection: SortDirection, childIndex?: number) => {
+            setSortedSurveys(prevSurveys => {
+                if (!prevSurveys) return prevSurveys;
+
+                const getChildValue = (survey: Survey) => {
+                    const count = survey.childCount;
+                    if (!count) return 0;
+
+                    if (count.type === "number") return Number(count.value ?? 0);
+
+                    if (count.type === "map") {
+                        if (childIndex == null) return 0;
+                        const item = (count.value ?? [])[childIndex];
+                        return Number(item?.count ?? 0);
+                    }
+                    return 0;
+                };
+
+                const getValue = (survey: Survey) => {
+                    if (columnName === "childCount") return getChildValue(survey);
+                    if (columnName === "uniquePatient.id") return survey.uniquePatient?.id ?? "";
+                    if (columnName === "uniquePatient.code")
+                        return survey.uniquePatient?.code ?? "";
+                    return survey[columnName];
+                };
+
+                return _(prevSurveys)
+                    .sortBy(s => getValue(s), { direction: sortDirection })
                     .value();
-        });
-    };
+            });
+        },
+        []
+    );
 
     const updateSelectedSurveyDetails = (
-        survey: SurveyBase,
+        survey: SurveyBaseWithSurveyPatientId,
         orgUnit: OrgUnitBasic,
         rootSurvey: SurveyBase
     ) => {
@@ -231,8 +266,12 @@ export function useSurveyListActions(surveyFormType: SURVEY_FORM_TYPES) {
                         );
             }
             changeCurrentFacilityLevelForm(survey.id, survey.name, orgUnit.id);
-        } else if (surveyFormType === "PrevalenceCaseReportForm")
-            changeCurrentCaseReportForm({ id: survey.id, name: survey.name });
+        } else if (surveyFormType === "PrevalenceCaseReportForm") {
+            changeCurrentCaseReportForm({
+                id: survey.id,
+                name: survey.surveyPatientId ?? "",
+            });
+        }
     };
 
     return {

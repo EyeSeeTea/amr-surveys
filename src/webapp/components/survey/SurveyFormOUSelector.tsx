@@ -1,20 +1,26 @@
 import { OrgUnitsSelector } from "@eyeseetea/d2-ui-components";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
-import { SURVEYS_WITH_ORG_UNIT_SELECTOR, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
-import { OrgUnitAccess } from "../../../domain/entities/User";
+import {
+    SURVEYS_WITH_COUNTRY_LEVEL_OU,
+    SURVEYS_WITH_ORG_UNIT_SELECTOR,
+    SURVEY_FORM_TYPES,
+} from "../../../domain/entities/Survey";
+import { OrgUnitAccess, UserOrgUnit } from "../../../domain/entities/User";
 import { GLOBAL_OU_ID } from "../../../domain/usecases/SaveFormDataUseCase";
 import { getParentOUIdFromPath } from "../../../domain/utils/PPSProgramsHelper";
 import { useAppContext } from "../../contexts/app-context";
 import { useCurrentSurveys } from "../../contexts/current-surveys-context";
 import { useSurveyFormOUSelector } from "./hook/useSurveyFormOUSelector";
 import { useOfflineSnackbar } from "../../hooks/useOfflineSnackbar";
+import _c from "../../../domain/entities/generic/Collection";
+import { Maybe } from "../../../utils/ts-utils";
 
 export interface SurveyFormOUSelectorProps {
     formType: SURVEY_FORM_TYPES;
     currentOrgUnit: OrgUnitAccess | undefined;
-    setCurrentOrgUnit: React.Dispatch<React.SetStateAction<OrgUnitAccess | undefined>>;
+    setCurrentOrgUnit: (orgUnit: Maybe<OrgUnitAccess>) => void;
     currentSurveyId: Id | undefined;
 }
 
@@ -24,7 +30,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
     setCurrentOrgUnit,
     currentSurveyId,
 }) => {
-    const { api } = useAppContext();
+    const { api, currentUser } = useAppContext();
     const { currentPPSSurveyForm, currentCountryQuestionnaire, currentPrevalenceSurveyForm } =
         useCurrentSurveys();
     const { onOrgUnitChange, ouSelectorErrMsg, shouldRefresh } = useSurveyFormOUSelector(
@@ -40,13 +46,53 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         }
     }, [ouSelectorErrMsg, snackbar, shouldRefresh, offlineError]);
 
+    const rootIds = useMemo(() => {
+        if (formType === "PPSHospitalForm") {
+            // For HOSP PPS surveys, show all hospitals across all OUs
+            if (currentPPSSurveyForm?.surveyType === "HOSP") {
+                return [GLOBAL_OU_ID];
+            }
+            // For non-admin user, currentCountryQuestionnaire won't be set. Get parent id from path
+            return currentCountryQuestionnaire?.orgUnitId
+                ? [currentCountryQuestionnaire.orgUnitId]
+                : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)];
+        }
+
+        if (formType === "PrevalenceFacilityLevelForm") {
+            return [currentPrevalenceSurveyForm?.orgUnitId];
+        }
+
+        if (formType === "WardSummaryStatisticsForm") {
+            return getRootIds(currentUser.organisationUnits);
+        }
+
+        return [GLOBAL_OU_ID];
+    }, [
+        formType,
+        currentPPSSurveyForm?.surveyType,
+        currentCountryQuestionnaire?.orgUnitId,
+        currentOrgUnit?.orgUnitPath,
+        currentPrevalenceSurveyForm?.orgUnitId,
+        currentUser.organisationUnits,
+    ]);
+
+    const selectableLevels = useMemo(() => {
+        if (SURVEYS_WITH_COUNTRY_LEVEL_OU.includes(formType)) return [COUNTRY_OU_LEVEL];
+        return HOSPITAL_OU_LEVELS;
+    }, [formType]);
+
+    const selected = useMemo(
+        () => (currentOrgUnit?.orgUnitPath ? [currentOrgUnit.orgUnitPath] : []),
+        [currentOrgUnit?.orgUnitPath]
+    );
+
     return (
         <>
             {SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType) && (
                 <OrgUnitsSelector
                     api={api}
                     fullWidth={false}
-                    selected={[currentOrgUnit?.orgUnitPath ? currentOrgUnit?.orgUnitPath : ""]}
+                    selected={selected}
                     initiallyExpanded={
                         currentOrgUnit?.orgUnitPath ? [currentOrgUnit?.orgUnitPath] : []
                     }
@@ -54,29 +100,14 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
                     singleSelection={true}
                     typeInput={"radio"}
                     hideMemberCount={false}
-                    selectableLevels={
-                        formType === "PPSCountryQuestionnaire" ||
-                        formType === "PrevalenceSurveyForm"
-                            ? [COUNTRY_OU_LEVEL]
-                            : HOSPITAL_OU_LEVELS
-                    }
+                    selectableLevels={selectableLevels}
                     controls={{
                         filterByLevel: false,
                         filterByGroup: false,
                         filterByProgram: false,
                         selectAll: false,
                     }}
-                    rootIds={
-                        formType === "PPSHospitalForm"
-                            ? currentPPSSurveyForm?.surveyType === "HOSP" //For HOSP PPS surveys, show all hospitals across all OUs
-                                ? [GLOBAL_OU_ID]
-                                : currentCountryQuestionnaire?.orgUnitId
-                                ? [currentCountryQuestionnaire?.orgUnitId] //For non-admin user, currentCountryQuestionnaire wont be set. Get parent id from path
-                                : [getParentOUIdFromPath(currentOrgUnit?.orgUnitPath)]
-                            : formType === "PrevalenceFacilityLevelForm"
-                            ? [currentPrevalenceSurveyForm?.orgUnitId]
-                            : [GLOBAL_OU_ID]
-                    }
+                    rootIds={rootIds}
                     showShortName={true}
                     showNameSetting={true}
                 />
@@ -84,3 +115,15 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
         </>
     );
 };
+
+function getRoots(orgUnits: UserOrgUnit[]): UserOrgUnit[] {
+    const minLevel = Math.min(...orgUnits.map(ou => ou.level));
+    return _c(orgUnits)
+        .filter(ou => ou.level === minLevel)
+        .sortBy(ou => ou.name)
+        .value();
+}
+
+export function getRootIds(orgUnits: UserOrgUnit[]): Id[] {
+    return getRoots(orgUnits).map(ou => ou.id);
+}

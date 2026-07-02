@@ -9,7 +9,7 @@ import { ContentLoader } from "../content-loader/ContentLoader";
 import { Id } from "../../../domain/entities/Ref";
 import i18n from "../../../utils/i18n";
 import { SurveyFormOUSelector } from "../survey/SurveyFormOUSelector";
-import { useSurveyForm } from "../survey/hook/useSurveyForm";
+import { WardEvent } from "../../../domain/entities/Questionnaire/WardEvent";
 
 type WardSummaryFormProps = {
     hasReadOnlyAccess: boolean;
@@ -17,38 +17,47 @@ type WardSummaryFormProps = {
 
 export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
     const { hasReadOnlyAccess } = props;
-
-    const { currentOrgUnit, setCurrentOrgUnit } = useSurveyForm(
-        "WardSummaryStatisticsForm",
-        undefined
-    );
     const {
+        currentOrgUnit,
         error,
         loading,
+        rootSurveyOptions,
         selectedPeriod,
+        selectedRootSurvey,
+        wardEvents,
         wardSummaryForms,
         getCellBackgroundColor,
+        saveCurrentOrgUnit,
         saveWardSummaryForm,
+        updateRootSurvey,
         updateWardSummaryPeriod,
-    } = useWardSummaryForm(currentOrgUnit?.orgUnitId);
-    const selectablePeriods = useSelectablePeriods();
+    } = useWardSummaryForm();
+    const selectablePeriods = useSelectablePeriods(selectedRootSurvey, wardEvents);
 
     return (
         <Container>
             <SurveyFormOUSelector
                 formType={"WardSummaryStatisticsForm"}
                 currentOrgUnit={currentOrgUnit}
-                setCurrentOrgUnit={setCurrentOrgUnit}
+                setCurrentOrgUnit={saveCurrentOrgUnit}
                 currentSurveyId={undefined}
             />
 
             <FormFilters>
                 <DropdownSelectWidget
+                    label="Survey"
+                    value={selectedRootSurvey}
+                    options={rootSurveyOptions}
+                    onChange={updateRootSurvey}
+                    disabled={!currentOrgUnit}
+                />
+
+                <DropdownSelectWidget
                     label="Period"
                     value={selectedPeriod}
                     options={selectablePeriods}
                     onChange={updateWardSummaryPeriod}
-                    disabled={false}
+                    disabled={wardEvents?.length === 0 || !selectedRootSurvey}
                 />
             </FormFilters>
 
@@ -56,6 +65,7 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
                 <NoFormsMessage
                     currentOrgUnitId={currentOrgUnit?.orgUnitId}
                     selectedPeriod={selectedPeriod}
+                    wardEvents={wardEvents}
                     wardSummaryFormsLength={wardSummaryForms.length}
                 />
 
@@ -77,13 +87,16 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
 const NoFormsMessage: React.FC<{
     currentOrgUnitId: Maybe<Id>;
     selectedPeriod: Maybe<string>;
+    wardEvents: Maybe<WardEvent[]>;
     wardSummaryFormsLength: number;
-}> = ({ currentOrgUnitId, selectedPeriod, wardSummaryFormsLength }) => {
-    if (!selectedPeriod || !currentOrgUnitId)
+}> = ({ currentOrgUnitId, selectedPeriod, wardEvents, wardSummaryFormsLength }) => {
+    if (wardEvents?.length === 0)
+        return <p>{i18n.t("No ward events found for the selected org unit.")}</p>;
+    else if (!selectedPeriod || !currentOrgUnitId)
         return (
             <p>
                 {i18n.t(
-                    "Please select a period and org unit to view ward summary statistics forms."
+                    "Please select a root survey, period, and org unit to view ward summary statistics forms."
                 )}
             </p>
         );
@@ -91,7 +104,7 @@ const NoFormsMessage: React.FC<{
         return (
             <p>
                 {i18n.t(
-                    "No ward summary statistics forms found for the selected period and org unit."
+                    "No ward summary statistics forms found for the selected root survey, period and org unit."
                 )}
             </p>
         );

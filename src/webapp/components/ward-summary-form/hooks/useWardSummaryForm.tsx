@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormValue, WardForm } from "../../../../domain/entities/Questionnaire/WardForm";
 import { useAppContext } from "../../../contexts/app-context";
 import { Maybe } from "../../../../utils/ts-utils";
 import { Id } from "../../../../domain/entities/Ref";
 import { getCellId } from "../WardSummarySection";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
+import { OrgUnitAccess } from "../../../../domain/entities/User";
+import { WardEvent } from "../../../../domain/entities/Questionnaire/WardEvent";
 
 export enum SAVE_FORM_STATE {
     ERROR = "error",
@@ -13,12 +15,15 @@ export enum SAVE_FORM_STATE {
     SUCCESS = "success",
 }
 
-export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
+export function useWardSummaryForm() {
     const { compositionRoot } = useAppContext();
 
     const [cellSaveStates, setCellSaveStates] = useState<Map<string, SAVE_FORM_STATE>>(new Map());
+    const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
+    const [wardEvents, setWardEvents] = useState<WardEvent[]>();
     const [error, setError] = useState<string>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [selectedRootSurvey, setSelectedRootSurvey] = useState<Id>();
     const [selectedPeriod, setSelectedPeriod] = useState<string>();
     const [wardSummaryForms, setWardSummaryForm] = useState<WardForm[]>([]);
 
@@ -46,20 +51,39 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
     }, [cellSaveStates]);
 
     useEffect(() => {
-        if (currentOrgUnitId && selectedPeriod) {
+        if (currentOrgUnit?.orgUnitId && selectedPeriod && wardEvents) {
+            const wardEventDetails = wardEvents.find(
+                wardEvent => wardEvent.rootSurveyId === selectedRootSurvey
+            )?.events;
+
+            if (!wardEventDetails) {
+                setError("No ward event found for the selected root survey");
+                return;
+            }
             setLoading(true);
-            compositionRoot.surveys.getWardForm.execute(currentOrgUnitId, selectedPeriod).run(
-                wardSummaryForm => {
-                    setWardSummaryForm(wardSummaryForm);
-                    setLoading(false);
-                },
-                err => {
-                    setError(err.message);
-                    setLoading(false);
-                }
-            );
+            compositionRoot.surveys.getWardForm
+                .execute(currentOrgUnit.orgUnitId, selectedPeriod, wardEventDetails)
+                .run(
+                    wardSummaryForm => {
+                        setWardSummaryForm(wardSummaryForm);
+                        setLoading(false);
+                    },
+                    err => {
+                        setError(err.message);
+                        setLoading(false);
+                    }
+                );
         }
-    }, [currentOrgUnitId, selectedPeriod, compositionRoot.surveys]);
+    }, [currentOrgUnit, selectedPeriod, compositionRoot.surveys, wardEvents, selectedRootSurvey]);
+
+    const rootSurveyOptions = useMemo(
+        () =>
+            wardEvents?.map(wardEvent => ({
+                id: wardEvent.rootSurveyId,
+                name: wardEvent.rootSurveyName,
+            })) ?? [],
+        [wardEvents]
+    );
 
     const getCellBackgroundColor = useCallback(
         (formValue: FormValue) => {
@@ -74,6 +98,32 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         [cellSaveStates]
     );
 
+    const saveCurrentOrgUnit = useCallback(
+        (orgUnit: Maybe<OrgUnitAccess>) => {
+            if (!orgUnit) return;
+
+            setSelectedPeriod(undefined);
+            setSelectedRootSurvey(undefined);
+            setWardSummaryForm([]);
+            setWardEvents(undefined);
+            setError(undefined);
+            setLoading(true);
+            compositionRoot.surveys.getWardEvents.execute(orgUnit).run(
+                wardEvents => {
+                    setWardEvents(wardEvents);
+                    setCurrentOrgUnit(orgUnit);
+                    if (wardEvents.length === 1) setSelectedRootSurvey(wardEvents[0]?.rootSurveyId);
+                    setLoading(false);
+                },
+                error => {
+                    setError(error.message);
+                    setLoading(false);
+                }
+            );
+        },
+        [compositionRoot.surveys.getWardEvents]
+    );
+
     const updateCellSaveState = useCallback((formValue: FormValue, state: SAVE_FORM_STATE) => {
         setCellSaveStates(prev => {
             const cellId = getCellId(formValue);
@@ -86,7 +136,7 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
 
     const saveWardSummaryForm = useCallback(
         (newValue: Maybe<string>, formValue: FormValue) => {
-            if (!currentOrgUnitId || !selectedPeriod) {
+            if (!currentOrgUnit?.orgUnitId || !selectedPeriod) {
                 setError("Missing facility or period information");
                 return;
             }
@@ -95,7 +145,7 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
 
             const formValueToSave = { ...formValue, value: newValue ?? "" };
             compositionRoot.surveys.saveWardForm
-                .execute(formValueToSave, currentOrgUnitId, selectedPeriod)
+                .execute(formValueToSave, currentOrgUnit.orgUnitId, selectedPeriod)
                 .run(
                     () => {
                         updateCellSaveState(formValue, SAVE_FORM_STATE.SUCCESS);
@@ -106,12 +156,7 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
                     }
                 );
         },
-        [
-            updateCellSaveState,
-            currentOrgUnitId,
-            selectedPeriod,
-            compositionRoot.surveys.saveWardForm,
-        ]
+        [updateCellSaveState, currentOrgUnit, selectedPeriod, compositionRoot.surveys.saveWardForm]
     );
 
     const updateWardSummaryPeriod = useCallback((period: Maybe<Id>) => {
@@ -120,13 +165,25 @@ export function useWardSummaryForm(currentOrgUnitId: Maybe<Id>) {
         }
     }, []);
 
+    const updateRootSurvey = useCallback((rootSurveyId: Maybe<Id>) => {
+        if (rootSurveyId) {
+            setSelectedRootSurvey(rootSurveyId);
+        }
+    }, []);
+
     return {
+        currentOrgUnit: currentOrgUnit,
+        wardEvents: wardEvents,
         error: error,
         loading: loading,
+        rootSurveyOptions: rootSurveyOptions,
         selectedPeriod: selectedPeriod,
+        selectedRootSurvey: selectedRootSurvey,
         wardSummaryForms: wardSummaryForms,
         getCellBackgroundColor: getCellBackgroundColor,
+        saveCurrentOrgUnit: saveCurrentOrgUnit,
         saveWardSummaryForm: saveWardSummaryForm,
+        updateRootSurvey: updateRootSurvey,
         updateWardSummaryPeriod: updateWardSummaryPeriod,
     };
 }

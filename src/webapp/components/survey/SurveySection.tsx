@@ -56,7 +56,10 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
                         return (
                             <DataTableRow key={question.id}>
                                 <DataTableCell width="60%">
-                                    <span>{question.text}</span>
+                                    <span>
+                                        {question.text}
+                                        {question.required && <RequiredMark> *</RequiredMark>}
+                                    </span>
                                 </DataTableCell>
 
                                 <DataTableCell>
@@ -94,6 +97,11 @@ export const SurveySection: React.FC<SurveySectionProps> = ({
 
 export const PaddedDiv = styled.div`
     padding: 5px;
+`;
+
+const RequiredMark = styled.span`
+    color: #d32f2f;
+    font-weight: bold;
 `;
 
 const StyledSection = styled.div``;

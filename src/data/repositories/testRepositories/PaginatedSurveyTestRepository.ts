@@ -33,7 +33,9 @@ export class PaginatedSurveyTestRepository implements PaginatedSurveyRepository 
         orgUnitId: string,
         parentWardRegisterId: string | undefined,
         page: number,
-        pageSize: number
+        pageSize: number,
+        sortPatientBy?: "patientId" | "patientCode",
+        sortDir?: "asc" | "desc"
     ): FutureData<PaginatedReponse<Survey[]>> {
         throw new Error("Method not implemented.");
     }

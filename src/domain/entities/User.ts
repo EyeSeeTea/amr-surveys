@@ -25,6 +25,10 @@ export interface UserSettings {
     keyMessageEmailNotification: boolean;
     keyMessageSmsNotification: boolean;
 }
+
+export type UserOrgUnit = NamedRef & {
+    level: number;
+};
 export interface UserAttrs {
     id: string;
     name: string;
@@ -44,7 +48,7 @@ export interface UserAttrs {
     interests: string;
     languages: string;
     settings: UserSettings;
-    organisationUnits: NamedRef[];
+    organisationUnits: UserOrgUnit[];
     dataViewOrganisationUnits: NamedRef[];
 }
 

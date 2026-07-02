@@ -29,6 +29,7 @@ export interface QuestionBase {
     errors: string[];
     stageId?: Id; //For repeatable stages processing.
     computed?: boolean; // true if value is the result of "assign" actions program rules
+    required?: boolean; // true if the question must be answered before the form can be saved
 }
 
 export interface SpeciesQuestion extends SelectQuestion {
@@ -194,6 +195,12 @@ export type UpdateQuestionOptions = {
 };
 
 export class QuestionnaireQuestion {
+    static isRequiredQuestionUnanswered(question: Question): boolean {
+        if (!question.required) return false;
+        const value = question.value?.toString().trim() ?? "";
+        return value === "";
+    }
+
     static isValidNumberValue(s: string, numberType: NumberQuestion["numberType"]): boolean {
         if (!s) return true;
         if (!isNumber(s)) return false;

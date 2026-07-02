@@ -282,6 +282,7 @@ const userFields = {
     organisationUnits: {
         id: true,
         name: true,
+        level: true,
     },
     dataViewOrganisationUnits: {
         id: true,

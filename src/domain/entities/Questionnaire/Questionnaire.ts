@@ -2,9 +2,12 @@ import {
     PPS_PATIENT_TRACKER_INDICATION_STAGE_ID,
     PPS_PATIENT_TRACKER_TREATMENT_STAGE_ID,
 } from "../../../data/utils/surveyFormMappers";
+import { AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID } from "../../../data/entities/D2Survey";
+import { SURVEY_FORM_TYPES } from "../Survey";
+import { Maybe } from "../../../utils/ts-utils";
 import { generateUid } from "../../../utils/uid";
 import { SurveyRule } from "../AMRSurveyModule";
-import { Id, Ref } from "../Ref";
+import { Id, NamedRef, Ref } from "../Ref";
 import _ from "../generic/Collection";
 import { Either } from "../generic/Either";
 import {
@@ -381,13 +384,13 @@ export class Questionnaire {
     }
 
     static doesQuestionnaireHaveErrors(questionnaire: Questionnaire): boolean {
-        const allQuestions = questionnaire.stages.flatMap(stage => {
-            return stage.sections.flatMap(section => {
-                return section.questions.map(question => question);
-            });
-        });
+        return questionnaire.getAllQuestions().some(question => question.errors.length > 0);
+    }
 
-        return allQuestions.some(question => question.errors.length > 0);
+    static hasUnansweredRequiredQuestions(questionnaire: Questionnaire): boolean {
+        return questionnaire
+            .getAllQuestions()
+            .some(QuestionnaireQuestion.isRequiredQuestionUnanswered);
     }
 
     static addProgramStage(questionnaire: Questionnaire, stageCode: Id): Questionnaire {
@@ -451,6 +454,38 @@ export class Questionnaire {
             ...questionnaireEntity,
             questions: updatedEntityQuestions,
         };
+    }
+
+    static applyUniquePatientIdRules(
+        questionnaire: Questionnaire,
+        surveyFormType: SURVEY_FORM_TYPES,
+        parentCaseReport: Maybe<NamedRef>
+    ): Questionnaire {
+        if (!questionnaire.entity) return questionnaire;
+
+        const isCaseReportForm = surveyFormType === "PrevalenceCaseReportForm";
+        const updatedQuestions: Question[] = questionnaire.entity.questions.map(question => {
+            if (
+                question.id !== AMR_SURVEYS_PREVALENCE_TEA_UNIQUE_PATIENT_ID ||
+                question.type !== "text"
+            ) {
+                return question;
+            }
+            if (isCaseReportForm) {
+                return { ...question, required: true };
+            }
+            return {
+                ...question,
+                value: parentCaseReport?.name || question.value,
+                disabled: true,
+            };
+        });
+
+        const updatedEntity: QuestionnaireEntity = {
+            ...questionnaire.entity,
+            questions: updatedQuestions,
+        };
+        return Questionnaire.updateQuestionnaireEntity(questionnaire, updatedEntity);
     }
 
     static applyAntibioticsBlacklist(

@@ -52,7 +52,9 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
     const shouldDisableSave = useMemo(() => {
         if (!questionnaire) return true;
         const isDisabled =
-            Questionnaire.doesQuestionnaireHaveErrors(questionnaire) || hasReadOnlyAccess;
+            Questionnaire.doesQuestionnaireHaveErrors(questionnaire) ||
+            Questionnaire.hasUnansweredRequiredQuestions(questionnaire) ||
+            hasReadOnlyAccess;
         if (SURVEYS_WITH_ORG_UNIT_SELECTOR.includes(formType)) {
             return isDisabled || !currentOrgUnit;
         }
@@ -73,24 +75,20 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                     currentPPSSurveyForm?.id,
                     currentWardRegister?.id,
                     currentPrevalenceSurveyForm?.id,
-                    currentCaseReportForm?.id
+                    currentCaseReportForm
                 )
                 .run(
                     questionnaireForm => {
-                        //apply rules, if any
-                        if (
-                            (questionnaireForm.rules && questionnaireForm.rules?.length > 0) ||
-                            (currentModule && currentModule?.rulesBySurvey?.length > 0)
-                        ) {
-                            const processedQuestionnaire =
-                                compositionRoot.surveys.applyInitialRules.execute(
-                                    questionnaireForm,
-                                    currentModule,
-                                    currentPPSSurveyForm?.id,
-                                    currentPrevalenceSurveyForm?.id
-                                );
-                            setQuestionnaire(processedQuestionnaire);
-                        } else setQuestionnaire(questionnaireForm);
+                        const processedQuestionnaire =
+                            compositionRoot.surveys.applyInitialRules.execute(
+                                questionnaireForm,
+                                currentModule,
+                                currentPPSSurveyForm?.id,
+                                currentPrevalenceSurveyForm?.id,
+                                formType,
+                                currentCaseReportForm
+                            );
+                        setQuestionnaire(processedQuestionnaire);
                         setLoading(false);
                     },
                     err => {
@@ -124,21 +122,16 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
                 )
                 .run(
                     questionnaireWithData => {
-                        //apply rules
-                        if (
-                            (questionnaireWithData.rules &&
-                                questionnaireWithData.rules?.length > 0) ||
-                            (currentModule && currentModule?.rulesBySurvey?.length > 0)
-                        ) {
-                            const processedQuestionnaire =
-                                compositionRoot.surveys.applyInitialRules.execute(
-                                    questionnaireWithData,
-                                    currentModule,
-                                    currentPPSSurveyForm?.id,
-                                    currentPrevalenceSurveyForm?.id
-                                );
-                            setQuestionnaire(processedQuestionnaire);
-                        } else setQuestionnaire(questionnaireWithData);
+                        const processedQuestionnaire =
+                            compositionRoot.surveys.applyInitialRules.execute(
+                                questionnaireWithData,
+                                currentModule,
+                                currentPPSSurveyForm?.id,
+                                currentPrevalenceSurveyForm?.id,
+                                formType,
+                                currentCaseReportForm
+                            );
+                        setQuestionnaire(processedQuestionnaire);
                         if (
                             formType === "PPSCountryQuestionnaire" ||
                             formType === "PrevalenceSurveyForm"
@@ -185,7 +178,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
         currentFacilityLevelForm,
         currentPrevalenceSurveyForm,
         currentModule,
-        currentCaseReportForm?.id,
+        currentCaseReportForm,
         ppsHospitals,
         prevalenceHospitals,
         refreshQuestionnaire,
