@@ -2,7 +2,7 @@ import { Id } from "../Ref";
 
 export type WardEventDetails = {
     formId: Id;
-    specialtyCode: string;
+    specialtyCode?: string;
     wardId: string;
 };
 

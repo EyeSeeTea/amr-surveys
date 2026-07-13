@@ -1,4 +1,5 @@
 import { Id } from "../../domain/entities/Ref";
+import { WardStatisticsFormType } from "../../domain/entities/Survey";
 
 //PPS Program Ids
 
@@ -34,6 +35,31 @@ export const PREVALENCE_MORTALITY_DISCHARGE_CLINICAL_FORM = "ofswUbiH0PD";
 export const PREVALENCE_MORTALITY_DISCHARGE_ECONOMIC_FORM = "PsWXK0D6kT3";
 export const PREVALENCE_MORTALITY_COHORT_ENORL_FORM = "ugTEoF21u2E";
 export const WARD_SUMMARY_STATISTICS_FORM_ID = "AC5wdAzM8pI";
+export const WARD_STATISTICS_WARD_LEVEL_FORM_ID = "ZSarTKMnAGq";
+
+//Ward Statistics attribute category combos
+const AMR_WARD_ID_MED_SPE_CAT_COMBO_ID = "xVP6NkmUPA9"; // ward + specialty
+const AMR_WARD_ID_CAT_COMBO_ID = "UsL31z8VCHa"; // ward only
+
+type WardStatisticsFormConfig = {
+    dataSetId: Id;
+    attributeCategoryComboId: Id;
+    disaggregatedBySpecialty: boolean;
+};
+
+export const WARD_STATISTICS_FORM_CONFIG: Record<WardStatisticsFormType, WardStatisticsFormConfig> =
+    {
+        WardSummaryStatisticsForm: {
+            dataSetId: WARD_SUMMARY_STATISTICS_FORM_ID,
+            attributeCategoryComboId: AMR_WARD_ID_MED_SPE_CAT_COMBO_ID,
+            disaggregatedBySpecialty: true,
+        },
+        WardStatisticsForWardForm: {
+            dataSetId: WARD_STATISTICS_WARD_LEVEL_FORM_ID,
+            attributeCategoryComboId: AMR_WARD_ID_CAT_COMBO_ID,
+            disaggregatedBySpecialty: false,
+        },
+    };
 
 //old defaults
 // export const PREVALENCE_CASE_REPORT_FORM_ID = "i0msBbbQxYC";

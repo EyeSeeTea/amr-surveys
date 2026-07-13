@@ -1,10 +1,11 @@
 import { D2Api } from "../../types/d2-api";
 import { Column, FormValue, Row, WardForm } from "../../domain/entities/Questionnaire/WardForm";
+import { WardStatisticsFormType } from "../../domain/entities/Survey";
 import { Id, NamedRef } from "../../domain/entities/Ref";
 import { WardFormRepository } from "../../domain/repositories/WardFormRepository";
 import { apiToFuture, FutureData } from "../api-futures";
 import { Future } from "../../domain/entities/generic/Future";
-import { WARD_SUMMARY_STATISTICS_FORM_ID } from "../entities/D2Survey";
+import { WARD_STATISTICS_FORM_CONFIG } from "../entities/D2Survey";
 import _c from "../../domain/entities/generic/Collection";
 import { Maybe } from "../../utils/ts-utils";
 import { WardEventDetails } from "../../domain/entities/Questionnaire/WardEvent";
@@ -18,20 +19,30 @@ type WardSummaryDataSet = {
 export class WardFormD2Repository implements WardFormRepository {
     constructor(private api: D2Api) {}
 
-    get(facilityId: Id, period: string, wardEvents: WardEventDetails[]): FutureData<WardForm[]> {
-        return this.getWardSummaryDataSet().flatMap(dataSet =>
-            this.getDataValues(facilityId, period, wardEvents).map(dataValues =>
+    get(
+        facilityId: Id,
+        period: string,
+        wardEvents: WardEventDetails[],
+        wardFormType: WardStatisticsFormType
+    ): FutureData<WardForm[]> {
+        return this.getWardSummaryDataSet(wardFormType).flatMap(dataSet =>
+            this.getDataValues(facilityId, period, wardEvents, wardFormType).map(dataValues =>
                 this.mapToWardForms(wardEvents, dataValues, dataSet)
             )
         );
     }
 
-    save(formValue: FormValue, facilityId: Id, period: string): FutureData<void> {
+    save(
+        formValue: FormValue,
+        facilityId: Id,
+        period: string,
+        wardFormType: WardStatisticsFormType
+    ): FutureData<void> {
         return apiToFuture(
             this.api.dataValues.postSet(
                 {},
                 {
-                    dataSet: WARD_SUMMARY_STATISTICS_FORM_ID,
+                    dataSet: WARD_STATISTICS_FORM_CONFIG[wardFormType].dataSetId,
                     orgUnit: facilityId,
                     period: period,
                     attributeOptionCombo: formValue.formId,
@@ -56,11 +67,12 @@ export class WardFormD2Repository implements WardFormRepository {
     private getDataValues(
         facilityId: Id,
         period: string,
-        wardEvents: WardEventDetails[]
+        wardEvents: WardEventDetails[],
+        wardFormType: WardStatisticsFormType
     ): FutureData<FormValue[]> {
         return apiToFuture(
             this.api.dataValues.getSet({
-                dataSet: [WARD_SUMMARY_STATISTICS_FORM_ID],
+                dataSet: [WARD_STATISTICS_FORM_CONFIG[wardFormType].dataSetId],
                 orgUnit: [facilityId],
                 period: [period],
                 attributeOptionCombo: wardEvents.map(wardEvent => wardEvent.formId),
@@ -93,7 +105,9 @@ export class WardFormD2Repository implements WardFormRepository {
         formValues: FormValue[],
         dataSet: WardSummaryDataSet
     ): Maybe<WardForm> {
-        const title = `${wardEvent.wardId} - ${wardEvent.specialtyCode}`;
+        const title = wardEvent.specialtyCode
+            ? `${wardEvent.wardId} - ${wardEvent.specialtyCode}`
+            : wardEvent.wardId;
         const columns = this.getColumns(dataSet);
         const rows = this.getRows(wardEvent, formValues, dataSet, columns);
 
@@ -152,11 +166,13 @@ export class WardFormD2Repository implements WardFormRepository {
         };
     }
 
-    private getWardSummaryDataSet(): FutureData<WardSummaryDataSet> {
+    private getWardSummaryDataSet(
+        wardFormType: WardStatisticsFormType
+    ): FutureData<WardSummaryDataSet> {
         return apiToFuture(
             this.api.metadata.get({
                 dataSets: {
-                    filter: { id: { eq: WARD_SUMMARY_STATISTICS_FORM_ID } },
+                    filter: { id: { eq: WARD_STATISTICS_FORM_CONFIG[wardFormType].dataSetId } },
                     fields: dataSetFields,
                 },
             })

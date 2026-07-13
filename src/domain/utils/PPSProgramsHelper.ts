@@ -183,7 +183,9 @@ export const getSurveyDisplayName = (surveyFormType: SURVEY_FORM_TYPES): string 
         case "PrevalenceCohortEnrolment":
             return "Cohort Enrolment";
         case "WardSummaryStatisticsForm":
-            return "Ward Summary Statistics";
+            return "Ward Statistics for Ward & Specialty";
+        case "WardStatisticsForWardForm":
+            return "Ward Statistics for Ward";
         default:
             return "Survey";
     }

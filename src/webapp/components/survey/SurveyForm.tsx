@@ -4,7 +4,7 @@ import i18n from "@eyeseetea/d2-ui-components/locales";
 import { useSurveyForm } from "./hook/useSurveyForm";
 import { red300 } from "material-ui/styles/colors";
 import { Id } from "../../../domain/entities/Ref";
-import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { isWardStatisticsFormType, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { ContentLoader } from "../content-loader/ContentLoader";
 import { useSaveSurvey } from "./hook/useSaveSurvey";
 import styled from "styled-components";
@@ -131,8 +131,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
                 <Title variant="h5">{i18n.t(getSurveyDisplayName(props.formType) || "")}</Title>
 
-                {props.formType === "WardSummaryStatisticsForm" ? (
-                    <WardSummaryForm hasReadOnlyAccess={hasReadOnlyAccess} />
+                {isWardStatisticsFormType(props.formType) ? (
+                    <WardSummaryForm
+                        key={props.formType}
+                        formType={props.formType}
+                        hasReadOnlyAccess={hasReadOnlyAccess}
+                    />
                 ) : (
                     <>
                         <SurveyFormOUSelector
@@ -249,7 +253,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = props => {
                 )}
             </ContentLoader>
 
-            {props.formType !== "WardSummaryStatisticsForm" && (
+            {!isWardStatisticsFormType(props.formType) && (
                 <PageFooter>
                     <CancelButton variant="outlined" onClick={onCancel}>
                         {i18n.t("Cancel")}
