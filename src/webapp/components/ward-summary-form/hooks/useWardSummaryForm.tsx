@@ -8,6 +8,9 @@ import { getCellId } from "../WardSummarySection";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { WardEvent } from "../../../../domain/entities/Questionnaire/WardEvent";
+import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
+import i18n from "../../../../utils/i18n";
+import _c from "../../../../domain/entities/generic/Collection";
 
 export enum SAVE_FORM_STATE {
     ERROR = "error",
@@ -18,6 +21,7 @@ export enum SAVE_FORM_STATE {
 
 export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
     const { compositionRoot } = useAppContext();
+    const { snackbar } = useOfflineSnackbar();
 
     const [cellSaveStates, setCellSaveStates] = useState<Map<string, SAVE_FORM_STATE>>(new Map());
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
@@ -122,6 +126,7 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
                     setCurrentOrgUnit(orgUnit);
                     if (wardEvents.length === 1) setSelectedRootSurvey(wardEvents[0]?.rootSurveyId);
                     setLoading(false);
+                    warnAboutUnmatchedWardIds(wardEvents, snackbar.warning);
                 },
                 error => {
                     setError(error.message);
@@ -129,7 +134,7 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
                 }
             );
         },
-        [compositionRoot.surveys.getWardEvents, wardFormType]
+        [compositionRoot.surveys.getWardEvents, wardFormType, snackbar]
     );
 
     const updateCellSaveState = useCallback((formValue: FormValue, state: SAVE_FORM_STATE) => {
@@ -200,4 +205,20 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
         updateRootSurvey: updateRootSurvey,
         updateWardSummaryPeriod: updateWardSummaryPeriod,
     };
+}
+
+function warnAboutUnmatchedWardIds(wardEvents: WardEvent[], warn: (message: string) => void): void {
+    const unmatchedWardIds = _c(wardEvents)
+        .flatMap(wardEvent => _c(wardEvent.unmatchedWardIds))
+        .uniq()
+        .value();
+
+    if (unmatchedWardIds.length === 0) return;
+
+    warn(
+        i18n.t(
+            "Some ward events could not be matched to a form and were not included: {{wardIds}}",
+            { wardIds: unmatchedWardIds.join(", ") }
+        )
+    );
 }

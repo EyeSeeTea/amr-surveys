@@ -11,4 +11,5 @@ export type WardEvent = {
     rootSurveyName: string;
     startDate: Date;
     events: WardEventDetails[];
+    unmatchedWardIds: string[];
 };

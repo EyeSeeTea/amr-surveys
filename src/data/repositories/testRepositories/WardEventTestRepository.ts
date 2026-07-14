@@ -19,6 +19,7 @@ export class WardEventTestRepository implements WardEventRepository {
                         wardId: "W01",
                     },
                 ],
+                unmatchedWardIds: [],
             },
         ]);
     }

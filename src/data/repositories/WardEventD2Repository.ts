@@ -37,7 +37,7 @@ export class WardEventD2Repository implements WardEventRepository {
             surveyWardEvents: this.getSurveyWardEvents(facility),
         }).flatMap(({ categoryOptionCombos, surveyWardEvents }) => {
             const wardEvents = surveyWardEvents.map(surveyWardEvent => {
-                const wardEventDetails = getWardEventDetails(
+                const { details, unmatchedWardIds } = getWardEventDetails(
                     surveyWardEvent.events,
                     categoryOptionCombos,
                     disaggregatedBySpecialty
@@ -45,7 +45,8 @@ export class WardEventD2Repository implements WardEventRepository {
 
                 return {
                     ...surveyWardEvent,
-                    events: wardEventDetails,
+                    events: details,
+                    unmatchedWardIds,
                 };
             });
 
@@ -194,36 +195,58 @@ export type D2CategoryOptionCombo = MetadataPick<{
     categoryOptionCombos: { fields: typeof categoryOptionComboFields };
 }>["categoryOptionCombos"][number];
 
+type WardEventDetailsResult = {
+    details: WardEventDetails[];
+    unmatchedWardIds: string[];
+};
+
+type WardEventResolution =
+    | { status: "matched"; detail: WardEventDetails }
+    | { status: "unmatched"; wardId: string };
+
 export function getWardEventDetails(
     events: D2Event[],
     categoryOptionCombos: D2CategoryOptionCombo[],
     disaggregatedBySpecialty: boolean
-): WardEventDetails[] {
-    const details = _c(events)
+): WardEventDetailsResult {
+    const resolutions = _c(events)
         .flatMap(event =>
             resolveWardEventDetails(event, categoryOptionCombos, disaggregatedBySpecialty)
         )
         .value();
 
-    return disaggregatedBySpecialty
-        ? details
-        : _c(details)
+    const matchedDetails = _c(resolutions)
+        .compactMap(resolution => (resolution.status === "matched" ? resolution.detail : undefined))
+        .value();
+
+    const details = disaggregatedBySpecialty
+        ? matchedDetails
+        : _c(matchedDetails)
               .uniqBy(detail => detail.formId)
               .value();
+
+    const unmatchedWardIds = _c(resolutions)
+        .compactMap(resolution =>
+            resolution.status === "unmatched" ? resolution.wardId : undefined
+        )
+        .uniq()
+        .value();
+
+    return { details, unmatchedWardIds };
 }
 
 function resolveWardEventDetails(
     event: D2Event,
     categoryOptionCombos: D2CategoryOptionCombo[],
     disaggregatedBySpecialty: boolean
-): Collection<WardEventDetails> {
+): Collection<WardEventResolution> {
     const uniqueWardId = resolveUniqueWardId(event);
     if (!uniqueWardId) return _c([]);
 
     const specialtyCodes = disaggregatedBySpecialty ? getSpecialtyCodes(event) : [undefined];
 
-    return _c(specialtyCodes).compactMap(specialtyCode =>
-        buildWardEventDetail(uniqueWardId, specialtyCode, categoryOptionCombos)
+    return _c(specialtyCodes).map(specialtyCode =>
+        resolveWardEventDetail(uniqueWardId, specialtyCode, categoryOptionCombos)
     );
 }
 
@@ -249,11 +272,11 @@ function getSpecialtyCodes(event: D2Event): string[] {
         .value();
 }
 
-function buildWardEventDetail(
+function resolveWardEventDetail(
     wardId: string,
     specialtyCode: Maybe<string>,
     categoryOptionCombos: D2CategoryOptionCombo[]
-): Maybe<WardEventDetails> {
+): WardEventResolution {
     const wardEventCoc = categoryOptionCombos.find(coc => {
         const cocNames = coc.categoryOptions.map(co => co.name);
         const hasWardId = cocNames.some(cocName => wardId.endsWith(cocName));
@@ -267,12 +290,15 @@ function buildWardEventDetail(
         console.warn(
             `No matching category option combo for ward event with ward ID ${wardId}${specialtySuffix}`
         );
-        return undefined;
+        return { status: "unmatched", wardId };
     }
 
-    return specialtyCode
-        ? { formId: wardEventCoc.id, wardId, specialtyCode }
-        : { formId: wardEventCoc.id, wardId };
+    return {
+        status: "matched",
+        detail: specialtyCode
+            ? { formId: wardEventCoc.id, wardId, specialtyCode }
+            : { formId: wardEventCoc.id, wardId },
+    };
 }
 
 const countryLevel = 3;
