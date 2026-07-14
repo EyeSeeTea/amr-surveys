@@ -19,7 +19,7 @@ import { getOrgUnitByLevel } from "../../domain/entities/OrgUnit";
 import { WardStatisticsFormType } from "../../domain/entities/Survey";
 import { Maybe } from "../../utils/ts-utils";
 
-type D2Event = {
+export type D2Event = {
     event: Id;
     programStage: Id;
     dataValues: D2DataValue[];
@@ -148,12 +148,12 @@ export class WardEventD2Repository implements WardEventRepository {
     }
 }
 
-const dataElementIds = {
+export const dataElementIds = {
     WARD_ID: "yAA33dsnWmY",
     WARD_TYPE_11: "iowb9y894y2",
     WARD_TYPE_112: "yoctlOcQ4jK",
 };
-const WARD_DATA_PROGRAM_STAGE_ID = "ikaExmORX0F";
+export const WARD_DATA_PROGRAM_STAGE_ID = "ikaExmORX0F";
 const WARD_COUNT = 32;
 const generateWardIds = (count: number): string[] =>
     Array.from({ length: count }, (_, i) => `W${String(i + 1).padStart(2, "0")}`);
@@ -190,11 +190,11 @@ const trackedEntityFields = {
     trackedEntity: true,
 } as const;
 
-type D2CategoryOptionCombo = MetadataPick<{
+export type D2CategoryOptionCombo = MetadataPick<{
     categoryOptionCombos: { fields: typeof categoryOptionComboFields };
 }>["categoryOptionCombos"][number];
 
-function getWardEventDetails(
+export function getWardEventDetails(
     events: D2Event[],
     categoryOptionCombos: D2CategoryOptionCombo[],
     disaggregatedBySpecialty: boolean
