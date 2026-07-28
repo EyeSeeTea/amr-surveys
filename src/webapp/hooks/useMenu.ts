@@ -43,11 +43,17 @@ export function useMenu() {
                         module: m,
                     },
                 ];
-                const wardSummaryStatisticsFormMenu: MenuLeaf[] = [
+                const wardStatisticsFormMenus: MenuLeaf[] = [
                     {
                         kind: "MenuLeaf",
-                        title: "Ward Summary Statistics",
+                        title: "Ward Statistics for Ward & Specialty",
                         path: `/new-survey/WardSummaryStatisticsForm`,
+                        module: m,
+                    },
+                    {
+                        kind: "MenuLeaf",
+                        title: "Ward Statistics for Ward",
+                        path: `/new-survey/WardStatisticsForWardForm`,
                         module: m,
                     },
                 ];
@@ -58,7 +64,7 @@ export function useMenu() {
                     moduleColor: m.color,
                     children:
                         surveyFormType === "PrevalenceSurveyForm"
-                            ? [...childMenus, ...wardSummaryStatisticsFormMenu]
+                            ? [...childMenus, ...wardStatisticsFormMenus]
                             : childMenus,
                 };
             });

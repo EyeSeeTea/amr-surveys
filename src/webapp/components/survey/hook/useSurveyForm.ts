@@ -5,6 +5,7 @@ import {
     QuestionnaireStage,
 } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import {
+    isWardStatisticsFormType,
     SURVEYS_WITH_ORG_UNIT_SELECTOR,
     SURVEY_FORM_TYPES,
 } from "../../../../domain/entities/Survey";
@@ -63,7 +64,7 @@ export function useSurveyForm(formType: SURVEY_FORM_TYPES, eventId: string | und
 
     useEffect(() => {
         setLoading(true);
-        if (formType === "WardSummaryStatisticsForm") {
+        if (isWardStatisticsFormType(formType)) {
             setLoading(false);
             return;
         }

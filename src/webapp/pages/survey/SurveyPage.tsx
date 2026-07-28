@@ -2,7 +2,7 @@ import React from "react";
 import { useHistory, useParams } from "react-router-dom";
 import styled from "styled-components";
 
-import { SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
+import { isWardStatisticsFormType, SURVEY_FORM_TYPES } from "../../../domain/entities/Survey";
 import { SurveyForm } from "../../components/survey/SurveyForm";
 import { PPSSurveyFormBreadCrumb } from "../../components/survey/bread-crumbs/PPSSurveyFormBreadCrumb";
 import { useCurrentModule } from "../../contexts/current-module-context";
@@ -22,7 +22,7 @@ export const SurveyPage: React.FC = () => {
             {currentModule?.name === "PPS" && (
                 <PPSSurveyFormBreadCrumb formType={formType} id={id} />
             )}
-            {currentModule?.name === "Prevalence" && formType !== "WardSummaryStatisticsForm" && (
+            {currentModule?.name === "Prevalence" && !isWardStatisticsFormType(formType) && (
                 <PrevalenceSurveyFormBreadCrumb formType={formType} id={id} />
             )}
             <SurveyForm hideForm={hideForm} formType={formType} currentSurveyId={id} />

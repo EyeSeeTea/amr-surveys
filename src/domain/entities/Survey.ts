@@ -20,7 +20,7 @@ export type SURVEY_FORM_TYPES =
     | "PrevalenceDischargeClinical"
     | "PrevalenceDischargeEconomic"
     | "PrevalenceCohortEnrolment"
-    | "WardSummaryStatisticsForm";
+    | WardStatisticsFormType;
 
 export type SURVEY_STATUSES = "FUTURE" | "ACTIVE" | "COMPLETED";
 export type SURVEY_TYPES = "SUPRANATIONAL" | "NATIONAL" | "HOSP";
@@ -41,7 +41,20 @@ export const SURVEYS_WITH_ORG_UNIT_SELECTOR: readonly SURVEY_FORM_TYPES[] = [
     "PrevalenceSurveyForm",
     "PrevalenceFacilityLevelForm",
     "WardSummaryStatisticsForm",
+    "WardStatisticsForWardForm",
 ];
+
+const WARD_STATISTICS_FORM_TYPES = [
+    "WardSummaryStatisticsForm",
+    "WardStatisticsForWardForm",
+] as const;
+
+export type WardStatisticsFormType = (typeof WARD_STATISTICS_FORM_TYPES)[number];
+
+export const isWardStatisticsFormType = (
+    formType: SURVEY_FORM_TYPES
+): formType is WardStatisticsFormType =>
+    (WARD_STATISTICS_FORM_TYPES as readonly SURVEY_FORM_TYPES[]).includes(formType);
 
 export const SURVEYS_WITH_COUNTRY_LEVEL_OU: SURVEY_FORM_TYPES[] = [
     "PPSCountryQuestionnaire",

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Id } from "../../../../domain/entities/Ref";
-import { SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
+import { isWardStatisticsFormType, SURVEY_FORM_TYPES } from "../../../../domain/entities/Survey";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { useAppContext } from "../../../contexts/app-context";
 import { Maybe } from "../../../../utils/ts-utils";
@@ -44,7 +44,7 @@ export function useSurveyFormOUSelector(
                         }
                     } else if (
                         formType === "PrevalenceFacilityLevelForm" ||
-                        formType === "WardSummaryStatisticsForm"
+                        isWardStatisticsFormType(formType)
                     ) {
                         const currentHospital = prevalenceHospitals.find(
                             hospital => hospital.orgUnitId === selectedOU

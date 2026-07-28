@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import { COUNTRY_OU_LEVEL, HOSPITAL_OU_LEVELS } from "../../../data/repositories/UserD2Repository";
 import { Id } from "../../../domain/entities/Ref";
 import {
+    isWardStatisticsFormType,
     SURVEYS_WITH_COUNTRY_LEVEL_OU,
     SURVEYS_WITH_ORG_UNIT_SELECTOR,
     SURVEY_FORM_TYPES,
@@ -62,7 +63,7 @@ export const SurveyFormOUSelector: React.FC<SurveyFormOUSelectorProps> = ({
             return [currentPrevalenceSurveyForm?.orgUnitId];
         }
 
-        if (formType === "WardSummaryStatisticsForm") {
+        if (isWardStatisticsFormType(formType)) {
             return getRootIds(currentUser.organisationUnits);
         }
 

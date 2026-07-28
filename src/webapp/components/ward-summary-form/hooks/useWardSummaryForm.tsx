@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormValue, WardForm } from "../../../../domain/entities/Questionnaire/WardForm";
+import { WardStatisticsFormType } from "../../../../domain/entities/Survey";
 import { useAppContext } from "../../../contexts/app-context";
 import { Maybe } from "../../../../utils/ts-utils";
 import { Id } from "../../../../domain/entities/Ref";
@@ -7,6 +8,9 @@ import { getCellId } from "../WardSummarySection";
 import { palette } from "../../../pages/app/themes/dhis2.theme";
 import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { WardEvent } from "../../../../domain/entities/Questionnaire/WardEvent";
+import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
+import i18n from "../../../../utils/i18n";
+import _c from "../../../../domain/entities/generic/Collection";
 
 export enum SAVE_FORM_STATE {
     ERROR = "error",
@@ -15,8 +19,9 @@ export enum SAVE_FORM_STATE {
     SUCCESS = "success",
 }
 
-export function useWardSummaryForm() {
+export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
     const { compositionRoot } = useAppContext();
+    const { snackbar } = useOfflineSnackbar();
 
     const [cellSaveStates, setCellSaveStates] = useState<Map<string, SAVE_FORM_STATE>>(new Map());
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
@@ -62,7 +67,7 @@ export function useWardSummaryForm() {
             }
             setLoading(true);
             compositionRoot.surveys.getWardForm
-                .execute(currentOrgUnit.orgUnitId, selectedPeriod, wardEventDetails)
+                .execute(currentOrgUnit.orgUnitId, selectedPeriod, wardEventDetails, wardFormType)
                 .run(
                     wardSummaryForm => {
                         setWardSummaryForm(wardSummaryForm);
@@ -74,7 +79,14 @@ export function useWardSummaryForm() {
                     }
                 );
         }
-    }, [currentOrgUnit, selectedPeriod, compositionRoot.surveys, wardEvents, selectedRootSurvey]);
+    }, [
+        currentOrgUnit,
+        selectedPeriod,
+        compositionRoot.surveys,
+        wardEvents,
+        selectedRootSurvey,
+        wardFormType,
+    ]);
 
     const rootSurveyOptions = useMemo(
         () =>
@@ -108,12 +120,13 @@ export function useWardSummaryForm() {
             setWardEvents(undefined);
             setError(undefined);
             setLoading(true);
-            compositionRoot.surveys.getWardEvents.execute(orgUnit).run(
+            compositionRoot.surveys.getWardEvents.execute(orgUnit, wardFormType).run(
                 wardEvents => {
                     setWardEvents(wardEvents);
                     setCurrentOrgUnit(orgUnit);
                     if (wardEvents.length === 1) setSelectedRootSurvey(wardEvents[0]?.rootSurveyId);
                     setLoading(false);
+                    warnAboutUnmatchedWardIds(wardEvents, snackbar.warning);
                 },
                 error => {
                     setError(error.message);
@@ -121,7 +134,7 @@ export function useWardSummaryForm() {
                 }
             );
         },
-        [compositionRoot.surveys.getWardEvents]
+        [compositionRoot.surveys.getWardEvents, wardFormType, snackbar]
     );
 
     const updateCellSaveState = useCallback((formValue: FormValue, state: SAVE_FORM_STATE) => {
@@ -145,7 +158,7 @@ export function useWardSummaryForm() {
 
             const formValueToSave = { ...formValue, value: newValue ?? "" };
             compositionRoot.surveys.saveWardForm
-                .execute(formValueToSave, currentOrgUnit.orgUnitId, selectedPeriod)
+                .execute(formValueToSave, currentOrgUnit.orgUnitId, selectedPeriod, wardFormType)
                 .run(
                     () => {
                         updateCellSaveState(formValue, SAVE_FORM_STATE.SUCCESS);
@@ -156,7 +169,13 @@ export function useWardSummaryForm() {
                     }
                 );
         },
-        [updateCellSaveState, currentOrgUnit, selectedPeriod, compositionRoot.surveys.saveWardForm]
+        [
+            updateCellSaveState,
+            currentOrgUnit,
+            selectedPeriod,
+            compositionRoot.surveys.saveWardForm,
+            wardFormType,
+        ]
     );
 
     const updateWardSummaryPeriod = useCallback((period: Maybe<Id>) => {
@@ -186,4 +205,20 @@ export function useWardSummaryForm() {
         updateRootSurvey: updateRootSurvey,
         updateWardSummaryPeriod: updateWardSummaryPeriod,
     };
+}
+
+function warnAboutUnmatchedWardIds(wardEvents: WardEvent[], warn: (message: string) => void): void {
+    const unmatchedWardIds = _c(wardEvents)
+        .flatMap(wardEvent => _c(wardEvent.unmatchedWardIds))
+        .uniq()
+        .value();
+
+    if (unmatchedWardIds.length === 0) return;
+
+    warn(
+        i18n.t(
+            "Some ward events could not be matched to a form and were not included: {{wardIds}}",
+            { wardIds: unmatchedWardIds.join(", ") }
+        )
+    );
 }

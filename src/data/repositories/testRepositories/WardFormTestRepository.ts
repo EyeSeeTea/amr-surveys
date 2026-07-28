@@ -1,12 +1,19 @@
 import { Future } from "../../../domain/entities/generic/Future";
+import { WardEventDetails } from "../../../domain/entities/Questionnaire/WardEvent";
 import { FormValue, WardForm } from "../../../domain/entities/Questionnaire/WardForm";
+import { WardStatisticsFormType } from "../../../domain/entities/Survey";
 import { Id } from "../../../domain/entities/Ref";
 import { WardFormRepository } from "../../../domain/repositories/WardFormRepository";
 import { FutureData } from "../../api-futures";
 
 export class WardFormTestRepository implements WardFormRepository {
-    get(facilityId: string, period: string): FutureData<WardForm[]> {
-        console.debug("get ward form", facilityId, period);
+    get(
+        facilityId: string,
+        period: string,
+        _wardEvents: WardEventDetails[],
+        wardFormType: WardStatisticsFormType
+    ): FutureData<WardForm[]> {
+        console.debug("get ward form", facilityId, period, wardFormType);
 
         const wardForm: WardForm[] = [
             {
@@ -60,8 +67,13 @@ export class WardFormTestRepository implements WardFormRepository {
         return Future.success(wardForm);
     }
 
-    save(formValue: FormValue, facilityId: Id, period: string): FutureData<void> {
-        console.debug("save ward form", formValue, facilityId, period);
+    save(
+        formValue: FormValue,
+        facilityId: Id,
+        period: string,
+        wardFormType: WardStatisticsFormType
+    ): FutureData<void> {
+        console.debug("save ward form", formValue, facilityId, period, wardFormType);
         return Future.success(undefined);
     }
 }
