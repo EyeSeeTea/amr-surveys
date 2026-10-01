@@ -47,7 +47,7 @@ export const PrevalenceSurveyFormBreadCrumb: React.FC<PrevalenceSurveyFormBreadC
                 )}
             </StyledBreadCrumbChild>
             {isPrevelanceChild() && (
-                <>
+                <StyledBreadCrumbChild>
                     <Button
                         component={NavLink}
                         to={`/surveys/PrevalenceFacilityLevelForm`}
@@ -71,10 +71,10 @@ export const PrevalenceSurveyFormBreadCrumb: React.FC<PrevalenceSurveyFormBreadC
                             </Button>
                         )}
                     </StyledBreadCrumbChild>
-                </>
+                </StyledBreadCrumbChild>
             )}
             {isPrevelanceChild() && !(formType === "PrevalenceFacilityLevelForm") && (
-                <>
+                <StyledBreadCrumbChild>
                     <Button
                         component={NavLink}
                         to={`/surveys/PrevalenceCaseReportForm`}
@@ -98,12 +98,12 @@ export const PrevalenceSurveyFormBreadCrumb: React.FC<PrevalenceSurveyFormBreadC
                             </Button>
                         )}
                     </StyledBreadCrumbChild>
-                </>
+                </StyledBreadCrumbChild>
             )}
             {isPrevelanceChild() &&
                 !(formType === "PrevalenceCaseReportForm") &&
                 !(formType === "PrevalenceFacilityLevelForm") && (
-                    <>
+                    <StyledBreadCrumbChild>
                         <Button component={NavLink} to={`/surveys/${formType}`} exact={true}>
                             <span>{i18n.t(`${getSurveyDisplayName(formType)} List`)}</span>
                         </Button>
@@ -119,7 +119,7 @@ export const PrevalenceSurveyFormBreadCrumb: React.FC<PrevalenceSurveyFormBreadC
                                 </Button>
                             )}
                         </StyledBreadCrumbChild>
-                    </>
+                    </StyledBreadCrumbChild>
                 )}
         </StyledBreadCrumbs>
     );
