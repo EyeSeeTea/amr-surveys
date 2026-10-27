@@ -52,36 +52,68 @@ export interface QuestionnaireRule {
     programRuleVariables: D2ProgramRuleVariable[] | undefined;
 }
 
+const rulesByQuestionIdCache = new WeakMap<QuestionnaireRule[], Map<Id, QuestionnaireRule[]>>();
+
+/**
+ * Index rules by every question id they read or act on, built once per rules array.
+ * Rules keep their original order and appear once per question.
+ */
+const getRulesByQuestionId = (rules: QuestionnaireRule[]): Map<Id, QuestionnaireRule[]> => {
+    const cached = rulesByQuestionIdCache.get(rules);
+    if (cached) return cached;
+
+    const index = new Map<Id, QuestionnaireRule[]>();
+    rules.forEach(rule => {
+        const questionIds = new Set<Id>([...rule.dataElementIds, ...rule.teAttributeIds]);
+        rule.actions.forEach(action => {
+            if (action.dataElement?.id) questionIds.add(action.dataElement.id);
+            if (action.trackedEntityAttribute?.id)
+                questionIds.add(action.trackedEntityAttribute.id);
+        });
+        questionIds.forEach(id => {
+            const rulesOfQuestion = index.get(id);
+            if (rulesOfQuestion) rulesOfQuestion.push(rule);
+            else index.set(id, [rule]);
+        });
+    });
+
+    rulesByQuestionIdCache.set(rules, index);
+    return index;
+};
+
 export const getApplicableRules = (
     updatedQuestion: Question,
     questionnaireRules: QuestionnaireRule[],
     questions: Question[]
 ): QuestionnaireRule[] => {
     //1. Get all Rules that are applicable to the updated question
-    const applicableRules = questionnaireRules.filter(
-        rule =>
-            rule.dataElementIds.includes(updatedQuestion.id) ||
-            rule.teAttributeIds.includes(updatedQuestion.id) ||
-            rule.actions.some(action => action.dataElement?.id === updatedQuestion.id) ||
-            rule.actions.some(action => action.trackedEntityAttribute?.id === updatedQuestion.id)
-    );
+    const applicableRules = getRulesByQuestionId(questionnaireRules).get(updatedQuestion.id) ?? [];
+    if (applicableRules.length === 0) return [];
 
     //2. Run the rule conditions and return rules with parsed results
     // Also augment rule actions with results of the `data` expression evaluation
-    const parsedApplicableRules = applicableRules.map(rule => {
-        const expressionParserResult = parseConditionWithExpressionParser(rule, questions);
-        const actionsWithEvaluatedDataExpressions = getActionsWithEvaluatedDataExpression(
-            rule,
-            questions
+    const questionsById = new Map<Id, Question>();
+    questions.forEach(question => {
+        if (!questionsById.has(question.id)) questionsById.set(question.id, question);
+    });
+    // Rules usually share the same variables array, so its values are worked out once per call
+    const variableValuesCache = new Map<
+        D2ProgramRuleVariable[],
+        Map<string, ProgramRuleVariableValue>
+    >();
+
+    return applicableRules.map(rule => {
+        const programRuleVariableValues = getCachedProgramRuleVariableValues(
+            rule.programRuleVariables,
+            questionsById,
+            variableValuesCache
         );
         return {
             ...rule,
-            parsedResult: expressionParserResult,
-            actions: actionsWithEvaluatedDataExpressions,
+            parsedResult: parseConditionWithExpressionParser(rule, programRuleVariableValues),
+            actions: getActionsWithEvaluatedDataExpression(rule, programRuleVariableValues),
         };
     });
-
-    return parsedApplicableRules;
 };
 
 export const getQuestionValueByType = (question: Question): string => {
@@ -130,18 +162,32 @@ export function getQuestionValueFromEvaluatedExpression(
     }
 }
 
-function getProgramRuleVariableValues(
+function getCachedProgramRuleVariableValues(
     programRuleVariables: Maybe<D2ProgramRuleVariable[]>,
-    questions: Question[]
+    questionsById: Map<Id, Question>,
+    cache: Map<D2ProgramRuleVariable[], Map<string, ProgramRuleVariableValue>>
+): Map<string, ProgramRuleVariableValue> {
+    if (!programRuleVariables) return new Map();
+    const cached = cache.get(programRuleVariables);
+    if (cached) return cached;
+
+    const values = getProgramRuleVariableValues(programRuleVariables, questionsById);
+    cache.set(programRuleVariables, values);
+    return values;
+}
+
+function getProgramRuleVariableValues(
+    programRuleVariables: D2ProgramRuleVariable[],
+    questionsById: Map<Id, Question>
 ): Map<string, ProgramRuleVariableValue> {
     const programRuleVariableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue> =
         new Map(
-            programRuleVariables?.map(prv => {
-                const currentQuestion = questions.find(
-                    question =>
-                        question.id === prv?.dataElement?.id ||
-                        question.id === prv?.trackedEntityAttribute?.id
-                );
+            programRuleVariables.map(prv => {
+                const currentQuestion =
+                    (prv?.dataElement?.id ? questionsById.get(prv.dataElement.id) : undefined) ??
+                    (prv?.trackedEntityAttribute?.id
+                        ? questionsById.get(prv.trackedEntityAttribute.id)
+                        : undefined);
 
                 if (!currentQuestion) return [prv.name, { type: "text", value: "" }];
                 const value = getQuestionValueByType(currentQuestion);
@@ -166,13 +212,8 @@ function getProgramRuleVariableValues(
 
 const parseConditionWithExpressionParser = (
     rule: QuestionnaireRule,
-    questions: Question[]
+    programRuleVariableValues: Map<string, ProgramRuleVariableValue>
 ): boolean => {
-    const programRuleVariableValues = getProgramRuleVariableValues(
-        rule.programRuleVariables,
-        questions
-    );
-
     return new D2ExpressionParser()
         .evaluateRuleEngineCondition(rule.condition, programRuleVariableValues)
         .match({
@@ -190,12 +231,8 @@ const parseConditionWithExpressionParser = (
  */
 const getActionsWithEvaluatedDataExpression = (
     rule: QuestionnaireRule,
-    questions: Question[]
+    programRuleVariableValues: Map<string, ProgramRuleVariableValue>
 ): QuestionnaireRuleAction[] => {
-    const programRuleVariableValues = getProgramRuleVariableValues(
-        rule.programRuleVariables,
-        questions
-    );
     const parser = new D2ExpressionParser();
 
     return rule.actions.map(action => {

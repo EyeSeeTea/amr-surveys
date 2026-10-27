@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-03-01T20:33:57.488Z\n"
-"PO-Revision-Date: 2026-03-01T20:33:57.488Z\n"
+"POT-Creation-Date: 2026-10-02T12:44:17.603Z\n"
+"PO-Revision-Date: 2026-10-02T12:44:17.603Z\n"
 
 msgid "There was a problem with \"{{name}}\" - {{prop}} is not set"
 msgstr ""
@@ -79,15 +79,6 @@ msgid ""
 "internet. Please try again later."
 msgstr ""
 
-msgid "Stage - Profile"
-msgstr ""
-
-msgid "Save"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
 msgid "PPS Surveys"
 msgstr ""
 
@@ -109,6 +100,35 @@ msgstr ""
 msgid ""
 "Submission Failed! You do not have the necessary permissions, please "
 "contact your administrator"
+msgstr ""
+
+msgid "Stage - Profile"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "Case Reports"
+msgstr ""
+
+msgid ""
+"This survey has other surveys associated with it.\n"
+" Please delete all associated surveys, before you can delete this one."
+msgstr ""
+
+msgid "Survey deleted!"
+msgstr ""
+
+msgid "Error deleting the survery"
+msgstr ""
+
+msgid "Error fetching surveys"
 msgstr ""
 
 msgid "Search Patient ID"
@@ -148,26 +168,6 @@ msgid "NATIONAL"
 msgstr ""
 
 msgid "HOSP"
-msgstr ""
-
-msgid "Country"
-msgstr ""
-
-msgid "Case Reports"
-msgstr ""
-
-msgid ""
-"This survey has other surveys associated with it.\n"
-" Please delete all associated surveys, before you can delete this one."
-msgstr ""
-
-msgid "Survey deleted!"
-msgstr ""
-
-msgid "Error deleting the survery"
-msgstr ""
-
-msgid "Error fetching surveys"
 msgstr ""
 
 msgid "Root Survey Name"
@@ -225,6 +225,27 @@ msgid "Profile"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid "User password changed successfully."
+msgstr ""
+
+msgid "Error fetching Database locales"
+msgstr ""
+
+msgid "Error fetching UI locales"
+msgstr ""
+
+msgid "Interface language updated successfully"
+msgstr ""
+
+msgid "Error updating interface language."
+msgstr ""
+
+msgid "Database language updated successfully"
+msgstr ""
+
+msgid "Error updating database language."
 msgstr ""
 
 msgid "The password and confirm password fields don't match"
@@ -287,25 +308,12 @@ msgstr ""
 msgid "Enable message SMS notifications"
 msgstr ""
 
-msgid "User password changed successfully."
+msgid "Only whole numbers of 0 or more are allowed. The value was not saved."
 msgstr ""
 
-msgid "Error fetching Database locales"
-msgstr ""
-
-msgid "Error fetching UI locales"
-msgstr ""
-
-msgid "Interface language updated successfully"
-msgstr ""
-
-msgid "Error updating interface language."
-msgstr ""
-
-msgid "Database language updated successfully"
-msgstr ""
-
-msgid "Error updating database language."
+msgid ""
+"Some values have not been saved and are highlighted in red. Leave this page "
+"anyway?"
 msgstr ""
 
 msgid "No ward events found for the selected org unit."
@@ -319,6 +327,11 @@ msgstr ""
 msgid ""
 "No ward summary statistics forms found for the selected root survey, period "
 "and org unit."
+msgstr ""
+
+msgid ""
+"Some wards have a Unique ward ID problem. Please correct it in the Ward "
+"data of the facility record."
 msgstr ""
 
 msgid "Could not resolve Org Unit for current form"

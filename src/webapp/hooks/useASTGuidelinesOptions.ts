@@ -4,6 +4,7 @@ import { useCurrentSurveys } from "../contexts/current-surveys-context";
 import { SpeciesQuestion } from "../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import _ from "../../domain/entities/generic/Collection";
 import { useCurrentModule } from "../contexts/current-module-context";
+import { getGroupAntibiotics } from "../../domain/entities/ASTGuidelines";
 
 export function useASTGuidelinesOptions() {
     const { currentASTGuidelines } = useCurrentASTGuidelinesContext();
@@ -40,14 +41,12 @@ export function useASTGuidelinesOptions() {
                     rule => rule.surveyId === currentPrevalenceSurveyForm?.id
                 )?.antibioticBlacklist;
 
-                return currentASTMatrix
-                    .get(matrixKey)
-                    ?.filter(
-                        antibioticOption =>
-                            !antibioticsBlacklist?.some(blacklist =>
-                                antibioticOption.toLowerCase().includes(blacklist.toLowerCase())
-                            )
-                    );
+                return getGroupAntibiotics(currentASTMatrix, matrixKey)?.filter(
+                    antibioticOption =>
+                        !antibioticsBlacklist?.some(blacklist =>
+                            antibioticOption.toLowerCase().includes(blacklist.toLowerCase())
+                        )
+                );
             } else return undefined;
         },
         [

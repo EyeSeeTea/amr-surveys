@@ -5,6 +5,7 @@ import {
     getWardEventDetails,
     WARD_DATA_PROGRAM_STAGE_ID,
 } from "../WardEventD2Repository";
+import { WardIdIssues } from "../../../domain/entities/Questionnaire/WardEvent";
 
 describe("getWardEventDetails", () => {
     describe("when disaggregatedBySpecialty is true", () => {
@@ -25,13 +26,79 @@ describe("getWardEventDetails", () => {
                     { formId: "cocA", wardId: "W01", specialtyCode: "SPEC_A" },
                     { formId: "cocB", wardId: "W01", specialtyCode: "SPEC_B" },
                 ],
-                unmatchedWardIds: [],
+                wardIdIssues: givenWardIdIssues(),
+            });
+        });
+
+        it("should show a form once when two wards share a ward ID and specialty, and report the duplicate", () => {
+            const events = [
+                givenAWardEvent({ event: "event1", wardId: "W06", specialtyCodes: ["SPEC_A"] }),
+                givenAWardEvent({ event: "event2", wardId: "W06", specialtyCodes: ["SPEC_A"] }),
+            ];
+            const categoryOptionCombos = [givenACategoryOptionCombo("cocA", ["W06", "SPEC_A"])];
+
+            const result = getWardEventDetails(events, categoryOptionCombos, true);
+
+            expect(result).toEqual({
+                details: [{ formId: "cocA", wardId: "W06", specialtyCode: "SPEC_A" }],
+                wardIdIssues: givenWardIdIssues({ duplicatedWardIds: ["W06 (SPEC_A)"] }),
+            });
+        });
+
+        it("should keep each ward's specialty forms and not report a duplicate when wards share a ward ID with different specialties", () => {
+            const events = [
+                givenAWardEvent({ event: "event1", wardId: "W02", specialtyCodes: ["SPEC_A"] }),
+                givenAWardEvent({ event: "event2", wardId: "W02", specialtyCodes: ["SPEC_B"] }),
+            ];
+            const categoryOptionCombos = [
+                givenACategoryOptionCombo("cocA", ["W02", "SPEC_A"]),
+                givenACategoryOptionCombo("cocB", ["W02", "SPEC_B"]),
+            ];
+
+            const result = getWardEventDetails(events, categoryOptionCombos, true);
+
+            expect(result).toEqual({
+                details: [
+                    { formId: "cocA", wardId: "W02", specialtyCode: "SPEC_A" },
+                    { formId: "cocB", wardId: "W02", specialtyCode: "SPEC_B" },
+                ],
+                wardIdIssues: givenWardIdIssues(),
+            });
+        });
+
+        it("should name the specialty of an unmatched ward, so a ward with one unmatched specialty is identifiable", () => {
+            const event = givenAWardEvent({
+                wardId: "W04",
+                specialtyCodes: ["SPEC_A", "SPEC_MISSING"],
+            });
+            const categoryOptionCombos = [givenACategoryOptionCombo("cocA", ["W04", "SPEC_A"])];
+
+            const result = getWardEventDetails([event], categoryOptionCombos, true);
+
+            expect(result).toEqual({
+                details: [{ formId: "cocA", wardId: "W04", specialtyCode: "SPEC_A" }],
+                wardIdIssues: givenWardIdIssues({ unmatchedWardIds: ["W04 (SPEC_MISSING)"] }),
             });
         });
     });
 
     describe("when disaggregatedBySpecialty is false", () => {
-        it("should return a single detail with no specialtyCode, collapsing events that resolve to the same ward", () => {
+        it("should collapse wards recorded once per specialty under the same ward ID into one form, without reporting a duplicate", () => {
+            const events = [
+                givenAWardEvent({ event: "event1", wardId: "W01", specialtyCodes: ["SPEC_A"] }),
+                givenAWardEvent({ event: "event2", wardId: "W01", specialtyCodes: ["SPEC_B"] }),
+            ];
+            const categoryOptionCombos = [givenACategoryOptionCombo("cocWardOnly", ["W01"])];
+
+            const result = getWardEventDetails(events, categoryOptionCombos, false);
+
+            expect(result).toEqual({
+                details: [{ formId: "cocWardOnly", wardId: "W01" }],
+                wardIdIssues: givenWardIdIssues(),
+            });
+        });
+
+        it("should return a single detail with no specialtyCode, collapsing events that resolve to the same ward and reporting the duplicate when neither has a specialty", () => {
             const events = [
                 givenAWardEvent({ event: "event1", wardId: "W01" }),
                 givenAWardEvent({ event: "event2", wardId: "W01" }),
@@ -42,7 +109,7 @@ describe("getWardEventDetails", () => {
 
             expect(result).toEqual({
                 details: [{ formId: "cocWardOnly", wardId: "W01" }],
-                unmatchedWardIds: [],
+                wardIdIssues: givenWardIdIssues({ duplicatedWardIds: ["W01"] }),
             });
         });
     });
@@ -59,11 +126,47 @@ describe("getWardEventDetails", () => {
 
             expect(result).toEqual({
                 details: [{ formId: "cocWardOnly", wardId: "W01" }],
-                unmatchedWardIds: ["W02"],
+                wardIdIssues: givenWardIdIssues({ unmatchedWardIds: ["W02"] }),
+            });
+        });
+    });
+
+    describe("when a ward ID is lowercase", () => {
+        it("should match it to its form as if it were uppercase", () => {
+            const event = givenAWardEvent({ wardId: "HF036/w02" });
+            const categoryOptionCombos = [givenACategoryOptionCombo("cocWardOnly", ["W02"])];
+
+            const result = getWardEventDetails([event], categoryOptionCombos, false);
+
+            expect(result).toEqual({
+                details: [{ formId: "cocWardOnly", wardId: "HF036/W02" }],
+                wardIdIssues: givenWardIdIssues(),
+            });
+        });
+    });
+
+    describe("when a ward event has no ward ID", () => {
+        it("should count it in missingWardIdCount instead of silently dropping it", () => {
+            const events = [
+                givenAWardEvent({ event: "event1", wardId: "W01" }),
+                givenAWardEvent({ event: "event2", wardId: "  " }),
+                { ...givenAWardEvent({ event: "event3", wardId: "W03" }), dataValues: [] },
+            ];
+            const categoryOptionCombos = [givenACategoryOptionCombo("cocWardOnly", ["W01"])];
+
+            const result = getWardEventDetails(events, categoryOptionCombos, false);
+
+            expect(result).toEqual({
+                details: [{ formId: "cocWardOnly", wardId: "W01" }],
+                wardIdIssues: givenWardIdIssues({ missingWardIdCount: 2 }),
             });
         });
     });
 });
+
+function givenWardIdIssues(issues: Partial<WardIdIssues> = {}): WardIdIssues {
+    return { unmatchedWardIds: [], duplicatedWardIds: [], missingWardIdCount: 0, ...issues };
+}
 
 function givenAWardEvent(options: {
     wardId: string;

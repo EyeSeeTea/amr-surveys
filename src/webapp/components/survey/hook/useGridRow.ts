@@ -1,51 +1,51 @@
 import { useCallback } from "react";
 import {
+    ASTResultsQuestion,
     AntibioticQuestion,
-    BooleanQuestion,
+    AntibioticValueQuestion,
     Question,
     isASTResultsQuestion,
     isAntibioticValueQuestion,
 } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 
-export const useGridRow = (
-    updateAstResults: (question: Question) => void,
-    updateValue: (question: Question) => void,
-    antibiotic: AntibioticQuestion,
-    option: string,
-    updateAntibitoticQuestion: (question: Question) => void,
-    addNewAntibioticQuestion: BooleanQuestion,
-    updateAddNewAntibiotic: (question: Question) => void
-) => {
+interface GridRowQuestions {
+    option: string;
+    antibiotic: AntibioticQuestion;
+    astResults: ASTResultsQuestion;
+    valueQuestion: AntibioticValueQuestion;
+    updateQuestion: (question: Question) => void;
+}
+
+/**
+ * Saves a result or value of the row, together with the row's antibiotic in the same slot. When both the
+ * result and the value are cleared, the antibiotic is cleared too, so the slot is free for another drug.
+ */
+export const useGridRow = ({
+    option,
+    antibiotic,
+    astResults,
+    valueQuestion,
+    updateQuestion,
+}: GridRowQuestions) => {
     const updateGridRow = useCallback(
         (question: Question) => {
-            if (isASTResultsQuestion(question)) {
-                updateAstResults(question);
-            } else if (isAntibioticValueQuestion(question)) {
-                updateValue(question);
-            }
+            updateQuestion(question);
+
+            // A loaded empty drop-down holds an empty option, so a result counts only when it has a code.
+            const result = isASTResultsQuestion(question) ? question.value : astResults.value;
+            const value = isAntibioticValueQuestion(question)
+                ? question.value
+                : valueQuestion.value;
+            const hasResultOrValue = Boolean(result?.code || value);
             const updatedAntibiotic: AntibioticQuestion = {
                 ...antibiotic,
-                value: antibiotic.options.find(op => op.name === option),
+                value: hasResultOrValue
+                    ? antibiotic.options.find(op => op.name === option)
+                    : undefined,
             };
-
-            updateAntibitoticQuestion(updatedAntibiotic);
-
-            const newAddNewAntibiotic: BooleanQuestion = {
-                ...addNewAntibioticQuestion,
-                value: true,
-            };
-
-            updateAddNewAntibiotic(newAddNewAntibiotic);
+            updateQuestion(updatedAntibiotic);
         },
-        [
-            addNewAntibioticQuestion,
-            antibiotic,
-            option,
-            updateAddNewAntibiotic,
-            updateAntibitoticQuestion,
-            updateAstResults,
-            updateValue,
-        ]
+        [antibiotic, astResults.value, option, updateQuestion, valueQuestion.value]
     );
 
     return { updateGridRow };

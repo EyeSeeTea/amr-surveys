@@ -13,21 +13,15 @@ const DataElementCell: React.FC<DataElementItemProps> = props => {
     const { backgroundColor, dataValue, disabled, onChange: notifyChange } = props;
 
     const handleChange = (value: string) => {
-        const numericValue = value.trim();
-        if (numericValue === "") {
-            notifyChange(undefined);
-            return;
-        }
-
-        const parsed = parseInt(numericValue, 10);
-        if (!isNaN(parsed) && parsed >= 0) {
-            notifyChange(numericValue);
-        }
+        const trimmedValue = value.trim();
+        notifyChange(trimmedValue === "" ? undefined : trimmedValue);
     };
 
+    // A text input, because a number input reports invalid typing as empty, which would clear the saved value
     return (
         <CustomInput
-            type="number"
+            type="text"
+            inputMode="numeric"
             onBlur={e => handleChange(e.target.value)}
             onKeyDown={e => {
                 if (e.key === "Enter") {

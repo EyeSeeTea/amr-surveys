@@ -1,7 +1,6 @@
 import { Questionnaire } from "./Questionnaire";
 import {
     ASTResultsQuestion,
-    AddNewAntibioticQuestion,
     AntibioticQuestion,
     AntibioticValueQuestion,
     Code,
@@ -29,7 +28,6 @@ export interface AntibioticSection {
     antibioticQuestion: AntibioticQuestion;
     astResultsQuestion: ASTResultsQuestion;
     valueQuestion: AntibioticValueQuestion;
-    addNewAntibioticQuestion: AddNewAntibioticQuestion;
 }
 
 export class QuestionnaireSectionM {

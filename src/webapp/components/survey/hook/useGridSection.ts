@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useASTGuidelinesOptions } from "../../../hooks/useASTGuidelinesOptions";
 import {
     AntibioticSection,
@@ -7,13 +7,13 @@ import {
 import {
     Question,
     isASTResultsQuestion,
-    isAddNewAntibioticQuestion,
     isAntibioticQuestion,
     isAntibioticValueQuestion,
     isSpeciesQuestion,
 } from "../../../../domain/entities/Questionnaire/QuestionnaireQuestion";
 import { QuestionnaireStage } from "../../../../domain/entities/Questionnaire/Questionnaire";
 import _c from "../../../../domain/entities/generic/Collection";
+import { buildAntibioticGrid } from "../../../../domain/entities/Questionnaire/AntibioticGrid";
 
 export const useGridSection = (
     speciesSection: QuestionnaireSection,
@@ -39,23 +39,13 @@ export const useGridSection = (
                 const antibioticQuestion = section?.questions.find(isAntibioticQuestion);
                 const astQuestion = section?.questions.find(isASTResultsQuestion);
                 const valueQuestion = section?.questions.find(isAntibioticValueQuestion);
-                const addNewAntibioticQuestion = section?.questions.find(
-                    isAddNewAntibioticQuestion
-                );
 
-                if (
-                    !antibioticQuestion ||
-                    !astQuestion ||
-                    !valueQuestion ||
-                    !addNewAntibioticQuestion
-                )
-                    return null;
+                if (!antibioticQuestion || !astQuestion || !valueQuestion) return null;
 
                 const antiBioticSet: AntibioticSection = {
                     antibioticQuestion: antibioticQuestion,
                     astResultsQuestion: astQuestion,
                     valueQuestion: valueQuestion,
-                    addNewAntibioticQuestion: addNewAntibioticQuestion,
                 };
 
                 return antiBioticSet;
@@ -67,18 +57,17 @@ export const useGridSection = (
         setAntibioticSets(antibioticGroups);
     }, [antibioticStage.sections, getAntibioticOptions, speciesSection.questions]);
 
+    const grid = useMemo(
+        () => buildAntibioticGrid(gridOptions, antibioticSets),
+        [gridOptions, antibioticSets]
+    );
+
     const updateSpeciesQuestion = useCallback(
         (question: Question) => {
             if (isSpeciesQuestion(question)) {
                 const options = getAntibioticOptions(question);
                 setGridOptions(options);
                 antibioticSets?.map(antibioticSet => {
-                    if (antibioticSet.addNewAntibioticQuestion?.value) {
-                        updateQuestion({
-                            ...antibioticSet.addNewAntibioticQuestion,
-                            value: false,
-                        });
-                    }
                     if (antibioticSet.antibioticQuestion?.value) {
                         updateQuestion({
                             ...antibioticSet.antibioticQuestion,
@@ -105,5 +94,5 @@ export const useGridSection = (
         [antibioticSets, getAntibioticOptions, updateQuestion, setGridOptions]
     );
 
-    return { updateSpeciesQuestion, gridOptions, antibioticSets };
+    return { updateSpeciesQuestion, grid };
 };

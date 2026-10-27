@@ -48,10 +48,6 @@ export interface AntibioticValueQuestion extends TextQuestion {
     subType: "text-antibiotic-value";
 }
 
-export interface AddNewAntibioticQuestion extends BooleanQuestion {
-    subType: "text-add-new-antibiotic";
-}
-
 export interface PPSIndicationLinkQuestion extends TextQuestion {
     subType: "indication-link";
 }
@@ -75,12 +71,6 @@ export const isAntibioticValueQuestion = (
     question: Question
 ): question is AntibioticValueQuestion => {
     return question.type === "text" && question.text === "Value (unit)";
-};
-
-export const isAddNewAntibioticQuestion = (
-    question: Question
-): question is AddNewAntibioticQuestion => {
-    return question.type === "boolean" && question.text === "Add new antibiotic";
 };
 
 export const mapIndicationsToTreatments = (indicationStages: QuestionnaireStage[]) => {

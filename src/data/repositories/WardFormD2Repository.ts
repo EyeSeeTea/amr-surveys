@@ -56,10 +56,13 @@ export class WardFormD2Repository implements WardFormRepository {
                 }
             )
         ).flatMap(response => {
-            if (response.status !== "SUCCESS")
-                return Future.error(
-                    new Error("Failed to save form value: " + response.description)
-                );
+            if (response.status !== "SUCCESS") {
+                // DHIS2 puts the rejection reason in conflicts; description is often empty
+                const reason =
+                    response.conflicts?.map(conflict => conflict.value).join("; ") ||
+                    response.description;
+                return Future.error(new Error(reason));
+            }
             return Future.success(undefined);
         });
     }

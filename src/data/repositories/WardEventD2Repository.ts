@@ -1,5 +1,9 @@
 import { D2Api, MetadataPick } from "../../types/d2-api";
-import { WardEvent, WardEventDetails } from "../../domain/entities/Questionnaire/WardEvent";
+import {
+    WardEvent,
+    WardEventDetails,
+    WardIdIssues,
+} from "../../domain/entities/Questionnaire/WardEvent";
 import { WardEventRepository } from "../../domain/repositories/WardEventRepository";
 import { Id } from "../../domain/entities/Ref";
 import { apiToFuture, FutureData } from "../api-futures";
@@ -13,7 +17,7 @@ import {
     WARD_STATISTICS_FORM_CONFIG,
 } from "../entities/D2Survey";
 import { DataValue as D2DataValue } from "@eyeseetea/d2-api/api/trackerEvents";
-import _c, { Collection } from "../../domain/entities/generic/Collection";
+import _c from "../../domain/entities/generic/Collection";
 import { OrgUnitAccess } from "../../domain/entities/User";
 import { getOrgUnitByLevel } from "../../domain/entities/OrgUnit";
 import { WardStatisticsFormType } from "../../domain/entities/Survey";
@@ -37,7 +41,7 @@ export class WardEventD2Repository implements WardEventRepository {
             surveyWardEvents: this.getSurveyWardEvents(facility),
         }).flatMap(({ categoryOptionCombos, surveyWardEvents }) => {
             const wardEvents = surveyWardEvents.map(surveyWardEvent => {
-                const { details, unmatchedWardIds } = getWardEventDetails(
+                const { details, wardIdIssues } = getWardEventDetails(
                     surveyWardEvent.events,
                     categoryOptionCombos,
                     disaggregatedBySpecialty
@@ -46,7 +50,7 @@ export class WardEventD2Repository implements WardEventRepository {
                 return {
                     ...surveyWardEvent,
                     events: details,
-                    unmatchedWardIds,
+                    wardIdIssues,
                 };
             });
 
@@ -136,10 +140,7 @@ export class WardEventD2Repository implements WardEventRepository {
             this.api.metadata.get({
                 categoryOptionCombos: {
                     fields: categoryOptionComboFields,
-                    filter: {
-                        "categoryCombo.id": { eq: categoryComboId },
-                        "categoryOptions.name": { in: generateWardIds(WARD_COUNT) },
-                    },
+                    filter: { "categoryCombo.id": { eq: categoryComboId } },
                     paging: false,
                 },
             })
@@ -155,9 +156,6 @@ export const dataElementIds = {
     WARD_TYPE_112: "yoctlOcQ4jK",
 };
 export const WARD_DATA_PROGRAM_STAGE_ID = "ikaExmORX0F";
-const WARD_COUNT = 32;
-const generateWardIds = (count: number): string[] =>
-    Array.from({ length: count }, (_, i) => `W${String(i + 1).padStart(2, "0")}`);
 
 const normalizeWardId = (wardId: string): string => {
     const match = wardId.match(/W([1-9])$/);
@@ -197,7 +195,7 @@ export type D2CategoryOptionCombo = MetadataPick<{
 
 type WardEventDetailsResult = {
     details: WardEventDetails[];
-    unmatchedWardIds: string[];
+    wardIdIssues: WardIdIssues;
 };
 
 type WardEventResolution =
@@ -209,21 +207,31 @@ export function getWardEventDetails(
     categoryOptionCombos: D2CategoryOptionCombo[],
     disaggregatedBySpecialty: boolean
 ): WardEventDetailsResult {
-    const resolutions = _c(events)
-        .flatMap(event =>
-            resolveWardEventDetails(event, categoryOptionCombos, disaggregatedBySpecialty)
-        )
+    const wardEvents = events.filter(event => event.programStage === WARD_DATA_PROGRAM_STAGE_ID);
+    const identifiedWardEvents = _c(wardEvents)
+        .compactMap(event => {
+            const wardId = getUniqueWardId(event);
+            return wardId ? { event, wardId } : undefined;
+        })
         .value();
 
-    const matchedDetails = _c(resolutions)
+    const resolutions = _c(identifiedWardEvents)
+        .flatMap(({ event, wardId }) => {
+            const specialtyCodes = disaggregatedBySpecialty
+                ? getSpecialtyCodes(event)
+                : [undefined];
+
+            return _c(specialtyCodes).map(specialtyCode =>
+                resolveWardEventDetail(wardId, specialtyCode, categoryOptionCombos)
+            );
+        })
+        .value();
+
+    // Wards sharing a Unique ward ID resolve to the same form, so it is shown once
+    const details = _c(resolutions)
         .compactMap(resolution => (resolution.status === "matched" ? resolution.detail : undefined))
+        .uniqBy(detail => detail.formId)
         .value();
-
-    const details = disaggregatedBySpecialty
-        ? matchedDetails
-        : _c(matchedDetails)
-              .uniqBy(detail => detail.formId)
-              .value();
 
     const unmatchedWardIds = _c(resolutions)
         .compactMap(resolution =>
@@ -232,30 +240,39 @@ export function getWardEventDetails(
         .uniq()
         .value();
 
-    return { details, unmatchedWardIds };
+    // A ward with several specialties may be recorded once per specialty under the same ward ID,
+    // so only the same ward ID with the same specialty on two wards is a true duplicate
+    const wardLabels = identifiedWardEvents.flatMap(({ event, wardId }) => {
+        const specialtyCodes = _c(getSpecialtyCodes(event)).uniq().value();
+        return specialtyCodes.length > 0
+            ? specialtyCodes.map(specialtyCode => getWardLabel(wardId, specialtyCode))
+            : [wardId];
+    });
+    const duplicatedWardIds = _c(
+        wardLabels.filter((wardLabel, index) => wardLabels.indexOf(wardLabel) !== index)
+    )
+        .uniq()
+        .value();
+
+    return {
+        details,
+        wardIdIssues: {
+            unmatchedWardIds,
+            duplicatedWardIds,
+            missingWardIdCount: wardEvents.length - identifiedWardEvents.length,
+        },
+    };
 }
 
-function resolveWardEventDetails(
-    event: D2Event,
-    categoryOptionCombos: D2CategoryOptionCombo[],
-    disaggregatedBySpecialty: boolean
-): Collection<WardEventResolution> {
-    const uniqueWardId = resolveUniqueWardId(event);
-    if (!uniqueWardId) return _c([]);
-
-    const specialtyCodes = disaggregatedBySpecialty ? getSpecialtyCodes(event) : [undefined];
-
-    return _c(specialtyCodes).map(specialtyCode =>
-        resolveWardEventDetail(uniqueWardId, specialtyCode, categoryOptionCombos)
-    );
+function getWardLabel(wardId: string, specialtyCode: Maybe<string>): string {
+    return specialtyCode ? `${wardId} (${specialtyCode})` : wardId;
 }
 
-function resolveUniqueWardId(event: D2Event): Maybe<string> {
-    if (event.programStage !== WARD_DATA_PROGRAM_STAGE_ID) return undefined;
-
+function getUniqueWardId(event: D2Event): Maybe<string> {
     const rawWardId = event.dataValues
         .find(dv => dv.dataElement === dataElementIds.WARD_ID)
-        ?.value.trim();
+        ?.value.trim()
+        .toUpperCase();
 
     return rawWardId ? normalizeWardId(rawWardId) : undefined;
 }
@@ -290,7 +307,7 @@ function resolveWardEventDetail(
         console.warn(
             `No matching category option combo for ward event with ward ID ${wardId}${specialtySuffix}`
         );
-        return { status: "unmatched", wardId };
+        return { status: "unmatched", wardId: getWardLabel(wardId, specialtyCode) };
     }
 
     return {

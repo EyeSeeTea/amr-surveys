@@ -1,6 +1,7 @@
 import { Maybe } from "../../../utils/ts-utils";
 import DropdownSelectWidget from "../survey-questions/widgets/DropdownSelectWidget";
 import styled from "styled-components";
+import { Prompt } from "react-router-dom";
 import Collapsible from "../collapsible/Collapsible";
 import { WardSummarySection } from "./WardSummarySection";
 import { useSelectablePeriods } from "./hooks/useSelectablePeriods";
@@ -9,7 +10,7 @@ import { ContentLoader } from "../content-loader/ContentLoader";
 import { Id } from "../../../domain/entities/Ref";
 import i18n from "../../../utils/i18n";
 import { SurveyFormOUSelector } from "../survey/SurveyFormOUSelector";
-import { WardEvent } from "../../../domain/entities/Questionnaire/WardEvent";
+import { WardEvent, WardIdIssues } from "../../../domain/entities/Questionnaire/WardEvent";
 import { WardStatisticsFormType } from "../../../domain/entities/Survey";
 
 type WardSummaryFormProps = {
@@ -29,6 +30,8 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
         selectedRootSurvey,
         wardEvents,
         wardSummaryForms,
+        wardIdIssues,
+        hasUnsavedValues,
         getCellBackgroundColor,
         saveCurrentOrgUnit,
         saveWardSummaryForm,
@@ -39,6 +42,13 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
 
     return (
         <Container>
+            <Prompt
+                when={hasUnsavedValues}
+                message={i18n.t(
+                    "Some values have not been saved and are highlighted in red. Leave this page anyway?"
+                )}
+            />
+
             <SurveyFormOUSelector
                 formType={formType}
                 currentOrgUnit={currentOrgUnit}
@@ -65,6 +75,8 @@ export const WardSummaryForm: React.FC<WardSummaryFormProps> = props => {
             </FormFilters>
 
             <ContentLoader loading={loading} error={error} showErrorAsSnackbar={true}>
+                {wardIdIssues && <WardIdIssuesNotice wardIdIssues={wardIdIssues} />}
+
                 <NoFormsMessage
                     currentOrgUnitId={currentOrgUnit?.orgUnitId}
                     selectedPeriod={selectedPeriod}
@@ -113,6 +125,52 @@ const NoFormsMessage: React.FC<{
         );
     return null;
 };
+
+const WardIdIssuesNotice: React.FC<{ wardIdIssues: WardIdIssues }> = ({ wardIdIssues }) => {
+    const { unmatchedWardIds, duplicatedWardIds, missingWardIdCount } = wardIdIssues;
+
+    if (!unmatchedWardIds.length && !duplicatedWardIds.length && !missingWardIdCount) return null;
+
+    return (
+        <Notice role="alert">
+            <strong>
+                {i18n.t(
+                    "Some wards have a Unique ward ID problem. Please correct it in the Ward data of the facility record."
+                )}
+            </strong>
+            <ul>
+                {unmatchedWardIds.length > 0 && (
+                    <li>
+                        {i18n.t("Not shown, no matching form: {{wardIds}}", {
+                            wardIds: unmatchedWardIds.join(", "),
+                        })}
+                    </li>
+                )}
+                {missingWardIdCount > 0 && (
+                    <li>
+                        {i18n.t("Not shown, no Unique ward ID: {{count}} ward(s)", {
+                            count: missingWardIdCount,
+                        })}
+                    </li>
+                )}
+                {duplicatedWardIds.length > 0 && (
+                    <li>
+                        {i18n.t(
+                            "Same ward ID and specialty on more than one ward, so their values overwrite each other: {{wardIds}}",
+                            { wardIds: duplicatedWardIds.join(", ") }
+                        )}
+                    </li>
+                )}
+            </ul>
+        </Notice>
+    );
+};
+
+const Notice = styled.div`
+    padding: 0.5rem 1rem;
+    border-inline-start: 4px solid ${props => props.theme.palette.status.warning};
+    background-color: ${props => props.theme.palette.background.hover};
+`;
 
 const Container = styled.div`
     display: flex;

@@ -1,7 +1,6 @@
 import SearchableSelect from "../survey-questions/widgets/SearchableSelect";
 import {
     ASTResultsQuestion,
-    AddNewAntibioticQuestion,
     AntibioticQuestion,
     AntibioticValueQuestion,
     Question,
@@ -18,51 +17,30 @@ interface GridRowProps {
     antibiotic: AntibioticQuestion;
     astResults: ASTResultsQuestion;
     valueQuestion: AntibioticValueQuestion;
-    addNewAntibioticQuestion: AddNewAntibioticQuestion;
-    updateAstResults: (question: Question) => void;
-    updateValue: (question: Question) => void;
-    updateAntibitoticQuestion: (question: Question) => void;
-    updateAddNewAntibiotic: (question: Question) => void;
+    updateQuestion: (question: Question) => void;
+    disabled: boolean;
 }
 
 export const GridRow: React.FC<GridRowProps> = props => {
-    const {
-        option,
-        antibiotic,
-        astResults,
-        valueQuestion,
-        addNewAntibioticQuestion,
-        updateAstResults,
-        updateValue,
-        updateAntibitoticQuestion,
-        updateAddNewAntibiotic,
-    } = props;
+    const { option, astResults, valueQuestion, disabled } = props;
     const { update } = QuestionnaireQuestion;
-    const { updateGridRow } = useGridRow(
-        updateAstResults,
-        updateValue,
-        antibiotic,
-        option,
-        updateAntibitoticQuestion,
-        addNewAntibioticQuestion,
-        updateAddNewAntibiotic
-    );
+    const { updateGridRow } = useGridRow(props);
 
     return (
-        <StyledRow>
+        <StyledRow role="group" aria-label={option}>
             <StyledTypo>{option}</StyledTypo>
             <StyledSearchableSelect
                 value={astResults.options.find(op => op.id === astResults.value?.id) || null}
                 options={astResults.options ?? []}
                 onChange={(value: QuestionOption) => updateGridRow(update(astResults, value))}
-                disabled={false}
+                disabled={disabled}
                 label="Select AST results"
             />
 
             <StyledTextWidget
                 value={valueQuestion?.value}
                 onChange={value => updateGridRow(update(valueQuestion, value))}
-                disabled={false}
+                disabled={disabled}
                 multiline={valueQuestion?.multiline ?? false}
                 placeholder="Value (unit)"
             />

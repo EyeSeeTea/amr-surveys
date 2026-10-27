@@ -10,7 +10,6 @@ import { OrgUnitAccess } from "../../../../domain/entities/User";
 import { WardEvent } from "../../../../domain/entities/Questionnaire/WardEvent";
 import { useOfflineSnackbar } from "../../../hooks/useOfflineSnackbar";
 import i18n from "../../../../utils/i18n";
-import _c from "../../../../domain/entities/generic/Collection";
 
 export enum SAVE_FORM_STATE {
     ERROR = "error",
@@ -21,7 +20,7 @@ export enum SAVE_FORM_STATE {
 
 export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
     const { compositionRoot } = useAppContext();
-    const { snackbar } = useOfflineSnackbar();
+    const { snackbar, offlineError } = useOfflineSnackbar();
 
     const [cellSaveStates, setCellSaveStates] = useState<Map<string, SAVE_FORM_STATE>>(new Map());
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnitAccess>();
@@ -35,8 +34,9 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
     useEffect(() => {
         const timeouts: ReturnType<typeof setTimeout>[] = [];
 
+        // Failed cells stay highlighted until they are saved successfully
         cellSaveStates.forEach((state, cellId) => {
-            if (state === SAVE_FORM_STATE.SUCCESS || state === SAVE_FORM_STATE.ERROR) {
+            if (state === SAVE_FORM_STATE.SUCCESS) {
                 const timeout = setTimeout(() => {
                     setCellSaveStates(prev => {
                         const newMap = new Map(prev);
@@ -54,6 +54,26 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
             timeouts.forEach(timeout => clearTimeout(timeout));
         };
     }, [cellSaveStates]);
+
+    const hasUnsavedValues = useMemo(
+        () =>
+            Array.from(cellSaveStates.values()).some(
+                state => state === SAVE_FORM_STATE.SAVING || state === SAVE_FORM_STATE.ERROR
+            ),
+        [cellSaveStates]
+    );
+
+    useEffect(() => {
+        if (!hasUnsavedValues) return;
+
+        const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = "";
+        };
+        window.addEventListener("beforeunload", warnBeforeUnload);
+
+        return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+    }, [hasUnsavedValues]);
 
     useEffect(() => {
         if (currentOrgUnit?.orgUnitId && selectedPeriod && wardEvents) {
@@ -97,17 +117,28 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
         [wardEvents]
     );
 
+    const wardIdIssues = useMemo(
+        () =>
+            wardEvents?.find(wardEvent => wardEvent.rootSurveyId === selectedRootSurvey)
+                ?.wardIdIssues,
+        [wardEvents, selectedRootSurvey]
+    );
+
     const getCellBackgroundColor = useCallback(
         (formValue: FormValue) => {
-            const cellId = getCellId(formValue);
-            const cellState = cellSaveStates.get(cellId);
+            const cellState =
+                currentOrgUnit && selectedPeriod
+                    ? cellSaveStates.get(
+                          getCellStateKey(currentOrgUnit.orgUnitId, selectedPeriod, formValue)
+                      )
+                    : undefined;
             const stateKey = cellState?.toLowerCase() || "idle";
 
             return stateKey in palette.status
                 ? palette.status[stateKey as keyof typeof palette.status]
                 : "transparent";
         },
-        [cellSaveStates]
+        [cellSaveStates, currentOrgUnit, selectedPeriod]
     );
 
     const saveCurrentOrgUnit = useCallback(
@@ -126,7 +157,6 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
                     setCurrentOrgUnit(orgUnit);
                     if (wardEvents.length === 1) setSelectedRootSurvey(wardEvents[0]?.rootSurveyId);
                     setLoading(false);
-                    warnAboutUnmatchedWardIds(wardEvents, snackbar.warning);
                 },
                 error => {
                     setError(error.message);
@@ -134,14 +164,13 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
                 }
             );
         },
-        [compositionRoot.surveys.getWardEvents, wardFormType, snackbar]
+        [compositionRoot.surveys.getWardEvents, wardFormType]
     );
 
-    const updateCellSaveState = useCallback((formValue: FormValue, state: SAVE_FORM_STATE) => {
+    const updateCellSaveState = useCallback((cellStateKey: string, state: SAVE_FORM_STATE) => {
         setCellSaveStates(prev => {
-            const cellId = getCellId(formValue);
             const newMap = new Map(prev);
-            newMap.set(cellId, state);
+            newMap.set(cellStateKey, state);
 
             return newMap;
         });
@@ -154,18 +183,37 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
                 return;
             }
 
-            updateCellSaveState(formValue, SAVE_FORM_STATE.SAVING);
+            const cellStateKey = getCellStateKey(
+                currentOrgUnit.orgUnitId,
+                selectedPeriod,
+                formValue
+            );
+            if (newValue !== undefined && !isWholeNumber(newValue)) {
+                updateCellSaveState(cellStateKey, SAVE_FORM_STATE.ERROR);
+                snackbar.error(
+                    i18n.t("Only whole numbers of 0 or more are allowed. The value was not saved.")
+                );
+                return;
+            }
+
+            updateCellSaveState(cellStateKey, SAVE_FORM_STATE.SAVING);
 
             const formValueToSave = { ...formValue, value: newValue ?? "" };
             compositionRoot.surveys.saveWardForm
                 .execute(formValueToSave, currentOrgUnit.orgUnitId, selectedPeriod, wardFormType)
                 .run(
                     () => {
-                        updateCellSaveState(formValue, SAVE_FORM_STATE.SUCCESS);
+                        updateCellSaveState(cellStateKey, SAVE_FORM_STATE.SUCCESS);
                     },
                     error => {
                         console.error("Error saving ward summary form:", error);
-                        updateCellSaveState(formValue, SAVE_FORM_STATE.ERROR);
+                        updateCellSaveState(cellStateKey, SAVE_FORM_STATE.ERROR);
+                        offlineError(
+                            i18n.t(
+                                "A value could not be saved: {{reason}}. Cells that failed are highlighted in red, please re-enter them.",
+                                { reason: error.message }
+                            )
+                        );
                     }
                 );
         },
@@ -175,6 +223,8 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
             selectedPeriod,
             compositionRoot.surveys.saveWardForm,
             wardFormType,
+            snackbar,
+            offlineError,
         ]
     );
 
@@ -199,6 +249,8 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
         selectedPeriod: selectedPeriod,
         selectedRootSurvey: selectedRootSurvey,
         wardSummaryForms: wardSummaryForms,
+        wardIdIssues: wardIdIssues,
+        hasUnsavedValues: hasUnsavedValues,
         getCellBackgroundColor: getCellBackgroundColor,
         saveCurrentOrgUnit: saveCurrentOrgUnit,
         saveWardSummaryForm: saveWardSummaryForm,
@@ -207,18 +259,12 @@ export function useWardSummaryForm(wardFormType: WardStatisticsFormType) {
     };
 }
 
-function warnAboutUnmatchedWardIds(wardEvents: WardEvent[], warn: (message: string) => void): void {
-    const unmatchedWardIds = _c(wardEvents)
-        .flatMap(wardEvent => _c(wardEvent.unmatchedWardIds))
-        .uniq()
-        .value();
+// The ward statistics are counts, so decimals and negatives are rejected before saving
+function isWholeNumber(value: string): boolean {
+    return /^\d+$/.test(value);
+}
 
-    if (unmatchedWardIds.length === 0) return;
-
-    warn(
-        i18n.t(
-            "Some ward events could not be matched to a form and were not included: {{wardIds}}",
-            { wardIds: unmatchedWardIds.join(", ") }
-        )
-    );
+// Cell ids repeat across periods and facilities, so save states are kept per facility and period
+function getCellStateKey(orgUnitId: Id, period: string, formValue: FormValue): string {
+    return `${orgUnitId}-${period}-${getCellId(formValue)}`;
 }

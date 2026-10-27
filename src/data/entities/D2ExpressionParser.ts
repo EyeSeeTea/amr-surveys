@@ -2,13 +2,28 @@ import * as xp from "@dhis2/expression-parser";
 import _c from "../../domain/entities/generic/Collection";
 import { Either } from "../../domain/entities/generic/Either";
 
+// Parsing an expression is costly and the same few hundred rule expressions are evaluated many times
+const expressionParsers = new Map<string, xp.ExpressionJs>();
+const ruleVariableNames = new WeakMap<xp.ExpressionJs, string[]>();
+const programVariableNames = new WeakMap<xp.ExpressionJs, string[]>();
+
+function getExpressionParser(expression: string, mode: xp.ExpressionMode): xp.ExpressionJs {
+    const key = `${mode}|${expression}`;
+    const cached = expressionParsers.get(key);
+    if (cached) return cached;
+
+    const parser = new xp.ExpressionJs(expression, mode);
+    expressionParsers.set(key, parser);
+    return parser;
+}
+
 export class D2ExpressionParser {
     public evaluateRuleEngineCondition(
         ruleCondition: string,
         variableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
     ): Either<Error, boolean> {
         try {
-            const expressionParser = new xp.ExpressionJs(
+            const expressionParser = getExpressionParser(
                 ruleCondition,
                 xp.ExpressionMode.RULE_ENGINE_CONDITION
             );
@@ -25,7 +40,7 @@ export class D2ExpressionParser {
         variableValues: Map<ProgramRuleVariableName, ProgramRuleVariableValue>
     ): Either<Error, EvaluatedExpressionResult> {
         try {
-            const expressionParser = new xp.ExpressionJs(
+            const expressionParser = getExpressionParser(
                 expression,
                 xp.ExpressionMode.RULE_ENGINE_ACTION
             );
@@ -60,7 +75,11 @@ export class D2ExpressionParser {
         expressionParser: xp.ExpressionJs,
         ruleVariables: Map<string, ProgramRuleVariableValue>
     ) {
-        const programRuleVariables = expressionParser.collectProgramRuleVariableNames();
+        let programRuleVariables = ruleVariableNames.get(expressionParser);
+        if (!programRuleVariables) {
+            programRuleVariables = expressionParser.collectProgramRuleVariableNames();
+            ruleVariableNames.set(expressionParser, programRuleVariables);
+        }
         const variablesValueMap = programRuleVariables.map(programRuleVariable => {
             const currentProgramRuleVariableValue = ruleVariables.get(programRuleVariable);
 
@@ -89,7 +108,11 @@ export class D2ExpressionParser {
     }
 
     private mapProgramVariables(expressionParser: xp.ExpressionJs) {
-        const programVariables = expressionParser.collectProgramVariablesNames();
+        let programVariables = programVariableNames.get(expressionParser);
+        if (!programVariables) {
+            programVariables = expressionParser.collectProgramVariablesNames();
+            programVariableNames.set(expressionParser, programVariables);
+        }
         const programVariableValues = programVariables.map(programVariable => {
             switch (programVariable) {
                 case "current_date": {

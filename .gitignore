@@ -16,6 +16,16 @@ manifest.webapp
 .env.development.local
 .env.test.local
 .env.production.local
+
+# extraction script: real credentials and extracted (potentially sensitive) data
+.env.extract
+/extracts/
+
+# real credentials for the extraction/glass-dev scripts (DOTENV_CONFIG_PATH=.env.local)
+.env.local
+
+# local Windows workaround (script-shell); not something the team should inherit by default
+.yarnrc
 *.sublime-project
 *.sublime-workspace
 *.code-workspace
@@ -51,3 +61,6 @@ docs/
 # build output
 dist/
 dev-dist/
+
+# Browser test output
+/src/tests/playwright/.results
